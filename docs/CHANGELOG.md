@@ -252,3 +252,4 @@ Thank you to all contributors who helped make RailsPress 2.0 possible!
 **Full Changelog:** https://github.com/your-org/railspress/compare/v1.0.0...v2.0.0
 
 
+

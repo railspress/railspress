@@ -59,10 +59,10 @@
                 Arguments (<%= query.arguments.size %>)
               </summary>
               <div class="mt-2 pl-4 space-y-2">
-                <% query.arguments.each do |arg| %>
+                <% query.arguments.each do |arg_name, arg| %>
                   <div class="bg-[#1a1a1a] rounded p-2">
                     <div class="flex items-center space-x-2">
-                      <code class="text-yellow-400 text-sm"><%= arg.name %></code>
+                      <code class="text-yellow-400 text-sm"><%= arg_name %></code>
                       <span class="text-xs text-gray-500">:</span>
                       <code class="text-sm text-gray-300"><%= arg.type.to_type_signature %></code>
                     </div>
@@ -106,10 +106,10 @@
                   Arguments (<%= mutation.arguments.size %>)
                 </summary>
                 <div class="mt-2 pl-4 space-y-2">
-                  <% mutation.arguments.each do |arg| %>
+                  <% mutation.arguments.each do |arg_name, arg| %>
                     <div class="bg-[#1a1a1a] rounded p-2">
                       <div class="flex items-center space-x-2">
-                        <code class="text-yellow-400 text-sm"><%= arg.name %></code>
+                        <code class="text-yellow-400 text-sm"><%= arg_name %></code>
                         <span class="text-xs text-gray-500">:</span>
                         <code class="text-sm text-gray-300"><%= arg.type.to_type_signature %></code>
                       </div>
@@ -161,5 +161,6 @@
     display: none;
   }
 </style>
+
 
 

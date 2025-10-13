@@ -55,3 +55,4 @@ class ShortcutTest < ActiveSupport::TestCase
   end
 end
 
+

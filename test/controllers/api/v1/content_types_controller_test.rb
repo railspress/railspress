@@ -38,3 +38,4 @@ class Api::V1::ContentTypesControllerTest < ActionDispatch::IntegrationTest
   end
 end
 
+

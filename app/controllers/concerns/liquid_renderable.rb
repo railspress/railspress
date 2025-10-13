@@ -12,7 +12,7 @@ module LiquidRenderable
   end
 
   def current_theme_name
-    SiteSetting.get('active_theme', 'nordic')
+    Railspress::ThemeLoader.current_theme || 'nordic'
   end
 
   def render_liquid(template, assigns = {}, options = {})

@@ -29,6 +29,30 @@ class Admin::PluginsController < Admin::BaseController
     end
   end
 
+  # GET /admin/plugins/marketplace
+  def marketplace
+    @available_plugins = fetch_available_plugins
+    @categories = plugin_categories
+    @featured_plugins = @available_plugins.select { |p| p[:featured] }
+    @popular_plugins = @available_plugins.sort_by { |p| -p[:downloads] }.first(10)
+    @new_plugins = @available_plugins.select { |p| p[:new] }.first(10)
+    
+    # Filter by category
+    if params[:category].present?
+      @available_plugins = @available_plugins.select { |p| p[:category] == params[:category] }
+    end
+    
+    # Search
+    if params[:q].present?
+      query = params[:q].downcase
+      @available_plugins = @available_plugins.select do |p|
+        p[:name].downcase.include?(query) || 
+        p[:description].downcase.include?(query) ||
+        p[:tags].any? { |t| t.downcase.include?(query) }
+      end
+    end
+  end
+
   # GET /admin/plugins/1
   def show
   end
@@ -182,7 +206,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'SEO & Marketing',
         tags: ['seo', 'google', 'analytics', 'sitemap', 'meta tags'],
         featured: true,
-        icon: '🔍',
         screenshots: ['screenshot1.png', 'screenshot2.png'],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -200,7 +223,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Forms & Contact',
         tags: ['forms', 'contact', 'email', 'captcha'],
         featured: true,
-        icon: '📝',
         screenshots: [],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -218,7 +240,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Security',
         tags: ['security', '2fa', 'firewall', 'malware'],
         featured: false,
-        icon: '🛡️',
         screenshots: [],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -236,7 +257,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Performance',
         tags: ['cache', 'speed', 'optimization', 'cdn'],
         featured: true,
-        icon: '⚡',
         screenshots: [],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -254,7 +274,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Social Media',
         tags: ['social', 'sharing', 'facebook', 'twitter'],
         featured: false,
-        icon: '📱',
         screenshots: [],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -272,7 +291,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Analytics',
         tags: ['analytics', 'tracking', 'reports', 'stats'],
         featured: false,
-        icon: '📊',
         screenshots: [],
         requires: '1.2.0',
         tested_up_to: '1.5.0',
@@ -290,7 +308,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Content Enhancement',
         tags: ['markdown', 'editor', 'writing'],
         featured: false,
-        icon: '✍️',
         screenshots: [],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -308,7 +325,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Media & Gallery',
         tags: ['gallery', 'images', 'lightbox', 'slideshow'],
         featured: false,
-        icon: '🖼️',
         screenshots: [],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -326,7 +342,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'E-commerce',
         tags: ['shop', 'ecommerce', 'products', 'payments'],
         featured: true,
-        icon: '🛒',
         screenshots: [],
         requires: '1.2.0',
         tested_up_to: '1.5.0',
@@ -344,7 +359,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Development Tools',
         tags: ['backup', 'restore', 'cloud', 's3'],
         featured: false,
-        icon: '💾',
         screenshots: [],
         requires: '1.0.0',
         tested_up_to: '1.5.0',
@@ -362,7 +376,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'Content Enhancement',
         tags: ['translation', 'multilingual', 'i18n', 'languages'],
         featured: false,
-        icon: '🌍',
         screenshots: [],
         requires: '1.3.0',
         tested_up_to: '1.5.0',
@@ -380,7 +393,6 @@ class Admin::PluginsController < Admin::BaseController
         category: 'SEO & Marketing',
         tags: ['email', 'newsletter', 'marketing', 'campaigns'],
         featured: false,
-        icon: '📧',
         screenshots: [],
         requires: '1.1.0',
         tested_up_to: '1.5.0',

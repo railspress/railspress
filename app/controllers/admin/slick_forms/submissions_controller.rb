@@ -199,3 +199,4 @@ class Admin::SlickForms::SubmissionsController < Admin::BaseController
     ActiveRecord::Base.connection.table_exists?(table_name)
   end
 end
+

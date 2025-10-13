@@ -1,6 +1,13 @@
 # Configure Liquid (already loaded in application.rb)
-::Liquid::Template.error_mode = :warn # Or :strict for development
-::Liquid::Template.file_system = ::Liquid::BlankFileSystem.new
+# Create a default environment with the configuration
+Rails.application.config.after_initialize do
+  liquid_env = ::Liquid::Environment.new
+  liquid_env.error_mode = :warn # Or :strict for development
+  liquid_env.file_system = ::Liquid::BlankFileSystem.new
+  
+  # Store the environment for use in templates
+  Rails.application.config.liquid_environment = liquid_env
+end
 
 # Custom Liquid Tags for RailsPress
 

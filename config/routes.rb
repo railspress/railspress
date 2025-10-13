@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # Theme assets
-  get '/themes/:theme/assets/*path', to: 'theme_assets#show', constraints: { theme: /[a-z0-9_-]+/ }, format: false
+  get '/themes/:theme/assets/*path', to: 'theme_assets#show', constraints: { theme: /[a-zA-Z0-9_-]+/ }, format: false
   
   # Devise routes for frontend
   devise_for :users, path: 'auth', controllers: {
@@ -197,7 +197,7 @@ Rails.application.routes.draw do
     resources :taxonomies do
       resources :terms
     end
-    resources :comments do
+    resources :comments, except: [:new] do
       member do
         patch :approve
         patch :spam
@@ -254,6 +254,7 @@ Rails.application.routes.draw do
     resources :plugins do
       collection do
         get :browse
+        get :marketplace
         post :install
       end
       member do

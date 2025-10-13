@@ -197,6 +197,11 @@ puts "  ✅ Site settings configured"
 puts ""
 
 # ============================================
+# 7. AI PROVIDERS
+# ============================================
+load Rails.root.join('db', 'seeds', 'ai_providers.rb')
+
+# ============================================
 # SUMMARY
 # ============================================
 puts "═══════════════════════════════════════"
@@ -211,6 +216,7 @@ puts "  • Comments: 1"
 puts "  • Taxonomies: 3 (category, tag, post_format)"
 puts "  • Terms: 1 (Uncategorized)"
 puts "  • Menus: 1 (Primary with 2 items)"
+puts "  • AI Providers: 5 (OpenAI, Anthropic, Google, Cohere)"
 puts ""
 puts "🔐 Login Credentials:"
 puts "  Email: admin@example.com"

@@ -152,7 +152,7 @@
     }
     
     const table = new window.Tabulator("#pages-table", {
-      ajaxURL: "<%= admin_pages_path(format: :json) %>",
+      data: <%= raw @pages_data.to_json %>,
       layout: "fitColumns",
       responsiveLayout: "hide",
       pagination: true,
@@ -350,7 +350,6 @@
       });
     });
   });
-  }
   
   // Initialize on page load
   document.addEventListener('turbo:load', initPagesTable);

@@ -155,3 +155,4 @@ class AppearanceHelperTest < ActionView::TestCase
 end
 
 
+

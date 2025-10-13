@@ -77,3 +77,4 @@ inactive:
   updated_at: <%= 1.month.ago %>
 
 
+

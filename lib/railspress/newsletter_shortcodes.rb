@@ -366,3 +366,4 @@ Railspress::NewsletterShortcodes.register_all
 
 
 
+

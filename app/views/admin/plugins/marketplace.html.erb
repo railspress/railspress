@@ -1,0 +1,114 @@
+<% content_for :page_title, "Plugin Marketplace" %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Plugin Marketplace</h1>
+      <p class="text-gray-400">Discover and install plugins to extend your RailsPress site</p>
+    </div>
+    <%= link_to admin_plugins_path, class: "flex items-center space-x-2 px-4 py-2 border border-[#2a2a2a] hover:border-[#3a3a3a] text-gray-300 hover:text-white rounded-lg transition" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      <span>Back to Installed</span>
+    <% end %>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
+    <%= form_with url: marketplace_admin_plugins_path, method: :get, class: "space-y-4" do |f| %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <%= f.text_field :q, value: params[:q], placeholder: "Search plugins...", class: "w-full pl-10 pr-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <%= f.select :category, 
+              options_for_select([['All Categories', '']] + @categories.map { |c| [c, c] }, params[:category]),
+              {},
+              class: "flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <%= f.submit "Filter", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Featured Plugins -->
+  <% if @featured_plugins.any? && params[:q].blank? && params[:category].blank? %>
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-white mb-4">Featured Plugins</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <% @featured_plugins.first(3).each do |plugin| %>
+          <%= render partial: 'plugin_card', locals: { plugin: plugin, featured: true } %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Popular Plugins -->
+  <% if @popular_plugins.any? && params[:q].blank? && params[:category].blank? %>
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-white mb-4">Popular Plugins</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <% @popular_plugins.first(6).each do |plugin| %>
+          <%= render partial: 'plugin_card', locals: { plugin: plugin, popular: true } %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- New Plugins -->
+  <% if @new_plugins.any? && params[:q].blank? && params[:category].blank? %>
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-white mb-4">New Plugins</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <% @new_plugins.first(6).each do |plugin| %>
+          <%= render partial: 'plugin_card', locals: { plugin: plugin, new_plugin: true } %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- All Plugins -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-white">
+        <% if params[:q].present? %>
+          Search Results for "<%= params[:q] %>"
+        <% elsif params[:category].present? %>
+          <%= params[:category] %> Plugins
+        <% else %>
+          All Plugins
+        <% end %>
+      </h2>
+      <span class="text-sm text-gray-400"><%= @available_plugins.count %> plugins found</span>
+    </div>
+    
+    <% if @available_plugins.any? %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% @available_plugins.each do |plugin| %>
+          <%= render partial: 'plugin_card', locals: { plugin: plugin } %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-300 mb-2">No plugins found</h3>
+        <p class="text-gray-500 mb-4">Try adjusting your search or browse all categories</p>
+        <%= link_to marketplace_admin_plugins_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Clear Filters
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

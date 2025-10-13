@@ -6,7 +6,7 @@ class ThemeAssetsController < ApplicationController
     asset_path_array = params[:path]
     
     # Security: only allow alphanumeric, hyphens, underscores, and dots in theme name
-    unless theme_name.match?(/\A[a-z0-9_-]+\z/)
+    unless theme_name.match?(/\A[a-zA-Z0-9_-]+\z/)
       return head :not_found
     end
     

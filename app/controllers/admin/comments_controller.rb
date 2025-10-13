@@ -3,17 +3,18 @@ class Admin::CommentsController < Admin::BaseController
 
   # GET /admin/comments or /admin/comments.json
   def index
-    @comments = Comment.all
+    @comments = Comment.includes(:commentable, :user).order(created_at: :desc)
+    
+    respond_to do |format|
+      format.html { @comments_data = comments_json }
+      format.json { render json: comments_json }
+    end
   end
 
   # GET /admin/comments/1 or /admin/comments/1.json
   def show
   end
 
-  # GET /admin/comments/new
-  def new
-    @comment = Comment.new
-  end
 
   # GET /admin/comments/1/edit
   def edit
@@ -25,10 +26,10 @@ class Admin::CommentsController < Admin::BaseController
 
     respond_to do |format|
       if @comment.save
-        format.html { redirect_to [:admin, @comment], notice: "Comment was successfully created." }
+        format.html { redirect_to admin_comments_path, notice: "Comment was successfully created." }
         format.json { render :show, status: :created, location: @comment }
       else
-        format.html { render :new, status: :unprocessable_entity }
+        format.html { redirect_to admin_comments_path, alert: "Failed to create comment." }
         format.json { render json: @comment.errors, status: :unprocessable_entity }
       end
     end
@@ -66,5 +67,20 @@ class Admin::CommentsController < Admin::BaseController
     # Only allow a list of trusted parameters through.
     def comment_params
       params.fetch(:comment, {})
+    end
+    
+    def comments_json
+      @comments.map do |comment|
+        {
+          id: comment.id,
+          author_name: comment.author_name,
+          author_email: comment.author_email,
+          content: comment.content,
+          status: comment.status,
+          commentable_type: comment.commentable_type,
+          commentable_title: comment.commentable&.title || 'Unknown',
+          created_at: comment.created_at.strftime("%Y-%m-%d %H:%M")
+        }
+      end
     end
 end

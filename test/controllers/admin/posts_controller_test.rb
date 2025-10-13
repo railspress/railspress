@@ -352,3 +352,4 @@ class Admin::PostsControllerTest < ActionDispatch::IntegrationTest
 end
 
 
+

@@ -148,3 +148,4 @@ class Admin::TaxonomiesControllerTest < ActionDispatch::IntegrationTest
 end
 
 
+

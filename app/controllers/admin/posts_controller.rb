@@ -17,7 +17,7 @@ class Admin::PostsController < Admin::BaseController
     end
     
     respond_to do |format|
-      format.html
+      format.html { @posts_data = posts_json }
       format.json { render json: posts_json }
     end
   end

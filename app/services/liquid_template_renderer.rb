@@ -1,9 +1,12 @@
 class LiquidTemplateRenderer
   attr_reader :theme_path, :template
 
-  def initialize(theme_name = 'nordic')
+  def initialize(theme_name = nil)
     # Ensure Liquid is loaded
     require 'liquid' unless defined?(::Liquid)
+    
+    # Get current theme from ThemeLoader if not specified
+    theme_name ||= Railspress::ThemeLoader.current_theme || 'nordic'
     
     @theme_path = Rails.root.join('app', 'themes', theme_name)
     @template = ::Liquid::Template.new
@@ -406,7 +409,8 @@ end
 # Liquid Filters Module
 module LiquidFilters
   def asset_url(input)
-    "/themes/nordic/assets/#{input}"
+    current_theme = Railspress::ThemeLoader.current_theme || 'nordic'
+    "/themes/#{current_theme}/assets/#{input}"
   end
 
   def image_url(input)

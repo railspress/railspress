@@ -79,3 +79,4 @@ puts "✓ Created '#{case_study_type.label}' content type"
 
 puts "Content types setup complete!"
 
+

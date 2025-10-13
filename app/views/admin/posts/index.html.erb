@@ -155,7 +155,7 @@
     }
     
     const table = new window.Tabulator("#posts-table", {
-      ajaxURL: "<%= admin_posts_path(format: :json) %>",
+      data: <%= raw @posts_data.to_json %>,
       layout: "fitColumns",
       responsiveLayout: "hide",
       pagination: true,
@@ -372,8 +372,6 @@
       });
     });
   });
-  
-  }
   
   // Initialize on page load
   document.addEventListener('turbo:load', initPostsTable);

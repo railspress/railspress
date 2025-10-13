@@ -342,3 +342,4 @@ class AdminAuthenticationTest < ActionDispatch::IntegrationTest
 end
 
 
+

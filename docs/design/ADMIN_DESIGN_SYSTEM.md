@@ -590,3 +590,4 @@ When creating new admin pages, use:
 - [Color Scheme Guide](../features/color-schemes.md)
 - [Accessibility Guide](../development/accessibility.md)
 
+

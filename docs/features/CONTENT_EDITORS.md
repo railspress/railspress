@@ -287,3 +287,4 @@ Potential additions:
 - [ ] Math equation support (KaTeX)
 - [ ] Mermaid diagram support
 
+

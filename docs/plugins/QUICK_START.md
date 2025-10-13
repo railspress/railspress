@@ -219,3 +219,4 @@ add_filter('filter_name', :method_name)
 
 Happy Plugin Building! 🚀
 
+

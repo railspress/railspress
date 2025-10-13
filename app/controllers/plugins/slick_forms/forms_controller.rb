@@ -33,3 +33,4 @@ class Plugins::SlickForms::FormsController < ApplicationController
     ActiveRecord::Base.connection.table_exists?(table_name)
   end
 end
+

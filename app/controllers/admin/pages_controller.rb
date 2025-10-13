@@ -18,7 +18,7 @@ class Admin::PagesController < Admin::BaseController
     @pages = @pages.includes(:user).order(created_at: :desc)
     
     respond_to do |format|
-      format.html
+      format.html { @pages_data = pages_json }
       format.json { render json: pages_json }
     end
   end

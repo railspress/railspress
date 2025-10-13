@@ -212,3 +212,4 @@ class Admin::TermsControllerTest < ActionDispatch::IntegrationTest
 end
 
 
+
