@@ -16,3 +16,4 @@ This is an example page. It's different from a blog post because it will stay in
 As a new WordPress user, you should go to [your dashboard](http://example.com/wp-admin/) to delete this page and create new pages for your content. Have fun!
 
 
+

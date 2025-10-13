@@ -357,3 +357,4 @@ Models should be in `app/models/` with table name matching:
 Happy plugin development! 🎉
 
 
+

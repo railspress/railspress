@@ -916,3 +916,4 @@ class PluginGenerator < Rails::Generators::NamedBase
 end
 
 
+

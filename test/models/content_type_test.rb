@@ -71,3 +71,4 @@ class ContentTypeTest < ActiveSupport::TestCase
 end
 
 
+

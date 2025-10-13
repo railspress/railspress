@@ -75,3 +75,4 @@ puts "  ✅ Cohere Command provider created"
 
 puts "  🎯 Total AI providers: #{AiProvider.count}"
 puts ""
+
