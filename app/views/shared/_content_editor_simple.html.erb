@@ -1,0 +1,46 @@
+<%
+  editor_type = local_assigns.fetch(:editor_type, 'blocknote')
+  content = local_assigns.fetch(:content, '')
+  field_name = local_assigns.fetch(:field_name, :content)
+  placeholder = local_assigns.fetch(:placeholder, 'Start writing...')
+  form = local_assigns.fetch(:form, nil)
+%>
+
+<div class="content-editor-wrapper" data-editor-type="<%= editor_type %>">
+  <% if editor_type == 'blocknote' %>
+    <!-- BlockNote Editor -->
+    <div class="blocknote-editor">
+      <div id="blocknote-container" class="prose prose-invert prose-lg max-w-none min-h-[400px]"></div>
+      <% if form %>
+        <%= form.hidden_field field_name, data: { blocknote_target: "input" } %>
+      <% end %>
+    </div>
+  <% elsif editor_type == 'trix' %>
+    <!-- Trix Editor -->
+    <div class="trix-editor-wrapper">
+      <% if form %>
+        <%= form.rich_text_area field_name,
+            placeholder: placeholder,
+            class: "trix-content bg-[#0a0a0a] text-white border border-[#2a2a2a] rounded-lg min-h-[400px]" %>
+      <% end %>
+    </div>
+  <% else %>
+    <!-- Fallback: Simple Textarea -->
+    <div class="simple-editor">
+      <% if form %>
+        <%= form.text_area field_name,
+            rows: 20,
+            placeholder: placeholder,
+            class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm",
+            value: content %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="editor-info flex items-center justify-between mt-2 text-xs text-gray-500">
+  <span>
+    Editor: <strong class="text-gray-400"><%= editor_type.titleize %></strong>
+  </span>
+</div>
+

@@ -1,0 +1,320 @@
+<div class="max-w-7xl mx-auto py-8 px-4">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-2">
+      <%= link_to admin_integrations_path, class: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" do %>
+        ← Integrations
+      <% end %>
+    </div>
+    
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="text-5xl">📸</div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+            Uploadcare
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400">
+            Professional media management and CDN
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <% if @plugin.active? %>
+          <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-sm font-medium rounded-full">
+            ● Active
+          </span>
+        <% else %>
+          <span class="px-3 py-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400 text-sm font-medium rounded-full">
+            ● Inactive
+          </span>
+        <% end %>
+        
+        <%= link_to settings_admin_plugin_path(@plugin), class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition" do %>
+          Configure Settings
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <% if !@plugin.active? %>
+    <!-- Activation Required -->
+    <div class="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg p-6">
+      <div class="flex items-start gap-3">
+        <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+          <h3 class="text-lg font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
+            Plugin Not Active
+          </h3>
+          <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+            Uploadcare is installed but not activated. Activate it to start using the integration.
+          </p>
+          <%= link_to "Activate Plugin", activate_admin_plugin_path(@plugin), method: :patch, class: "inline-block px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition" %>
+        </div>
+      </div>
+    </div>
+  <% elsif !@enabled %>
+    <!-- Configuration Required -->
+    <div class="mb-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg p-6">
+      <div class="flex items-start gap-3">
+        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+            Configuration Required
+          </h3>
+          <p class="text-sm text-blue-800 dark:text-blue-200 mb-3">
+            Add your Uploadcare API keys to start using the integration. You can get your keys from the Uploadcare dashboard.
+          </p>
+          <%= link_to "Configure Now", settings_admin_plugin_path(@plugin), class: "inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Tabs -->
+  <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+    <nav class="flex gap-4">
+      <button class="tab-btn active px-4 py-2 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400" data-tab="dashboard">
+        Dashboard
+      </button>
+      <button class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600" data-tab="widget">
+        Upload Widget
+      </button>
+      <button class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600" data-tab="usage">
+        Usage & Stats
+      </button>
+      <button class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600" data-tab="docs">
+        Documentation
+      </button>
+    </nav>
+  </div>
+
+  <!-- Tab Content -->
+  
+  <!-- Dashboard Tab -->
+  <div class="tab-content" id="dashboard-tab">
+    <% if @enabled && @dashboard_url %>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Uploadcare Dashboard
+          </h2>
+          <%= link_to @dashboard_url, target: "_blank", class: "text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1" do %>
+            Open in New Tab
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+          <% end %>
+        </div>
+        <div class="relative" style="padding-top: 75%; min-height: 600px;">
+          <iframe src="<%= @dashboard_url %>" 
+                  class="absolute inset-0 w-full h-full"
+                  style="border: none;">
+          </iframe>
+        </div>
+      </div>
+    <% else %>
+      <div class="text-center py-16">
+        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          Dashboard Not Available
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">
+          Configure your Uploadcare API keys to view the dashboard.
+        </p>
+        <%= link_to "Configure Now", settings_admin_plugin_path(@plugin), class: "inline-block px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Upload Widget Tab -->
+  <div class="tab-content hidden" id="widget-tab">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Upload Widget Preview
+      </h2>
+      
+      <% if @enabled %>
+        <div class="mb-6">
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Try the Uploadcare widget below. This is what your users will see when uploading files.
+          </p>
+          
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+            <input type="hidden" id="uploadcare-widget" data-public-key="<%= @widget_config[:publicKey] %>" />
+            <div id="uploadcare-widget-preview"></div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">
+              Click to upload files using Uploadcare
+            </p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+              Current Configuration
+            </h3>
+            <dl class="space-y-2">
+              <div class="flex justify-between text-sm">
+                <dt class="text-gray-600 dark:text-gray-400">Theme:</dt>
+                <dd class="font-medium text-gray-900 dark:text-white"><%= @widget_config[:theme]&.titleize %></dd>
+              </div>
+              <div class="flex justify-between text-sm">
+                <dt class="text-gray-600 dark:text-gray-400">Multiple Files:</dt>
+                <dd class="font-medium text-gray-900 dark:text-white"><%= @widget_config[:multiple] ? 'Yes' : 'No' %></dd>
+              </div>
+              <div class="flex justify-between text-sm">
+                <dt class="text-gray-600 dark:text-gray-400">Available Sources:</dt>
+                <dd class="font-medium text-gray-900 dark:text-white"><%= @widget_config[:tabs]&.split(' ')&.count || 0 %></dd>
+              </div>
+            </dl>
+          </div>
+          
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+              Enabled Sources
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              <% @widget_config[:tabs]&.split(' ')&.each do |source| %>
+                <span class="px-3 py-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 text-xs font-medium rounded-full">
+                  <%= source.titleize %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div class="text-center py-8">
+          <p class="text-gray-600 dark:text-gray-400">
+            Configure your API keys to preview the upload widget.
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Usage Tab -->
+  <div class="tab-content hidden" id="usage-tab">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+          Files Uploaded
+        </h3>
+        <p class="text-3xl font-bold text-gray-900 dark:text-white">
+          <%= Medium.count %>
+        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+          Total in library
+        </p>
+      </div>
+      
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+          Storage Used
+        </h3>
+        <p class="text-3xl font-bold text-gray-900 dark:text-white">
+          N/A
+        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+          Connect to view
+        </p>
+      </div>
+      
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+          CDN Requests
+        </h3>
+        <p class="text-3xl font-bold text-gray-900 dark:text-white">
+          N/A
+        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+          This month
+        </p>
+      </div>
+    </div>
+    
+    <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg p-6">
+      <p class="text-sm text-blue-800 dark:text-blue-200">
+        <strong>Note:</strong> Detailed usage stats are available in your Uploadcare dashboard.
+        <%= link_to "View Dashboard", @dashboard_url, target: "_blank", class: "underline hover:no-underline" if @dashboard_url %>
+      </p>
+    </div>
+  </div>
+
+  <!-- Documentation Tab -->
+  <div class="tab-content hidden" id="docs-tab">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Getting Started with Uploadcare
+      </h2>
+      
+      <div class="prose dark:prose-invert max-w-none">
+        <h3>Quick Start</h3>
+        <ol>
+          <li>Sign up for a free Uploadcare account at <a href="https://uploadcare.com" target="_blank">uploadcare.com</a></li>
+          <li>Get your Public Key from the dashboard</li>
+          <li><%= link_to "Configure the plugin", settings_admin_plugin_path(@plugin) %> with your API keys</li>
+          <li>Start uploading files through the admin media section</li>
+        </ol>
+        
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Upload Widget</strong> - Beautiful file uploader with drag & drop</li>
+          <li><strong>Multiple Sources</strong> - Upload from computer, URL, camera, social media</li>
+          <li><strong>Image Processing</strong> - Automatic optimization, cropping, resizing</li>
+          <li><strong>CDN Delivery</strong> - Global content delivery network</li>
+          <li><strong>Adaptive Delivery</strong> - Responsive images for all devices</li>
+        </ul>
+        
+        <h3>Resources</h3>
+        <ul>
+          <li><a href="https://uploadcare.com/docs/" target="_blank">Official Documentation</a></li>
+          <li><a href="https://uploadcare.com/docs/uploads/file-uploader-api/" target="_blank">Widget API</a></li>
+          <li><a href="https://uploadcare.com/docs/transformations/image/" target="_blank">Image Transformations</a></li>
+          <li><a href="https://uploadcare.com/pricing/" target="_blank">Pricing</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if @enabled %>
+  <script>
+    UPLOADCARE_PUBLIC_KEY = '<%= @widget_config[:publicKey] %>';
+  </script>
+  <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+  <link rel="stylesheet" href="https://ucarecdn.com/libs/widget/3.x/uploadcare.min.css" />
+<% end %>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Update active tab button
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active', 'border-indigo-600', 'text-indigo-600', 'dark:text-indigo-400');
+        b.classList.add('border-transparent', 'text-gray-600', 'dark:text-gray-400');
+      });
+      btn.classList.add('active', 'border-indigo-600', 'text-indigo-600', 'dark:text-indigo-400');
+      btn.classList.remove('border-transparent', 'text-gray-600', 'dark:text-gray-400');
+      
+      // Show corresponding tab content
+      const tabName = btn.getAttribute('data-tab');
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+    });
+  });
+</script>
+
+
+
+

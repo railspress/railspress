@@ -1,0 +1,179 @@
+<div class="p-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-white">Headless CMS Mode</h1>
+      <p class="text-gray-400 mt-2">Configure RailsPress as a headless CMS for modern frontend frameworks</p>
+    </div>
+  </div>
+
+  <%= form_with url: admin_system_headless_path, method: :patch, class: "space-y-6" do |f| %>
+    <!-- Headless Mode Toggle -->
+    <div class="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h3 class="text-xl font-semibold text-white mb-2">Headless Mode</h3>
+          <p class="text-gray-400 mb-4">
+            When enabled, all frontend routes will be disabled and visitors will see an API endpoints page.
+            Your content becomes accessible only via GraphQL and REST APIs.
+          </p>
+          
+          <div class="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4 mb-4">
+            <p class="text-yellow-300 text-sm">
+              <strong>Warning:</strong> Enabling headless mode will disable your public-facing website.
+              Only the admin panel and APIs will remain accessible.
+            </p>
+          </div>
+
+          <label class="flex items-center space-x-3 cursor-pointer">
+            <%= check_box_tag 'headless_mode', '1', @headless_enabled, 
+                class: "w-5 h-5 rounded bg-gray-700 border-gray-600 text-indigo-600 focus:ring-indigo-500" %>
+            <span class="text-white font-medium">Enable Headless Mode</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- CORS Configuration -->
+    <div class="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
+      <h3 class="text-xl font-semibold text-white mb-4">CORS Configuration</h3>
+      <p class="text-gray-400 mb-4">
+        Configure Cross-Origin Resource Sharing (CORS) to allow your frontend applications to access the API.
+      </p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="flex items-center space-x-3 cursor-pointer mb-4">
+            <%= check_box_tag 'cors_enabled', '1', @cors_enabled, 
+                class: "w-5 h-5 rounded bg-gray-700 border-gray-600 text-indigo-600 focus:ring-indigo-500" %>
+            <span class="text-white font-medium">Enable CORS</span>
+          </label>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Allowed Origins
+          </label>
+          <%= text_field_tag 'cors_origins', @cors_origins,
+              placeholder: "* or https://mysite.com, https://app.mysite.com",
+              class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" %>
+          <p class="text-gray-500 text-sm mt-1">
+            Use * for all origins or comma-separated list of specific domains
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Allowed Methods
+          </label>
+          <%= text_field_tag 'cors_methods', @cors_methods,
+              placeholder: "GET, POST, PATCH, PUT, DELETE, OPTIONS",
+              class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" %>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Allowed Headers
+          </label>
+          <%= text_field_tag 'cors_headers', @cors_headers,
+              placeholder: "* or Content-Type, Authorization",
+              class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" %>
+        </div>
+
+        <div>
+          <%= button_tag type: 'button', onclick: "testCors()",
+              class: "px-4 py-2 bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-white rounded-lg transition" do %>
+            Test CORS Configuration
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Endpoints Reference -->
+    <div class="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
+      <h3 class="text-xl font-semibold text-white mb-4">API Endpoints</h3>
+      
+      <div class="space-y-4">
+        <div>
+          <h4 class="text-lg font-medium text-indigo-400 mb-2">GraphQL API</h4>
+          <code class="block bg-[#0a0a0a] border border-[#2a2a2a] p-3 rounded text-gray-300">
+            POST <%= request.base_url %>/graphql
+          </code>
+          <p class="text-gray-500 text-sm mt-2">
+            Explore: <a href="/graphiql" class="text-indigo-400 hover:text-indigo-300" target="_blank">GraphiQL Explorer →</a>
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-lg font-medium text-indigo-400 mb-2">REST API</h4>
+          <code class="block bg-[#0a0a0a] border border-[#2a2a2a] p-3 rounded text-gray-300">
+            <%= request.base_url %>/api/v1
+          </code>
+          <div class="mt-2 space-y-1">
+            <p class="text-gray-500 text-sm">• Posts: <code class="text-xs bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded">GET /api/v1/posts</code></p>
+            <p class="text-gray-500 text-sm">• Pages: <code class="text-xs bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded">GET /api/v1/pages</code></p>
+            <p class="text-gray-500 text-sm">• Categories: <code class="text-xs bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded">GET /api/v1/categories</code></p>
+            <p class="text-gray-500 text-sm">• Tags: <code class="text-xs bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded">GET /api/v1/tags</code></p>
+            <p class="text-gray-500 text-sm">• Media: <code class="text-xs bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded">GET /api/v1/media</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="bg-[#1a1a1a] rounded-lg p-6 border border-gray-800">
+      <h3 class="text-xl font-semibold text-white mb-4">Quick Links</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a href="<%= admin_system_api_tokens_path %>" class="block p-4 bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg transition">
+          <div class="text-indigo-400 font-medium">API Tokens</div>
+          <div class="text-gray-400 text-sm">Manage API access tokens</div>
+        </a>
+        
+        <a href="/graphiql" target="_blank" class="block p-4 bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg transition">
+          <div class="text-indigo-400 font-medium">GraphiQL Explorer</div>
+          <div class="text-gray-400 text-sm">Test GraphQL queries</div>
+        </a>
+        
+        <a href="/api/v1/docs" target="_blank" class="block p-4 bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg transition">
+          <div class="text-indigo-400 font-medium">API Documentation</div>
+          <div class="text-gray-400 text-sm">REST API reference</div>
+        </a>
+        
+        <a href="<%= admin_settings_path %>" class="block p-4 bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg transition">
+          <div class="text-indigo-400 font-medium">Site Settings</div>
+          <div class="text-gray-400 text-sm">Configure your site</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="flex justify-end space-x-3">
+      <%= link_to "Cancel", admin_dashboard_path, class: "px-6 py-2 bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-white rounded-lg transition" %>
+      <%= f.submit "Save Settings", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+function testCors() {
+  fetch('<%= admin_system_test_cors_path %>', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('CORS is configured correctly!\n\nOrigins: ' + data.cors_origins);
+    } else {
+      alert('CORS test failed: ' + data.message);
+    }
+  })
+  .catch(error => {
+    alert('Error testing CORS: ' + error.message);
+  });
+}
+</script>
+

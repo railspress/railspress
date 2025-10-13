@@ -1,0 +1,10 @@
+{% comment %} Single post content {% endcomment %}
+<article class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{ post.title | default: page.title }}</h1>
+    {% render 'post-meta', post: post %}
+  </header>
+  <div class="post-body prose">
+    {{ post.content | default: page.content }}
+  </div>
+</article>

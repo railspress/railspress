@@ -1,0 +1,134 @@
+<div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+  <%= form_with model: [:admin, font], class: "space-y-6" do |f| %>
+    <!-- Font Name -->
+    <div>
+      <%= f.label :name, 'Font Name', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <%= f.text_field :name, 
+          class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500',
+          placeholder: 'e.g., My Custom Font' %>
+      <p class="mt-1 text-xs text-gray-500">Display name for the font</p>
+    </div>
+
+    <!-- Font Family -->
+    <div>
+      <%= f.label :family, 'Font Family', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <%= f.text_field :family, 
+          class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500',
+          placeholder: 'e.g., Roboto' %>
+      <p class="mt-1 text-xs text-gray-500">CSS font-family value</p>
+    </div>
+
+    <!-- Source -->
+    <div>
+      <%= f.label :source, 'Font Source', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <%= f.select :source,
+          options_for_select(CustomFont::SOURCES.to_a, font.source),
+          {},
+          class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500',
+          data: { controller: 'font-source', action: 'change->font-source#toggle' } %>
+    </div>
+
+    <!-- URL (for custom/adobe fonts) -->
+    <div data-font-source-target="urlField" class="<%= font.source.in?(['custom', 'adobe']) ? '' : 'hidden' %>">
+      <%= f.label :url, 'Font URL', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <%= f.text_field :url, 
+          class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500',
+          placeholder: 'https://example.com/fonts/myfont.woff2' %>
+      <p class="mt-1 text-xs text-gray-500">URL to the font file or CSS file</p>
+    </div>
+
+    <!-- Weights -->
+    <div>
+      <%= f.label :weights, 'Font Weights', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <div class="grid grid-cols-3 gap-3">
+        <% CustomFont::WEIGHTS.each do |value, label| %>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <%= check_box_tag 'custom_font[weights][]', value, 
+                font.weights&.include?(value),
+                class: 'rounded text-indigo-600 focus:ring-indigo-500 bg-[#0a0a0a] border-[#2a2a2a]' %>
+            <span class="text-sm text-gray-300"><%= label %> (<%= value %>)</span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Styles -->
+    <div>
+      <%= f.label :styles, 'Font Styles', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <div class="flex gap-4">
+        <% CustomFont::STYLES.each do |value, label| %>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <%= check_box_tag 'custom_font[styles][]', value, 
+                font.styles&.include?(value),
+                class: 'rounded text-indigo-600 focus:ring-indigo-500 bg-[#0a0a0a] border-[#2a2a2a]' %>
+            <span class="text-sm text-gray-300"><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Fallback -->
+    <div>
+      <%= f.label :fallback, 'Fallback Font', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <%= f.select :fallback,
+          options_for_select(CustomFont::FALLBACKS.to_a, font.fallback),
+          {},
+          class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+      <p class="mt-1 text-xs text-gray-500">System fallback if the font fails to load</p>
+    </div>
+
+    <!-- Active Status -->
+    <div class="flex items-center gap-3">
+      <%= f.check_box :active, class: 'rounded text-indigo-600 focus:ring-indigo-500 bg-[#0a0a0a] border-[#2a2a2a]' %>
+      <%= f.label :active, 'Enable this font', class: 'text-sm font-medium text-gray-300' %>
+    </div>
+
+    <!-- Preview -->
+    <% if font.persisted? %>
+      <div class="border-t border-[#2a2a2a] pt-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Preview</h3>
+        <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-6" style="font-family: '<%= font.family %>', <%= font.fallback %>;">
+          <p class="text-4xl text-white mb-4">The Quick Brown Fox</p>
+          <p class="text-2xl text-gray-300 mb-4">Jumps Over The Lazy Dog</p>
+          <p class="text-base text-gray-400">0123456789 !@#$%^&*()</p>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between pt-6 border-t border-[#2a2a2a]">
+      <%= link_to 'Cancel', admin_fonts_path, class: 'px-4 py-2 text-gray-300 hover:text-white transition' %>
+      <%= f.submit font.persisted? ? 'Update Font' : 'Add Font', 
+          class: 'px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition' %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+// Stimulus controller for toggling URL field
+const fontSourceController = {
+  toggle() {
+    const select = event.target;
+    const urlField = document.querySelector('[data-font-source-target="urlField"]');
+    
+    if (select.value === 'custom' || select.value === 'adobe') {
+      urlField.classList.remove('hidden');
+    } else {
+      urlField.classList.add('hidden');
+    }
+  }
+};
+
+// Register controller
+if (!window.Stimulus) {
+  document.addEventListener('change', function(e) {
+    if (e.target.matches('[data-controller="font-source"]')) {
+      fontSourceController.toggle.call(null, e);
+    }
+  });
+}
+</script>
+
+
+
+

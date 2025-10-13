@@ -1,0 +1,18 @@
+{
+  "name": "@editorjs/caret",
+  "description": "Utils useful for work with caret for Editor.js tools development",
+  "repository": "https://github.com/editor-js/utils/tree/main/packages/caret",
+  "link": "https://github.com/editor-js/utils/tree/main/packages/caret",
+  "version": "1.0.3",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@editorjs/dom": "^1.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

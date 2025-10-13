@@ -1,0 +1,9 @@
+{%- assign title = page.seo_title | default: page.title | default: site.title -%}
+{%- assign desc  = page.seo_description | default: site.description | default: '' -%}
+<meta name="description" content="{{ desc | escape }}">
+<meta property="og:title" content="{{ title | escape }}">
+<meta property="og:description" content="{{ desc | escape }}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="{{ page.url | default: request.url }}">
+{%- if page.featured_image %}<meta property="og:image" content="{{ page.featured_image }}">{% endif -%}
+<title>{{ title }}</title>

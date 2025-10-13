@@ -1,0 +1,34 @@
+# Sidekiq Cron Schedule
+# https://github.com/sidekiq-cron/sidekiq-cron
+
+# Post by Email - Check every 5 minutes
+post_by_email_check:
+  cron: "*/5 * * * *"  # Every 5 minutes
+  class: "PostByEmailWorker"
+  queue: default
+  description: "Check mailbox for new emails to import as posts"
+
+# Publish scheduled posts - Check every minute
+publish_scheduled_posts:
+  cron: "* * * * *"  # Every minute
+  class: "PublishScheduledPostsWorker"
+  queue: default
+  description: "Publish posts that are scheduled for publication"
+
+# Analytics aggregation - Run at midnight daily
+aggregate_analytics:
+  cron: "0 0 * * *"  # Daily at midnight
+  class: "AggregateAnalyticsWorker"
+  queue: low
+  description: "Aggregate daily analytics data"
+
+# Cleanup old logs - Run weekly on Sunday at 2 AM
+cleanup_logs:
+  cron: "0 2 * * 0"  # Every Sunday at 2 AM
+  class: "CleanupLogsWorker"
+  queue: low
+  description: "Clean up old log files and database records"
+
+
+
+

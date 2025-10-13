@@ -1,0 +1,302 @@
+<div class="flex gap-6 max-w-7xl mx-auto">
+  <!-- Settings Navigation -->
+  <div class="w-64 flex-shrink-0">
+    <%= render 'settings_nav' %>
+  </div>
+
+  <!-- Settings Content -->
+  <div class="flex-1">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-white mb-2">Appearance Settings</h1>
+      <p class="text-gray-400">Customize the visual style of your admin panel</p>
+    </div>
+
+    <%= form_with url: admin_settings_appearance_path, method: :patch, class: 'space-y-6' do |f| %>
+      <!-- Color Scheme -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-2">Color Scheme</h2>
+        <p class="text-sm text-gray-400 mb-6">Choose a base color scheme for your admin panel</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Onyx (Default) -->
+          <label class="relative cursor-pointer">
+            <input type="radio" name="settings[color_scheme]" value="onyx" 
+                   <%= 'checked' if @settings[:color_scheme] == 'onyx' %>
+                   class="sr-only peer">
+            <div class="border-2 border-[#2a2a2a] peer-checked:border-indigo-500 rounded-lg overflow-hidden transition">
+              <div class="p-4 bg-[#0a0a0a]">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-white">Onyx</h3>
+                  <div class="w-5 h-5 rounded-full border-2 border-white peer-checked:bg-indigo-500 peer-checked:border-indigo-500"></div>
+                </div>
+                <div class="space-y-2">
+                  <div class="h-8 bg-[#111111] rounded"></div>
+                  <div class="h-6 bg-[#1a1a1a] rounded"></div>
+                  <div class="h-6 bg-[#2a2a2a] rounded"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">Deep black, professional</p>
+              </div>
+            </div>
+          </label>
+
+          <!-- Vallarta (Dark Blue) -->
+          <label class="relative cursor-pointer">
+            <input type="radio" name="settings[color_scheme]" value="vallarta"
+                   <%= 'checked' if @settings[:color_scheme] == 'vallarta' %>
+                   class="sr-only peer">
+            <div class="border-2 border-[#2a2a2a] peer-checked:border-indigo-500 rounded-lg overflow-hidden transition">
+              <div class="p-4 bg-[#0a1628]">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-white">Vallarta</h3>
+                  <div class="w-5 h-5 rounded-full border-2 border-white"></div>
+                </div>
+                <div class="space-y-2">
+                  <div class="h-8 bg-[#0f1e3a] rounded"></div>
+                  <div class="h-6 bg-[#1a2947] rounded"></div>
+                  <div class="h-6 bg-[#2a3f5f] rounded"></div>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">Dark blue, elegant</p>
+              </div>
+            </div>
+          </label>
+
+          <!-- Amanecer (Light) -->
+          <label class="relative cursor-pointer">
+            <input type="radio" name="settings[color_scheme]" value="amanecer"
+                   <%= 'checked' if @settings[:color_scheme] == 'amanecer' %>
+                   class="sr-only peer">
+            <div class="border-2 border-[#2a2a2a] peer-checked:border-indigo-500 rounded-lg overflow-hidden transition">
+              <div class="p-4 bg-white">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-gray-900">Amanecer</h3>
+                  <div class="w-5 h-5 rounded-full border-2 border-gray-900"></div>
+                </div>
+                <div class="space-y-2">
+                  <div class="h-8 bg-gray-100 rounded border border-gray-200"></div>
+                  <div class="h-6 bg-gray-50 rounded border border-gray-200"></div>
+                  <div class="h-6 bg-white rounded border border-gray-200"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">Clean light theme</p>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Color Accents -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-2">Color Accents</h2>
+        <p class="text-sm text-gray-400 mb-6">Customize primary and secondary colors</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Primary Color -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-3">
+              Primary Color
+            </label>
+            <p class="text-xs text-gray-500 mb-3">Used for buttons, links, active states</p>
+            <div class="flex items-center gap-3">
+              <%= color_field_tag 'settings[primary_color]', @settings[:primary_color], 
+                  class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+              <%= text_field_tag 'settings[primary_color_text]', @settings[:primary_color], 
+                  class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                  onchange: "document.querySelector('input[name=\"settings[primary_color]\"]').value = this.value" %>
+            </div>
+            
+            <!-- Quick Presets -->
+            <div class="mt-3 flex gap-2">
+              <button type="button" onclick="setPrimaryColor('#6366F1')" class="w-8 h-8 rounded-full bg-indigo-600 border-2 border-[#2a2a2a] hover:border-indigo-400" title="Indigo"></button>
+              <button type="button" onclick="setPrimaryColor('#3B82F6')" class="w-8 h-8 rounded-full bg-blue-600 border-2 border-[#2a2a2a] hover:border-blue-400" title="Blue"></button>
+              <button type="button" onclick="setPrimaryColor('#8B5CF6')" class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#2a2a2a] hover:border-purple-400" title="Purple"></button>
+              <button type="button" onclick="setPrimaryColor('#EC4899')" class="w-8 h-8 rounded-full bg-pink-600 border-2 border-[#2a2a2a] hover:border-pink-400" title="Pink"></button>
+              <button type="button" onclick="setPrimaryColor('#10B981')" class="w-8 h-8 rounded-full bg-green-600 border-2 border-[#2a2a2a] hover:border-green-400" title="Green"></button>
+            </div>
+          </div>
+
+          <!-- Secondary Color -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-3">
+              Secondary Color
+            </label>
+            <p class="text-xs text-gray-500 mb-3">Used for accents, highlights, hover states</p>
+            <div class="flex items-center gap-3">
+              <%= color_field_tag 'settings[secondary_color]', @settings[:secondary_color], 
+                  class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+              <%= text_field_tag 'settings[secondary_color_text]', @settings[:secondary_color], 
+                  class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                  onchange: "document.querySelector('input[name=\"settings[secondary_color]\"]').value = this.value" %>
+            </div>
+            
+            <!-- Quick Presets -->
+            <div class="mt-3 flex gap-2">
+              <button type="button" onclick="setSecondaryColor('#8B5CF6')" class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#2a2a2a] hover:border-purple-400" title="Purple"></button>
+              <button type="button" onclick="setSecondaryColor('#06B6D4')" class="w-8 h-8 rounded-full bg-cyan-600 border-2 border-[#2a2a2a] hover:border-cyan-400" title="Cyan"></button>
+              <button type="button" onclick="setSecondaryColor('#F59E0B')" class="w-8 h-8 rounded-full bg-amber-600 border-2 border-[#2a2a2a] hover:border-amber-400" title="Amber"></button>
+              <button type="button" onclick="setSecondaryColor('#EF4444')" class="w-8 h-8 rounded-full bg-red-600 border-2 border-[#2a2a2a] hover:border-red-400" title="Red"></button>
+              <button type="button" onclick="setSecondaryColor('#14B8A6')" class="w-8 h-8 rounded-full bg-teal-600 border-2 border-[#2a2a2a] hover:border-teal-400" title="Teal"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typography -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-2">Typography</h2>
+        <p class="text-sm text-gray-400 mb-6">Customize fonts for headings, body text, and paragraphs</p>
+        
+        <div class="space-y-6">
+          <!-- Heading Font -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Heading Font Family
+            </label>
+            <%= select_tag 'settings[heading_font]', options_for_select([
+                  ['Inter (Default)', 'Inter'],
+                  ['System Font', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto'],
+                  ['Helvetica', 'Helvetica, Arial, sans-serif'],
+                  ['Georgia', 'Georgia, serif'],
+                  ['Times New Roman', '"Times New Roman", Times, serif'],
+                  ['Courier', 'Courier, monospace'],
+                  ['Poppins', 'Poppins, sans-serif'],
+                  ['Roboto', 'Roboto, sans-serif'],
+                  ['Montserrat', 'Montserrat, sans-serif'],
+                  ['Open Sans', '"Open Sans", sans-serif']
+                ], @settings[:heading_font]),
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Used for headings (H1, H2, H3, etc.)</p>
+          </div>
+
+          <!-- Body Font -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Body Font Family
+            </label>
+            <%= select_tag 'settings[body_font]', options_for_select([
+                  ['Inter (Default)', 'Inter'],
+                  ['System Font', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto'],
+                  ['Helvetica', 'Helvetica, Arial, sans-serif'],
+                  ['Georgia', 'Georgia, serif'],
+                  ['Times New Roman', '"Times New Roman", Times, serif'],
+                  ['Courier', 'Courier, monospace'],
+                  ['Poppins', 'Poppins, sans-serif'],
+                  ['Roboto', 'Roboto, sans-serif'],
+                  ['Montserrat', 'Montserrat, sans-serif'],
+                  ['Open Sans', '"Open Sans", sans-serif']
+                ], @settings[:body_font]),
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Used for UI elements, buttons, labels</p>
+          </div>
+
+          <!-- Paragraph Font -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Paragraph Font Family
+            </label>
+            <%= select_tag 'settings[paragraph_font]', options_for_select([
+                  ['Inter (Default)', 'Inter'],
+                  ['System Font', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto'],
+                  ['Helvetica', 'Helvetica, Arial, sans-serif'],
+                  ['Georgia', 'Georgia, serif'],
+                  ['Times New Roman', '"Times New Roman", Times, serif'],
+                  ['Courier', 'Courier, monospace'],
+                  ['Poppins', 'Poppins, sans-serif'],
+                  ['Roboto', 'Roboto, sans-serif'],
+                  ['Montserrat', 'Montserrat, sans-serif'],
+                  ['Open Sans', '"Open Sans", sans-serif']
+                ], @settings[:paragraph_font]),
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Used for body text, paragraphs, descriptions</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-4">Preview</h2>
+        <div id="preview-box" class="p-6 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a]">
+          <h1 class="text-3xl font-bold mb-2" style="font-family: <%= @settings[:heading_font] %>; color: <%= @settings[:primary_color] %>;">
+            Heading Example
+          </h1>
+          <p class="text-base mb-4" style="font-family: <%= @settings[:paragraph_font] %>; color: #d1d5db;">
+            This is how paragraph text will look with your selected fonts. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          </p>
+          <button type="button" class="px-4 py-2 rounded-lg text-white font-medium" style="background-color: <%= @settings[:primary_color] %>; font-family: <%= @settings[:body_font] %>;">
+            Primary Button
+          </button>
+          <button type="button" class="ml-2 px-4 py-2 rounded-lg text-white font-medium" style="background-color: <%= @settings[:secondary_color] %>; font-family: <%= @settings[:body_font] %>;">
+            Secondary Button
+          </button>
+        </div>
+      </div>
+
+      <!-- Info Box -->
+      <div class="bg-blue-900/20 border-l-4 border-blue-500 rounded-lg p-6">
+        <div class="flex items-start gap-3">
+          <svg class="w-6 h-6 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <h3 class="text-sm font-semibold text-blue-400 mb-2">
+              Appearance Tips
+            </h3>
+            <ul class="text-sm text-blue-300 space-y-1">
+              <li>• Changes will apply to the admin panel only</li>
+              <li>• Choose colors with good contrast for readability</li>
+              <li>• Use consistent fonts for a professional look</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="flex items-center justify-between pt-6 border-t border-[#2a2a2a]">
+        <div class="text-sm text-gray-400">
+          Changes will take effect immediately after saving
+        </div>
+        <%= f.submit 'Save Appearance Settings', class: 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function setPrimaryColor(color) {
+    document.querySelector('input[name="settings[primary_color]"]').value = color;
+    document.querySelector('input[name="settings[primary_color_text]"]').value = color;
+  }
+  
+  function setSecondaryColor(color) {
+    document.querySelector('input[name="settings[secondary_color]"]').value = color;
+    document.querySelector('input[name="settings[secondary_color_text]"]').value = color;
+  }
+  
+  // Live preview updates
+  document.querySelectorAll('input[name="settings[primary_color]"], input[name="settings[primary_color_text]"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const color = e.target.value;
+      document.querySelector('#preview-box h1').style.color = color;
+      document.querySelector('#preview-box button:first-of-type').style.backgroundColor = color;
+    });
+  });
+  
+  document.querySelectorAll('input[name="settings[secondary_color]"], input[name="settings[secondary_color_text]"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const color = e.target.value;
+      document.querySelector('#preview-box button:last-of-type').style.backgroundColor = color;
+    });
+  });
+  
+  document.querySelector('select[name="settings[heading_font]"]').addEventListener('change', (e) => {
+    document.querySelector('#preview-box h1').style.fontFamily = e.target.value;
+  });
+  
+  document.querySelector('select[name="settings[paragraph_font]"]').addEventListener('change', (e) => {
+    document.querySelector('#preview-box p').style.fontFamily = e.target.value;
+  });
+  
+  document.querySelector('select[name="settings[body_font]"]').addEventListener('change', (e) => {
+    const font = e.target.value;
+    document.querySelectorAll('#preview-box button').forEach(btn => btn.style.fontFamily = font);
+  });
+</script>
+

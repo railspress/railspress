@@ -1,0 +1,9 @@
+{% comment %} WordPress Twenty Twenty-Five inspired header {% endcomment %}
+<header class="header">
+  <h1 class="brand"><a href="/">{{ site.title }}</a></h1>
+  <nav class="nav">
+    {% for item in site.menus.primary %}
+      <a href="{{ item.url }}">{{ item.title }}</a>
+    {% endfor %}
+  </nav>
+</header>

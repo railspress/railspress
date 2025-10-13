@@ -1,0 +1,56 @@
+<% content_for :page_title, "Import Subscribers" %>
+
+<div class="max-w-3xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-white mb-2">Import Subscribers</h1>
+    <p class="text-gray-400">Upload a CSV file to bulk import subscribers</p>
+  </div>
+
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
+    <%= form_with url: do_import_admin_subscribers_path, multipart: true, class: "space-y-6" do |form| %>
+      <div>
+        <%= form.label :file, "CSV File", class: "block text-sm font-medium text-gray-300 mb-2" %>
+        <%= form.file_field :file, 
+            accept: ".csv",
+            class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none",
+            required: true %>
+        <p class="mt-2 text-xs text-gray-500">
+          Upload a CSV file with columns: Email, Name (optional), Source (optional), Status (optional)
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-6 border-t border-[#2a2a2a]">
+        <%= link_to "Cancel", admin_subscribers_path, class: "px-6 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+        <%= form.submit "Import Subscribers", 
+            class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- CSV Format Guide -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <h3 class="text-white font-semibold mb-4">CSV Format</h3>
+    <p class="text-gray-400 text-sm mb-4">Your CSV file should have the following columns:</p>
+    
+    <div class="bg-[#0a0a0a] rounded-lg p-4 font-mono text-sm overflow-x-auto mb-4">
+      <div class="text-gray-300 mb-2">Email,Name,Source,Status</div>
+      <div class="text-gray-500">john@example.com,John Doe,homepage,confirmed</div>
+      <div class="text-gray-500">jane@example.com,Jane Smith,blog,confirmed</div>
+      <div class="text-gray-500">bob@example.com,Bob Johnson,popup,pending</div>
+    </div>
+
+    <div>
+      <h4 class="text-sm font-semibold text-gray-300 mb-2">Column Details:</h4>
+      <ul class="text-sm text-gray-400 space-y-1">
+        <li>• <strong>Email:</strong> Email address (required)</li>
+        <li>• <strong>Name:</strong> Subscriber name (optional)</li>
+        <li>• <strong>Source:</strong> Where they subscribed (optional)</li>
+        <li>• <strong>Status:</strong> confirmed, pending, unsubscribed (optional, defaults to confirmed)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+
+

@@ -1,0 +1,20 @@
+{% schema %}
+{
+  "name": "Related posts",
+  "settings": [{ "id":"limit", "type":"number", "default":3, "label":"Max items" }]
+}
+{% endschema %}
+{% assign base = page %}
+{% assign rel = collections.posts | where_exp: 'p', 'p.id != base.id' %}
+{% if base.tags %}
+  {% assign rel = rel | where_exp: 'p', 'p.tags | intersection: base.tags | size > 0' %}
+{% endif %}
+{% assign rel = rel | slice: 0, section.settings.limit %}
+{% if rel.size > 0 %}
+<section class="related">
+  <h3>Related</h3>
+  <div class="post-list post-list--grid">
+    {% for post in rel %}{% render 'post-card', post: post %}{% endfor %}
+  </div>
+</section>
+{% endif %}

@@ -1,0 +1,68 @@
+<% content_for :page_title, "Change Password" %>
+
+<div class="text-center mb-6">
+  <h2 class="text-2xl font-bold text-white">Change Your Password</h2>
+  <p class="mt-2 text-sm text-secondary">
+    Enter your new password below.
+  </p>
+</div>
+
+<%= form_for(resource, as: resource_name, url: admin_user_password_path(resource_name), html: { method: :put, class: "space-y-6" }) do |f| %>
+  <%= f.hidden_field :reset_password_token %>
+
+  <% if alert %>
+    <div class="bg-red-900/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+      <%= alert %>
+    </div>
+  <% end %>
+
+  <% if resource.errors.any? %>
+    <div class="bg-red-900/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+      <ul class="list-disc list-inside">
+        <% resource.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="space-y-4">
+    <div>
+      <label for="user_password" class="block text-sm font-medium text-secondary mb-2">
+        New Password
+      </label>
+      <%= f.password_field :password, 
+          autofocus: true,
+          autocomplete: "new-password",
+          class: "form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+          placeholder: "Enter new password",
+          required: true %>
+      <% if @minimum_password_length %>
+        <p class="mt-1 text-xs text-tertiary">
+          (<%= @minimum_password_length %> characters minimum)
+        </p>
+      <% end %>
+    </div>
+
+    <div>
+      <label for="user_password_confirmation" class="block text-sm font-medium text-secondary mb-2">
+        Confirm New Password
+      </label>
+      <%= f.password_field :password_confirmation, 
+          autocomplete: "new-password",
+          class: "form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+          placeholder: "Confirm new password",
+          required: true %>
+    </div>
+  </div>
+
+  <div>
+    <%= f.submit "Change Password", 
+        class: "btn-primary w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+  </div>
+<% end %>
+
+<div class="mt-6 text-center">
+  <%= link_to "← Back to Login", new_admin_user_session_path, 
+      class: "text-sm text-blue-600 hover:text-blue-500 transition-colors" %>
+</div>

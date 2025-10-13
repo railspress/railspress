@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "rt": {
+      "type": "rich-text",
+      "settings": {
+        "heading": "Sign in",
+        "body": "Please sign in to continue."
+      }
+    }
+  },
+  "order": [
+    "rt"
+  ]
+}

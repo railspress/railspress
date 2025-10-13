@@ -1,0 +1,267 @@
+/* Custom Tabulator Theme for RailsPress - Color Scheme Aware */
+
+/* Override Tabulator Midnight Theme */
+.tabulator {
+  background-color: var(--bg-primary, #0a0a0a);
+  border: none;
+  font-size: 14px;
+  color: var(--text-secondary, #e5e5e5);
+}
+
+/* Header Styling */
+.tabulator .tabulator-header {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-bottom: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-muted, #9ca3af);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-right: 1px solid var(--bg-tertiary, #1a1a1a);
+  padding: 12px 16px;
+}
+
+.tabulator .tabulator-header .tabulator-col:hover {
+  background-color: var(--bg-tertiary, #1a1a1a);
+}
+
+.tabulator .tabulator-header .tabulator-col-content {
+  padding: 0;
+}
+
+.tabulator .tabulator-header .tabulator-col-title {
+  color: var(--text-muted, #9ca3af);
+}
+
+/* Row Styling */
+.tabulator .tabulator-row {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-bottom: 1px solid var(--bg-tertiary, #1a1a1a);
+  min-height: 60px;
+}
+
+.tabulator .tabulator-row:hover {
+  background-color: var(--bg-tertiary, #1a1a1a) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selected {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selectable:hover {
+  background-color: var(--bg-tertiary, #1a1a1a) !important;
+}
+
+/* Cell Styling */
+.tabulator .tabulator-cell {
+  border-right: 1px solid var(--bg-tertiary, #1a1a1a);
+  padding: 12px 16px;
+  color: var(--text-secondary, #e5e5e5);
+}
+
+/* Frozen columns */
+.tabulator .tabulator-frozen {
+  border-right: 2px solid var(--border-color, #2a2a2a);
+}
+
+/* Footer & Pagination */
+.tabulator .tabulator-footer {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-top: 1px solid var(--border-color, #2a2a2a);
+  padding: 12px 16px;
+  color: var(--text-muted, #9ca3af);
+}
+
+.tabulator .tabulator-footer .tabulator-page {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  margin: 0 4px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.tabulator .tabulator-footer .tabulator-page:hover {
+  background-color: var(--bg-secondary, #2a2a2a);
+  border-color: #3a3a3a;
+}
+
+.tabulator .tabulator-footer .tabulator-page.active {
+  background-color: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+  color: white;
+}
+
+.tabulator .tabulator-footer .tabulator-page.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Page size selector */
+.tabulator .tabulator-paginator label {
+  color: var(--text-muted, #9ca3af);
+  font-size: 13px;
+}
+
+.tabulator .tabulator-paginator select {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  border-radius: 6px;
+  padding: 6px 32px 6px 12px;
+  margin: 0 8px;
+}
+
+/* Sorting */
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-title {
+  padding-right: 20px;
+}
+
+.tabulator .tabulator-header .tabulator-col[aria-sort="asc"] .tabulator-col-content .tabulator-arrow {
+  border-bottom-color: var(--color-primary, #6366f1);
+}
+
+.tabulator .tabulator-header .tabulator-col[aria-sort="desc"] .tabulator-col-content .tabulator-arrow {
+  border-top-color: var(--color-primary, #6366f1);
+}
+
+/* Header Filter */
+.tabulator .tabulator-header-filter input,
+.tabulator .tabulator-header-filter select {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.tabulator .tabulator-header-filter input:focus,
+.tabulator .tabulator-header-filter select:focus {
+  outline: none;
+  border-color: var(--color-primary, #6366f1);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.tabulator .tabulator-header-filter input::placeholder {
+  color: var(--text-muted, #6b7280);
+}
+
+/* Row Selection Checkbox */
+.tabulator .tabulator-row .tabulator-cell[tabulator-field=""] input[type="checkbox"],
+.tabulator .tabulator-header .tabulator-col[tabulator-field=""] input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tabulator .tabulator-row .tabulator-cell[tabulator-field=""] input[type="checkbox"]:checked,
+.tabulator .tabulator-header .tabulator-col[tabulator-field=""] input[type="checkbox"]:checked {
+  background-color: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+}
+
+/* Loading Spinner */
+.tabulator .tabulator-loader {
+  background-color: rgba(10, 10, 10, 0.9);
+  border: none;
+}
+
+.tabulator .tabulator-loader .tabulator-loader-msg {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  border-radius: 8px;
+  padding: 16px 24px;
+  font-size: 14px;
+}
+
+/* Empty State */
+.tabulator .tabulator-placeholder {
+  color: var(--text-muted, #6b7280);
+  font-size: 14px;
+}
+
+.tabulator .tabulator-placeholder span {
+  padding: 32px;
+  display: block;
+}
+
+/* Responsive */
+.tabulator .tabulator-responsive-collapse {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border-top: 1px solid var(--border-color, #2a2a2a);
+  padding: 12px 16px;
+}
+
+.tabulator .tabulator-responsive-collapse-toggle {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  border-radius: 4px;
+}
+
+.tabulator .tabulator-responsive-collapse-toggle:hover {
+  background-color: var(--bg-secondary, #2a2a2a);
+}
+
+/* Edit/Delete Action Buttons */
+.tabulator-cell a,
+.tabulator-cell button {
+  transition: all 0.2s;
+}
+
+/* Status Badges */
+.tabulator-cell .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Scrollbars */
+.tabulator::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tabulator::-webkit-scrollbar-track {
+  background: var(--bg-primary, #0a0a0a);
+}
+
+.tabulator::-webkit-scrollbar-thumb {
+  background: var(--border-color, #2a2a2a);
+  border-radius: 4px;
+}
+
+.tabulator::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* Text Readability */
+.tabulator .tabulator-cell a {
+  color: var(--text-secondary, #e5e5e5);
+  text-decoration: none;
+}
+
+.tabulator .tabulator-cell a:hover {
+  color: var(--color-primary, #6366f1);
+}
+
+/* Icon Spacing */
+.tabulator-cell svg {
+  flex-shrink: 0;
+}
+

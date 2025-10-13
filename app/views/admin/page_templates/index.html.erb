@@ -1,0 +1,166 @@
+<% content_for :title, "Page Templates" %>
+
+<div class="w-full">
+  <% if notice.present? %>
+    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
+  <% end %>
+
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-white mb-2">Page Templates</h1>
+      <p class="text-gray-400">Create and manage custom page templates for your site</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to new_admin_page_template_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        New Template
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Total Templates</p>
+          <p class="text-2xl font-bold text-white"><%= @page_templates.count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Active Templates</p>
+          <p class="text-2xl font-bold text-white"><%= @page_templates.active.count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Pages Using</p>
+          <p class="text-2xl font-bold text-white"><%= @page_templates.sum { |t| t.pages.count } %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Template Types</p>
+          <p class="text-2xl font-bold text-white"><%= @page_templates.pluck(:template_type).uniq.count %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Templates Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <% @page_templates.each do |template| %>
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-[#3a3a3a] transition-colors">
+        <!-- Template Preview Header -->
+        <div class="p-6 border-b border-[#2a2a2a]">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full <%= template.active? ? 'bg-green-500' : 'bg-gray-500' %>"></div>
+              <span class="text-sm font-medium text-gray-400 uppercase tracking-wider"><%= template.template_type %></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <%= link_to customize_admin_page_template_path(template), class: "text-indigo-400 hover:text-indigo-300 p-1" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                </svg>
+              <% end %>
+              <%= link_to theme_edit_admin_page_template_path(template), class: "text-blue-400 hover:text-blue-300 p-1" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+              <% end %>
+            </div>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2"><%= template.name %></h3>
+          <p class="text-gray-400 text-sm">
+            <%= pluralize(template.pages.count, 'page') %> using this template
+          </p>
+        </div>
+        
+        <!-- Template Preview -->
+        <div class="p-6">
+          <div class="bg-gray-900 rounded-lg p-4 mb-4 min-h-[120px] overflow-hidden">
+            <div class="text-xs text-gray-500 mb-2">Preview:</div>
+            <div class="text-sm text-gray-300 whitespace-pre-wrap"><%= truncate(template.html_content, length: 100) %></div>
+          </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="px-6 py-4 bg-[#111111] border-t border-[#2a2a2a]">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <%= link_to [:admin, template], class: "text-gray-400 hover:text-white text-sm font-medium" do %>
+                View
+              <% end %>
+              <%= link_to edit_admin_page_template_path(template), class: "text-gray-400 hover:text-white text-sm font-medium" do %>
+                Edit
+              <% end %>
+            </div>
+            <div class="flex items-center gap-2">
+              <%= button_to toggle_admin_page_template_path(template), method: :patch, 
+                  class: "text-xs px-2 py-1 rounded #{template.active? ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'}", 
+                  data: { turbo_method: :patch } do %>
+                <%= template.active? ? 'Deactivate' : 'Activate' %>
+              <% end %>
+              <%= button_to [:admin, template], method: :delete, 
+                  class: "text-xs px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded", 
+                  data: { turbo_confirm: "Are you sure?" } do %>
+                Delete
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @page_templates.empty? %>
+    <div class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-300">No page templates</h3>
+      <p class="mt-1 text-sm text-gray-500">Get started by creating a new page template.</p>
+      <div class="mt-6">
+        <%= link_to new_admin_page_template_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium" do %>
+          New Template
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+
+

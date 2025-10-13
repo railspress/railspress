@@ -1,0 +1,57 @@
+<% if versions.any? %>
+  <div class="space-y-3">
+    <% versions.each do |version| %>
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex-1">
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              <%= version.created_at.strftime('%Y-%m-%d %H:%M:%S') %>
+            </div>
+            <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+              <%= version.user&.email || 'System' %>
+            </div>
+          </div>
+          
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            <%= number_to_human_size(version.file_size) %>
+          </div>
+        </div>
+        
+        <% if version.change_summary.present? %>
+          <div class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+            <%= version.change_summary %>
+          </div>
+        <% end %>
+        
+        <div class="flex space-x-2">
+          <% if defined?(file_path) && file_path %>
+            <%= link_to "Restore", restore_admin_theme_editor_path(file_path, version_id: version.id), 
+                method: :post,
+                data: { confirm: 'Restore this version? Current content will be backed up.' },
+                class: "text-xs px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded transition" %>
+          <% else %>
+            <button disabled class="text-xs px-2 py-1 bg-gray-300 text-gray-500 rounded cursor-not-allowed">
+              Restore
+            </button>
+          <% end %>
+          
+          <button onclick="viewVersionDiff(<%= version.id %>)" class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition">
+            View Diff
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
+    No versions yet. Save the file to create the first version.
+  </p>
+<% end %>
+
+<script>
+  function viewVersionDiff(versionId) {
+    // TODO: Implement diff view
+    Swal.fire('Coming Soon', 'Diff view will be implemented', 'info');
+  }
+</script>
+

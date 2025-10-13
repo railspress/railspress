@@ -1,0 +1,89 @@
+<%= form_with(model: [:admin, redirect], class: "space-y-6") do |form| %>
+  <% if redirect.errors.any? %>
+    <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+      <h3 class="font-semibold mb-2"><%= pluralize(redirect.errors.count, "error") %> prohibited this redirect from being saved:</h3>
+      <ul class="list-disc ml-6 text-sm">
+        <% redirect.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 gap-6">
+    <!-- From Path -->
+    <div>
+      <%= form.label :from_path, "From Path (Source URL)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.text_field :from_path, 
+          placeholder: "/old-page",
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none font-mono",
+          required: true %>
+      <p class="mt-1 text-xs text-gray-500">
+        The path to redirect from. Start with /. Use * for wildcard (e.g., /old-blog/*)
+      </p>
+    </div>
+
+    <!-- To Path -->
+    <div>
+      <%= form.label :to_path, "To Path (Destination URL)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.text_field :to_path, 
+          placeholder: "/new-page or https://example.com/page",
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none font-mono",
+          required: true %>
+      <p class="mt-1 text-xs text-gray-500">
+        The destination URL. Can be a relative path or full URL.
+      </p>
+    </div>
+
+    <!-- Redirect Type -->
+    <div>
+      <%= form.label :redirect_type, "Redirect Type", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.select :redirect_type, 
+          options_for_select([
+            ['Permanent (301) - Recommended for SEO', 'permanent'],
+            ['Temporary (302)', 'temporary'],
+            ['See Other (303)', 'see_other'],
+            ['Temporary New (307)', 'temporary_new']
+          ], redirect.redirect_type || 'permanent'),
+          {},
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+      <p class="mt-1 text-xs text-gray-500">
+        301 is recommended for permanent moves and best for SEO.
+      </p>
+    </div>
+
+    <!-- Active -->
+    <div>
+      <label class="flex items-center cursor-pointer">
+        <%= form.check_box :active, 
+            class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500 focus:ring-2" %>
+        <span class="ml-2 text-sm text-gray-300">
+          Active (redirect is enabled)
+        </span>
+      </label>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <%= form.label :notes, "Notes (Optional)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.text_area :notes, 
+          rows: 3,
+          placeholder: "Add any notes about this redirect...",
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+      <p class="mt-1 text-xs text-gray-500">
+        Optional notes for reference (not shown to users).
+      </p>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="flex items-center justify-end gap-3 pt-6 border-t border-[#2a2a2a]">
+    <%= link_to "Cancel", admin_redirects_path, class: "px-6 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+    <%= form.submit redirect.new_record? ? "Create Redirect" : "Update Redirect", 
+        class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium cursor-pointer" %>
+  </div>
+<% end %>
+
+
+
+

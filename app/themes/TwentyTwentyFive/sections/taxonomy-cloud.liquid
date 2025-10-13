@@ -1,0 +1,7 @@
+{% comment %} Weighted cloud (uses tag.count if available) {% endcomment %}
+<div class="tag-cloud">
+  {% for term in collections.tags %}
+    {% assign weight = term.count | default: 1 | times: 2 %}
+    <a href="{{ term.url }}" style="font-size: {{ 12 | plus: weight }}px">{{ term.name }}</a>
+  {% endfor %}
+</div>

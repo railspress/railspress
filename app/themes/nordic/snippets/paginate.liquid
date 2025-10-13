@@ -1,0 +1,7 @@
+{% if paginate.pages > 1 %}
+<ul class="pager">
+  {% if paginate.previous %}<li><a href="{{ paginate.previous.url }}">&larr; Newer</a></li>{% endif %}
+  <li class="muted">Page {{ paginate.page }} of {{ paginate.pages }}</li>
+  {% if paginate.next %}<li><a href="{{ paginate.next.url }}">Older &rarr;</a></li>{% endif %}
+</ul>
+{% endif %}

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailsPress API Client Example</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-4xl font-bold mb-8 bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+            RailsPress API Client
+        </h1>
+
+        <!-- Authentication Section -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Authentication</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <input type="email" id="email" placeholder="Email" value="admin@railspress.com" 
+                       class="px-4 py-2 bg-gray-700 border border-gray-600 rounded">
+                <input type="password" id="password" placeholder="Password" value="password"
+                       class="px-4 py-2 bg-gray-700 border border-gray-600 rounded">
+            </div>
+            <button onclick="login()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded">
+                Login & Get Token
+            </button>
+            <div id="token-display" class="mt-4 p-4 bg-gray-900 rounded hidden">
+                <p class="text-sm text-gray-400 mb-2">Your API Token:</p>
+                <code id="api-token" class="text-green-400 break-all"></code>
+            </div>
+        </div>
+
+        <!-- Posts Section -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Posts</h2>
+            <div class="flex gap-4 mb-4">
+                <button onclick="getPosts()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
+                    Get Posts
+                </button>
+                <button onclick="createPost()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded">
+                    Create Post
+                </button>
+                <select id="status-filter" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded">
+                    <option value="">All Statuses</option>
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                </select>
+            </div>
+            <div id="posts-output" class="bg-gray-900 rounded p-4 overflow-auto max-h-96"></div>
+        </div>
+
+        <!-- Pages Section -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Pages</h2>
+            <div class="flex gap-4 mb-4">
+                <button onclick="getPages()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded">
+                    Get Pages
+                </button>
+                <button onclick="createPage()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded">
+                    Create Page
+                </button>
+            </div>
+            <div id="pages-output" class="bg-gray-900 rounded p-4 overflow-auto max-h-96"></div>
+        </div>
+
+        <!-- Categories & Tags -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-4">Categories</h2>
+                <button onclick="getCategories()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded mb-4">
+                    Get Categories
+                </button>
+                <div id="categories-output" class="bg-gray-900 rounded p-4 overflow-auto max-h-64"></div>
+            </div>
+
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-4">Tags</h2>
+                <button onclick="getTags()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded mb-4">
+                    Get Tags
+                </button>
+                <div id="tags-output" class="bg-gray-900 rounded p-4 overflow-auto max-h-64"></div>
+            </div>
+        </div>
+
+        <!-- System Stats -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-2xl font-bold mb-4">System Stats (Admin Only)</h2>
+            <button onclick="getStats()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded mb-4">
+                Get System Stats
+            </button>
+            <div id="stats-output" class="bg-gray-900 rounded p-4 overflow-auto max-h-96"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api/v1';
+        let apiToken = localStorage.getItem('railspress_api_token');
+
+        // Authentication
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    apiToken = data.data.api_token;
+                    localStorage.setItem('railspress_api_token', apiToken);
+                    document.getElementById('token-display').classList.remove('hidden');
+                    document.getElementById('api-token').textContent = apiToken;
+                    alert('Login successful! Token saved.');
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Network error');
+            }
+        }
+
+        // Get Posts
+        async function getPosts() {
+            const status = document.getElementById('status-filter').value;
+            const url = status ? `${API_BASE}/posts?status=${status}` : `${API_BASE}/posts`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayJSON('posts-output', data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Create Post
+        async function createPost() {
+            if (!apiToken) {
+                alert('Please login first');
+                return;
+            }
+
+            const post = {
+                title: 'New Post via API',
+                content: '<p>This post was created using the RailsPress API!</p>',
+                excerpt: 'API-created post',
+                status: 'published',
+                meta_description: 'Created via API'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/posts`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ post })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Post created successfully!');
+                    getPosts();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Get Pages
+        async function getPages() {
+            try {
+                const response = await fetch(`${API_BASE}/pages`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayJSON('pages-output', data);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Create Page
+        async function createPage() {
+            if (!apiToken) {
+                alert('Please login first');
+                return;
+            }
+
+            const page = {
+                title: 'New Page via API',
+                content: '<p>This page was created using the API!</p>',
+                status: 'published',
+                template: 'default'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/pages`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ page })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Page created successfully!');
+                    getPages();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Get Categories
+        async function getCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/categories`);
+                const data = await response.json();
+                displayJSON('categories-output', data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Get Tags
+        async function getTags() {
+            try {
+                const response = await fetch(`${API_BASE}/tags`);
+                const data = await response.json();
+                displayJSON('tags-output', data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Get System Stats
+        async function getStats() {
+            if (!apiToken) {
+                alert('Please login first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/system/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${apiToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayJSON('stats-output', data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Display JSON nicely
+        function displayJSON(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<pre class="text-sm text-green-400">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        // Auto-login if token exists
+        if (apiToken) {
+            document.getElementById('token-display').classList.remove('hidden');
+            document.getElementById('api-token').textContent = apiToken;
+        }
+    </script>
+</body>
+</html>
+
+
+
+

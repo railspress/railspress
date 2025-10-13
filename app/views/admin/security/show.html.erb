@@ -1,0 +1,151 @@
+<% content_for :page_title, "Security" %>
+
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Security Settings</h1>
+    <p class="text-gray-400">Manage your password, two-factor authentication, and notification preferences</p>
+  </div>
+
+  <!-- Password Section -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-lg font-semibold text-white mb-1">Password</h2>
+        <p class="text-sm text-gray-400">Change your password to keep your account secure</p>
+      </div>
+      <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+    </div>
+
+    <%=form_with url: update_password_admin_security_path, method: :patch, class: 'space-y-4' do |f| %>
+      <div>
+        <%= label_tag :current_password, 'Current Password', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= password_field_tag :current_password, '',
+            required: true,
+            autocomplete: 'current-password',
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+      </div>
+
+      <div>
+        <%= label_tag :password, 'New Password', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= password_field_tag :password, '',
+            required: true,
+            autocomplete: 'new-password',
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            placeholder: 'Enter new password (min. 6 characters)' %>
+      </div>
+
+      <div>
+        <%= label_tag :password_confirmation, 'Confirm New Password', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= password_field_tag :password_confirmation, '',
+            required: true,
+            autocomplete: 'new-password',
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            placeholder: 'Confirm new password' %>
+      </div>
+
+      <div class="pt-4">
+        <%= f.submit 'Update Password', class: 'px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Two-Factor Authentication -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex-1">
+        <h2 class="text-lg font-semibold text-white mb-1">Two-Factor Authentication</h2>
+        <p class="text-sm text-gray-400">Add an extra layer of security to your account</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <% if @user.two_factor_enabled %>
+          <span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-medium rounded-full border border-green-500/30">
+            ✓ Enabled
+          </span>
+        <% else %>
+          <span class="px-3 py-1 bg-gray-500/20 text-gray-400 text-sm font-medium rounded-full">
+            Disabled
+          </span>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @user.two_factor_enabled %>
+      <div class="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-4">
+        <p class="text-sm text-green-300">
+          ✓ Two-factor authentication is currently enabled for your account. You'll be asked for a verification code when logging in.
+        </p>
+      </div>
+      <%= button_to 'Disable 2FA', toggle_2fa_admin_security_path, method: :patch,
+          data: { turbo_confirm: 'Are you sure you want to disable two-factor authentication?' },
+          class: 'px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition' %>
+    <% else %>
+      <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+        <p class="text-sm text-blue-300 mb-3">
+          Add an extra layer of security by requiring a verification code when logging in.
+        </p>
+        <ul class="text-sm text-blue-200 space-y-1 list-disc list-inside">
+          <li>Use an authenticator app (Google Authenticator, Authy, etc.)</li>
+          <li>Get backup codes in case you lose access</li>
+          <li>Required for admin actions</li>
+        </ul>
+      </div>
+      <%= button_to 'Enable 2FA', toggle_2fa_admin_security_path, method: :patch,
+          class: 'px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition' %>
+    <% end %>
+  </div>
+
+  <!-- Notification Preferences -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-2">Notification Preferences</h2>
+    <p class="text-sm text-gray-400 mb-6">Choose what email notifications you want to receive</p>
+
+    <%= form_with model: @user, url: update_notifications_admin_security_path, method: :patch, class: 'space-y-4' do |form| %>
+      <!-- Email Notifications -->
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <%= form.check_box :notification_email_enabled, 
+              class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500' %>
+        </div>
+        <div class="ml-3">
+          <%= form.label :notification_email_enabled, 'Email Notifications', class: 'text-sm font-medium text-gray-300' %>
+          <p class="text-sm text-gray-500">Receive email notifications about account activity</p>
+        </div>
+      </div>
+
+      <!-- Comment Notifications -->
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <%= form.check_box :notification_comment_enabled, 
+              class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500' %>
+        </div>
+        <div class="ml-3">
+          <%= form.label :notification_comment_enabled, 'Comment Notifications', class: 'text-sm font-medium text-gray-300' %>
+          <p class="text-sm text-gray-500">Get notified when someone comments on your posts</p>
+        </div>
+      </div>
+
+      <!-- Mention Notifications -->
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <%= form.check_box :notification_mention_enabled, 
+              class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500' %>
+        </div>
+        <div class="ml-3">
+          <%= form.label :notification_mention_enabled, 'Mention Notifications', class: 'text-sm font-medium text-gray-300' %>
+          <p class="text-sm text-gray-500">Get notified when someone mentions you</p>
+        </div>
+      </div>
+
+      <div class="pt-4">
+        <%= form.submit 'Save Preferences', class: 'px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+
+
+

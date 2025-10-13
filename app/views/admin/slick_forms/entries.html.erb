@@ -1,0 +1,436 @@
+<% content_for :page_title, 'Form Entries' %>
+
+<div class="fluent-forms-entries">
+  <div class="page-header">
+    <div class="header-content">
+      <h1><i class="fas fa-inbox"></i> Form Entries</h1>
+      <p class="subtitle">View and manage form submissions</p>
+    </div>
+    <div class="header-actions">
+      <%= link_to export_admin_fluent_forms_entries_path(form_id: @form_id, format: 'csv'), class: 'btn btn-secondary' do %>
+        <i class="fas fa-download"></i> Export CSV
+      <% end %>
+      <%= link_to admin_fluent_forms_path, class: 'btn btn-primary' do %>
+        <i class="fas fa-arrow-left"></i> Back to Forms
+      <% end %>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Form:</label>
+      <select id="form-filter" onchange="window.location.href='?form_id='+this.value">
+        <option value="">All Forms</option>
+        <% @forms.each do |form| %>
+          <option value="<%= form[:id] %>" <%= 'selected' if @form_id.to_s == form[:id].to_s %>>
+            <%= form[:title] %> (<%= form[:submission_count] %>)
+          </option>
+        <% end %>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Status:</label>
+      <select id="status-filter" onchange="window.location.href='?form_id=<%= @form_id %>&status='+this.value">
+        <option value="">All</option>
+        <option value="unread" <%= 'selected' if @filters[:status] == 'unread' %>>Unread</option>
+        <option value="read" <%= 'selected' if @filters[:status] == 'read' %>>Read</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <input type="text" 
+             id="search-entries" 
+             placeholder="Search entries..." 
+             value="<%= @filters[:search] %>"
+             class="search-input">
+    </div>
+  </div>
+
+  <div class="card">
+    <% if @entries.any? %>
+      <table class="entries-table">
+        <thead>
+          <tr>
+            <th width="30">
+              <input type="checkbox" id="select-all">
+            </th>
+            <th width="30"></th>
+            <th>ID</th>
+            <th>Form</th>
+            <th>Summary</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @entries.each do |entry| %>
+            <tr class="entry-row <%= 'unread' if entry[:status] == 'unread' %>">
+              <td>
+                <input type="checkbox" class="entry-checkbox" value="<%= entry[:id] %>">
+              </td>
+              <td>
+                <button class="favorite-btn <%= 'active' if entry[:is_favorite] %>" 
+                        data-entry-id="<%= entry[:id] %>">
+                  <i class="<%= entry[:is_favorite] ? 'fas' : 'far' %> fa-star"></i>
+                </button>
+              </td>
+              <td>
+                <code>#<%= entry[:serial_number] %></code>
+              </td>
+              <td>
+                <% form = @forms.find { |f| f[:id] == entry[:form_id] } %>
+                <%= form[:title] if form %>
+              </td>
+              <td>
+                <div class="entry-summary">
+                  <% entry[:response_data].first(3).each do |key, value| %>
+                    <div class="summary-item">
+                      <strong><%= key.titleize %>:</strong> 
+                      <%= truncate(value.to_s, length: 50) %>
+                    </div>
+                  <% end %>
+                  <% if entry[:response_data].size > 3 %>
+                    <div class="summary-more">
+                      +<%= entry[:response_data].size - 3 %> more fields
+                    </div>
+                  <% end %>
+                </div>
+              </td>
+              <td>
+                <span class="status-badge status-<%= entry[:status] %>">
+                  <%= entry[:status].titleize %>
+                </span>
+              </td>
+              <td>
+                <span class="entry-date" title="<%= entry[:created_at] %>">
+                  <%= time_ago_in_words(entry[:created_at]) %> ago
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <%= link_to admin_fluent_forms_entry_path(entry[:id]), class: 'btn btn-sm btn-secondary', title: 'View' do %>
+                    <i class="fas fa-eye"></i>
+                  <% end %>
+                  <%= link_to admin_fluent_forms_entry_path(entry[:id]), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-sm btn-danger', title: 'Delete' do %>
+                    <i class="fas fa-trash"></i>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <div class="table-footer">
+        <div class="bulk-actions">
+          <select id="bulk-action">
+            <option value="">Bulk Actions</option>
+            <option value="mark_read">Mark as Read</option>
+            <option value="delete">Delete</option>
+            <option value="export">Export Selected</option>
+          </select>
+          <button class="btn btn-sm btn-secondary" id="apply-bulk-action">Apply</button>
+        </div>
+
+        <div class="pagination">
+          <span>Showing <%= @entries.count %> entries</span>
+          <!-- Pagination links would go here -->
+        </div>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <i class="fas fa-inbox fa-4x"></i>
+        <h3>No entries yet</h3>
+        <p>Form submissions will appear here once users submit the form</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.fluent-forms-entries {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.page-header .subtitle {
+  margin: 5px 0 0 0;
+  color: #666;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.filters-bar {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #666;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.search-input {
+  width: 300px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.entries-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.entries-table th {
+  text-align: left;
+  padding: 15px;
+  background: #f5f7fa;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.entries-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.entry-row.unread {
+  background: #f0f9ff;
+}
+
+.entry-row:hover {
+  background: #fafafa;
+}
+
+.favorite-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+}
+
+.favorite-btn.active {
+  color: #ffc107;
+}
+
+.entry-summary {
+  font-size: 14px;
+}
+
+.summary-item {
+  margin-bottom: 5px;
+  color: #666;
+}
+
+.summary-item strong {
+  color: #333;
+}
+
+.summary-more {
+  color: #409eff;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-unread {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-read {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.entry-date {
+  color: #666;
+  font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: #409eff;
+  color: white;
+}
+
+.btn-secondary {
+  background: #909399;
+  color: white;
+}
+
+.btn-danger {
+  background: #f56c6c;
+  color: white;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.table-footer {
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.pagination {
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #909399;
+}
+
+.empty-state i {
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  margin: 10px 0;
+}
+</style>
+
+<script>
+// Select all checkboxes
+document.getElementById('select-all')?.addEventListener('change', function() {
+  document.querySelectorAll('.entry-checkbox').forEach(cb => {
+    cb.checked = this.checked;
+  });
+});
+
+// Toggle favorite
+document.querySelectorAll('.favorite-btn').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    const entryId = this.dataset.entryId;
+    const icon = this.querySelector('i');
+    
+    try {
+      const response = await fetch(`/admin/fluent-forms/entries/${entryId}/favorite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        this.classList.toggle('active');
+        icon.className = result.is_favorite ? 'fas fa-star' : 'far fa-star';
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  });
+});
+
+// Bulk actions
+document.getElementById('apply-bulk-action')?.addEventListener('click', function() {
+  const action = document.getElementById('bulk-action').value;
+  const selected = Array.from(document.querySelectorAll('.entry-checkbox:checked')).map(cb => cb.value);
+  
+  if (!action) {
+    alert('Please select an action');
+    return;
+  }
+  
+  if (selected.length === 0) {
+    alert('Please select at least one entry');
+    return;
+  }
+  
+  if (confirm(`Apply "${action}" to ${selected.length} entries?`)) {
+    // Handle bulk action
+    console.log('Bulk action:', action, 'on entries:', selected);
+  }
+});
+
+// Search entries
+let searchTimeout;
+document.getElementById('search-entries')?.addEventListener('input', function(e) {
+  clearTimeout(searchTimeout);
+  const search = e.target.value;
+  
+  searchTimeout = setTimeout(() => {
+    window.location.href = `?form_id=<%= @form_id %>&search=${encodeURIComponent(search)}`;
+  }, 500);
+});
+</script>
+

@@ -1,0 +1,42 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Template Customizer</h1>
+    <p class="text-gray-600">Customize your theme templates using the visual editor</p>
+  </div>
+
+  <% if @theme %>
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Active Theme: <%= @theme.name %></h2>
+      <p class="text-gray-600 mb-4"><%= @theme.description %></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @templates.each do |template| %>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900"><%= template.name %></h3>
+              <span class="px-2 py-1 text-xs font-medium rounded-full <%= template.active? ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                <%= template.active? ? 'Active' : 'Inactive' %>
+              </span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4"><%= template.description %></p>
+            <div class="flex gap-2">
+              <%= link_to 'Customize', admin_edit_template_path(template), class: 'flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors' %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+      <div class="flex">
+        <div class="ml-3">
+          <p class="text-sm text-yellow-700">
+            No theme found. Please create a theme first.
+          </p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

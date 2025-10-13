@@ -1,0 +1,239 @@
+<% content_for :page_title, "Redirects" %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">URL Redirects</h1>
+      <p class="text-gray-400">Manage 301/302 redirects for your site</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to export_admin_redirects_path, class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Export CSV</span>
+      <% end %>
+      <%= link_to import_admin_redirects_path, class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        <span>Import CSV</span>
+      <% end %>
+      <%= link_to new_admin_redirect_path, class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Add Redirect</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Total Redirects</p>
+          <p class="text-2xl font-bold text-white"><%= @stats[:total] %></p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Active</p>
+          <p class="text-2xl font-bold text-emerald-400"><%= @stats[:active] %></p>
+        </div>
+        <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Inactive</p>
+          <p class="text-2xl font-bold text-gray-400"><%= @stats[:inactive] %></p>
+        </div>
+        <div class="w-12 h-12 bg-gray-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Total Hits</p>
+          <p class="text-2xl font-bold text-blue-400"><%= number_with_delimiter(@stats[:total_hits]) %></p>
+        </div>
+        <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 mb-6">
+    <%= form_with url: admin_redirects_path, method: :get, class: "flex items-center gap-4" do |f| %>
+      <div class="flex-1">
+        <%= f.text_field :search, 
+            value: params[:search],
+            placeholder: "Search redirects...", 
+            class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+      </div>
+      
+      <%= f.select :status, 
+          options_for_select([['All Status', ''], ['Active', 'active'], ['Inactive', 'inactive']], params[:status]),
+          {},
+          class: "px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+      
+      <%= f.select :type, 
+          options_for_select([['All Types', ''], ['Permanent (301)', 'permanent'], ['Temporary (302)', 'temporary'], ['See Other (303)', 'see_other'], ['Temporary New (307)', 'temporary_new']], params[:type]),
+          {},
+          class: "px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+      
+      <%= f.submit "Filter", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+      
+      <% if params[:search].present? || params[:status].present? || params[:type].present? %>
+        <%= link_to "Clear", admin_redirects_path, class: "px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- Redirects Table -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <% if @redirects.any? %>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-[#0a0a0a] border-b border-[#2a2a2a]">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">From Path</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">To Path</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Type</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Hits</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#2a2a2a]">
+            <% @redirects.each do |redirect| %>
+              <tr class="hover:bg-[#0a0a0a] transition">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-mono text-white"><%= redirect.from_path %></div>
+                  <% if redirect.notes.present? %>
+                    <div class="text-xs text-gray-500 mt-1"><%= redirect.notes %></div>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm font-mono text-indigo-400 break-all"><%= redirect.to_path %></div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 text-xs font-medium rounded-full <%= redirect.permanent? ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400' %>">
+                    <%= redirect.redirect_type.titleize %> (<%= redirect.http_status_code %>)
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <% if redirect.active? %>
+                    <span class="px-2 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-400 rounded-full">Active</span>
+                  <% else %>
+                    <span class="px-2 py-1 text-xs font-medium bg-gray-500/10 text-gray-400 rounded-full">Inactive</span>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= number_with_delimiter(redirect.hits_count) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <div class="flex items-center gap-2">
+                    <%= link_to edit_admin_redirect_path(redirect), class: "text-indigo-400 hover:text-indigo-300 transition" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    <% end %>
+                    
+                    <%= button_to toggle_admin_redirect_path(redirect), 
+                        method: :patch,
+                        class: "text-gray-400 hover:text-white transition",
+                        title: redirect.active? ? "Deactivate" : "Activate" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <% if redirect.active? %>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                        <% else %>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        <% end %>
+                      </svg>
+                    <% end %>
+                    
+                    <%= button_to admin_redirect_path(redirect), 
+                        method: :delete,
+                        data: { confirm: "Delete this redirect?" },
+                        class: "text-red-400 hover:text-red-300 transition" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="px-6 py-4 border-t border-[#2a2a2a]">
+        <%= paginate @redirects, theme: 'twitter-bootstrap-4' %>
+      </div>
+    <% else %>
+      <div class="px-6 py-12 text-center">
+        <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
+        <h3 class="text-lg font-semibold text-white mb-2">No Redirects Found</h3>
+        <p class="text-gray-400 mb-4">Get started by creating your first redirect.</p>
+        <%= link_to "Add Redirect", new_admin_redirect_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Help Section -->
+  <div class="mt-8 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <div class="flex items-start gap-4">
+      <div class="bg-indigo-500/10 p-3 rounded-lg">
+        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-white font-semibold mb-2">About URL Redirects</h3>
+        <p class="text-gray-400 text-sm mb-3">
+          Redirects help preserve SEO value when you move or rename pages. Use 301 redirects for permanent moves and 302 for temporary changes.
+        </p>
+        <ul class="text-sm text-gray-400 space-y-1">
+          <li>• <strong class="text-gray-300">301 (Permanent):</strong> Best for SEO, tells search engines the page has moved permanently</li>
+          <li>• <strong class="text-gray-300">302 (Temporary):</strong> For temporary moves, search engines keep the original URL indexed</li>
+          <li>• <strong class="text-gray-300">Wildcards:</strong> Use * at the end of a path to redirect all matching URLs (e.g., /old/* → /new/*)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+

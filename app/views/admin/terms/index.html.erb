@@ -1,0 +1,195 @@
+<% content_for :page_title, "#{@taxonomy.name} Terms" %>
+
+<link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/css/tabulator_midnight.min.css" rel="stylesheet">
+
+<div class="max-w-7xl mx-auto">
+  <div class="mb-6">
+    <%= link_to admin_taxonomies_path, class: "flex items-center space-x-2 text-gray-400 hover:text-white transition mb-4" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      <span>Back to Taxonomies</span>
+    <% end %>
+    
+    <h1 class="text-2xl font-bold text-white mb-2">Manage <%= @taxonomy.name %></h1>
+    <p class="text-gray-400"><%= @taxonomy.description %></p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Add New Term Form -->
+    <aside class="lg:col-span-1">
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 sticky top-20">
+        <h2 class="text-lg font-semibold text-white mb-4">Add New Term</h2>
+        
+        <%= form_with model: @term, url: admin_taxonomy_terms_path(@taxonomy), class: "space-y-4" do |f| %>
+          <div>
+            <%= f.label :name, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= f.text_field :name, 
+                placeholder: 'Term name',
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                required: true %>
+          </div>
+
+          <div>
+            <%= f.label :slug, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= f.text_field :slug, 
+                placeholder: 'auto-generated',
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+          </div>
+
+          <% if @taxonomy.hierarchical? %>
+            <div>
+              <%= f.label :parent_id, 'Parent Term', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+              <%= f.select :parent_id, 
+                  options_for_select([['None (Root Term)', nil]] + @taxonomy.terms.order(name: :asc).map { |t| [t.name, t.id] }),
+                  {},
+                  class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            </div>
+          <% end %>
+
+          <div>
+            <%= f.label :description, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= f.text_area :description, 
+                rows: 3,
+                placeholder: 'Optional description',
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+          </div>
+
+          <%= f.submit "Add Term", class: "w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer font-medium" %>
+        <% end %>
+      </div>
+    </aside>
+
+    <!-- Terms List -->
+    <main class="lg:col-span-2">
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+        <div class="p-4 border-b border-[#2a2a2a] flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-white">
+            <%= @terms.count %> <%= @terms.count == 1 ? 'Term' : 'Terms' %>
+          </h2>
+          <input type="text" id="search-terms" placeholder="Search terms..." 
+                 class="px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        
+        <div id="terms-table"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  async function initTermsTable() {
+    // Load Tabulator if not already loaded
+    if (typeof Tabulator === 'undefined') {
+      const { TabulatorFull: Tabulator } = await import("tabulator-tables");
+      window.Tabulator = Tabulator;
+    }
+
+    const termsData = <%= raw @terms.map { |term| {
+    id: term.id,
+    name: term.name,
+    slug: term.slug,
+    description: term.description,
+    parent: term.parent ? term.parent.name : nil,
+    count: term.count,
+    hierarchical: @taxonomy.hierarchical?
+  }}.to_json %>;
+
+    const tableElement = document.getElementById('terms-table');
+    if (!tableElement) return;
+    
+    if (tableElement._tabulator) {
+      tableElement._tabulator.destroy();
+    }
+
+  const table = new window.Tabulator("#terms-table", {
+    data: termsData,
+    layout: "fitColumns",
+    responsiveLayout: "hide",
+    placeholder: "No Terms Found",
+    columns: [
+      {
+        title: "Name",
+        field: "name",
+        sorter: "string",
+        formatter: function(cell) {
+          const row = cell.getRow().getData();
+          return `<div class="py-2">
+            <a href="/admin/taxonomies/<%= @taxonomy.id %>/terms/${row.id}/edit" 
+               class="text-white hover:text-indigo-400 font-medium">
+              ${row.name}
+            </a>
+            <div class="text-xs text-gray-500 mt-1">${row.slug}</div>
+          </div>`;
+        }
+      },
+      {
+        title: "Description",
+        field: "description",
+        formatter: function(cell) {
+          const desc = cell.getValue();
+          return desc ? `<span class="text-gray-400 text-sm">${desc.substring(0, 80)}${desc.length > 80 ? '...' : ''}</span>` : '<span class="text-gray-600">—</span>';
+        }
+      },
+      <% if @taxonomy.hierarchical? %>
+      {
+        title: "Parent",
+        field: "parent",
+        width: 150,
+        formatter: function(cell) {
+          const parent = cell.getValue();
+          return parent ? `<span class="text-gray-300">${parent}</span>` : '<span class="text-gray-600">—</span>';
+        }
+      },
+      <% end %>
+      {
+        title: "Count",
+        field: "count",
+        sorter: "number",
+        width: 100,
+        hozAlign: "center",
+        formatter: function(cell) {
+          return `<span class="text-gray-400">${cell.getValue()}</span>`;
+        }
+      },
+      {
+        title: "Actions",
+        headerSort: false,
+        width: 200,
+        formatter: function(cell) {
+          const row = cell.getRow().getData();
+          return `<div class="flex items-center space-x-2">
+            <a href="/admin/taxonomies/<%= @taxonomy.id %>/terms/${row.id}/edit" 
+               class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded transition">
+              Edit
+            </a>
+            <a href="/admin/taxonomies/<%= @taxonomy.id %>/terms/${row.id}" 
+               data-turbo-method="delete" 
+               data-turbo-confirm="Delete this term?"
+               class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition">
+              Delete
+            </a>
+          </div>`;
+        }
+      }
+    ],
+  });
+
+  // Search functionality
+  document.getElementById('search-terms')?.addEventListener('keyup', function(e) {
+    table.setFilter("name", "like", this.value);
+  });
+  }
+  
+  // Initialize on page load
+  document.addEventListener('turbo:load', initTermsTable);
+  document.addEventListener('DOMContentLoaded', initTermsTable);
+  
+  // Cleanup before Turbo caches the page
+  document.addEventListener('turbo:before-cache', function() {
+    const tableElement = document.getElementById('terms-table');
+    if (tableElement && tableElement._tabulator) {
+      tableElement._tabulator.destroy();
+    }
+  });
+</script>

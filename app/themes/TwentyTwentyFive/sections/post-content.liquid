@@ -1,0 +1,14 @@
+{% comment %} Single post content - WordPress Twenty Twenty-Five style {% endcomment %}
+<article class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{ post.title | default: page.title }}</h1>
+    {% if post.date %}
+      <div class="post-meta">
+        {{ post.date | date: "%B %d, %Y" }}
+      </div>
+    {% endif %}
+  </header>
+  <div class="post-body prose">
+    {{ post.content | default: page.content }}
+  </div>
+</article>

@@ -1,0 +1,228 @@
+<% content_for :title, "Export" %>
+
+<div class="max-w-5xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Export</h1>
+    <p class="text-gray-400">Export your content to WordPress XML, JSON, or CSV formats</p>
+  </div>
+
+  <!-- Export Form -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8 mb-8">
+    <h2 class="text-xl font-semibold text-white mb-6">Create Export</h2>
+    
+    <%= form_with url: admin_tools_export_generate_path, class: "space-y-6" do |f| %>
+      <!-- Export Format -->
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-2">Export Format</label>
+        <select name="export_type" class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="json">JSON (Recommended)</option>
+          <option value="wordpress">WordPress XML (WXR)</option>
+          <option value="csv">CSV (Multiple Files)</option>
+          <option value="sql">SQL Dump</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-2">Choose the format for your export</p>
+      </div>
+      
+      <!-- What to Export -->
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-3">What to Export</label>
+        <div class="grid grid-cols-2 gap-4">
+          <label class="flex items-center gap-3 p-4 bg-[#111111] border border-[#2a2a2a] rounded-lg hover:border-indigo-500 transition cursor-pointer">
+            <input type="checkbox" name="options[include_posts]" value="1" checked class="w-5 h-5 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <p class="text-white font-medium">Posts</p>
+              <p class="text-xs text-gray-500"><%= Post.kept.count %> posts</p>
+            </div>
+          </label>
+          
+          <label class="flex items-center gap-3 p-4 bg-[#111111] border border-[#2a2a2a] rounded-lg hover:border-indigo-500 transition cursor-pointer">
+            <input type="checkbox" name="options[include_pages]" value="1" checked class="w-5 h-5 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <p class="text-white font-medium">Pages</p>
+              <p class="text-xs text-gray-500"><%= Page.kept.count %> pages</p>
+            </div>
+          </label>
+          
+          <label class="flex items-center gap-3 p-4 bg-[#111111] border border-[#2a2a2a] rounded-lg hover:border-indigo-500 transition cursor-pointer">
+            <input type="checkbox" name="options[include_media]" value="1" class="w-5 h-5 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <p class="text-white font-medium">Media</p>
+              <p class="text-xs text-gray-500"><%= Medium.count %> files</p>
+            </div>
+          </label>
+          
+          <label class="flex items-center gap-3 p-4 bg-[#111111] border border-[#2a2a2a] rounded-lg hover:border-indigo-500 transition cursor-pointer">
+            <input type="checkbox" name="options[include_comments]" value="1" class="w-5 h-5 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <p class="text-white font-medium">Comments</p>
+              <p class="text-xs text-gray-500"><%= Comment.count %> comments</p>
+            </div>
+          </label>
+          
+          <label class="flex items-center gap-3 p-4 bg-[#111111] border border-[#2a2a2a] rounded-lg hover:border-indigo-500 transition cursor-pointer">
+            <input type="checkbox" name="options[include_users]" value="1" class="w-5 h-5 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <p class="text-white font-medium">Users</p>
+              <p class="text-xs text-gray-500"><%= User.count %> users</p>
+            </div>
+          </label>
+          
+          <label class="flex items-center gap-3 p-4 bg-[#111111] border border-[#2a2a2a] rounded-lg hover:border-indigo-500 transition cursor-pointer">
+            <input type="checkbox" name="options[include_settings]" value="1" class="w-5 h-5 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <div>
+              <p class="text-white font-medium">Settings</p>
+              <p class="text-xs text-gray-500">Site configuration</p>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Additional Options -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-white mb-3">Export Options</h3>
+        <div class="space-y-3">
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[include_drafts]" value="1" class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Include draft posts/pages</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[include_trash]" value="1" class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Include trashed items</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[include_metadata]" value="1" checked class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Include custom fields and metadata</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[prettify_json]" value="1" checked class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Prettify JSON output (easier to read)</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Submit Button -->
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-gray-500">
+          <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Large exports are processed in the background
+        </p>
+        <%= f.submit "Generate Export", class: "px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition" %>
+      </div>
+    <% end %>
+  </div>
+  
+  <!-- Export History -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-[#2a2a2a]">
+      <h2 class="text-lg font-semibold text-white">Export History</h2>
+    </div>
+    
+    <div class="divide-y divide-[#2a2a2a]">
+      <% if @export_jobs&.any? %>
+        <% @export_jobs.each do |job| %>
+          <div class="px-6 py-4 hover:bg-[#111111] transition">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-white font-medium"><%= job.export_type.upcase %> Export</h3>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= 
+                    case job.status
+                    when 'completed' then 'bg-green-500/10 text-green-400'
+                    when 'processing' then 'bg-blue-500/10 text-blue-400'
+                    when 'failed' then 'bg-red-500/10 text-red-400'
+                    else 'bg-gray-500/10 text-gray-400'
+                    end %>">
+                    <%= job.status.humanize %>
+                  </span>
+                </div>
+                
+                <% if job.status == 'processing' && job.progress %>
+                  <div class="w-full bg-[#0a0a0a] rounded-full h-2 mb-2">
+                    <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: <%= job.progress %>%"></div>
+                  </div>
+                  <p class="text-xs text-gray-500">
+                    <%= job.exported_items %> of <%= job.total_items %> items exported
+                  </p>
+                <% elsif job.status == 'completed' %>
+                  <p class="text-sm text-gray-400">
+                    Exported <%= job.exported_items %> items
+                    <% if job.file_name %>
+                      • <%= number_to_human_size(File.size(job.file_path)) rescue '---' %>
+                    <% end %>
+                  </p>
+                <% elsif job.status == 'failed' %>
+                  <p class="text-sm text-red-400">Export failed</p>
+                <% end %>
+                
+                <p class="text-xs text-gray-600 mt-1">
+                  <%= job.created_at.strftime('%B %d, %Y at %I:%M %p') %>
+                </p>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <% if job.status == 'completed' %>
+                  <%= link_to admin_export_download_path(job.id), class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Download
+                  <% end %>
+                <% elsif job.status == 'processing' %>
+                  <div class="flex items-center gap-2 text-blue-400">
+                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm">Processing...</span>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-400">No exports yet</h3>
+          <p class="mt-1 text-sm text-gray-500">Generate an export above to get started</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Export Guide -->
+  <div class="mt-8 bg-blue-500/5 border border-blue-500/20 rounded-xl p-6">
+    <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Export Guide
+    </h3>
+    <div class="text-sm text-gray-300 space-y-2">
+      <p><strong class="text-white">JSON:</strong> Complete export including all metadata. Best for migrating to another RailsPress site.</p>
+      <p><strong class="text-white">WordPress XML:</strong> WXR format compatible with WordPress. Import into WP using Tools → Import.</p>
+      <p><strong class="text-white">CSV:</strong> Exports separate CSV files for posts, pages, users, etc. Good for data analysis.</p>
+      <p><strong class="text-white">SQL:</strong> Raw database dump. Advanced users only.</p>
+      <p class="mt-4 text-yellow-400">
+        💡 Exports are processed in the background and will be available for download when complete.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-refresh if there are processing jobs
+  <% if @export_jobs&.any? { |job| job.status == 'processing' } %>
+    setTimeout(() => {
+      location.reload();
+    }, 5000);
+  <% end %>
+</script>
+
+
+
+

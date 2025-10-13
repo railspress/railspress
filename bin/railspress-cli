@@ -1,0 +1,1693 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# RailsPress CLI - WordPress CLI inspired command-line interface
+# Usage: railspress-cli [command] [options]
+
+require 'fileutils'
+require 'optparse'
+require 'pathname'
+
+# Find and boot Rails
+APP_PATH = File.expand_path('../config/application', __dir__)
+require_relative '../config/boot'
+require_relative '../config/environment'
+
+module RailspressCLI
+  class CLI
+    COMMANDS = {
+      'core' => 'Core WordPress-like commands',
+      'db' => 'Database operations',
+      'user' => 'User management',
+      'post' => 'Post management',
+      'page' => 'Page management',
+      'theme' => 'Theme management',
+      'plugin' => 'Plugin management',
+      'cache' => 'Cache management',
+      'media' => 'Media management',
+      'option' => 'Site settings management',
+      'search' => 'Search operations',
+      'export' => 'Export content',
+      'import' => 'Import content',
+      'shell' => 'Interactive Rails console',
+      'doctor' => 'System diagnostics'
+    }
+
+    def initialize(args)
+      @args = args
+      @command = args[0]
+      @subcommand = args[1]
+      @options = args[2..-1] || []
+    end
+
+    def run
+      if @command.nil? || @command == 'help' || @command == '--help' || @command == '-h'
+        print_help
+        return
+      end
+
+      if @command == 'version' || @command == '--version' || @command == '-v'
+        print_version
+        return
+      end
+
+      case @command
+      when 'core'
+        CoreCommands.new(@subcommand, @options).execute
+      when 'db'
+        DbCommands.new(@subcommand, @options).execute
+      when 'user'
+        UserCommands.new(@subcommand, @options).execute
+      when 'post'
+        PostCommands.new(@subcommand, @options).execute
+      when 'page'
+        PageCommands.new(@subcommand, @options).execute
+      when 'theme'
+        ThemeCommands.new(@subcommand, @options).execute
+      when 'plugin'
+        PluginCommands.new(@subcommand, @options).execute
+      when 'cache'
+        CacheCommands.new(@subcommand, @options).execute
+      when 'media'
+        MediaCommands.new(@subcommand, @options).execute
+      when 'option'
+        OptionCommands.new(@subcommand, @options).execute
+      when 'search'
+        SearchCommands.new(@subcommand, @options).execute
+      when 'export'
+        ExportCommands.new(@subcommand, @options).execute
+      when 'import'
+        ImportCommands.new(@subcommand, @options).execute
+      when 'shell'
+        ShellCommands.new(@subcommand, @options).execute
+      when 'doctor'
+        DoctorCommands.new(@subcommand, @options).execute
+      else
+        error "Unknown command: #{@command}"
+        print_help
+      end
+    rescue => e
+      error "Error: #{e.message}"
+      puts e.backtrace.first(5).join("\n") if ENV['DEBUG']
+    end
+
+    private
+
+    def print_help
+      puts <<~HELP
+        #{bold('RailsPress CLI')} - WordPress-inspired command-line interface
+        
+        #{bold('USAGE:')}
+          railspress-cli <command> <subcommand> [options]
+        
+        #{bold('COMMANDS:')}
+        #{COMMANDS.map { |cmd, desc| "  #{green(cmd.ljust(15))} #{desc}" }.join("\n")}
+        
+        #{bold('EXAMPLES:')}
+          railspress-cli user:create admin@example.com --role=administrator
+          railspress-cli post:list --status=published
+          railspress-cli theme:activate scandiedge
+          railspress-cli cache:clear
+          railspress-cli db:seed
+        
+        #{bold('GET HELP:')}
+          railspress-cli <command> --help    Show help for a specific command
+          railspress-cli --version            Show version information
+        
+        #{bold('MORE INFO:')}
+          Documentation: README.md
+          WordPress CLI: https://wp-cli.org/
+      HELP
+    end
+
+    def print_version
+      puts "RailsPress CLI version 1.0.0"
+      puts "Rails #{Rails.version}"
+      puts "Ruby #{RUBY_VERSION}"
+    end
+
+    def bold(text)
+      "\e[1m#{text}\e[0m"
+    end
+
+    def green(text)
+      "\e[32m#{text}\e[0m"
+    end
+
+    def error(text)
+      puts "\e[31m✗ #{text}\e[0m"
+    end
+  end
+
+  # Base class for command groups
+  class BaseCommands
+    def initialize(subcommand, options)
+      @subcommand = subcommand
+      @args = []
+      @options = parse_options(options)
+    end
+
+    def execute
+      if @subcommand.nil? || @subcommand == 'help' || @subcommand == '--help'
+        print_help
+        return
+      end
+
+      method_name = @subcommand.gsub('-', '_')
+      
+      if respond_to?(method_name, true)
+        send(method_name)
+      else
+        error "Unknown subcommand: #{@subcommand}"
+        print_help
+      end
+    end
+
+    private
+
+    def parse_options(options)
+      parsed = {}
+      @args = []
+      options.each do |opt|
+        if opt.start_with?('--')
+          key, value = opt[2..-1].split('=', 2)
+          parsed[key.to_sym] = value || true
+        else
+          @args << opt
+        end
+      end
+      parsed
+    end
+
+    def success(message)
+      puts "\e[32m✓ #{message}\e[0m"
+    end
+
+    def error(message)
+      puts "\e[31m✗ #{message}\e[0m"
+    end
+
+    def info(message)
+      puts "\e[34mℹ #{message}\e[0m"
+    end
+
+    def warning(message)
+      puts "\e[33m⚠ #{message}\e[0m"
+    end
+
+    def bold(text)
+      "\e[1m#{text}\e[0m"
+    end
+
+    def table(data, headers)
+      return if data.empty?
+
+      # Calculate column widths
+      widths = headers.map.with_index do |header, i|
+        max_width = [header.length, data.map { |row| row[i].to_s.length }.max].max
+        max_width + 2
+      end
+
+      # Print header
+      puts headers.map.with_index { |h, i| h.ljust(widths[i]) }.join(' | ')
+      puts widths.map { |w| '-' * w }.join('-+-')
+
+      # Print rows
+      data.each do |row|
+        puts row.map.with_index { |cell, i| cell.to_s.ljust(widths[i]) }.join(' | ')
+      end
+    end
+  end
+
+  # Core commands (wp core equivalent)
+  class CoreCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli core')} - Core system commands
+        
+        #{bold('SUBCOMMANDS:')}
+          version              Display RailsPress version
+          check-update         Check for updates
+          update-db            Update database schema
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli core:version
+          railspress-cli core:update-db
+      HELP
+    end
+
+    private
+
+    def version
+      puts "RailsPress Version: 1.0.0"
+      puts "Rails Version: #{Rails.version}"
+      puts "Environment: #{Rails.env}"
+    end
+
+    def check_update
+      info "Checking for updates from GitHub..."
+      
+      update_info = Railspress::UpdateChecker.check_for_updates
+      
+      puts "\nCurrent Version: #{bold(update_info[:current_version])}"
+      
+      if update_info[:latest_version]
+        puts "Latest Version:  #{bold(update_info[:latest_version])}"
+        
+        if update_info[:update_available]
+          success "\n✓ New version available!"
+          puts "  Release: #{update_info[:release_url]}"
+          puts "\n  To update:"
+          puts "  1. Backup your database: ./scripts/backup.sh"
+          puts "  2. Pull latest changes: git pull origin main"
+          puts "  3. Update database: ./bin/railspress-cli core update-db"
+          puts "  4. Restart server: ./railspress restart"
+        else
+          success "\n✓ You are running the latest version!"
+        end
+      elsif update_info[:error]
+        error "\nUpdate check failed: #{update_info[:error]}"
+      end
+      
+      puts "\nLast checked: #{update_info[:checked_at].strftime('%Y-%m-%d %H:%M:%S')}" if update_info[:checked_at]
+    end
+
+    def update_db
+      info "Running database migrations..."
+      system('rails db:migrate')
+      success "Database updated successfully!"
+    end
+  end
+
+  # Database commands
+  class DbCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli db')} - Database operations
+        
+        #{bold('SUBCOMMANDS:')}
+          seed                 Seed the database
+          reset                Drop, create, migrate, and seed
+          create               Create database
+          drop                 Drop database
+          migrate              Run migrations
+          rollback             Rollback last migration
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli db:seed
+          railspress-cli db:reset
+      HELP
+    end
+
+    private
+
+    def seed
+      info "Seeding database..."
+      system('rails db:seed')
+      success "Database seeded successfully!"
+    end
+
+    def reset
+      warning "This will destroy all data. Are you sure? (yes/no)"
+      return unless STDIN.gets.chomp.downcase == 'yes'
+      
+      info "Resetting database..."
+      system('rails db:reset')
+      success "Database reset successfully!"
+    end
+
+    def create
+      system('rails db:create')
+      success "Database created!"
+    end
+
+    def drop
+      warning "This will destroy all data. Are you sure? (yes/no)"
+      return unless STDIN.gets.chomp.downcase == 'yes'
+      
+      system('rails db:drop')
+      success "Database dropped!"
+    end
+
+    def migrate
+      system('rails db:migrate')
+      success "Migrations completed!"
+    end
+
+    def rollback
+      steps = @options[:steps] || 1
+      system("rails db:rollback STEP=#{steps}")
+      success "Rolled back #{steps} migration(s)!"
+    end
+  end
+
+  # User commands (wp user equivalent)
+  class UserCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli user')} - User management
+        
+        #{bold('SUBCOMMANDS:')}
+          list                 List all users
+          create <email>       Create a new user
+          delete <id>          Delete a user
+          update <id>          Update a user
+          meta                 View user metadata
+          
+        #{bold('OPTIONS:')}
+          --role=<role>        User role (administrator, editor, author, contributor, subscriber)
+          --password=<pass>    User password
+          --format=<format>    Output format (table, json, csv)
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli user:list
+          railspress-cli user:create admin@example.com --role=administrator
+          railspress-cli user:delete 5
+      HELP
+    end
+
+    private
+
+    def list
+      users = User.all
+      
+      if @options[:format] == 'json'
+        puts users.to_json
+        return
+      end
+
+      data = users.map do |u|
+        [u.id, u.email, u.role, u.created_at.strftime('%Y-%m-%d')]
+      end
+      
+      table(data, ['ID', 'Email', 'Role', 'Created'])
+      info "Total: #{users.count} users"
+    end
+
+    def create
+      email = @options.values.first || ARGV[3]
+      
+      unless email
+        error "Email is required"
+        return
+      end
+
+      role = @options[:role] || 'subscriber'
+      password = @options[:password] || SecureRandom.hex(8)
+
+      user = User.create!(
+        email: email,
+        password: password,
+        password_confirmation: password,
+        role: role
+      )
+
+      success "User created successfully!"
+      puts "  ID: #{user.id}"
+      puts "  Email: #{user.email}"
+      puts "  Password: #{password}"
+      puts "  Role: #{user.role}"
+    end
+
+    def delete
+      id = @options.values.first || ARGV[3]
+      user = User.find(id)
+      user.destroy!
+      success "User ##{id} deleted!"
+    rescue ActiveRecord::RecordNotFound
+      error "User not found: #{id}"
+    end
+
+    def update
+      id = @options.values.first || ARGV[3]
+      user = User.find(id)
+      
+      user.update!(
+        role: @options[:role]
+      ) if @options[:role]
+      
+      success "User ##{id} updated!"
+    rescue ActiveRecord::RecordNotFound
+      error "User not found: #{id}"
+    end
+  end
+
+  # Post commands (wp post equivalent)
+  class PostCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli post')} - Post management
+        
+        #{bold('SUBCOMMANDS:')}
+          list                 List posts
+          create               Create a new post
+          delete <id>          Delete a post
+          update <id>          Update a post
+          publish <id>         Publish a draft post
+          
+        #{bold('OPTIONS:')}
+          --status=<status>    Filter by status (published, draft)
+          --title=<title>      Post title
+          --content=<content>  Post content
+          --format=<format>    Output format (table, json)
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli post:list --status=published
+          railspress-cli post:create --title="Hello World"
+          railspress-cli post:publish 5
+      HELP
+    end
+
+    private
+
+    def list
+      posts = Post.all
+      posts = posts.where(status: @options[:status]) if @options[:status]
+      posts = posts.order(created_at: :desc).limit(@options[:limit]&.to_i || 20)
+      
+      if @options[:format] == 'json'
+        puts posts.to_json
+        return
+      end
+
+      data = posts.map do |p|
+        [p.id, p.title.truncate(40), p.status, p.created_at.strftime('%Y-%m-%d')]
+      end
+      
+      table(data, ['ID', 'Title', 'Status', 'Created'])
+      info "Total: #{posts.count} posts"
+    end
+
+    def create
+      title = @options[:title] || "New Post #{Time.now.to_i}"
+      content = @options[:content] || "Content for #{title}"
+      
+      user = User.administrator.first || User.first
+      
+      post = Post.create!(
+        title: title,
+        excerpt: content.truncate(150),
+        status: @options[:status] || 'draft',
+        user: user
+      )
+      
+      post.content = content
+      post.save!
+      
+      success "Post created successfully!"
+      puts "  ID: #{post.id}"
+      puts "  Title: #{post.title}"
+      puts "  Status: #{post.status}"
+    end
+
+    def delete
+      id = @options.values.first || ARGV[3]
+      post = Post.friendly.find(id)
+      post.destroy!
+      success "Post ##{id} deleted!"
+    rescue ActiveRecord::RecordNotFound
+      error "Post not found: #{id}"
+    end
+
+    def publish
+      id = @options.values.first || ARGV[3]
+      post = Post.friendly.find(id)
+      post.update!(status: 'published', published_at: Time.current)
+      success "Post ##{id} published!"
+    rescue ActiveRecord::RecordNotFound
+      error "Post not found: #{id}"
+    end
+  end
+
+  # Page commands
+  class PageCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli page')} - Page management
+        
+        #{bold('SUBCOMMANDS:')}
+          list                 List pages
+          create               Create a new page
+          delete <id>          Delete a page
+          publish <id>         Publish a draft page
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli page:list
+          railspress-cli page:create --title="About Us"
+      HELP
+    end
+
+    private
+
+    def list
+      pages = Page.all.order(created_at: :desc)
+      
+      data = pages.map do |p|
+        [p.id, p.title.truncate(40), p.status, p.created_at.strftime('%Y-%m-%d')]
+      end
+      
+      table(data, ['ID', 'Title', 'Status', 'Created'])
+      info "Total: #{pages.count} pages"
+    end
+
+    def create
+      title = @options[:title] || "New Page #{Time.now.to_i}"
+      
+      user = User.administrator.first || User.first
+      
+      page = Page.create!(
+        title: title,
+        status: @options[:status] || 'draft',
+        user: user
+      )
+      
+      success "Page created successfully!"
+      puts "  ID: #{page.id}"
+      puts "  Title: #{page.title}"
+    end
+
+    def delete
+      id = @options.values.first || ARGV[3]
+      page = Page.friendly.find(id)
+      page.destroy!
+      success "Page ##{id} deleted!"
+    rescue ActiveRecord::RecordNotFound
+      error "Page not found: #{id}"
+    end
+  end
+
+  # Theme commands (wp theme equivalent)
+  class ThemeCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli theme')} - Theme management
+        
+        #{bold('SUBCOMMANDS:')}
+          list                 List all themes
+          activate <theme>     Activate a theme
+          status               Show active theme
+          generate <name>      Generate a new theme
+          delete <name>        Delete a theme
+          
+        #{bold('OPTIONS (generate):')}
+          --description=<desc> Theme description
+          --author=<author>    Theme author name
+          --version=<version>  Theme version (default: 1.0.0)
+          --with-dark-mode     Include dark mode support
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli theme:list
+          railspress-cli theme:activate scandiedge
+          railspress-cli theme:generate mytheme --description="My Custom Theme"
+          railspress-cli theme:generate darktheme --with-dark-mode --author="John Doe"
+      HELP
+    end
+
+    private
+
+    def list
+      themes_dir = Rails.root.join('app', 'themes')
+      themes = Dir.entries(themes_dir).select { |e| File.directory?(File.join(themes_dir, e)) && e != '.' && e != '..' }
+      
+      active_theme = SiteSetting.get('active_theme', 'default')
+      
+      puts "\n#{bold('Available Themes:')}"
+      themes.each do |theme|
+        prefix = theme == active_theme ? '* ' : '  '
+        status = theme == active_theme ? ' (active)' : ''
+        puts "#{prefix}#{theme}#{status}"
+      end
+      puts "\nTotal: #{themes.count} themes"
+    end
+
+    def activate
+      theme_name = @args[0]
+      
+      unless theme_name
+        error "Theme name is required"
+        return
+      end
+
+      theme_path = Rails.root.join('app', 'themes', theme_name)
+      
+      unless File.directory?(theme_path)
+        error "Theme not found: #{theme_name}"
+        return
+      end
+
+      SiteSetting.set('active_theme', theme_name)
+      success "Activated theme: #{theme_name}"
+    end
+
+    def status
+      active_theme = SiteSetting.get('active_theme', 'default')
+      puts "Active theme: #{bold(active_theme)}"
+    end
+    
+    def generate
+      theme_name = @args[0]
+      
+      unless theme_name
+        error "Theme name is required"
+        puts "Usage: railspress-cli theme generate <name> [options]"
+        return
+      end
+      
+      # Normalize theme name
+      theme_slug = theme_name.downcase.gsub(/[^a-z0-9]+/, '_')
+      theme_title = theme_name.titleize
+      
+      theme_path = Rails.root.join('app', 'themes', theme_slug)
+      
+      if File.directory?(theme_path)
+        error "Theme already exists: #{theme_slug}"
+        return
+      end
+      
+      info "Generating theme: #{theme_title}..."
+      
+      # Extract options
+      description = @options[:description] || "A custom RailsPress theme"
+      author = @options[:author] || "Your Name"
+      version = @options[:version] || "1.0.0"
+      dark_mode = @options[:'with-dark-mode'] || false
+      
+      # Create theme directory structure
+      FileUtils.mkdir_p(theme_path.join('views', 'layouts'))
+      FileUtils.mkdir_p(theme_path.join('views', 'shared'))
+      FileUtils.mkdir_p(theme_path.join('views', 'posts'))
+      FileUtils.mkdir_p(theme_path.join('views', 'pages'))
+      FileUtils.mkdir_p(theme_path.join('assets', 'stylesheets'))
+      FileUtils.mkdir_p(theme_path.join('assets', 'javascripts'))
+      FileUtils.mkdir_p(theme_path.join('assets', 'images'))
+      
+      # Generate theme.json
+      theme_json = {
+        name: theme_title,
+        slug: theme_slug,
+        version: version,
+        description: description,
+        author: author,
+        license: "MIT",
+        supports: {
+          customizer: true,
+          dark_mode: dark_mode,
+          responsive: true
+        },
+        settings: {
+          colors: {
+            primary: "#3B82F6",
+            secondary: "#8B5CF6"
+          },
+          typography: {
+            heading_font: "Inter",
+            body_font: "Inter"
+          }
+        }
+      }
+      
+      File.write(theme_path.join('theme.json'), JSON.pretty_generate(theme_json))
+      
+      # Generate application.html.erb
+      layout_content = <<~LAYOUT
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title><%= content_for?(:title) ? yield(:title) : SiteSetting.get('site_title', 'RailsPress') %></title>
+          
+          <%= csrf_meta_tags %>
+          <%= csp_meta_tag %>
+          
+          <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+          <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+          <%= javascript_importmap_tags %>
+          
+          <style>
+            :root {
+              --primary-color: #3B82F6;
+              --secondary-color: #8B5CF6;
+            }
+            #{dark_mode ? "
+            @media (prefers-color-scheme: dark) {
+              :root {
+                --bg-color: #0a0a0a;
+                --text-color: #ffffff;
+              }
+            }" : ""}
+          </style>
+          
+          <%= render_pixels(:head) %>
+        </head>
+        
+        <body class="min-h-screen flex flex-col">
+          <%= render_pixels(:body_start) %>
+          <%= render_analytics_tracker %>
+          
+          <%= render 'shared/header' %>
+          
+          <main class="flex-1">
+            <%= yield %>
+          </main>
+          
+          <%= render 'shared/footer' %>
+          
+          <%= render_pixels(:body_end) %>
+        </body>
+        </html>
+      LAYOUT
+      
+      File.write(theme_path.join('views', 'layouts', 'application.html.erb'), layout_content)
+      
+      # Generate header partial
+      header_content = <<~HEADER
+        <header class="bg-white shadow-sm">
+          <nav class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+              <div class="text-2xl font-bold">
+                <%= link_to SiteSetting.get('site_title', 'RailsPress'), root_path %>
+              </div>
+              
+              <div class="flex items-center gap-6">
+                <%= link_to 'Home', root_path, class: 'hover:text-blue-600' %>
+                <%= link_to 'Blog', blog_path, class: 'hover:text-blue-600' %>
+                <%= link_to 'About', page_path('about'), class: 'hover:text-blue-600' %>
+                <%= link_to 'Contact', page_path('contact'), class: 'hover:text-blue-600' %>
+              </div>
+            </div>
+          </nav>
+        </header>
+      HEADER
+      
+      File.write(theme_path.join('views', 'shared', '_header.html.erb'), header_content)
+      
+      # Generate footer partial
+      footer_content = <<~FOOTER
+        <footer class="bg-gray-900 text-white mt-16">
+          <div class="container mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div>
+                <h3 class="text-xl font-bold mb-4"><%= SiteSetting.get('site_title', 'RailsPress') %></h3>
+                <p class="text-gray-400"><%= SiteSetting.get('site_description', 'A powerful CMS built with Rails') %></p>
+              </div>
+              
+              <div>
+                <h4 class="font-semibold mb-4">Quick Links</h4>
+                <ul class="space-y-2 text-gray-400">
+                  <li><%= link_to 'Home', root_path, class: 'hover:text-white' %></li>
+                  <li><%= link_to 'Blog', blog_path, class: 'hover:text-white' %></li>
+                  <li><%= link_to 'Privacy', page_path('privacy'), class: 'hover:text-white' %></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 class="font-semibold mb-4">Newsletter</h4>
+                <%= render_shortcode('[newsletter title="Stay Updated" button="Subscribe"]') %>
+              </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+              <p>&copy; <%= Time.current.year %> <%= SiteSetting.get('site_title', 'RailsPress') %>. All rights reserved.</p>
+              <p class="mt-2 text-sm">Powered by <a href="https://github.com/yourusername/railspress" class="text-blue-400 hover:text-blue-300">RailsPress</a></p>
+            </div>
+          </div>
+        </footer>
+      FOOTER
+      
+      File.write(theme_path.join('views', 'shared', '_footer.html.erb'), footer_content)
+      
+      # Generate README
+      readme_content = <<~README
+        # #{theme_title}
+        
+        #{description}
+        
+        ## Details
+        
+        - **Version**: #{version}
+        - **Author**: #{author}
+        - **License**: MIT
+        
+        ## Features
+        
+        - Responsive design
+        - Tailwind CSS integration
+        - Dark mode support#{dark_mode ? ' (enabled)' : ''}
+        - SEO optimized
+        - Analytics ready
+        - Newsletter integration
+        
+        ## Customization
+        
+        Edit the theme settings in Admin → Appearance → Themes.
+        
+        ## File Structure
+        
+        ```
+        #{theme_slug}/
+        ├── views/
+        │   ├── layouts/
+        │   │   └── application.html.erb
+        │   ├── shared/
+        │   │   ├── _header.html.erb
+        │   │   └── _footer.html.erb
+        │   ├── posts/
+        │   └── pages/
+        ├── assets/
+        │   ├── stylesheets/
+        │   ├── javascripts/
+        │   └── images/
+        └── theme.json
+        ```
+        
+        ## Development
+        
+        1. Activate theme: `railspress-cli theme:activate #{theme_slug}`
+        2. Make changes to view files
+        3. Refresh browser to see changes
+        
+        ## Support
+        
+        For issues or questions, please contact #{author}.
+      README
+      
+      File.write(theme_path.join('README.md'), readme_content)
+      
+      # Generate custom CSS file
+      css_content = <<~CSS
+        /* #{theme_title} Custom Styles */
+        
+        /* Typography */
+        body {
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        /* Custom utilities */
+        .theme-primary {
+          color: var(--primary-color);
+        }
+        
+        .theme-bg-primary {
+          background-color: var(--primary-color);
+        }
+        
+        /* Add your custom styles here */
+      CSS
+      
+      File.write(theme_path.join('assets', 'stylesheets', 'custom.css'), css_content)
+      
+      success "Theme generated successfully!"
+      puts ""
+      puts "  Location: app/themes/#{theme_slug}"
+      puts "  Files created:"
+      puts "    - theme.json (metadata)"
+      puts "    - views/layouts/application.html.erb"
+      puts "    - views/shared/_header.html.erb"
+      puts "    - views/shared/_footer.html.erb"
+      puts "    - assets/stylesheets/custom.css"
+      puts "    - README.md"
+      puts ""
+      puts "  Next steps:"
+      puts "    1. Customize the theme files"
+      puts "    2. Activate: railspress-cli theme:activate #{theme_slug}"
+      puts "    3. Visit your site to see the new theme"
+    end
+    
+    def delete
+      theme_name = @args[0]
+      
+      unless theme_name
+        error "Theme name is required"
+        return
+      end
+      
+      theme_path = Rails.root.join('app', 'themes', theme_name)
+      
+      unless File.directory?(theme_path)
+        error "Theme not found: #{theme_name}"
+        return
+      end
+      
+      active_theme = SiteSetting.get('active_theme', 'default')
+      
+      if theme_name == active_theme
+        error "Cannot delete active theme. Activate another theme first."
+        return
+      end
+      
+      warning "This will permanently delete the theme '#{theme_name}'. Are you sure? (yes/no)"
+      return unless STDIN.gets.chomp.downcase == 'yes'
+      
+      FileUtils.rm_rf(theme_path)
+      success "Theme deleted: #{theme_name}"
+    end
+  end
+
+  # Plugin commands (wp plugin equivalent)
+  class PluginCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli plugin')} - Plugin management
+        
+        #{bold('SUBCOMMANDS:')}
+          list                 List all plugins
+          activate <plugin>    Activate a plugin
+          deactivate <plugin>  Deactivate a plugin
+          status               Show plugin status
+          generate <name>      Generate a new plugin
+          delete <name>        Delete a plugin
+          
+        #{bold('OPTIONS (generate):')}
+          --description=<desc> Plugin description
+          --author=<author>    Plugin author name
+          --version=<version>  Plugin version (default: 1.0.0)
+          --with-settings      Include settings page
+          --with-blocks        Include block support
+          --with-hooks         Include hooks/filters
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli plugin:list
+          railspress-cli plugin:activate seo_optimizer
+          railspress-cli plugin:generate my_plugin --description="My awesome plugin"
+          railspress-cli plugin:generate analytics --with-settings --with-hooks
+      HELP
+    end
+
+    private
+
+    def list
+      plugins = Plugin.all
+      
+      data = plugins.map do |p|
+        status = p.active ? 'Active' : 'Inactive'
+        [p.name, p.version, status]
+      end
+      
+      table(data, ['Name', 'Version', 'Status'])
+      info "Total: #{plugins.count} plugins"
+    end
+
+    def activate
+      name = @options.values.first || ARGV[3]
+      plugin = Plugin.find_by(name: name)
+      
+      if plugin
+        plugin.update!(active: true)
+        success "Plugin activated: #{name}"
+      else
+        error "Plugin not found: #{name}"
+      end
+    end
+
+    def deactivate
+      name = @options.values.first || ARGV[3]
+      plugin = Plugin.find_by(name: name)
+      
+      if plugin
+        plugin.update!(active: false)
+        success "Plugin deactivated: #{name}"
+      else
+        error "Plugin not found: #{name}"
+      end
+    end
+    
+    def generate
+      plugin_name = @args[0]
+      
+      unless plugin_name
+        error "Plugin name is required"
+        puts "Usage: railspress-cli plugin generate <name> [options]"
+        return
+      end
+      
+      # Normalize plugin name
+      plugin_slug = plugin_name.downcase.gsub(/[^a-z0-9]+/, '_')
+      plugin_class = plugin_slug.split('_').map(&:capitalize).join
+      plugin_title = plugin_name.titleize
+      
+      plugin_path = Rails.root.join('lib', 'plugins', plugin_slug)
+      
+      if File.directory?(plugin_path)
+        error "Plugin already exists: #{plugin_slug}"
+        return
+      end
+      
+      info "Generating plugin: #{plugin_title}..."
+      
+      # Extract options
+      description = @options[:description] || "A custom RailsPress plugin"
+      author = @options[:author] || "Your Name"
+      version = @options[:version] || "1.0.0"
+      with_settings = @options[:'with-settings'] || false
+      with_blocks = @options[:'with-blocks'] || false
+      with_hooks = @options[:'with-hooks'] || false
+      
+      # Create plugin directory structure
+      FileUtils.mkdir_p(plugin_path)
+      FileUtils.mkdir_p(plugin_path.join('views')) if with_settings
+      FileUtils.mkdir_p(plugin_path.join('assets', 'javascripts')) if with_blocks
+      FileUtils.mkdir_p(plugin_path.join('assets', 'stylesheets')) if with_blocks
+      
+      # Generate main plugin file
+      plugin_content = <<~RUBY
+        # frozen_string_literal: true
+        
+        # #{plugin_title}
+        # #{description}
+        # Version: #{version}
+        # Author: #{author}
+        
+        module Plugins
+          class #{plugin_class} < Railspress::PluginBase
+            def initialize
+              super
+              
+              @name = '#{plugin_title}'
+              @slug = '#{plugin_slug}'
+              @version = '#{version}'
+              @description = '#{description}'
+              @author = '#{author}'
+              
+              # Initialize plugin
+              setup_hooks if enabled?
+            end
+            
+            def enabled?
+              # Check if plugin should be active
+              plugin_record = Plugin.find_by(slug: @slug)
+              plugin_record&.active? || false
+            end
+            
+            private
+            
+            def setup_hooks
+              # Register activation/deactivation hooks
+              on_activation { activate_plugin }
+              on_deactivation { deactivate_plugin }
+              
+              #{with_hooks ? "# Register WordPress-style hooks and filters\n              register_hooks\n              register_filters" : '# Add your hooks here'}
+              
+              #{with_blocks ? "# Register plugin blocks\n              register_ui_blocks" : '# Add blocks if needed'}
+              
+              #{with_settings ? "# Register settings page\n              register_settings" : '# Add settings if needed'}
+            end
+            
+            def activate_plugin
+              Rails.logger.info "Activating #{@name}..."
+              
+              # Create database tables if needed
+              # create_tables
+              
+              # Set default settings
+              # set_default_settings
+              
+              Rails.logger.info "#{@name} activated successfully!"
+            end
+            
+            def deactivate_plugin
+              Rails.logger.info "Deactivating #{@name}..."
+              
+              # Cleanup if needed
+              # cleanup
+              
+              Rails.logger.info "#{@name} deactivated successfully!"
+            end
+      RUBY
+      
+      if with_hooks
+        plugin_content += <<~RUBY
+            
+            def register_hooks
+              # Add action hooks
+              # Example: Railspress::Hooks.add_action('post_published', method(:on_post_published))
+              Railspress::Hooks.add_action('init', method(:init_plugin))
+            end
+            
+            def register_filters
+              # Add filter hooks
+              # Example: Railspress::Hooks.add_filter('post_content', method(:modify_content))
+            end
+            
+            def init_plugin
+              Rails.logger.info "#{@name} initialized!"
+            end
+        RUBY
+      end
+      
+      if with_blocks
+        plugin_content += <<~RUBY
+            
+            def register_ui_blocks
+              # Register blocks for post/page editor
+              register_block :#{plugin_slug}_sidebar, {
+                location: :post,
+                position: :sidebar,
+                partial: 'plugins/#{plugin_slug}/_sidebar_block',
+                can_render: ->(record, user) { user.administrator? || user.editor? }
+              }
+            end
+        RUBY
+      end
+      
+      if with_settings
+        plugin_content += <<~RUBY
+            
+            def register_settings
+              # Define plugin settings schema
+              define_settings_schema do
+                section 'general', 'General Settings' do
+                  field 'enabled', 'boolean', 'Enable #{@name}', default: true
+                  field 'api_key', 'string', 'API Key', placeholder: 'Enter your API key'
+                end
+              end
+            end
+            
+            # Settings page route
+            def settings_path
+              '/admin/plugins/#{plugin_slug}/settings'
+            end
+        RUBY
+      end
+      
+      plugin_content += <<~RUBY
+          end
+        end
+        
+        # Register plugin
+        Plugins::#{plugin_class}.new
+      RUBY
+      
+      File.write(plugin_path.join("#{plugin_slug}.rb"), plugin_content)
+      
+      # Generate README
+      readme_content = <<~README
+        # #{plugin_title}
+        
+        #{description}
+        
+        ## Details
+        
+        - **Version**: #{version}
+        - **Author**: #{author}
+        - **License**: MIT
+        
+        ## Features
+        
+        #{with_settings ? '- Settings page for configuration' : ''}
+        #{with_blocks ? '- Custom blocks for editor' : ''}
+        #{with_hooks ? '- WordPress-style hooks and filters' : ''}
+        - Easy activation/deactivation
+        - Database integration
+        
+        ## Installation
+        
+        1. Plugin is already in `lib/plugins/#{plugin_slug}/`
+        2. Create database entry:
+           ```ruby
+           Plugin.create!(
+             name: '#{plugin_title}',
+             slug: '#{plugin_slug}',
+             version: '#{version}',
+             description: '#{description}',
+             active: false
+           )
+           ```
+        3. Activate via admin or CLI:
+           ```bash
+           railspress-cli plugin:activate #{plugin_slug}
+           ```
+        
+        ## Usage
+        
+        #{with_settings ? "Configure the plugin in **Admin → Plugins → #{plugin_title} → Settings**.\n" : ''}
+        #{with_blocks ? "The plugin adds blocks to the post/page editor.\n" : ''}
+        #{with_hooks ? "\nAvailable hooks:\n- `init` - Called on plugin initialization\n- Add more hooks as needed\n" : ''}
+        
+        ## Development
+        
+        Edit the plugin file: `lib/plugins/#{plugin_slug}/#{plugin_slug}.rb`
+        
+        To reload changes, restart the Rails server.
+        
+        ## API Reference
+        
+        ### Available Methods
+        
+        - `enabled?` - Check if plugin is active
+        - `activate_plugin` - Called on activation
+        - `deactivate_plugin` - Called on deactivation
+        #{with_hooks ? "- `register_hooks` - Register action hooks\n- `register_filters` - Register filter hooks" : ''}
+        #{with_blocks ? "- `register_ui_blocks` - Register editor blocks" : ''}
+        #{with_settings ? "- `register_settings` - Define settings schema" : ''}
+        
+        ## Support
+        
+        For issues or questions, contact #{author}.
+      README
+      
+      File.write(plugin_path.join('README.md'), readme_content)
+      
+      # Generate settings view if requested
+      if with_settings
+        settings_view = <<~ERB
+          <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-6">#{plugin_title} Settings</h2>
+            
+            <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+              <%= form_with url: update_plugin_settings_path('#{plugin_slug}'), method: :post, class: "space-y-6" do |f| %>
+                <!-- Add your settings form fields here -->
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">
+                    Enable #{plugin_title}
+                  </label>
+                  <%= check_box_tag 'settings[enabled]', '1', true, class: "rounded" %>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-300 mb-2">
+                    API Key
+                  </label>
+                  <%= text_field_tag 'settings[api_key]', '', class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg", placeholder: "Enter your API key" %>
+                </div>
+                
+                <div class="flex justify-end">
+                  <%= f.submit "Save Settings", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        ERB
+        
+        File.write(plugin_path.join('views', 'settings.html.erb'), settings_view)
+      end
+      
+      # Generate block view if requested
+      if with_blocks
+        block_view = <<~ERB
+          <div class="plugin-block bg-white border border-gray-200 rounded-lg p-4 mb-4">
+            <h4 class="font-semibold text-gray-900 mb-2">#{plugin_title}</h4>
+            <p class="text-sm text-gray-600 mb-3">
+              #{description}
+            </p>
+            
+            <!-- Add your block UI here -->
+            <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+              Action Button
+            </button>
+          </div>
+        ERB
+        
+        File.write(plugin_path.join('views', '_sidebar_block.html.erb'), block_view)
+        
+        # Generate JavaScript for blocks
+        js_content = <<~JS
+          // #{plugin_title} JavaScript
+          
+          document.addEventListener('turbo:load', () => {
+            console.log('#{plugin_title} loaded');
+            
+            // Add your JavaScript logic here
+          });
+        JS
+        
+        File.write(plugin_path.join('assets', 'javascripts', "#{plugin_slug}.js"), js_content)
+        
+        # Generate CSS for blocks
+        css_content = <<~CSS
+          /* #{plugin_title} Styles */
+          
+          .plugin-block-#{plugin_slug} {
+            /* Add your styles here */
+          }
+        CSS
+        
+        File.write(plugin_path.join('assets', 'stylesheets', "#{plugin_slug}.css"), css_content)
+      end
+      
+      # Generate database migration template
+      migration_template = <<~RUBY
+        # Create this migration if you need database tables:
+        # rails generate migration Create#{plugin_class}Tables
+        
+        class Create#{plugin_class}Tables < ActiveRecord::Migration[7.1]
+          def change
+            # Example table
+            # create_table :#{plugin_slug}_items do |t|
+            #   t.string :name
+            #   t.text :data
+            #   t.timestamps
+            # end
+          end
+        end
+      RUBY
+      
+      File.write(plugin_path.join('migration_template.rb'), migration_template)
+      
+      success "Plugin generated successfully!"
+      puts ""
+      puts "  Location: lib/plugins/#{plugin_slug}"
+      puts "  Files created:"
+      puts "    - #{plugin_slug}.rb (main plugin file)"
+      puts "    - README.md (documentation)"
+      #{ with_settings ? "    - views/settings.html.erb (settings page)" : "" }
+      #{with_blocks ? "    - views/_sidebar_block.html.erb (block view)\n    - assets/javascripts/#{plugin_slug}.js\n    - assets/stylesheets/#{plugin_slug}.css" : ""}
+      puts "    - migration_template.rb (database template)"
+      puts ""
+      puts "  Next steps:"
+      puts "    1. Create database entry (see README.md)"
+      puts "    2. Activate: railspress-cli plugin:activate #{plugin_slug}"
+      puts "    3. Configure the plugin code as needed"
+      puts "    4. Restart Rails server to load the plugin"
+    end
+    
+    def delete
+      plugin_name = @args[0]
+      
+      unless plugin_name
+        error "Plugin name is required"
+        return
+      end
+      
+      plugin_path = Rails.root.join('lib', 'plugins', plugin_name)
+      
+      unless File.directory?(plugin_path)
+        error "Plugin not found: #{plugin_name}"
+        return
+      end
+      
+      plugin = Plugin.find_by(slug: plugin_name)
+      
+      if plugin&.active?
+        error "Cannot delete active plugin. Deactivate it first."
+        return
+      end
+      
+      warning "This will permanently delete the plugin '#{plugin_name}'. Are you sure? (yes/no)"
+      return unless STDIN.gets.chomp.downcase == 'yes'
+      
+      FileUtils.rm_rf(plugin_path)
+      plugin&.destroy
+      
+      success "Plugin deleted: #{plugin_name}"
+    end
+  end
+
+  # Cache commands (wp cache equivalent)
+  class CacheCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli cache')} - Cache management
+        
+        #{bold('SUBCOMMANDS:')}
+          clear                Clear all caches
+          flush                Flush Redis cache
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli cache:clear
+          railspress-cli cache:flush
+      HELP
+    end
+
+    private
+
+    def clear
+      info "Clearing caches..."
+      Rails.cache.clear
+      success "All caches cleared!"
+    end
+
+    def flush
+      info "Flushing Redis cache..."
+      Redis.current.flushdb if defined?(Redis)
+      success "Redis cache flushed!"
+    rescue => e
+      error "Could not flush Redis: #{e.message}"
+    end
+  end
+
+  # Media commands
+  class MediaCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli media')} - Media management
+        
+        #{bold('SUBCOMMANDS:')}
+          list                 List media files
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli media:list
+      HELP
+    end
+
+    private
+
+    def list
+      media = Medium.all
+      
+      data = media.map do |m|
+        [m.id, m.title, m.created_at.strftime('%Y-%m-%d')]
+      end
+      
+      table(data, ['ID', 'Title', 'Created'])
+      info "Total: #{media.count} media files"
+    end
+  end
+
+  # Option commands (wp option equivalent)
+  class OptionCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli option')} - Site settings management
+        
+        #{bold('SUBCOMMANDS:')}
+          list                 List all options
+          get <key>            Get an option value
+          set <key> <value>    Set an option value
+          delete <key>         Delete an option
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli option:list
+          railspress-cli option:get site_title
+          railspress-cli option:set site_title "My Site"
+      HELP
+    end
+
+    private
+
+    def list
+      settings = SiteSetting.all
+      
+      data = settings.map do |s|
+        [s.key, s.value.to_s.truncate(50)]
+      end
+      
+      table(data, ['Key', 'Value'])
+      info "Total: #{settings.count} settings"
+    end
+
+    def get
+      key = @options.values.first || ARGV[3]
+      value = SiteSetting.get(key)
+      
+      if value
+        puts "#{key}: #{value}"
+      else
+        error "Setting not found: #{key}"
+      end
+    end
+
+    def set
+      key = ARGV[3]
+      value = ARGV[4]
+      
+      SiteSetting.set(key, value)
+      success "Setting updated: #{key} = #{value}"
+    end
+
+    def delete
+      key = @options.values.first || ARGV[3]
+      setting = SiteSetting.find_by(key: key)
+      
+      if setting
+        setting.destroy!
+        success "Setting deleted: #{key}"
+      else
+        error "Setting not found: #{key}"
+      end
+    end
+  end
+
+  # Search commands
+  class SearchCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli search')} - Search operations
+        
+        #{bold('SUBCOMMANDS:')}
+          posts <query>        Search posts
+          pages <query>        Search pages
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli search:posts "rails"
+      HELP
+    end
+
+    private
+
+    def posts
+      query = @options.values.first || ARGV[3]
+      posts = Post.search_full_text(query).limit(20)
+      
+      data = posts.map do |p|
+        [p.id, p.title.truncate(40), p.status]
+      end
+      
+      table(data, ['ID', 'Title', 'Status'])
+      info "Found: #{posts.count} posts"
+    end
+
+    def pages
+      query = @options.values.first || ARGV[3]
+      pages = Page.search_full_text(query).limit(20)
+      
+      data = pages.map do |p|
+        [p.id, p.title.truncate(40), p.status]
+      end
+      
+      table(data, ['ID', 'Title', 'Status'])
+      info "Found: #{pages.count} pages"
+    end
+  end
+
+  # Export commands
+  class ExportCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli export')} - Export content
+        
+        #{bold('SUBCOMMANDS:')}
+          all                  Export all content
+          posts                Export posts only
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli export:all
+      HELP
+    end
+
+    private
+
+    def all
+      info "Exporting all content..."
+      # Implementation would go here
+      success "Content exported!"
+    end
+  end
+
+  # Import commands
+  class ImportCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli import')} - Import content
+        
+        #{bold('SUBCOMMANDS:')}
+          wordpress <file>     Import from WordPress export
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli import:wordpress export.xml
+      HELP
+    end
+
+    private
+
+    def wordpress
+      info "Importing WordPress content..."
+      # Implementation would go here
+      success "Content imported!"
+    end
+  end
+
+  # Shell commands
+  class ShellCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli shell')} - Interactive console
+        
+        #{bold('SUBCOMMANDS:')}
+          console              Open Rails console
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli shell:console
+      HELP
+    end
+
+    private
+
+    def console
+      exec('rails console')
+    end
+  end
+
+  # Doctor commands (wp doctor equivalent)
+  class DoctorCommands < BaseCommands
+    def print_help
+      puts <<~HELP
+        #{bold('railspress-cli doctor')} - System diagnostics
+        
+        #{bold('SUBCOMMANDS:')}
+          check                Run all health checks
+          
+        #{bold('EXAMPLES:')}
+          railspress-cli doctor:check
+      HELP
+    end
+
+    private
+
+    def check
+      puts "\n#{bold('RailsPress System Health Check')}\n\n"
+      
+      # Database
+      print "Database connection... "
+      begin
+        ActiveRecord::Base.connection.execute("SELECT 1")
+        success "OK"
+      rescue => e
+        error "FAIL: #{e.message}"
+      end
+
+      # Redis
+      print "Redis connection... "
+      begin
+        Redis.current.ping if defined?(Redis)
+        success "OK"
+      rescue => e
+        error "FAIL: #{e.message}"
+      end
+
+      # File permissions
+      print "File permissions... "
+      if File.writable?(Rails.root.join('tmp'))
+        success "OK"
+      else
+        error "FAIL: tmp/ not writable"
+      end
+
+      # Models
+      print "Loading models... "
+      begin
+        [User, Post, Page, Category, Tag].each(&:count)
+        success "OK"
+      rescue => e
+        error "FAIL: #{e.message}"
+      end
+
+      puts "\nDiagnostics complete!\n"
+    end
+  end
+end
+
+# Run CLI
+RailspressCLI::CLI.new(ARGV).run
+

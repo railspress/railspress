@@ -1,0 +1,70 @@
+# RuboCop configuration for RailsPress
+
+require:
+  - standard
+  - rubocop-rails
+  - rubocop-rspec
+
+inherit_gem:
+  standard: config/base.yml
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.2
+  Exclude:
+    - 'db/schema.rb'
+    - 'db/migrate/**/*'
+    - 'bin/**/*'
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - 'log/**/*'
+    - 'public/**/*'
+    - 'storage/**/*'
+    - 'app/themes/**/*'
+
+Rails:
+  Enabled: true
+
+# Relax some rules for CMS
+Metrics/MethodLength:
+  Max: 25
+  Exclude:
+    - 'db/seeds.rb'
+    - 'lib/railspress/**/*'
+
+Metrics/ClassLength:
+  Max: 250
+  Exclude:
+    - 'app/controllers/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'config/routes.rb'
+    - 'config/environments/**/*'
+    - 'spec/**/*'
+    - 'db/seeds.rb'
+
+Style/Documentation:
+  Enabled: false
+
+# Allow longer lines for readability
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - 'config/**/*'
+    - 'db/seeds.rb'
+
+# Plugin system uses meta-programming
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - 'lib/plugins/**/*'
+
+# Seeds use instance_eval
+Security/Eval:
+  Exclude:
+    - 'db/seeds.rb'
+
+
+
+

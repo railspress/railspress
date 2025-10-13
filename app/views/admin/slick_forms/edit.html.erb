@@ -1,0 +1,606 @@
+<% content_for :page_title, "Edit Form: #{@form[:title]}" %>
+
+<div class="fluent-forms-builder">
+  <div class="builder-header">
+    <div class="header-left">
+      <%= link_to admin_fluent_forms_path, class: 'back-link' do %>
+        <i class="fas fa-arrow-left"></i> Back to Forms
+      <% end %>
+      <h1 contenteditable="true" id="form-title" data-form-id="<%= @form[:id] %>"><%= @form[:title] %></h1>
+    </div>
+    <div class="header-actions">
+      <%= link_to "/fluent-forms/#{@form[:id]}", class: 'btn btn-secondary', target: '_blank' do %>
+        <i class="fas fa-eye"></i> Preview
+      <% end %>
+      <button class="btn btn-primary" id="save-form">
+        <i class="fas fa-save"></i> Save Form
+      </button>
+    </div>
+  </div>
+
+  <div class="builder-tabs">
+    <button class="tab-btn active" data-tab="builder">
+      <i class="fas fa-hammer"></i> Builder
+    </button>
+    <button class="tab-btn" data-tab="settings">
+      <i class="fas fa-cog"></i> Settings
+    </button>
+    <button class="tab-btn" data-tab="integrations">
+      <i class="fas fa-plug"></i> Integrations
+    </button>
+    <button class="tab-btn" data-tab="notifications">
+      <i class="fas fa-envelope"></i> Notifications
+    </button>
+    <button class="tab-btn" data-tab="appearance">
+      <i class="fas fa-paint-brush"></i> Appearance
+    </button>
+  </div>
+
+  <!-- Builder Tab -->
+  <div class="tab-content active" id="builder-tab">
+    <div class="builder-layout">
+      <!-- Field Palette -->
+      <div class="field-palette">
+        <h3>Form Fields</h3>
+        <div class="field-categories">
+          <div class="field-category">
+            <h4>Basic Fields</h4>
+            <div class="field-list">
+              <% @field_types.select { |f| ['input_text', 'input_email', 'textarea', 'select', 'input_radio', 'input_checkbox'].include?(f[:type]) }.each do |field_type| %>
+                <div class="field-item" draggable="true" data-field-type="<%= field_type[:type] %>">
+                  <i class="fas fa-<%= field_type[:icon] %>"></i>
+                  <span><%= field_type[:label] %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="field-category">
+            <h4>Advanced Fields</h4>
+            <div class="field-list">
+              <% @field_types.select { |f| ['input_number', 'input_phone', 'input_date', 'input_file', 'rating', 'slider'].include?(f[:type]) }.each do |field_type| %>
+                <div class="field-item" draggable="true" data-field-type="<%= field_type[:type] %>">
+                  <i class="fas fa-<%= field_type[:icon] %>"></i>
+                  <span><%= field_type[:label] %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <div class="field-category">
+            <h4>Special Fields</h4>
+            <div class="field-list">
+              <% @field_types.select { |f| ['html', 'section_break', 'payment', 'step'].include?(f[:type]) }.each do |field_type| %>
+                <div class="field-item" draggable="true" data-field-type="<%= field_type[:type] %>">
+                  <i class="fas fa-<%= field_type[:icon] %>"></i>
+                  <span><%= field_type[:label] %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Canvas -->
+      <div class="form-canvas">
+        <div class="canvas-inner">
+          <div id="form-fields-container" class="fields-container">
+            <!-- Fields will be rendered here dynamically -->
+            <div class="empty-canvas" style="<%= 'display: none;' if @form[:form_fields][:fields]&.any? %>">
+              <i class="fas fa-mouse-pointer fa-3x"></i>
+              <p>Drag and drop fields from the left to start building your form</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Field Settings Panel -->
+      <div class="field-settings-panel" id="field-settings" style="display: none;">
+        <div class="panel-header">
+          <h3>Field Settings</h3>
+          <button class="close-panel">&times;</button>
+        </div>
+        <div class="panel-body" id="field-settings-body">
+          <!-- Field settings will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Tab -->
+  <div class="tab-content" id="settings-tab">
+    <div class="settings-panel">
+      <h3>Form Settings</h3>
+      
+      <div class="setting-group">
+        <h4>Confirmation</h4>
+        <label>
+          <input type="radio" name="confirmation_type" value="message" checked> Show Message
+        </label>
+        <label>
+          <input type="radio" name="confirmation_type" value="redirect"> Redirect to URL
+        </label>
+        <label>
+          <input type="radio" name="confirmation_type" value="page"> Redirect to Page
+        </label>
+        
+        <div class="confirmation-message">
+          <label>Success Message</label>
+          <textarea name="confirmation_message" rows="3"><%= @form[:settings].dig(:confirmation, :messageToShow) || 'Thank you for your submission!' %></textarea>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <h4>Restrictions</h4>
+        <label>
+          <input type="checkbox" name="require_login">
+          Require users to be logged in
+        </label>
+        <label>
+          <input type="checkbox" name="limit_entries">
+          Limit number of entries
+        </label>
+        <label>
+          <input type="checkbox" name="schedule_form">
+          Schedule form availability
+        </label>
+      </div>
+
+      <div class="setting-group">
+        <h4>Spam Protection</h4>
+        <label>
+          <input type="checkbox" name="enable_recaptcha">
+          Enable Google reCAPTCHA
+        </label>
+        <label>
+          <input type="checkbox" name="enable_honeypot" checked>
+          Enable Honeypot
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other tabs would follow similar pattern -->
+  <div class="tab-content" id="integrations-tab">
+    <div class="integrations-panel">
+      <h3>Integrations</h3>
+      <p>Configure third-party integrations for this form</p>
+      
+      <div class="integration-list">
+        <% @integrations.each do |integration| %>
+          <div class="integration-card">
+            <div class="integration-icon">
+              <i class="fab fa-<%= integration[:icon] %>"></i>
+            </div>
+            <div class="integration-info">
+              <h4><%= integration[:name] %></h4>
+              <p><%= integration[:description] %></p>
+            </div>
+            <div class="integration-action">
+              <button class="btn btn-sm btn-secondary">Configure</button>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="notifications-tab">
+    <div class="notifications-panel">
+      <h3>Email Notifications</h3>
+      
+      <div class="notification-section">
+        <h4>Admin Notification</h4>
+        <label>
+          <input type="checkbox" name="admin_notification_enabled">
+          Send notification to admin
+        </label>
+        <input type="email" name="admin_email" placeholder="admin@example.com">
+        <input type="text" name="admin_subject" placeholder="Email subject">
+      </div>
+
+      <div class="notification-section">
+        <h4>User Confirmation (Autoresponder)</h4>
+        <label>
+          <input type="checkbox" name="user_notification_enabled">
+          Send confirmation to user
+        </label>
+        <input type="text" name="user_subject" placeholder="Email subject">
+        <textarea name="user_message" rows="4" placeholder="Email message"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="appearance-tab">
+    <div class="appearance-panel">
+      <h3>Form Appearance</h3>
+      
+      <div class="appearance-option">
+        <label>Label Placement</label>
+        <select name="label_placement">
+          <option value="top">Top</option>
+          <option value="left">Left</option>
+          <option value="right">Right</option>
+          <option value="hidden">Hidden</option>
+        </select>
+      </div>
+
+      <div class="appearance-option">
+        <label>Submit Button Text</label>
+        <input type="text" name="submit_button_text" value="Submit">
+      </div>
+
+      <div class="appearance-option">
+        <label>Submit Button Position</label>
+        <select name="submit_button_position">
+          <option value="left">Left</option>
+          <option value="center">Center</option>
+          <option value="right">Right</option>
+        </select>
+      </div>
+
+      <div class="appearance-option">
+        <label>Custom CSS</label>
+        <textarea name="custom_css" rows="6" placeholder=".fluent-form { /* your styles */ }"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.fluent-forms-builder {
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.builder-header {
+  background: white;
+  padding: 20px 30px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.back-link {
+  color: #409eff;
+  text-decoration: none;
+}
+
+#form-title {
+  font-size: 24px;
+  margin: 0;
+  border: 1px dashed transparent;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+#form-title:hover {
+  border-color: #dcdfe6;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.builder-tabs {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 30px;
+  display: flex;
+  gap: 5px;
+}
+
+.tab-btn {
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-btn.active {
+  color: #409eff;
+  border-bottom-color: #409eff;
+}
+
+.tab-content {
+  display: none;
+  padding: 20px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.builder-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr 300px;
+  gap: 20px;
+  height: calc(100vh - 200px);
+}
+
+.field-palette {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.field-palette h3 {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+}
+
+.field-category {
+  margin-bottom: 25px;
+}
+
+.field-category h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #909399;
+  margin: 0 0 10px 0;
+}
+
+.field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-item {
+  padding: 10px 15px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  cursor: move;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+}
+
+.field-item:hover {
+  background: #e3f2fd;
+  color: #409eff;
+}
+
+.field-item i {
+  font-size: 16px;
+}
+
+.form-canvas {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.canvas-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.fields-container {
+  min-height: 400px;
+}
+
+.empty-canvas {
+  text-align: center;
+  padding: 100px 20px;
+  color: #909399;
+}
+
+.empty-canvas i {
+  margin-bottom: 20px;
+}
+
+.field-settings-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.panel-header h3 {
+  margin: 0;
+}
+
+.close-panel {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #909399;
+}
+
+.settings-panel,
+.integrations-panel,
+.notifications-panel,
+.appearance-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  max-width: 800px;
+}
+
+.setting-group {
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.setting-group:last-child {
+  border-bottom: none;
+}
+
+.setting-group h4 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+}
+
+.setting-group label {
+  display: block;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.setting-group input[type="text"],
+.setting-group input[type="email"],
+.setting-group textarea,
+.setting-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.integration-list {
+  display: grid;
+  gap: 15px;
+}
+
+.integration-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.integration-icon {
+  font-size: 32px;
+  color: #409eff;
+}
+
+.integration-info {
+  flex: 1;
+}
+
+.integration-info h4 {
+  margin: 0 0 5px 0;
+}
+
+.integration-info p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.notification-section,
+.appearance-option {
+  margin-bottom: 20px;
+}
+</style>
+
+<script>
+// Initialize form data
+const formData = <%= raw @form.to_json %>;
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tabName = this.dataset.tab;
+    
+    // Remove active class from all tabs and contents
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    // Add active class to clicked tab and corresponding content
+    this.classList.add('active');
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+  });
+});
+
+// Save form
+document.getElementById('save-form')?.addEventListener('click', async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  
+  try {
+    const response = await fetch(`/admin/fluent-forms/<%= @form[:id] %>`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        title: document.getElementById('form-title').textContent,
+        form_fields: formData.form_fields,
+        settings: formData.settings
+      })
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-save"></i> Save Form';
+        btn.disabled = false;
+      }, 2000);
+    }
+  } catch (error) {
+    console.error('Save error:', error);
+    btn.innerHTML = '<i class="fas fa-save"></i> Save Form';
+    btn.disabled = false;
+    alert('Failed to save form');
+  }
+});
+
+// Render existing fields
+function renderFields() {
+  const container = document.getElementById('form-fields-container');
+  const fields = formData.form_fields.fields || [];
+  
+  if (fields.length === 0) return;
+  
+  container.querySelector('.empty-canvas')?.remove();
+  
+  fields.forEach(field => {
+    const fieldEl = createFieldElement(field);
+    container.appendChild(fieldEl);
+  });
+}
+
+function createFieldElement(field) {
+  const div = document.createElement('div');
+  div.className = 'form-field-preview';
+  div.innerHTML = `
+    <div class="field-preview-header">
+      <span class="field-type-label">${field.element}</span>
+      <div class="field-actions">
+        <button class="field-edit-btn"><i class="fas fa-edit"></i></button>
+        <button class="field-delete-btn"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    <label>${field.settings?.label || 'Untitled Field'}</label>
+    <input type="text" class="preview-input" disabled placeholder="${field.settings?.placeholder || ''}">
+  `;
+  return div;
+}
+
+// Initialize on page load
+renderFields();
+</script>
+

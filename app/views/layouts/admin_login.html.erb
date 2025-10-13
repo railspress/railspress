@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= content_for?(:page_title) ? "#{content_for(:page_title)} - RailsPress Admin" : "RailsPress Admin" %></title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Admin Styles -->
+    <style>
+      <%
+        # Get current color scheme
+        color_scheme = SiteSetting.get('color_scheme', 'onyx')
+        scheme_colors = color_scheme_colors(color_scheme)
+        is_light_theme = color_scheme == 'amanecer'
+      %>
+      :root {
+        --admin-bg-primary: <%= scheme_colors[:bg_primary] %>;
+        --admin-bg-secondary: <%= scheme_colors[:bg_secondary] %>;
+        --admin-bg-tertiary: <%= scheme_colors[:bg_tertiary] %>;
+        --admin-border: <%= scheme_colors[:border_color] %>;
+        --admin-text-primary: <%= is_light_theme ? '#000000' : '#ffffff' %>;
+        --admin-text-secondary: <%= is_light_theme ? '#6b7280' : '#a0a0a0' %>;
+        --admin-text-tertiary: <%= is_light_theme ? '#9ca3af' : '#6b6b6b' %>;
+        --admin-accent-primary: #6366f1;
+        --admin-accent-hover: #7c3aed;
+      }
+      
+      body {
+        background: var(--admin-bg-primary);
+        min-height: 100vh;
+        color: var(--admin-text-primary);
+      }
+      
+      .admin-login-container {
+        background: var(--admin-bg-tertiary);
+        border: 1px solid var(--admin-border);
+      }
+      
+      .admin-logo {
+        color: var(--admin-accent-primary);
+      }
+      
+      .btn-primary {
+        background: var(--admin-accent-primary);
+        transition: all 0.3s ease;
+      }
+      
+      .btn-primary:hover {
+        background: var(--admin-accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+      }
+      
+      .form-input {
+        background: var(--admin-bg-secondary);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text-primary);
+        transition: all 0.3s ease;
+      }
+      
+      .form-input:focus {
+        border-color: var(--admin-accent-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        outline: none;
+      }
+      
+      .form-input::placeholder {
+        color: var(--admin-text-tertiary);
+      }
+      
+      .text-secondary {
+        color: var(--admin-text-secondary);
+      }
+      
+      .text-tertiary {
+        color: var(--admin-text-tertiary);
+      }
+    </style>
+    
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+  </head>
+
+  <body class="font-sans antialiased">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-md w-full space-y-8">
+        <!-- Logo and Title -->
+        <div class="text-center">
+          <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white shadow-lg mb-4">
+            <svg class="h-8 w-8 admin-logo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+          <h1 class="text-3xl font-bold admin-logo mb-2">RailsPress</h1>
+          <p class="text-secondary">Admin Dashboard</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-login-container rounded-2xl shadow-2xl p-8">
+          <%= yield %>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center">
+          <p class="text-secondary text-sm opacity-75">
+            &copy; <%= Date.current.year %> RailsPress. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

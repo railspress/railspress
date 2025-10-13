@@ -1,0 +1,234 @@
+<% content_for :title, "Custom Fields" %>
+
+<link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/css/tabulator_midnight.min.css" rel="stylesheet">
+
+<div class="max-w-7xl mx-auto">
+  <% if notice.present? %>
+    <div class="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+      <p class="text-green-400 font-medium" id="notice"><%= notice %></p>
+    </div>
+  <% end %>
+
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-white mb-2">Custom Fields</h1>
+      <p class="text-gray-400">Create and manage custom fields for posts and pages (ACF-style)</p>
+    </div>
+    <%= link_to new_admin_field_group_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      New Field Group
+    <% end %>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Total Groups</p>
+          <p class="text-2xl font-bold text-white"><%= FieldGroup.count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Active</p>
+          <p class="text-2xl font-bold text-white"><%= FieldGroup.active.count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Total Fields</p>
+          <p class="text-2xl font-bold text-white"><%= CustomField.count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Field Values</p>
+          <p class="text-2xl font-bold text-white"><%= CustomFieldValue.count %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4 mb-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <%= link_to admin_field_groups_path, class: "px-4 py-2 text-sm font-medium rounded-lg #{params[:filter].nil? ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-[#2a2a2a]'}" do %>
+          All
+        <% end %>
+        <%= link_to admin_field_groups_path(filter: 'active'), class: "px-4 py-2 text-sm font-medium rounded-lg #{params[:filter] == 'active' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-[#2a2a2a]'}" do %>
+          Active
+        <% end %>
+        <%= link_to admin_field_groups_path(filter: 'inactive'), class: "px-4 py-2 text-sm font-medium rounded-lg #{params[:filter] == 'inactive' ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-[#2a2a2a]'}" do %>
+          Inactive
+        <% end %>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <input type="text" id="search-input" placeholder="Search field groups..." 
+               class="px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+    </div>
+  </div>
+
+  <!-- Field Groups List -->
+  <div class="space-y-4">
+    <% if @field_groups.any? %>
+      <% @field_groups.each do |field_group| %>
+        <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 hover:border-[#3a3a3a] transition-colors">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <!-- Header -->
+              <div class="flex items-center gap-3 mb-3">
+                <h3 class="text-lg font-semibold text-white">
+                  <%= link_to field_group.name, edit_admin_field_group_path(field_group), class: "hover:text-indigo-400 transition" %>
+                </h3>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= field_group.active? ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400' %>">
+                  <%= field_group.active? ? 'Active' : 'Inactive' %>
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400">
+                  <%= pluralize(field_group.custom_fields.count, 'field') %>
+                </span>
+              </div>
+              
+              <!-- Description -->
+              <% if field_group.description.present? %>
+                <p class="text-gray-400 text-sm mb-3"><%= field_group.description %></p>
+              <% end %>
+              
+              <!-- Location Rules -->
+              <% if field_group.location_rules.present? %>
+                <div class="flex items-center gap-2 text-xs text-gray-500">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  <span>Displays on: <%= field_group.location_rules.to_json %></span>
+                </div>
+              <% end %>
+              
+              <!-- Fields Preview -->
+              <% if field_group.custom_fields.any? %>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <% field_group.custom_fields.ordered.limit(5).each do |field| %>
+                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[#0a0a0a] border border-[#2a2a2a] text-gray-300">
+                      <%= field.label %>
+                      <span class="ml-1 text-gray-600">(<%= field.field_type %>)</span>
+                    </span>
+                  <% end %>
+                  <% if field_group.custom_fields.count > 5 %>
+                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium text-gray-500">
+                      +<%= field_group.custom_fields.count - 5 %> more
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-2 ml-4">
+              <%= link_to edit_admin_field_group_path(field_group), class: "text-gray-400 hover:text-indigo-400 p-2 rounded-lg hover:bg-indigo-500/10 transition", title: "Edit" do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              <% end %>
+              
+              <%= link_to toggle_admin_field_group_path(field_group), method: :patch, class: "text-gray-400 hover:text-#{field_group.active? ? 'orange' : 'green'}-400 p-2 rounded-lg hover:bg-#{field_group.active? ? 'orange' : 'green'}-500/10 transition", title: field_group.active? ? 'Deactivate' : 'Activate' do %>
+                <% if field_group.active? %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636"/>
+                  </svg>
+                <% else %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                <% end %>
+              <% end %>
+              
+              <%= link_to duplicate_admin_field_group_path(field_group), method: :post, class: "text-gray-400 hover:text-blue-400 p-2 rounded-lg hover:bg-blue-500/10 transition", title: "Duplicate", data: { turbo_confirm: "Duplicate this field group?" } do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+              <% end %>
+              
+              <%= button_to admin_field_group_path(field_group), method: :delete, class: "text-gray-400 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition", title: "Delete", data: { turbo_confirm: "Delete this field group? This action cannot be undone." } do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-12 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-300">No field groups</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by creating your first custom field group.</p>
+        <div class="mt-6">
+          <%= link_to new_admin_field_group_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Create Field Group
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  // Simple search functionality
+  document.getElementById('search-input')?.addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const fieldGroups = document.querySelectorAll('.space-y-4 > div[class*="bg-[#1a1a1a]"]');
+    
+    fieldGroups.forEach(group => {
+      const text = group.textContent.toLowerCase();
+      if (text.includes(searchTerm)) {
+        group.style.display = '';
+      } else {
+        group.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+
+
+

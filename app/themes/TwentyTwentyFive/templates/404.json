@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "rt": {
+      "type": "rich-text",
+      "settings": {
+        "heading": "Page not found",
+        "body": "The page you\u2019re looking for doesn\u2019t exist."
+      }
+    }
+  },
+  "order": [
+    "rt"
+  ]
+}

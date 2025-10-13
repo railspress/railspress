@@ -1,0 +1,6 @@
+{% comment %} List taxonomy terms {% endcomment %}
+<ul class="taxonomy-list">
+  {% for term in collections.categories %}
+    <li><a href="{{ term.url }}">{{ term.name }}</a></li>
+  {% endfor %}
+</ul>

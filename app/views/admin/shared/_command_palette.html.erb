@@ -1,0 +1,147 @@
+<!-- Command Palette (CMD+I) -->
+<div data-controller="command-palette" class="hidden fixed inset-0 z-[9999]" data-command-palette-target="dialog">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" data-action="click->command-palette#close"></div>
+  
+  <!-- Dialog -->
+  <div class="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl">
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-2xl overflow-hidden">
+      <!-- Search Input -->
+      <div class="p-4 border-b border-[#2a2a2a]">
+        <div class="relative">
+          <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            data-command-palette-target="input"
+            data-action="input->command-palette#search keydown->command-palette#handleKeyboard"
+            placeholder="Type a command or search..." 
+            class="w-full pl-12 pr-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base"
+            autocomplete="off"
+            autofocus>
+        </div>
+      </div>
+      
+      <!-- Results -->
+      <div class="overflow-y-auto max-h-[60vh]" data-command-palette-target="results">
+        <!-- Results will be rendered here by JavaScript -->
+      </div>
+      
+      <!-- Empty State -->
+      <div class="hidden" data-command-palette-target="empty">
+        <!-- Empty state will be rendered here by JavaScript -->
+      </div>
+      
+      <!-- Footer -->
+      <div class="px-4 py-3 bg-[#111111] border-t border-[#2a2a2a] flex items-center justify-between text-xs text-gray-500">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1">
+            <kbd class="kbd-mini">↑↓</kbd>
+            <span>Navigate</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <kbd class="kbd-mini">↔</kbd>
+            <span>Select</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <kbd class="kbd-mini">esc</kbd>
+            <span>Close</span>
+          </div>
+        </div>
+        <div class="text-gray-600">
+          Global Command Palette
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Command Palette Styles - Exact match to screenshot */
+  .command-item {
+    @apply px-4 py-3 flex items-center cursor-pointer transition-all duration-150;
+    @apply text-gray-300 hover:bg-[#2a2a2a];
+    border-left: 2px solid transparent;
+  }
+  
+  .command-item-selected {
+    @apply bg-purple-600 text-white;
+    border-left: 2px solid #a855f7;
+  }
+  
+  .command-item-selected .command-title {
+    @apply text-white;
+  }
+  
+  .command-item-selected .command-description {
+    @apply text-purple-100;
+  }
+  
+  .command-icon {
+    @apply text-lg flex-shrink-0;
+    margin-right: 12px;
+  }
+  
+  .command-title {
+    @apply text-sm font-medium text-white mb-1;
+  }
+  
+  .command-description {
+    @apply text-xs text-gray-500;
+  }
+  
+  .command-action {
+    @apply text-xs text-gray-400 bg-[#2a2a2a] px-2 py-1 rounded;
+  }
+  
+  .command-kbd {
+    @apply px-2 py-1 bg-[#2a2a2a] text-gray-400 text-xs rounded border border-[#3a3a3a] font-mono;
+  }
+  
+  .kbd-mini {
+    @apply px-1.5 py-0.5 bg-[#2a2a2a] text-gray-500 rounded border border-[#3a3a3a] font-mono text-xs;
+  }
+  
+  .category-title {
+    @apply px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider;
+    background: #0a0a0a;
+  }
+  
+  /* Smooth animations */
+  [data-command-palette-target="dialog"]:not(.hidden) {
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Scrollbar styling */
+  [data-command-palette-target="results"]::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  [data-command-palette-target="results"]::-webkit-scrollbar-track {
+    background: #0a0a0a;
+  }
+  
+  [data-command-palette-target="results"]::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 4px;
+  }
+  
+  [data-command-palette-target="results"]::-webkit-scrollbar-thumb:hover {
+    background: #3a3a3a;
+  }
+</style>
+

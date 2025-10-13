@@ -1,0 +1,7 @@
+<aside class="author-card">
+  <div class="avatar">{% if page.author_obj.avatar %}<img src="{{ page.author_obj.avatar }}" alt="{{ page.author_obj.name }}">{% endif %}</div>
+  <div>
+    <strong>{{ page.author_obj.name }}</strong>
+    <p class="muted">{{ page.author_obj.bio }}</p>
+  </div>
+</aside>

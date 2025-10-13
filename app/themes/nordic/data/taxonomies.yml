@@ -1,0 +1,9 @@
+taxonomies:
+  category:
+    hierarchical: true
+    label: "Categories"
+    route: "/category/:slug"
+  tag:
+    hierarchical: false
+    label: "Tags"
+    route: "/tag/:slug"

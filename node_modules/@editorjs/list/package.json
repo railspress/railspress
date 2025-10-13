@@ -1,0 +1,52 @@
+{
+  "name": "@editorjs/list", 
+  "version": "2.0.8",
+  "keywords": [
+    "codex editor",
+    "list",
+    "editor.js",
+    "editorjs"
+  ],
+  "description": "List Tool for EditorJS",
+  "repository": "https://github.com/editor-js/list.git",
+  "author": "CodeX <team@codex.so>",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/editorjs-list.umd.js",
+  "module": "./dist/editorjs-list.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/editorjs-list.mjs",
+      "require": "./dist/editorjs-list.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "devDependencies": {
+    "@editorjs/editorjs": "^2.31.0-rc.2",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "@editorjs/caret": "^1.0.3",
+    "@editorjs/dom": "^1.0.1",
+    "eslint": "^9.2.0",
+    "eslint-config-codex": "^2.0.0",
+    "eslint-import-resolver-alias": "1.1.2",
+    "postcss-nested": "^5.0.3",
+    "postcss-nested-ancestors": "^2.0.0",
+    "typescript": "^5.4.5",
+    "vite": "^4.5.0",
+    "vite-plugin-css-injected-by-js": "^3.3.0",
+    "vite-plugin-dts": "^3.9.1"
+  },
+  "dependencies": {
+    "@codexteam/icons": "^0.3.2"
+  }
+}

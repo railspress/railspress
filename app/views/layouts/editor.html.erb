@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="dark">
+  <head>
+    <title><%= content_for?(:page_title) ? yield(:page_title) : 'Editor' %> - <%= admin_app_name %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <% if admin_favicon_url.present? %>
+      <link rel="icon" type="image/x-icon" href="<%= admin_favicon_url %>">
+    <% end %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <%= yield :head %>
+    
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0a0a0a;
+        color: #fff;
+      }
+      
+      /* Full screen editor styles */
+      .editor-wrapper {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .editor-topbar {
+        height: 60px;
+        background: #111111;
+        border-bottom: 1px solid #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        flex-shrink: 0;
+        z-index: 100;
+      }
+      
+      .editor-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+      
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      
+      .topbar-center {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      
+      .editor-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      .editor-btn-primary {
+        background: #6366F1;
+        color: white;
+      }
+      
+      .editor-btn-primary:hover {
+        background: #4F46E5;
+      }
+      
+      .editor-btn-secondary {
+        background: #1a1a1a;
+        color: #9ca3af;
+        border: 1px solid #2a2a2a;
+      }
+      
+      .editor-btn-secondary:hover {
+        background: #2a2a2a;
+        color: white;
+      }
+      
+      .editor-btn-danger {
+        background: transparent;
+        color: #ef4444;
+        border: 1px solid #2a2a2a;
+      }
+      
+      .editor-btn-danger:hover {
+        background: #ef4444;
+        color: white;
+      }
+      
+      .editor-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+      }
+      
+      .editor-subtitle {
+        font-size: 0.75rem;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="editor-wrapper">
+      <!-- Top Bar -->
+      <div class="editor-topbar">
+        <div class="topbar-left">
+          <%= link_to admin_root_path, class: "editor-btn editor-btn-secondary" do %>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Admin
+          <% end %>
+          
+          <div class="h-8 w-px bg-[#2a2a2a]"></div>
+          
+          <div>
+            <div class="editor-title"><%= content_for?(:page_title) ? yield(:page_title) : 'Editor' %></div>
+            <% if content_for?(:editor_subtitle) %>
+              <div class="editor-subtitle"><%= yield :editor_subtitle %></div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="topbar-center">
+          <%= yield :topbar_center %>
+        </div>
+
+        <div class="topbar-right">
+          <%= yield :topbar_actions %>
+        </div>
+      </div>
+
+      <!-- Editor Content -->
+      <div class="editor-content">
+        <%= yield %>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+
+

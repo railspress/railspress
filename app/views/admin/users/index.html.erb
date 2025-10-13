@@ -1,0 +1,388 @@
+<% content_for :page_title, "Users" %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Users</h1>
+      <p class="text-gray-400">Manage user accounts and permissions</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to admin_access_levels_path, class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        Access Levels
+      <% end %>
+      <%= link_to new_admin_user_path, class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add New User
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Total Users</p>
+          <p class="text-2xl font-bold text-white"><%= User.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Administrators</p>
+          <p class="text-2xl font-bold text-white"><%= User.administrator.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Editors</p>
+          <p class="text-2xl font-bold text-white"><%= User.editor.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Authors</p>
+          <p class="text-2xl font-bold text-white"><%= User.author.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Subscribers</p>
+          <p class="text-2xl font-bold text-white"><%= User.subscriber.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-gray-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Bulk Actions -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 mb-6">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <select id="filter-role" class="px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="">All Roles</option>
+          <option value="administrator">Administrator</option>
+          <option value="editor">Editor</option>
+          <option value="author">Author</option>
+          <option value="contributor">Contributor</option>
+          <option value="subscriber">Subscriber</option>
+        </select>
+
+        <input type="text" id="search-users" placeholder="Search users..." 
+               class="px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+
+      <div class="flex items-center gap-3">
+        <select id="bulk-action" class="px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm">
+          <option value="">Bulk Actions</option>
+          <option value="delete">Delete Selected</option>
+          <option value="change_role">Change Role</option>
+        </select>
+
+        <select id="bulk-role" class="hidden px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm">
+          <option value="">Select Role</option>
+          <option value="administrator">Administrator</option>
+          <option value="editor">Editor</option>
+          <option value="author">Author</option>
+          <option value="contributor">Contributor</option>
+          <option value="subscriber">Subscriber</option>
+        </select>
+
+        <button id="apply-bulk" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm font-medium">
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table (Tabulator) -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div id="users-table"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/css/tabulator_midnight.min.css" rel="stylesheet">
+
+<script>
+  function initUsersTable() {
+    const tableElement = document.getElementById('users-table');
+    if (!tableElement) return;
+    
+    // Destroy existing table if it exists
+    if (tableElement._tabulator) {
+      tableElement._tabulator.destroy();
+    }
+    
+    const table = new Tabulator("#users-table", {
+      ajaxURL: "<%= admin_users_path(format: :json) %>",
+      layout: "fitColumns",
+      pagination: true,
+      paginationSize: 20,
+      paginationSizeSelector: [10, 20, 50, 100],
+      height: "600px",
+      selectableRows: true,
+      selectableRowsRangeMode: "click",
+      columns: [
+        {
+          formatter: "rowSelection",
+          titleFormatter: "rowSelection",
+          hozAlign: "center",
+          headerSort: false,
+          cellClick: function(e, cell) {
+            cell.getRow().toggleSelect();
+          },
+          width: 50
+        },
+        {
+          title: "Email",
+          field: "email",
+          sorter: "string",
+          formatter: function(cell) {
+            const email = cell.getValue();
+            const userId = cell.getRow().getData().id;
+            return `<a href="/admin/users/${userId}/edit" class="text-indigo-400 hover:text-indigo-300 hover:underline">${email}</a>`;
+          }
+        },
+        {
+          title: "Name",
+          field: "name",
+          sorter: "string"
+        },
+        {
+          title: "Role",
+          field: "role_badge",
+          sorter: "string",
+          hozAlign: "center",
+          formatter: "html",
+          width: 130
+        },
+        {
+          title: "Posts",
+          field: "posts_count",
+          sorter: "number",
+          hozAlign: "center",
+          width: 80
+        },
+        {
+          title: "Pages",
+          field: "pages_count",
+          sorter: "number",
+          hozAlign: "center",
+          width: 80
+        },
+        {
+          title: "Last Sign In",
+          field: "last_sign_in",
+          sorter: "string",
+          width: 150
+        },
+        {
+          title: "Joined",
+          field: "created_at",
+          sorter: "string",
+          width: 120
+        },
+        {
+          title: "Actions",
+          field: "id",
+          headerSort: false,
+          hozAlign: "center",
+          formatter: function(cell) {
+            const userId = cell.getValue();
+            return `
+              <div class="flex items-center justify-center gap-2">
+                <a href="/admin/users/${userId}/edit" class="text-blue-400 hover:text-blue-300 text-sm">Edit</a>
+                <a href="/admin/users/${userId}" class="text-gray-400 hover:text-gray-300 text-sm">View</a>
+                <a href="/admin/users/${userId}" data-turbo-method="delete" data-turbo-confirm="Are you sure?" class="text-red-400 hover:text-red-300 text-sm">Delete</a>
+              </div>
+            `;
+          },
+          width: 180
+        }
+      ]
+    });
+
+    // Filter by role
+    document.getElementById('filter-role').addEventListener('change', function(e) {
+      const role = e.target.value;
+      table.setFilter("role", "=", role || null);
+    });
+
+    // Search
+    document.getElementById('search-users').addEventListener('input', function(e) {
+      const search = e.target.value;
+      if (search.length > 0) {
+        table.setFilter([
+          {field:"email", type:"like", value:search},
+          {field:"name", type:"like", value:search}
+        ], "or");
+      } else {
+        table.clearFilter();
+      }
+    });
+
+    // Bulk actions
+    document.getElementById('bulk-action').addEventListener('change', function(e) {
+      const action = e.target.value;
+      const roleSelect = document.getElementById('bulk-role');
+      
+      if (action === 'change_role') {
+        roleSelect.classList.remove('hidden');
+      } else {
+        roleSelect.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('apply-bulk').addEventListener('click', function() {
+      const selectedRows = table.getSelectedRows();
+      const action = document.getElementById('bulk-action').value;
+      const role = document.getElementById('bulk-role').value;
+
+      if (!action) {
+        alert('Please select a bulk action');
+        return;
+      }
+
+      if (selectedRows.length === 0) {
+        alert('Please select at least one user');
+        return;
+      }
+
+      if (action === 'change_role' && !role) {
+        alert('Please select a role');
+        return;
+      }
+
+      const userIds = selectedRows.map(row => row.getData().id);
+      const confirmMessage = action === 'delete' 
+        ? `Delete ${userIds.length} user(s)?` 
+        : `${action.replace('_', ' ').titleize()} ${userIds.length} user(s)?`;
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      // Submit bulk action
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/admin/users/bulk_action';
+
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      form.innerHTML = `
+        <input type="hidden" name="authenticity_token" value="${csrfToken}">
+        <input type="hidden" name="bulk_action" value="${action}">
+        ${action === 'change_role' ? `<input type="hidden" name="role" value="${role}">` : ''}
+        ${userIds.map(id => `<input type="hidden" name="user_ids[]" value="${id}">`).join('')}
+      `;
+
+      document.body.appendChild(form);
+      form.submit();
+    });
+  });
+
+  String.prototype.titleize = function() {
+    return this.replace(/\w\S*/g, function(txt){
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+  };
+  }
+  
+  // Initialize on page load
+  document.addEventListener('turbo:load', initUsersTable);
+  document.addEventListener('DOMContentLoaded', initUsersTable);
+  
+  // Cleanup before Turbo caches the page
+  document.addEventListener('turbo:before-cache', function() {
+    const tableElement = document.getElementById('users-table');
+    if (tableElement && tableElement._tabulator) {
+      tableElement._tabulator.destroy();
+    }
+  });
+</script>
+
+<style>
+  /* Tabulator dark theme customization */
+  .tabulator {
+    background-color: transparent !important;
+    border: none !important;
+  }
+  
+  .tabulator-header {
+    background-color: #0a0a0a !important;
+    border-bottom: 1px solid #2a2a2a !important;
+  }
+  
+  .tabulator-col {
+    background-color: #0a0a0a !important;
+    border-right: 1px solid #2a2a2a !important;
+  }
+  
+  .tabulator-col-title {
+    color: #9ca3af !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+  }
+  
+  .tabulator-row {
+    background-color: #111111 !important;
+    border-bottom: 1px solid #2a2a2a !important;
+    color: #d1d5db !important;
+  }
+  
+  .tabulator-row:hover {
+    background-color: #1a1a1a !important;
+  }
+  
+  .tabulator-row.tabulator-selected {
+    background-color: rgba(99, 102, 241, 0.1) !important;
+  }
+  
+  .tabulator-footer {
+    background-color: #0a0a0a !important;
+    border-top: 1px solid #2a2a2a !important;
+  }
+</style>
+

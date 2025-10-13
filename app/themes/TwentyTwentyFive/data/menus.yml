@@ -1,0 +1,7 @@
+primary:
+  - { title: "Home", url: "/" }
+  - { title: "Blog", url: "/blog" }
+  - { title: "About", url: "/page/about" }
+footer:
+  - { title: "Privacy", url: "/page/privacy" }
+  - { title: "RSS", url: "/feed.xml" }

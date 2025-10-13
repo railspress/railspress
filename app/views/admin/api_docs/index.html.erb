@@ -1,0 +1,251 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">API Documentation</h1>
+    <p class="text-gray-400">Comprehensive documentation for RailsPress REST API and GraphQL</p>
+  </div>
+
+  <!-- Quick Navigation -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- REST API Card -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 hover:border-blue-500 transition-colors">
+      <%= link_to rest_admin_api_docs_path, class: "block" do %>
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-xl font-semibold text-white">REST API</h3>
+            <p class="text-sm text-gray-400">Complete REST API reference</p>
+          </div>
+        </div>
+        <p class="text-gray-300 text-sm mb-4">
+          Access all endpoints for posts, pages, users, taxonomies, media, and more via RESTful HTTP requests.
+        </p>
+        <div class="flex items-center text-blue-400 text-sm font-medium">
+          <span>View Documentation</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- GraphQL Playground Card -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 hover:border-purple-500 transition-colors">
+      <%= link_to graphql_admin_api_docs_path, class: "block" do %>
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-xl font-semibold text-white">GraphQL Playground</h3>
+            <p class="text-sm text-gray-400">Interactive query builder</p>
+          </div>
+        </div>
+        <p class="text-gray-300 text-sm mb-4">
+          Test GraphQL queries and mutations in real-time with auto-complete and schema introspection.
+        </p>
+        <div class="flex items-center text-purple-400 text-sm font-medium">
+          <span>Launch Playground</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- GraphQL Schema Card -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 hover:border-green-500 transition-colors">
+      <%= link_to graphql_schema_admin_api_docs_path, class: "block" do %>
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-xl font-semibold text-white">GraphQL Schema</h3>
+            <p class="text-sm text-gray-400">Types, queries & mutations</p>
+          </div>
+        </div>
+        <p class="text-gray-300 text-sm mb-4">
+          Browse the complete GraphQL schema including all types, queries, mutations, and fields.
+        </p>
+        <div class="flex items-center text-green-400 text-sm font-medium">
+          <span>View Schema</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      <% end %>
+    </div>
+    
+    <!-- Plugin Development Card -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 hover:border-yellow-500 transition-colors">
+      <%= link_to plugins_admin_api_docs_path, class: "block" do %>
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-xl font-semibold text-white">Plugin Development</h3>
+            <p class="text-sm text-gray-400">Build custom plugins</p>
+          </div>
+        </div>
+        <p class="text-gray-300 text-sm mb-4">
+          Complete guide to building RailsPress plugins with MVC architecture, routing, and best practices.
+        </p>
+        <div class="flex items-center text-yellow-400 text-sm font-medium">
+          <span>View Docs</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      <% end %>
+    </div>
+    
+    <!-- Theme Development Card -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 hover:border-pink-500 transition-colors">
+      <%= link_to themes_admin_api_docs_path, class: "block" do %>
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+            </svg>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-xl font-semibold text-white">Theme Development</h3>
+            <p class="text-sm text-gray-400">Create custom themes</p>
+          </div>
+        </div>
+        <p class="text-gray-300 text-sm mb-4">
+          Learn how to build beautiful Liquid-based themes with sections, templates, and customizable settings.
+        </p>
+        <div class="flex items-center text-pink-400 text-sm font-medium">
+          <span>View Docs</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Quick Start Guide -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+    <h2 class="text-2xl font-bold text-white mb-4">Quick Start</h2>
+    
+    <div class="space-y-6">
+      <!-- Authentication -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-2">1. Authentication</h3>
+        <p class="text-gray-300 mb-3">Most endpoints require authentication. Get your API token:</p>
+        <div class="bg-[#0d0d0d] rounded-lg p-4 font-mono text-sm overflow-x-auto">
+          <code class="text-green-400">POST</code> <code class="text-white">/api/v1/auth/login</code>
+          <pre class="text-gray-400 mt-2">{
+  "email": "user@example.com",
+  "password": "your_password"
+}</pre>
+        </div>
+      </div>
+
+      <!-- Using the Token -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-2">2. Using Your Token</h3>
+        <p class="text-gray-300 mb-3">Include the token in the Authorization header:</p>
+        <div class="bg-[#0d0d0d] rounded-lg p-4 font-mono text-sm overflow-x-auto">
+          <code class="text-yellow-400">Authorization:</code> <code class="text-white">Bearer YOUR_TOKEN_HERE</code>
+        </div>
+      </div>
+
+      <!-- Example Request -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-2">3. Make a Request</h3>
+        <p class="text-gray-300 mb-3">Example: Get all published posts</p>
+        <div class="bg-[#0d0d0d] rounded-lg p-4 font-mono text-sm overflow-x-auto">
+          <code class="text-green-400">GET</code> <code class="text-white">/api/v1/posts?status=published</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Key Features -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-xl font-bold text-white mb-4">Key Features</h2>
+      <ul class="space-y-3">
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-gray-300">RESTful architecture with JSON responses</span>
+        </li>
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-gray-300">GraphQL API for flexible queries</span>
+        </li>
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-gray-300">Token-based authentication</span>
+        </li>
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-gray-300">Pagination and filtering</span>
+        </li>
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-gray-300">Full CRUD operations</span>
+        </li>
+        <li class="flex items-start">
+          <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-gray-300">Comprehensive error handling</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Base URL -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-xl font-bold text-white mb-4">Base URL</h2>
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm text-gray-400 mb-2">REST API</p>
+          <div class="bg-[#0d0d0d] rounded-lg p-3 font-mono text-sm">
+            <code class="text-blue-400"><%= request.protocol %><%= request.host_with_port %>/api/v1</code>
+          </div>
+        </div>
+        <div>
+          <p class="text-sm text-gray-400 mb-2">GraphQL Endpoint</p>
+          <div class="bg-[#0d0d0d] rounded-lg p-3 font-mono text-sm">
+            <code class="text-purple-400"><%= request.protocol %><%= request.host_with_port %>/graphql</code>
+          </div>
+        </div>
+        <div>
+          <p class="text-sm text-gray-400 mb-2">GraphQL Playground</p>
+          <div class="bg-[#0d0d0d] rounded-lg p-3 font-mono text-sm">
+            <code class="text-green-400"><%= request.protocol %><%= request.host_with_port %>/admin/graphql</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

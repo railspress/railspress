@@ -1,0 +1,81 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center mb-4">
+      <%= link_to admin_api_docs_path, class: "text-gray-400 hover:text-white mr-4" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      <% end %>
+      <h1 class="text-3xl font-bold text-white">Theme Development Documentation</h1>
+    </div>
+    <p class="text-gray-400">Learn how to build beautiful Liquid-based themes for RailsPress</p>
+  </div>
+
+  <!-- Documentation List -->
+  <div class="grid grid-cols-1 gap-6">
+    <% @theme_docs.each do |doc| %>
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-pink-500 transition-colors">
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+              <h2 class="text-2xl font-bold text-white mb-2"><%= doc[:title] %></h2>
+              <p class="text-sm text-gray-400">
+                <code class="text-xs bg-[#0d0d0d] px-2 py-1 rounded"><%= doc[:filename] %>.md</code>
+              </p>
+            </div>
+            <a href="<%= doc[:url] %>" target="_blank" class="ml-4 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-medium transition">
+              View File
+            </a>
+          </div>
+          
+          <!-- Preview of content (first 500 chars) -->
+          <div class="prose prose-invert max-w-none">
+            <div class="text-gray-300 text-sm line-clamp-3">
+              <%= doc[:content].gsub(/^#.*$/, '').strip[0..500] %>...
+            </div>
+          </div>
+        </div>
+        
+        <!-- Expandable content -->
+        <details class="border-t border-[#2a2a2a]">
+          <summary class="px-6 py-3 cursor-pointer hover:bg-[#111111] text-gray-400 font-medium text-sm">
+            Show Full Content
+          </summary>
+          <div class="p-6 bg-[#0d0d0d] prose prose-invert max-w-none">
+            <%= simple_format(doc[:content]) %>
+          </div>
+        </details>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="mt-8 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+    <h3 class="text-xl font-bold text-white mb-4">Featured Themes</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex items-start p-4 bg-[#0d0d0d] rounded-lg">
+        <svg class="w-10 h-10 text-blue-500 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+        </svg>
+        <div>
+          <div class="text-white font-medium mb-1">Nordic Theme</div>
+          <div class="text-gray-400 text-sm mb-2">Modern minimalist design with Liquid templates</div>
+          <a href="/docs/themes/nordic.md" target="_blank" class="text-blue-400 text-sm hover:text-blue-300">View Documentation →</a>
+        </div>
+      </div>
+      
+      <div class="flex items-start p-4 bg-[#0d0d0d] rounded-lg">
+        <svg class="w-10 h-10 text-purple-500 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+        </svg>
+        <div>
+          <div class="text-white font-medium mb-1">Twenty Twenty-Five</div>
+          <div class="text-gray-400 text-sm mb-2">WordPress-inspired professional theme</div>
+          <a href="/docs/themes/twenty_twenty_five.md" target="_blank" class="text-purple-400 text-sm hover:text-purple-300">View Documentation →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

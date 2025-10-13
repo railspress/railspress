@@ -1,0 +1,122 @@
+<% content_for :page_title, "Cache Settings" %>
+
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-white mb-2">Cache Management</h1>
+    <p class="text-gray-400">Configure and manage Redis caching for better performance</p>
+  </div>
+
+  <!-- Cache Status -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
+    <h2 class="text-lg font-semibold text-white mb-4">Cache Status</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-[#0a0a0a] rounded-lg p-4">
+        <p class="text-gray-400 text-sm mb-1">Cache</p>
+        <p class="text-xl font-bold <%= @cache_enabled ? 'text-emerald-400' : 'text-gray-400' %>">
+          <%= @cache_enabled ? 'Enabled' : 'Disabled' %>
+        </p>
+      </div>
+      
+      <div class="bg-[#0a0a0a] rounded-lg p-4">
+        <p class="text-gray-400 text-sm mb-1">Redis</p>
+        <p class="text-xl font-bold <%= @redis_configured ? 'text-emerald-400' : 'text-red-400' %>">
+          <%= @redis_configured ? 'Connected' : 'Not Available' %>
+        </p>
+      </div>
+      
+      <div class="bg-[#0a0a0a] rounded-lg p-4">
+        <p class="text-gray-400 text-sm mb-1">Store Type</p>
+        <p class="text-xl font-bold text-white">
+          <%= @cache_store.split('::').last %>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <% if @cache_enabled %>
+        <%= button_to "Disable Cache", admin_cache_disable_path, class: "px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition" %>
+      <% else %>
+        <%= button_to "Enable Cache", admin_cache_enable_path, class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition", disabled: !@redis_configured %>
+      <% end %>
+      
+      <%= button_to "Clear Cache", admin_cache_clear_path, class: "px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition", data: { confirm: 'Are you sure you want to clear all cached data?' } %>
+    </div>
+
+    <% unless @redis_configured %>
+      <div class="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+        <p class="text-sm text-yellow-400">
+          ⚠️ Redis is not available. To enable caching, please install and start Redis:
+        </p>
+        <pre class="mt-2 text-xs text-yellow-300 bg-[#0a0a0a] p-2 rounded">brew install redis
+redis-server</pre>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Redis Stats (if available) -->
+  <% if @redis_configured %>
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Redis Statistics</h2>
+      <div id="redis-stats" class="space-y-3">
+        <p class="text-gray-400">Loading statistics...</p>
+      </div>
+    </div>
+
+    <script>
+      fetch('<%= admin_cache_stats_path %>')
+        .then(r => r.json())
+        .then(data => {
+          if (data.connected) {
+            document.getElementById('redis-stats').innerHTML = `
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-[#0a0a0a] rounded-lg p-4">
+                  <p class="text-gray-400 text-sm mb-1">Redis Version</p>
+                  <p class="text-white font-semibold">${data.version}</p>
+                </div>
+                <div class="bg-[#0a0a0a] rounded-lg p-4">
+                  <p class="text-gray-400 text-sm mb-1">Memory Used</p>
+                  <p class="text-white font-semibold">${data.used_memory}</p>
+                </div>
+                <div class="bg-[#0a0a0a] rounded-lg p-4">
+                  <p class="text-gray-400 text-sm mb-1">Connected Clients</p>
+                  <p class="text-white font-semibold">${data.connected_clients}</p>
+                </div>
+                <div class="bg-[#0a0a0a] rounded-lg p-4">
+                  <p class="text-gray-400 text-sm mb-1">Total Commands</p>
+                  <p class="text-white font-semibold">${data.total_commands}</p>
+                </div>
+              </div>
+            `;
+          }
+        });
+    </script>
+  <% end %>
+
+  <!-- Cache Information -->
+  <div class="mt-6 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-4">About Caching</h2>
+    <div class="space-y-3 text-sm text-gray-400">
+      <p>
+        <strong class="text-white">Redis Caching</strong> significantly improves performance by storing frequently accessed data in memory.
+      </p>
+      <p>
+        When enabled, RailsPress will cache:
+      </p>
+      <ul class="list-disc list-inside ml-4 space-y-1">
+        <li>Database queries</li>
+        <li>Rendered views and partials</li>
+        <li>API responses</li>
+        <li>Theme templates</li>
+        <li>Menu structures</li>
+      </ul>
+      <p class="mt-3">
+        <strong class="text-white">Note:</strong> You'll need to clear the cache after making content changes to see updates immediately.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+
+

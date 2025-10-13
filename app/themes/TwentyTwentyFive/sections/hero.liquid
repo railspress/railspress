@@ -1,0 +1,16 @@
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    { "id":"heading", "type":"text", "label":"Heading", "default":"Hello world!" },
+    { "id":"subheading", "type":"text", "label":"Subheading", "default":"Welcome to WordPress. This is your first post. Edit or delete it, then start writing!" },
+    { "id":"align", "type":"select", "label":"Alignment", "options":["left","center"], "default":"left" }
+  ]
+}
+{% endschema %}
+<section class="hero hero--{{ section.settings.align }}">
+  <h1 class="hero-title">{{ section.settings.heading }}</h1>
+  {% if section.settings.subheading %}
+    <p class="hero-sub">{{ section.settings.subheading }}</p>
+  {% endif %}
+</section>

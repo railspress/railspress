@@ -1,0 +1,462 @@
+<% content_for :page_title, 'Fluent Forms' %>
+
+<div class="fluent-forms-admin">
+  <div class="page-header">
+    <div class="header-content">
+      <h1><i class="fas fa-clipboard-list"></i> Fluent Forms</h1>
+      <p class="subtitle">Create beautiful forms with drag-and-drop builder</p>
+    </div>
+    <div class="header-actions">
+      <%= link_to new_admin_fluent_form_path, class: 'btn btn-primary' do %>
+        <i class="fas fa-plus"></i> Create New Form
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <div class="stat-content">
+        <h3><%= @stats[:total_forms] %></h3>
+        <p>Total Forms</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-paper-plane"></i>
+      </div>
+      <div class="stat-content">
+        <h3><%= @stats[:total_submissions] %></h3>
+        <p>Total Submissions</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-envelope"></i>
+      </div>
+      <div class="stat-content">
+        <h3><%= @stats[:unread_submissions] %></h3>
+        <p>Unread Entries</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-credit-card"></i>
+      </div>
+      <div class="stat-content">
+        <h3><%= @stats[:forms_with_payments] %></h3>
+        <p>Payment Forms</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forms Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3>All Forms</h3>
+      <div class="header-filters">
+        <input type="text" placeholder="Search forms..." class="search-input" id="form-search">
+      </div>
+    </div>
+    
+    <div class="card-body">
+      <% if @forms.any? %>
+        <table class="forms-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Submissions</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @forms.each do |form| %>
+              <tr>
+                <td>
+                  <strong><%= form[:title] %></strong>
+                  <div class="form-shortcode">
+                    <code>[fluentform id="<%= form[:id] %>"]</code>
+                    <button class="copy-btn" data-clipboard="[fluentform id=&quot;<%= form[:id] %>&quot;]">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-<%= form[:form_type] %>">
+                    <%= form[:form_type].titleize %>
+                  </span>
+                  <% if form[:has_payment] %>
+                    <span class="badge badge-success">
+                      <i class="fas fa-dollar-sign"></i> Payment
+                    </span>
+                  <% end %>
+                </td>
+                <td>
+                  <%= link_to admin_fluent_forms_entries_path(form_id: form[:id]) do %>
+                    <span class="submissions-count"><%= form[:submission_count] %></span>
+                  <% end %>
+                </td>
+                <td>
+                  <label class="toggle-switch">
+                    <input type="checkbox" 
+                           class="status-toggle" 
+                           data-form-id="<%= form[:id] %>"
+                           <%= 'checked' if form[:status] == 'published' %>>
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span class="status-text"><%= form[:status].titleize %></span>
+                </td>
+                <td><%= time_ago_in_words(form[:created_at]) %> ago</td>
+                <td>
+                  <div class="action-buttons">
+                    <%= link_to edit_admin_fluent_form_path(form[:id]), class: 'btn btn-sm btn-secondary', title: 'Edit' do %>
+                      <i class="fas fa-edit"></i>
+                    <% end %>
+                    <%= link_to admin_fluent_forms_entries_path(form_id: form[:id]), class: 'btn btn-sm btn-info', title: 'Entries' do %>
+                      <i class="fas fa-inbox"></i>
+                    <% end %>
+                    <%= link_to duplicate_admin_fluent_form_path(form[:id]), method: :post, class: 'btn btn-sm btn-secondary', title: 'Duplicate' do %>
+                      <i class="fas fa-clone"></i>
+                    <% end %>
+                    <%= link_to admin_fluent_form_path(form[:id]), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-sm btn-danger', title: 'Delete' do %>
+                      <i class="fas fa-trash"></i>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list fa-4x"></i>
+          <h3>No forms yet</h3>
+          <p>Create your first form to start collecting submissions</p>
+          <%= link_to 'Create Form', new_admin_fluent_form_path, class: 'btn btn-primary' %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<style>
+.fluent-forms-admin {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #333;
+}
+
+.header-content .subtitle {
+  margin: 5px 0 0 0;
+  color: #666;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.stat-icon {
+  font-size: 32px;
+  color: #409eff;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 32px;
+  color: #333;
+}
+
+.stat-content p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+}
+
+.search-input {
+  padding: 8px 15px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  width: 250px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.forms-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.forms-table th {
+  text-align: left;
+  padding: 12px;
+  background: #f5f7fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.forms-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-shortcode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.form-shortcode code {
+  background: #f5f7fa;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  color: #409eff;
+  cursor: pointer;
+  padding: 2px 5px;
+}
+
+.copy-btn:hover {
+  color: #66b1ff;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-form {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.badge-success {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.submissions-count {
+  font-weight: 600;
+  color: #409eff;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #409eff;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+}
+
+.status-text {
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-primary {
+  background: #409eff;
+  color: white;
+}
+
+.btn-secondary {
+  background: #909399;
+  color: white;
+}
+
+.btn-info {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-danger {
+  background: #f56c6c;
+  color: white;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #909399;
+}
+
+.empty-state i {
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  margin: 10px 0;
+}
+</style>
+
+<script>
+// Toggle form status
+document.querySelectorAll('.status-toggle').forEach(toggle => {
+  toggle.addEventListener('change', async function() {
+    const formId = this.dataset.formId;
+    const statusText = this.closest('td').querySelector('.status-text');
+    
+    try {
+      const response = await fetch(`/admin/fluent-forms/${formId}/toggle-status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        statusText.textContent = result.status.charAt(0).toUpperCase() + result.status.slice(1);
+      }
+    } catch (error) {
+      console.error('Error toggling status:', error);
+      this.checked = !this.checked;
+    }
+  });
+});
+
+// Copy shortcode to clipboard
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const text = this.dataset.clipboard;
+    navigator.clipboard.writeText(text).then(() => {
+      const icon = this.querySelector('i');
+      icon.className = 'fas fa-check';
+      setTimeout(() => {
+        icon.className = 'fas fa-copy';
+      }, 2000);
+    });
+  });
+});
+
+// Search forms
+document.getElementById('form-search')?.addEventListener('input', function(e) {
+  const searchTerm = e.target.value.toLowerCase();
+  const rows = document.querySelectorAll('.forms-table tbody tr');
+  
+  rows.forEach(row => {
+    const title = row.querySelector('td:first-child').textContent.toLowerCase();
+    row.style.display = title.includes(searchTerm) ? '' : 'none';
+  });
+});
+</script>
+

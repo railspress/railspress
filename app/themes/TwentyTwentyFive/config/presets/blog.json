@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero"
+    },
+    "blog": {
+      "type": "post-list",
+      "settings": {
+        "layout": "grid",
+        "items_per_page": 6
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "blog"
+  ]
+}

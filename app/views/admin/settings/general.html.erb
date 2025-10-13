@@ -1,0 +1,107 @@
+<% content_for :page_title, "General Settings" %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">Settings</h1>
+    <p class="text-gray-400">Configure your RailsPress site</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Sidebar Navigation -->
+    <aside class="lg:col-span-1">
+      <%= render 'settings_nav' %>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:col-span-3">
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-bold text-white mb-6">General Settings</h2>
+        
+        <%= form_with url: admin_settings_general_path, method: :patch, class: "space-y-6" do |f| %>
+          <!-- Site Title -->
+          <div>
+            <%= label_tag 'settings[site_title]', 'Site Title', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'settings[site_title]', @settings[:site_title], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Your site title appears in the browser tab and search results</p>
+          </div>
+
+          <!-- Tagline -->
+          <div>
+            <%= label_tag 'settings[site_tagline]', 'Tagline', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'settings[site_tagline]', @settings[:site_tagline],
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">A short description of your site</p>
+          </div>
+
+          <!-- Site URL -->
+          <div>
+            <%= label_tag 'settings[site_url]', 'Site URL', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= url_field_tag 'settings[site_url]', @settings[:site_url],
+                placeholder: 'https://yoursite.com',
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">The full URL of your site</p>
+          </div>
+
+          <!-- Admin Email -->
+          <div>
+            <%= label_tag 'settings[admin_email]', 'Administrator Email', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= email_field_tag 'settings[admin_email]', @settings[:admin_email],
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">This email is used for admin purposes</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Timezone -->
+            <div>
+              <%= label_tag 'settings[timezone]', 'Timezone', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+              <%= select_tag 'settings[timezone]',
+                  options_for_select(ActiveSupport::TimeZone.all.map { |tz| [tz.to_s, tz.name] }, @settings[:timezone]),
+                  class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            </div>
+
+            <!-- Language -->
+            <div>
+              <%= label_tag 'settings[language]', 'Site Language', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+              <%= select_tag 'settings[language]',
+                  options_for_select([['English', 'en'], ['Spanish', 'es'], ['French', 'fr'], ['German', 'de']], @settings[:language]),
+                  class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Date Format -->
+            <div>
+              <%= label_tag 'settings[date_format]', 'Date Format', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+              <%= select_tag 'settings[date_format]',
+                  options_for_select([
+                    ['October 12, 2025', '%B %d, %Y'],
+                    ['10/12/2025', '%m/%d/%Y'],
+                    ['2025-10-12', '%Y-%m-%d'],
+                    ['12-Oct-2025', '%d-%b-%Y']
+                  ], @settings[:date_format]),
+                  class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            </div>
+
+            <!-- Time Format -->
+            <div>
+              <%= label_tag 'settings[time_format]', 'Time Format', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+              <%= select_tag 'settings[time_format]',
+                  options_for_select([
+                    ['23:59', '%H:%M'],
+                    ['11:59 PM', '%I:%M %p']
+                  ], @settings[:time_format]),
+                  class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-6 border-t border-[#2a2a2a] flex items-center justify-end">
+            <%= f.submit "Save Changes", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer font-medium" %>
+          </div>
+        <% end %>
+      </div>
+    </main>
+  </div>
+</div>
+

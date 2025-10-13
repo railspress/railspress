@@ -1,0 +1,307 @@
+<% content_for :title, @post.persisted? ? "Edit - #{@post.title}" : "New Post" %>
+
+<div class="h-screen flex bg-[#0a0a0a]">
+  
+  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex" do |f| %>
+    <!-- Left: Main Editor Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Minimal Top Bar -->
+      <div class="px-8 py-4 border-b border-[#1a1a1a] flex items-center justify-between">
+        <%= link_to admin_posts_path, class: "flex items-center gap-2 text-gray-500 hover:text-white transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          <span class="text-sm font-medium">Posts</span>
+        <% end %>
+        
+        <div class="flex items-center gap-4">
+          <span class="save-indicator text-sm text-gray-500"></span>
+          <span class="text-xs text-gray-600">
+            <kbd class="px-2 py-1 bg-[#1a1a1a] rounded text-xs">⌘S</kbd> to save
+          </span>
+        </div>
+      </div>
+      
+      <!-- Title + Editor Container -->
+      <div class="flex-1 overflow-y-auto px-8">
+        <div class="max-w-[680px] mx-auto py-16">
+          <!-- Title Input -->
+          <%= f.text_field :title, 
+              class: "w-full bg-transparent text-white text-5xl font-bold placeholder-gray-700 border-none outline-none focus:ring-0 mb-6",
+              placeholder: "Untitled Post",
+              data: { editorjs_target: "title" },
+              autofocus: !@post.persisted? %>
+          
+          <!-- Subtle Meta -->
+          <% if @post.persisted? %>
+            <div class="flex items-center gap-3 text-xs text-gray-600 mb-12">
+              <span><%= time_ago_in_words(@post.updated_at) %> ago</span>
+              <span>•</span>
+              <span><%= @post.author_name %></span>
+            </div>
+          <% end %>
+          
+          <!-- Content Editor (Dynamic based on user preference) -->
+          <%= render 'shared/content_editor_simple', 
+              form: f,
+              content: @post.content,
+              field_name: :content,
+              placeholder: 'Tell your story...',
+              editor_type: current_user&.preferred_editor || 'blocknote' %>
+          
+          <!-- Hidden fields -->
+          <%= f.hidden_field :user_id, value: current_user.id %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Sidebar: Settings -->
+    <div class="w-80 border-l border-[#1a1a1a] bg-[#0a0a0a] overflow-y-auto">
+      <div class="p-6 space-y-6">
+        <!-- Publish Section -->
+        <div class="pb-6 border-b border-[#1a1a1a]">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Publish
+          </h3>
+          
+          <!-- Status -->
+          <div class="mb-4">
+            <label class="block text-xs font-medium text-gray-400 mb-2">Status</label>
+            <%= f.select :status, 
+                options_for_select([
+                  ['Draft', 'draft'],
+                  ['Published', 'published'],
+                  ['Scheduled', 'scheduled'],
+                  ['Pending Review', 'pending_review'],
+                  ['Private', 'private']
+                ], @post.status),
+                {},
+                class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          
+          <!-- Visibility -->
+          <div class="mb-4">
+            <label class="block text-xs font-medium text-gray-400 mb-2">Visibility</label>
+            <div class="flex items-center gap-2">
+              <%= f.check_box :password_protected, 
+                  class: "w-4 h-4 bg-[#1a1a1a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
+              <span class="text-sm text-gray-300">Password protected</span>
+            </div>
+          </div>
+          
+          <!-- Publish Date -->
+          <% if @post.persisted? && @post.published_at %>
+            <div class="mb-4">
+              <label class="block text-xs font-medium text-gray-400 mb-2">Published</label>
+              <p class="text-sm text-gray-300"><%= @post.published_at.strftime('%B %d, %Y at %I:%M %p') %></p>
+            </div>
+          <% end %>
+          
+          <!-- Actions -->
+          <div class="flex gap-2 mt-6">
+            <%= f.submit "Save Draft", 
+                name: "post[status]", 
+                value: "draft",
+                class: "flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg hover:bg-[#2a2a2a] transition" %>
+            <%= f.submit @post.published_status? ? "Update" : "Publish", 
+                class: "flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition" %>
+          </div>
+        </div>
+        
+        <!-- Categories & Tags -->
+        <div class="pb-6 border-b border-[#1a1a1a]">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+            </svg>
+            Categories & Tags
+          </h3>
+          
+          <div class="mb-4">
+            <label class="block text-xs font-medium text-gray-400 mb-2">Categories</label>
+            <%= f.collection_select :category_ids, 
+                @categories, :id, :name,
+                { include_blank: 'Select categories' },
+                { multiple: true, class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" } %>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-2">Tags</label>
+            <%= f.text_field :tag_list, 
+                placeholder: "Add tags, comma separated",
+                class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="text-xs text-gray-600 mt-1">Separate tags with commas</p>
+          </div>
+        </div>
+        
+        <!-- Featured Image -->
+        <div class="pb-6 border-b border-[#1a1a1a]">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Featured Image
+          </h3>
+          
+          <%= f.file_field :featured_image, 
+              class: "w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#1a1a1a] file:text-white hover:file:bg-[#2a2a2a] file:cursor-pointer" %>
+        </div>
+        
+        <!-- Excerpt -->
+        <div class="pb-6 border-b border-[#1a1a1a]">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+            </svg>
+            Excerpt
+          </h3>
+          
+          <%= f.text_area :excerpt, 
+              rows: 3,
+              placeholder: "Brief description of your post...",
+              class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" %>
+          <p class="text-xs text-gray-600 mt-1">Optional. Will be used in previews.</p>
+        </div>
+        
+        <!-- SEO -->
+        <div class="pb-6 border-b border-[#1a1a1a]">
+          <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            SEO
+          </h3>
+          
+          <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-400 mb-2">Meta Title</label>
+            <%= f.text_field :meta_title, 
+                placeholder: "SEO title",
+                class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          
+          <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-400 mb-2">Meta Description</label>
+            <%= f.text_area :meta_description, 
+                rows: 2,
+                placeholder: "SEO description",
+                class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" %>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-medium text-gray-400 mb-2">Slug</label>
+            <%= f.text_field :slug, 
+                placeholder: "post-url-slug",
+                class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+        </div>
+        
+        <!-- Post Info -->
+        <% if @post.persisted? %>
+          <div>
+            <h3 class="text-sm font-semibold text-white mb-4">Post Info</h3>
+            <div class="space-y-2 text-xs text-gray-400">
+              <div class="flex justify-between">
+                <span>Created:</span>
+                <span class="text-gray-300"><%= @post.created_at.strftime('%b %d, %Y') %></span>
+              </div>
+              <div class="flex justify-between">
+                <span>Last updated:</span>
+                <span class="text-gray-300"><%= @post.updated_at.strftime('%b %d, %Y') %></span>
+              </div>
+              <div class="flex justify-between">
+                <span>Author:</span>
+                <span class="text-gray-300"><%= @post.author_name %></span>
+              </div>
+              <% if @post.views_count.present? %>
+                <div class="flex justify-between">
+                  <span>Views:</span>
+                  <span class="text-gray-300"><%= number_with_delimiter(@post.views_count) %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Keyboard shortcuts help (toggle with ?) -->
+<div id="shortcuts-help" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-action="click->shortcuts#close">
+  <div class="bg-white dark:bg-gray-900 rounded-xl p-8 max-w-2xl w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
+      <button onclick="document.getElementById('shortcuts-help').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">General</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>⌘/Ctrl + S</kbd> - Save</li>
+          <li><kbd>⌘/Ctrl + Enter</kbd> - Publish</li>
+          <li><kbd>?</kbd> - Show this help</li>
+          <li><kbd>Esc</kbd> - Close dialogs</li>
+        </ul>
+      </div>
+      
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Formatting</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>⌘/Ctrl + B</kbd> - Bold</li>
+          <li><kbd>⌘/Ctrl + I</kbd> - Italic</li>
+          <li><kbd>⌘/Ctrl + U</kbd> - Underline</li>
+          <li><kbd>⌘/Ctrl + E</kbd> - Inline Code</li>
+        </ul>
+      </div>
+      
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Blocks</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>⌘ + ⇧ + H</kbd> - Header</li>
+          <li><kbd>⌘ + ⇧ + L</kbd> - List</li>
+          <li><kbd>⌘ + ⇧ + Q</kbd> - Quote</li>
+          <li><kbd>⌘ + ⇧ + C</kbd> - Code Block</li>
+        </ul>
+      </div>
+      
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Navigation</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>Tab</kbd> - Indent</li>
+          <li><kbd>⇧ + Tab</kbd> - Outdent</li>
+          <li><kbd>Enter</kbd> - New block</li>
+          <li><kbd>⌫</kbd> - Delete block (if empty)</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+      <p class="text-xs text-gray-500 dark:text-gray-400">
+        💡 Tip: Type <code>/</code> to see all available blocks
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Show shortcuts help with ?
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '?' && !e.target.matches('input, textarea')) {
+      e.preventDefault()
+      document.getElementById('shortcuts-help').classList.toggle('hidden')
+    }
+    
+    if (e.key === 'Escape') {
+      document.getElementById('shortcuts-help').classList.add('hidden')
+    }
+  })
+</script>
+

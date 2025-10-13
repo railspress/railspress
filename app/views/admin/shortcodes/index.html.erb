@@ -1,0 +1,190 @@
+<% content_for :page_title, "Shortcodes" %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">Shortcodes</h1>
+    <p class="text-gray-400">Embed dynamic content using simple shortcode syntax</p>
+  </div>
+
+  <!-- Shortcode Tester -->
+  <div class="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-6 mb-8">
+    <h2 class="text-xl font-semibold text-white mb-4">Shortcode Tester</h2>
+    <p class="text-gray-400 text-sm mb-4">Test your shortcodes and see the output in real-time</p>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Input (with shortcodes)</label>
+        <textarea id="shortcode-input" 
+                  rows="8"
+                  placeholder="Try: [button url='#']Click Me[/button]"
+                  class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white font-mono text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">[button url="/contact" style="primary"]Get Started[/button]
+
+[alert type="success"]This is a success message![/alert]
+
+[recent_posts count="3"]</textarea>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Output (processed HTML)</label>
+        <div id="shortcode-output" 
+             class="w-full h-full min-h-[200px] px-4 py-3 bg-[#111111] border border-[#2a2a2a] text-gray-300 rounded-lg overflow-auto">
+          Click "Test Shortcode" to see the output
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4 flex items-center justify-between">
+      <button onclick="testShortcode()" 
+              class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium">
+        Test Shortcode
+      </button>
+      <button onclick="copyCode()" 
+              class="px-4 py-2 border border-[#2a2a2a] hover:border-[#3a3a3a] text-gray-300 hover:text-white rounded-lg transition">
+        Copy Output
+      </button>
+    </div>
+  </div>
+
+  <!-- Available Shortcodes -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold text-white mb-4">Available Shortcodes</h2>
+    <p class="text-gray-400 text-sm mb-4"><%= @shortcodes.count %> shortcodes registered</p>
+  </div>
+
+  <% categories = @shortcodes.group_by { |s| s[:category] } %>
+  <% categories.each do |category, shortcodes| %>
+    <div class="mb-8">
+      <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-md text-sm mr-3"><%= category %></span>
+        <%= shortcodes.count %> <%= shortcodes.count == 1 ? 'shortcode' : 'shortcodes' %>
+      </h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <% shortcodes.each do |shortcode| %>
+          <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 hover:border-[#3a3a3a] transition">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <h4 class="text-lg font-bold text-white mb-1">
+                  <code class="text-indigo-400">[<%= shortcode[:name] %>]</code>
+                </h4>
+                <p class="text-gray-300 text-sm"><%= shortcode[:description] %></p>
+              </div>
+              <button onclick="copyShortcode('<%= shortcode[:usage] %>')" 
+                      class="p-2 hover:bg-[#1a1a1a] rounded transition text-gray-400 hover:text-white"
+                      title="Copy usage">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Usage Example -->
+            <div class="mb-4">
+              <p class="text-xs text-gray-500 mb-2">Usage:</p>
+              <code class="block px-3 py-2 bg-[#0a0a0a] text-emerald-400 text-xs rounded border border-[#2a2a2a] overflow-x-auto"><%= shortcode[:usage] %></code>
+            </div>
+            
+            <!-- Attributes -->
+            <% if shortcode[:attributes].any? %>
+              <div>
+                <p class="text-xs text-gray-500 mb-2">Attributes:</p>
+                <div class="space-y-1">
+                  <% shortcode[:attributes].each do |attr| %>
+                    <div class="flex items-start space-x-2 text-xs">
+                      <code class="text-indigo-300"><%= attr[:name] %></code>
+                      <span class="text-gray-600">-</span>
+                      <span class="text-gray-400 flex-1">
+                        <%= attr[:description] %>
+                        <% if attr[:required] %>
+                          <span class="text-red-400">*</span>
+                        <% elsif attr[:default] %>
+                          <span class="text-gray-600">(default: <%= attr[:default] %>)</span>
+                        <% end %>
+                      </span>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Developer Info -->
+  <div class="mt-8 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <div class="flex items-start space-x-4">
+      <div class="bg-indigo-500/10 p-3 rounded-lg">
+        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-white font-semibold mb-2">Creating Custom Shortcodes</h3>
+        <p class="text-gray-400 text-sm mb-3">
+          Developers can register custom shortcodes via plugins. Add your shortcode to a plugin's activation method:
+        </p>
+        <pre class="bg-[#0a0a0a] rounded-lg p-4 text-sm text-gray-300 overflow-x-auto"><code>Railspress::ShortcodeProcessor.register('my_shortcode') do |attrs, content|
+  # Your processing logic here
+  "&lt;div class='my-shortcode'&gt;#{content}&lt;/div&gt;"
+end</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function testShortcode() {
+    const input = document.getElementById('shortcode-input').value;
+    
+    fetch('<%= admin_shortcodes_test_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ content: input })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('shortcode-output').innerHTML = data.processed;
+      }
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      alert('Error testing shortcode');
+    });
+  }
+
+  function copyShortcode(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Shortcode copied to clipboard!');
+    });
+  }
+
+  function copyCode() {
+    const output = document.getElementById('shortcode-output').innerText;
+    navigator.clipboard.writeText(output).then(() => {
+      showToast('Output copied to clipboard!');
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  // Auto-test on load
+  window.addEventListener('DOMContentLoaded', () => {
+    testShortcode();
+  });
+</script>
+
+
+
+

@@ -1,0 +1,177 @@
+<!-- Scandinavian Minimalist Homepage -->
+
+<!-- Hero Section -->
+<div style="background: linear-gradient(135deg, var(--color-soft-white) 0%, var(--color-sand) 100%); padding: var(--space-12) 0;">
+  <div style="max-width: var(--container-max); margin: 0 auto; padding: 0 var(--space-4);">
+    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+      <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; color: var(--color-graphite); margin-bottom: var(--space-4); letter-spacing: -0.03em; line-height: 1.1;">
+        Thoughtful Content,<br>Beautifully Crafted
+      </h1>
+      <p style="font-size: 1.25rem; color: var(--color-warm-gray); margin-bottom: var(--space-6); line-height: 1.7; font-weight: 300;">
+        <%= SiteSetting.get('site_tagline', 'A curated collection of insights, stories, and ideas worth your time.') %>
+      </p>
+      <%= link_to blog_path, class: "scandi-btn scandi-btn-primary inline-flex items-center space-x-2" do %>
+        <span>Explore Articles</span>
+        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Featured Posts -->
+<% if @featured_posts.any? %>
+  <section style="padding: var(--space-12) 0;">
+    <div style="max-width: var(--container-max); margin: 0 auto; padding: 0 var(--space-4);">
+      <div class="mb-12">
+        <h2 style="font-size: 2rem; font-weight: 600; color: var(--color-graphite); margin-bottom: var(--space-2);">Featured</h2>
+        <div style="width: 60px; height: 3px; background: var(--color-sage);"></div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <% @featured_posts.each do |post| %>
+          <article class="scandi-card overflow-hidden group">
+            <% if post.featured_image_file.attached? %>
+              <div style="aspect-ratio: 16/9; overflow: hidden; background: var(--color-stone);">
+                <%= image_tag post.featured_image_file, 
+                    style: "width: 100%; height: 100%; object-fit: cover; transition: transform 500ms;",
+                    class: "group-hover:scale-105" %>
+              </div>
+            <% else %>
+              <div style="aspect-ratio: 16/9; background: linear-gradient(135deg, var(--color-stone) 0%, var(--color-concrete) 100%);"></div>
+            <% end %>
+            
+            <div style="padding: var(--space-4);">
+              <div class="flex items-center space-x-3 mb-3">
+                <time style="font-size: 13px; color: var(--color-warm-gray); font-weight: 500;">
+                  <%= post.published_at.strftime("%B %d, %Y") %>
+                </time>
+                
+                <% if post.categories.any? %>
+                  <span style="font-size: 12px; color: var(--color-sage); background: rgba(156, 175, 136, 0.1); padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: 500;">
+                    <%= post.categories.first.name %>
+                  </span>
+                <% end %>
+              </div>
+              
+              <h3 style="font-size: 1.375rem; font-weight: 600; color: var(--color-graphite); margin-bottom: var(--space-2); line-height: 1.3;">
+                <%= link_to post.title, blog_post_path(post.slug), class: "scandi-link", style: "color: inherit;" %>
+              </h3>
+              
+              <% if post.excerpt.present? %>
+                <p style="font-size: 15px; color: var(--color-warm-gray); line-height: 1.7; margin-bottom: var(--space-3);">
+                  <%= truncate(post.excerpt, length: 120) %>
+                </p>
+              <% end %>
+              
+              <%= link_to blog_post_path(post.slug), style: "font-size: 14px; font-weight: 500; color: var(--color-ocean); display: inline-flex; align-items: center; space-x-1; text-decoration: none;" do %>
+                <span>Read more</span>
+                <svg style="width: 14px; height: 14px; margin-left: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<!-- Recent Posts -->
+<% if @recent_posts.any? %>
+  <section style="padding: var(--space-8) 0; background: var(--color-soft-white);">
+    <div style="max-width: var(--container-max); margin: 0 auto; padding: 0 var(--space-4);">
+      <div class="mb-12">
+        <h2 style="font-size: 2rem; font-weight: 600; color: var(--color-graphite); margin-bottom: var(--space-2);">Recent Articles</h2>
+        <div style="width: 60px; height: 3px; background: var(--color-terracotta);"></div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <% @recent_posts.each do |post| %>
+          <article class="flex space-x-4 p-4 rounded-lg transition hover:bg-white">
+            <% if post.featured_image_file.attached? %>
+              <div style="width: 120px; height: 120px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: var(--color-stone);">
+                <%= image_tag post.featured_image_file, style: "width: 100%; height: 100%; object-fit: cover;" %>
+              </div>
+            <% else %>
+              <div style="width: 120px; height: 120px; flex-shrink: 0; background: linear-gradient(135deg, var(--color-stone) 0%, var(--color-concrete) 100%); border-radius: 8px;"></div>
+            <% end %>
+            
+            <div class="flex-1">
+              <div class="mb-2">
+                <% if post.categories.any? %>
+                  <span style="font-size: 11px; color: var(--color-ocean); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+                    <%= post.categories.first.name %>
+                  </span>
+                <% end %>
+              </div>
+              
+              <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--color-graphite); margin-bottom: var(--space-1); line-height: 1.4;">
+                <%= link_to post.title, blog_post_path(post.slug), style: "text-decoration: none; color: inherit;" %>
+              </h3>
+              
+              <time style="font-size: 13px; color: var(--color-warm-gray);">
+                <%= post.published_at.strftime("%b %d, %Y") %>
+              </time>
+            </div>
+          </article>
+        <% end %>
+      </div>
+      
+      <div class="text-center mt-12">
+        <%= link_to blog_path, class: "scandi-btn scandi-btn-secondary" do %>
+          View All Articles
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<!-- Categories Grid -->
+<% if @categories.any? %>
+  <section style="padding: var(--space-12) 0;">
+    <div style="max-width: var(--container-max); margin: 0 auto; padding: 0 var(--space-4);">
+      <div class="mb-12">
+        <h2 style="font-size: 2rem; font-weight: 600; color: var(--color-graphite); margin-bottom: var(--space-2);">Explore Topics</h2>
+        <div style="width: 60px; height: 3px; background: var(--color-sky);"></div>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <% @categories.each do |category| %>
+          <%= link_to category_path(category.slug), style: "text-decoration: none;" do %>
+            <div class="scandi-card p-6 text-center">
+              <h3 style="font-size: 1rem; font-weight: 600; color: var(--color-graphite); margin-bottom: var(--space-1);">
+                <%= category.name %>
+              </h3>
+              <p style="font-size: 13px; color: var(--color-warm-gray);">
+                <%= category.post_count %> <%= category.post_count == 1 ? 'article' : 'articles' %>
+              </p>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<!-- Newsletter (Optional) -->
+<section style="padding: var(--space-12) 0; background: var(--color-graphite);">
+  <div style="max-width: 600px; margin: 0 auto; padding: 0 var(--space-4); text-align: center;">
+    <h2 style="font-size: 2rem; font-weight: 600; color: var(--color-sand); margin-bottom: var(--space-3);">
+      Stay Updated
+    </h2>
+    <p style="font-size: 1.125rem; color: rgba(250, 248, 245, 0.7); margin-bottom: var(--space-6); line-height: 1.7;">
+      Get our latest articles delivered to your inbox. No spam, just quality content.
+    </p>
+    <div class="flex space-x-3">
+      <input type="email" placeholder="your@email.com" 
+             style="flex: 1; padding: 0.875rem 1.25rem; border-radius: 6px; border: 1.5px solid rgba(250, 248, 245, 0.2); background: rgba(250, 248, 245, 0.05); color: var(--color-sand); font-size: 15px;"
+             class="focus:outline-none focus:border-white">
+      <button type="submit" class="scandi-btn scandi-btn-primary" style="background: var(--color-sage);">
+        Subscribe
+      </button>
+    </div>
+  </div>
+</section>

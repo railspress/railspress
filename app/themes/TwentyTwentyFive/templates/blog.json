@@ -1,0 +1,27 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "heading": "Blog",
+        "subheading": "",
+        "align": "left"
+      }
+    },
+    "list": {
+      "type": "post-list",
+      "settings": {
+        "layout": "list",
+        "items_per_page": 10
+      }
+    },
+    "pagination": {
+      "type": "pagination"
+    }
+  },
+  "order": [
+    "hero",
+    "list",
+    "pagination"
+  ]
+}

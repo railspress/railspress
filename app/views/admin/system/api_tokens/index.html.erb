@@ -1,0 +1,157 @@
+<div class="p-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-white">API Tokens</h1>
+      <p class="text-gray-400 mt-2">Manage API access tokens for headless CMS integration</p>
+    </div>
+    <%= link_to new_admin_system_api_token_path, class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center space-x-2" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      <span>New API Token</span>
+    <% end %>
+  </div>
+
+  <% if @api_tokens.any? %>
+    <div class="bg-[#1a1a1a] rounded-lg border border-gray-800 overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-800">
+        <thead class="bg-gray-900">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Token</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Role</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">User</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Last Used</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Expires</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+          <% @api_tokens.each do |token| %>
+            <tr class="hover:bg-gray-900/50 transition">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-white"><%= token.name %></div>
+              </td>
+              <td class="px-6 py-4">
+                <code class="text-xs text-gray-300 bg-gray-800 px-2 py-1 rounded"><%= token.masked_token %></code>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs rounded-full <%= case token.role
+                  when 'admin' then 'bg-red-900/30 text-red-300'
+                  when 'editor' then 'bg-blue-900/30 text-blue-300'
+                  else 'bg-gray-700 text-gray-300'
+                end %>">
+                  <%= token.display_role %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-300"><%= token.user.full_name %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-400">
+                  <%= token.last_used_at ? time_ago_in_words(token.last_used_at) + ' ago' : 'Never' %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-400">
+                  <%= token.expires_at ? token.expires_at.strftime('%b %d, %Y') : 'Never' %>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <% if token.expired? %>
+                  <span class="px-2 py-1 text-xs rounded-full bg-red-900/30 text-red-300">Expired</span>
+                <% elsif token.active %>
+                  <span class="px-2 py-1 text-xs rounded-full bg-green-900/30 text-green-300">Active</span>
+                <% else %>
+                  <span class="px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">Inactive</span>
+                <% end %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end space-x-2">
+                  <%= link_to admin_system_api_token_path(token), class: "text-indigo-400 hover:text-indigo-300" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  <% end %>
+                  
+                  <%= link_to edit_admin_system_api_token_path(token), class: "text-blue-400 hover:text-blue-300" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  <% end %>
+                  
+                  <%= button_to toggle_admin_system_api_token_path(token), method: :patch, 
+                      class: "text-yellow-400 hover:text-yellow-300" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                  <% end %>
+                  
+                  <%= button_to regenerate_admin_system_api_token_path(token), method: :post,
+                      data: { turbo_confirm: "Regenerate this token? The old token will no longer work." },
+                      class: "text-orange-400 hover:text-orange-300" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                  <% end %>
+                  
+                  <%= button_to admin_system_api_token_path(token), method: :delete,
+                      data: { turbo_confirm: "Delete this API token? This cannot be undone." },
+                      class: "text-red-400 hover:text-red-300" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4">
+      <%= paginate @api_tokens if @api_tokens.respond_to?(:total_pages) %>
+    </div>
+  <% else %>
+    <div class="bg-[#1a1a1a] rounded-lg p-12 border border-gray-800 text-center">
+      <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+      </svg>
+      <h3 class="text-xl font-medium text-white mb-2">No API Tokens</h3>
+      <p class="text-gray-400 mb-4">Create your first API token to start using the headless CMS features.</p>
+      <%= link_to new_admin_system_api_token_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Create API Token
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+function testCors() {
+  fetch('<%= admin_system_test_cors_path %>', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('✅ CORS is configured correctly!\n\nOrigins: ' + data.cors_origins);
+    } else {
+      alert('❌ CORS test failed: ' + data.message);
+    }
+  })
+  .catch(error => {
+    alert('❌ Error testing CORS: ' + error.message);
+  });
+}
+</script>
+

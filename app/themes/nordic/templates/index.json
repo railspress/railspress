@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "heading": "Timeless, calm, considered.",
+        "subheading": "A Scandinavian-minimal theme inspired by Twenty Twenty-Five.",
+        "align": "left"
+      }
+    },
+    "blog": {
+      "type": "post-list",
+      "settings": {
+        "layout": "grid",
+        "items_per_page": 6
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "blog",
+    "search-form"
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "info": {
+    "name": "RailsPress API",
+    "description": "Complete API collection for RailsPress CMS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1"
+    },
+    {
+      "key": "api_token",
+      "value": "your-token-here"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@railspress.com\",\n  \"password\": \"password\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{base_url}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"}
+            ],
+            "url": "{{base_url}}/auth/validate"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/posts?status=published&page=1&per_page=10",
+              "query": [
+                {"key": "status", "value": "published"},
+                {"key": "page", "value": "1"},
+                {"key": "per_page", "value": "10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Post",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/posts/1"
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/posts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"post\": {\n    \"title\": \"New Post via API\",\n    \"content\": \"<p>Content here</p>\",\n    \"excerpt\": \"Excerpt\",\n    \"status\": \"published\",\n    \"category_ids\": [1],\n    \"tag_ids\": [1, 2]\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/posts/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"post\": {\n    \"title\": \"Updated Title\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"}
+            ],
+            "url": "{{base_url}}/posts/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pages",
+      "item": [
+        {
+          "name": "Get All Pages",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/pages"
+          }
+        },
+        {
+          "name": "Create Page",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/pages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": {\n    \"title\": \"New Page\",\n    \"content\": \"<p>Page content</p>\",\n    \"status\": \"published\"\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/categories"
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": {\n    \"name\": \"New Category\",\n    \"description\": \"Category description\"\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Get Comments",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/comments"
+          }
+        },
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{base_url}}/comments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": {\n    \"content\": \"Great post!\",\n    \"author_name\": \"John Doe\",\n    \"author_email\": \"john@example.com\",\n    \"commentable_type\": \"Post\",\n    \"commentable_id\": 1\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve Comment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"}
+            ],
+            "url": "{{base_url}}/comments/1/approve"
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Get API Info",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/system/info"
+          }
+        },
+        {
+          "name": "Get System Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{api_token}}"}
+            ],
+            "url": "{{base_url}}/system/stats"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+
+
+

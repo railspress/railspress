@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "form": {
+      "type": "search-form"
+    },
+    "results": {
+      "type": "search-results"
+    },
+    "pagination": {
+      "type": "pagination"
+    }
+  },
+  "order": [
+    "form",
+    "results",
+    "pagination"
+  ]
+}

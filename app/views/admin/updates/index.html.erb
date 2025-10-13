@@ -1,0 +1,184 @@
+<div class="max-w-4xl mx-auto py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+      System Updates
+    </h1>
+    <p class="text-gray-600 dark:text-gray-400">
+      Keep your RailsPress installation up to date with the latest features and security patches.
+    </p>
+  </div>
+
+  <!-- Current Version Card -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          Current Version
+        </h2>
+        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+          <%= @update_info[:current_version] %>
+        </p>
+      </div>
+      
+      <div class="text-right">
+        <%= link_to check_admin_updates_path, method: :post, 
+            class: "inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition" do %>
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Check for Updates
+        <% end %>
+      </div>
+    </div>
+    
+    <% if @update_info[:checked_at] %>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">
+        Last checked: <%= time_ago_in_words(@update_info[:checked_at]) %> ago
+      </p>
+    <% end %>
+  </div>
+
+  <!-- Update Available Alert -->
+  <% if @update_info[:update_available] %>
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900 dark:to-emerald-900 border-l-4 border-green-500 rounded-lg p-6 mb-6">
+      <div class="flex items-start">
+        <svg class="w-6 h-6 text-green-600 dark:text-green-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-green-900 dark:text-green-100 mb-2">
+            New Version Available!
+          </h3>
+          <p class="text-green-800 dark:text-green-200 mb-4">
+            Version <strong><%= @update_info[:latest_version] %></strong> is now available.
+            You're currently running version <%= @update_info[:current_version] %>.
+          </p>
+          
+          <div class="flex space-x-3">
+            <%= link_to @update_info[:release_url], target: "_blank", rel: "noopener",
+                class: "inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition" do %>
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              View Release
+            <% end %>
+            
+            <%= link_to "https://github.com/#{Railspress::UpdateChecker::GITHUB_REPO}", target: "_blank", rel: "noopener",
+                class: "inline-flex items-center px-4 py-2 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-lg border border-gray-300 dark:border-gray-600 transition" do %>
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+              </svg>
+              GitHub Repository
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Release Notes -->
+    <% if @release_notes %>
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Release Notes - <%= @release_notes[:name] %>
+        </h3>
+        
+        <div class="prose dark:prose-invert max-w-none">
+          <%= simple_format(@release_notes[:body]) %>
+        </div>
+        
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">
+          Published <%= time_ago_in_words(Time.parse(@release_notes[:published_at])) %> ago
+        </p>
+      </div>
+    <% end %>
+  <% else %>
+    <!-- Up to Date Message -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 border-l-4 border-blue-500 rounded-lg p-6 mb-6">
+      <div class="flex items-start">
+        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-1">
+            You're up to date!
+          </h3>
+          <p class="text-blue-800 dark:text-blue-200">
+            Your RailsPress installation is running the latest version (<%= @update_info[:current_version] %>).
+          </p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Error Message -->
+  <% if @update_info[:error] %>
+    <div class="bg-red-50 dark:bg-red-900 border-l-4 border-red-500 rounded-lg p-6 mb-6">
+      <div class="flex items-start">
+        <svg class="w-6 h-6 text-red-600 dark:text-red-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-red-900 dark:text-red-100 mb-1">
+            Update Check Failed
+          </h3>
+          <p class="text-red-800 dark:text-red-200">
+            <%= @update_info[:error] %>
+          </p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Update Information -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      About Updates
+    </h3>
+    
+    <div class="space-y-4 text-gray-600 dark:text-gray-400">
+      <p>
+        RailsPress checks for updates automatically every 6 hours. Updates include:
+      </p>
+      
+      <ul class="list-disc list-inside space-y-2 ml-4">
+        <li>New features and enhancements</li>
+        <li>Security patches and bug fixes</li>
+        <li>Performance improvements</li>
+        <li>Documentation updates</li>
+      </ul>
+      
+      <div class="bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-500 rounded p-4 mt-6">
+        <div class="flex">
+          <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <p class="font-semibold text-yellow-900 dark:text-yellow-100">Important</p>
+            <p class="text-sm text-yellow-800 dark:text-yellow-200 mt-1">
+              Always backup your database and files before updating. Read the release notes carefully for any breaking changes.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Update via CLI:</h4>
+        <div class="bg-gray-900 rounded-lg p-4 font-mono text-sm text-green-400">
+          # Check for updates<br>
+          ./bin/railspress-cli core check-update<br>
+          <br>
+          # Update database after pulling changes<br>
+          ./bin/railspress-cli core update-db
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+

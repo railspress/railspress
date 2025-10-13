@@ -1,0 +1,279 @@
+<% content_for :page_title, "Transactional Email Settings" %>
+
+<div class="max-w-5xl mx-auto">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Transactional Email</h1>
+      <p class="text-gray-400">Configure SMTP or Resend for sending emails</p>
+    </div>
+    <%= link_to admin_email_logs_path, class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition flex items-center space-x-2" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <span>View Email Logs</span>
+    <% end %>
+  </div>
+
+  <div class="flex space-x-6">
+    <!-- Navigation -->
+    <%= render 'settings_nav' %>
+
+    <!-- Form -->
+    <div class="flex-1">
+      <%= form_with url: admin_settings_email_path, method: :patch, local: true do |form| %>
+        <div class="space-y-6">
+          
+          <!-- Provider Selection -->
+          <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Email Provider</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Select Provider</label>
+                <select name="settings[email_provider]" class="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="smtp" <%= 'selected' if @settings[:email_provider] == 'smtp' %>>SMTP Server</option>
+                  <option value="resend" <%= 'selected' if @settings[:email_provider] == 'resend' %>>Resend (resend.com)</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Choose between SMTP or Resend API</p>
+              </div>
+
+              <div class="flex items-center">
+                <input type="hidden" name="settings[email_logging_enabled]" value="false">
+                <input type="checkbox" 
+                       name="settings[email_logging_enabled]" 
+                       id="email_logging_enabled"
+                       value="true"
+                       <%= 'checked' if @settings[:email_logging_enabled] %>
+                       class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                <label for="email_logging_enabled" class="ml-2 text-sm text-gray-300">
+                  Enable email logging (track all sent emails)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMTP Configuration -->
+          <div id="smtp-config" class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6" style="<%= 'display: none;' if @settings[:email_provider] == 'resend' %>">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+              </svg>
+              SMTP Server Configuration
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Host *</label>
+                <%= text_field_tag 'settings[smtp_host]', @settings[:smtp_host], 
+                    class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "smtp.gmail.com" %>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Port *</label>
+                <%= number_field_tag 'settings[smtp_port]', @settings[:smtp_port], 
+                    class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "587" %>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Encryption</label>
+                <select name="settings[smtp_encryption]" class="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="tls" <%= 'selected' if @settings[:smtp_encryption] == 'tls' %>>TLS (Recommended)</option>
+                  <option value="ssl" <%= 'selected' if @settings[:smtp_encryption] == 'ssl' %>>SSL</option>
+                  <option value="none" <%= 'selected' if @settings[:smtp_encryption] == 'none' %>>None</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Timeout (seconds)</label>
+                <%= number_field_tag 'settings[smtp_timeout]', @settings[:smtp_timeout], 
+                    class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "10" %>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                <%= text_field_tag 'settings[smtp_username]', @settings[:smtp_username], 
+                    class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "your-email@gmail.com",
+                    autocomplete: "off" %>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <%= password_field_tag 'settings[smtp_password]', @settings[:smtp_password], 
+                    class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "••••••••",
+                    autocomplete: "new-password" %>
+              </div>
+            </div>
+
+            <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <div class="flex items-start">
+                <svg class="w-5 h-5 text-blue-400 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div class="text-sm text-blue-300">
+                  <strong>Gmail Users:</strong> Use an App Password instead of your regular password. 
+                  <a href="https://support.google.com/accounts/answer/185833" target="_blank" class="underline">Learn how</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resend Configuration -->
+          <div id="resend-config" class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6" style="<%= 'display: none;' if @settings[:email_provider] == 'smtp' %>">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              Resend API Configuration
+            </h3>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">API Key *</label>
+              <%= password_field_tag 'settings[resend_api_key]', @settings[:resend_api_key], 
+                  class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                  placeholder: "re_xxxxxxxxxxxx",
+                  autocomplete: "off" %>
+              <p class="text-xs text-gray-500 mt-1">Get your API key from <a href="https://resend.com/api-keys" target="_blank" class="text-indigo-400 hover:underline">resend.com/api-keys</a></p>
+            </div>
+
+            <div class="mt-4 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+              <div class="flex items-start">
+                <svg class="w-5 h-5 text-indigo-400 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <div class="text-sm text-indigo-300">
+                  <strong>Why Resend?</strong> Simple, modern transactional email API with excellent deliverability. 
+                  <a href="https://resend.com" target="_blank" class="underline">Learn more</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Default Sender -->
+          <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Default Sender</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">From Email *</label>
+                <%= email_field_tag 'settings[default_from_email]', @settings[:default_from_email], 
+                    class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "noreply@railspress.com",
+                    required: true %>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">From Name</label>
+                <%= text_field_tag 'settings[default_from_name]', @settings[:default_from_name], 
+                    class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    placeholder: "RailsPress" %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Email -->
+          <div class="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Test Email Configuration
+            </h3>
+            
+            <p class="text-gray-400 text-sm mb-4">Send a test email to verify your configuration is working correctly.</p>
+            
+            <div class="flex space-x-3">
+              <input type="email" 
+                     id="test_email_address" 
+                     placeholder="test@example.com"
+                     class="flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <button type="button" 
+                      onclick="sendTestEmail()"
+                      class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition font-medium">
+                Send Test Email
+              </button>
+            </div>
+            
+            <div id="test-result" class="mt-4 hidden"></div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-between">
+            <%= form.button "Save Email Settings", 
+                type: :submit,
+                class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium" %>
+            
+            <a href="<%= admin_settings_path %>" class="text-gray-400 hover:text-white transition">Cancel</a>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Toggle provider configuration
+  document.querySelector('select[name="settings[email_provider]"]').addEventListener('change', function() {
+    const smtpConfig = document.getElementById('smtp-config');
+    const resendConfig = document.getElementById('resend-config');
+    
+    if (this.value === 'smtp') {
+      smtpConfig.style.display = 'block';
+      resendConfig.style.display = 'none';
+    } else {
+      smtpConfig.style.display = 'none';
+      resendConfig.style.display = 'block';
+    }
+  });
+
+  // Send test email
+  function sendTestEmail() {
+    const email = document.getElementById('test_email_address').value;
+    const resultDiv = document.getElementById('test-result');
+    
+    if (!email) {
+      showTestResult('Please enter an email address', 'error');
+      return;
+    }
+    
+    resultDiv.innerHTML = '<div class="text-gray-400">Sending test email...</div>';
+    resultDiv.classList.remove('hidden');
+    
+    fetch('<%= admin_settings_test_email_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ test_email_address: email })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showTestResult(data.message, 'success');
+      } else {
+        showTestResult(data.message, 'error');
+      }
+    })
+    .catch(error => {
+      showTestResult('Network error: ' + error.message, 'error');
+    });
+  }
+
+  function showTestResult(message, type) {
+    const resultDiv = document.getElementById('test-result');
+    const colors = {
+      success: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
+      error: 'bg-red-500/10 border-red-500/20 text-red-400'
+    };
+    
+    resultDiv.className = `p-4 rounded-lg border ${colors[type]}`;
+    resultDiv.textContent = message;
+    resultDiv.classList.remove('hidden');
+  }
+</script>
+

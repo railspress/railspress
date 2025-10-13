@@ -1,0 +1,14 @@
+{% schema %}
+{
+  "name": "Rich text",
+  "settings": [
+    { "id":"heading", "type":"text", "label":"Heading" },
+    { "id":"body", "type":"richtext", "label":"Body" },
+    { "id":"max_width", "type":"range", "min":480, "max":1200, "step":20, "default":800, "unit":"px" }
+  ]
+}
+{% endschema %}
+<section class="prose" style="max-width: {{ section.settings.max_width }}px">
+  {% if section.settings.heading %}<h2>{{ section.settings.heading }}</h2>{% endif %}
+  {{ section.settings.body }}
+</section>

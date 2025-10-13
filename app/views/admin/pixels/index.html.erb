@@ -1,0 +1,238 @@
+<% content_for :page_title, "Tracking Pixels" %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Tracking Pixels & Analytics</h1>
+      <p class="text-gray-400">Manage tracking codes and analytics integrations</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to new_admin_pixel_path, class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Add Pixel</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Total Pixels</p>
+          <p class="text-2xl font-bold text-white"><%= @stats[:total] %></p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Active</p>
+          <p class="text-2xl font-bold text-emerald-400"><%= @stats[:active] %></p>
+        </div>
+        <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Inactive</p>
+          <p class="text-2xl font-bold text-gray-400"><%= @stats[:inactive] %></p>
+        </div>
+        <div class="w-12 h-12 bg-gray-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Providers</p>
+          <p class="text-2xl font-bold text-blue-400"><%= @stats[:providers] %></p>
+        </div>
+        <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pixels List -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <% if @pixels.any? %>
+      <div class="divide-y divide-[#2a2a2a]">
+        <% @pixels.each do |pixel| %>
+          <div class="p-6 hover:bg-[#0a0a0a] transition">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-lg font-semibold text-white"><%= pixel.name %></h3>
+                  <% if pixel.active? %>
+                    <span class="px-2 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-400 rounded-full">Active</span>
+                  <% else %>
+                    <span class="px-2 py-1 text-xs font-medium bg-gray-500/10 text-gray-400 rounded-full">Inactive</span>
+                  <% end %>
+                  <span class="px-2 py-1 text-xs font-medium bg-indigo-500/10 text-indigo-400 rounded-full">
+                    <%= pixel.pixel_type.titleize %>
+                  </span>
+                  <span class="px-2 py-1 text-xs font-medium bg-purple-500/10 text-purple-400 rounded-full">
+                    <%= pixel.position.titleize %>
+                  </span>
+                </div>
+                
+                <div class="space-y-1">
+                  <% unless pixel.custom? %>
+                    <p class="text-sm text-gray-400">
+                      <span class="font-medium text-gray-300">ID:</span> <%= pixel.pixel_id %>
+                    </p>
+                  <% end %>
+                  
+                  <% if pixel.notes.present? %>
+                    <p class="text-sm text-gray-500"><%= pixel.notes %></p>
+                  <% end %>
+                  
+                  <% unless pixel.configured? %>
+                    <p class="text-sm text-yellow-500">⚠️ Configuration incomplete</p>
+                  <% end %>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <%= link_to edit_admin_pixel_path(pixel), class: "p-2 text-indigo-400 hover:text-indigo-300 hover:bg-[#1a1a1a] rounded transition", title: "Edit" do %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                <% end %>
+                
+                <%= button_to toggle_admin_pixel_path(pixel), 
+                    method: :patch,
+                    class: "p-2 text-gray-400 hover:text-white hover:bg-[#1a1a1a] rounded transition",
+                    title: pixel.active? ? "Deactivate" : "Activate" do %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <% if pixel.active? %>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    <% else %>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    <% end %>
+                  </svg>
+                <% end %>
+                
+                <%= link_to test_admin_pixel_path(pixel), 
+                    class: "p-2 text-blue-400 hover:text-blue-300 hover:bg-[#1a1a1a] rounded transition",
+                    title: "View Code",
+                    target: "_blank" do %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                  </svg>
+                <% end %>
+                
+                <%= button_to admin_pixel_path(pixel), 
+                    method: :delete,
+                    data: { confirm: "Delete this pixel?" },
+                    class: "p-2 text-red-400 hover:text-red-300 hover:bg-[#1a1a1a] rounded transition",
+                    title: "Delete" do %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="px-6 py-12 text-center">
+        <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <h3 class="text-lg font-semibold text-white mb-2">No Tracking Pixels</h3>
+        <p class="text-gray-400 mb-4">Add your first tracking pixel to start collecting analytics.</p>
+        <%= link_to "Add Pixel", new_admin_pixel_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Popular Providers -->
+  <div class="mt-8 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <h3 class="text-white font-semibold mb-4">Supported Providers</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <% [
+        ['Google Analytics', 'google_analytics', '#4285F4'],
+        ['GTM', 'google_tag_manager', '#246FDB'],
+        ['Facebook', 'facebook_pixel', '#1877F2'],
+        ['TikTok', 'tiktok_pixel', '#000000'],
+        ['LinkedIn', 'linkedin_insight', '#0A66C2'],
+        ['Twitter', 'twitter_pixel', '#1DA1F2'],
+        ['Pinterest', 'pinterest_tag', '#E60023'],
+        ['Snapchat', 'snapchat_pixel', '#FFFC00'],
+        ['Reddit', 'reddit_pixel', '#FF4500'],
+        ['Hotjar', 'hotjar', '#FD3A69'],
+        ['Clarity', 'clarity', '#0078D4'],
+        ['Mixpanel', 'mixpanel', '#7856FF'],
+        ['Segment', 'segment', '#52BD94'],
+        ['Heap', 'heap', '#E86695']
+      ].each do |name, type, color| %>
+        <div class="text-center p-3 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] hover:border-[#3a3a3a] transition">
+          <div class="w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center" style="background-color: <%= color %>15">
+            <div class="w-2 h-2 rounded-full" style="background-color: <%= color %>"></div>
+          </div>
+          <p class="text-xs text-gray-400"><%= name %></p>
+        </div>
+      <% end %>
+      <div class="text-center p-3 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] hover:border-indigo-500 transition cursor-pointer">
+        <div class="w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center bg-indigo-500/10">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </div>
+        <p class="text-xs text-gray-400">Custom</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Section -->
+  <div class="mt-6 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <div class="flex items-start gap-4">
+      <div class="bg-indigo-500/10 p-3 rounded-lg">
+        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-white font-semibold mb-2">About Tracking Pixels</h3>
+        <p class="text-gray-400 text-sm mb-3">
+          Tracking pixels help you understand your audience and measure the effectiveness of your content. Add analytics and marketing pixels here to integrate with third-party services.
+        </p>
+        <ul class="text-sm text-gray-400 space-y-1">
+          <li>• <strong class="text-gray-300">Head Position:</strong> Loads before page content (recommended for most analytics)</li>
+          <li>• <strong class="text-gray-300">Body Start:</strong> Loads right after page starts (for visual tracking)</li>
+          <li>• <strong class="text-gray-300">Body End:</strong> Loads after content (minimal performance impact)</li>
+          <li>• <strong class="text-gray-300">Custom Code:</strong> For advanced tracking or specialized scripts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+

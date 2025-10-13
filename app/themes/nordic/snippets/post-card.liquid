@@ -1,0 +1,12 @@
+<article class="card">
+  <a class="card-cover" href="{{ post.url }}">
+    {% if post.featured_image %}
+      <img src="{{ post.featured_image }}" alt="{{ post.title | escape }}">
+    {% endif %}
+  </a>
+  <div class="card-body">
+    <h3 class="card-title"><a href="{{ post.url }}">{{ post.title }}</a></h3>
+    {% render 'post-meta', post: post %}
+    <p class="card-excerpt">{{ post.excerpt | strip_html | truncate: 180 }}</p>
+  </div>
+</article>

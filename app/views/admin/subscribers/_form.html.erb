@@ -1,0 +1,80 @@
+<%= form_with(model: [:admin, subscriber], class: "space-y-6") do |form| %>
+  <% if subscriber.errors.any? %>
+    <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+      <h3 class="font-semibold mb-2"><%= pluralize(subscriber.errors.count, "error") %> prohibited this subscriber from being saved:</h3>
+      <ul class="list-disc ml-6 text-sm">
+        <% subscriber.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Email -->
+    <div>
+      <%= form.label :email, "Email Address", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.email_field :email, 
+          placeholder: "subscriber@example.com",
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none font-mono",
+          required: true %>
+    </div>
+
+    <!-- Name -->
+    <div>
+      <%= form.label :name, "Name (Optional)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.text_field :name, 
+          placeholder: "John Doe",
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div>
+    <%= form.label :status, "Status", class: "block text-sm font-medium text-gray-300 mb-2" %>
+    <%= form.select :status, 
+        options_for_select([
+          ['Confirmed', 'confirmed'],
+          ['Pending Confirmation', 'pending'],
+          ['Unsubscribed', 'unsubscribed'],
+          ['Bounced', 'bounced'],
+          ['Complained', 'complained']
+        ], subscriber.status || 'confirmed'),
+        {},
+        class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+    <p class="mt-1 text-xs text-gray-500">
+      Manually added subscribers are confirmed by default.
+    </p>
+  </div>
+
+  <!-- Source -->
+  <div>
+    <%= form.label :source, "Source (Optional)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+    <%= form.text_field :source, 
+        placeholder: "e.g., homepage, blog, landing-page",
+        class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+    <p class="mt-1 text-xs text-gray-500">
+      Track where this subscriber came from.
+    </p>
+  </div>
+
+  <!-- Notes (using notes field as text area) -->
+  <div>
+    <%= form.label :notes, "Notes (Optional)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+    <%= form.text_area :notes, 
+        rows: 3,
+        placeholder: "Add any notes about this subscriber...",
+        class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="flex items-center justify-end gap-3 pt-6 border-t border-[#2a2a2a]">
+    <%= link_to "Cancel", admin_subscribers_path, class: "px-6 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+    <%= form.submit subscriber.new_record? ? "Add Subscriber" : "Update Subscriber", 
+        class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium cursor-pointer" %>
+  </div>
+<% end %>
+
+
+
+

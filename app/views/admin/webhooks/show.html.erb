@@ -1,0 +1,295 @@
+<div class="max-w-7xl mx-auto py-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <div class="flex items-center space-x-3 mb-2">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+          <%= @webhook.name %>
+        </h1>
+        <% if @webhook.active? %>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+            Active
+          </span>
+        <% else %>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
+            Inactive
+          </span>
+        <% end %>
+      </div>
+      <p class="text-gray-600 dark:text-gray-400">
+        <%= @webhook.description %>
+      </p>
+    </div>
+    
+    <div class="flex space-x-3">
+      <%= link_to test_admin_webhook_path(@webhook), method: :post,
+          class: "inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Send Test
+      <% end %>
+      
+      <%= link_to edit_admin_webhook_path(@webhook), 
+          class: "inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition" do %>
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Edit
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Webhook Details -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Main Info -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Configuration
+        </h2>
+        
+        <dl class="space-y-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Payload URL</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono break-all">
+              <%= @webhook.url %>
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Secret Key</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-white font-mono">
+              <span id="secret-key" class="blur-sm select-none"><%= @webhook.secret_key %></span>
+              <button onclick="document.getElementById('secret-key').classList.toggle('blur-sm')" 
+                      class="ml-3 text-indigo-600 hover:text-indigo-700 text-xs">
+                Show/Hide
+              </button>
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Subscribed Events</dt>
+            <dd class="flex flex-wrap gap-2">
+              <% @webhook.events.each do |event| %>
+                <span class="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                  <%= event %>
+                </span>
+              <% end %>
+            </dd>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Retry Limit</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                <%= @webhook.retry_limit %> attempts
+              </dd>
+            </div>
+            
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Timeout</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                <%= @webhook.timeout %> seconds
+              </dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Statistics
+        </h2>
+        
+        <dl class="space-y-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Deliveries</dt>
+            <dd class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+              <%= @webhook.total_deliveries %>
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Failed Deliveries</dt>
+            <dd class="mt-1 text-2xl font-bold <%= @webhook.failed_deliveries > 0 ? 'text-red-600' : 'text-gray-900 dark:text-white' %>">
+              <%= @webhook.failed_deliveries %>
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Success Rate</dt>
+            <dd class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+              <% success_rate = @webhook.total_deliveries > 0 ? ((@webhook.total_deliveries - @webhook.failed_deliveries).to_f / @webhook.total_deliveries * 100).round(1) : 100 %>
+              <%= success_rate %>%
+            </dd>
+          </div>
+          
+          <div>
+            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Health</dt>
+            <dd class="mt-1">
+              <% if @webhook.healthy? %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                  Healthy
+                </span>
+              <% else %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                  Unhealthy
+                </span>
+              <% end %>
+            </dd>
+          </div>
+          
+          <% if @webhook.last_delivered_at %>
+            <div>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Delivered</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                <%= time_ago_in_words(@webhook.last_delivered_at) %> ago
+              </dd>
+            </div>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delivery History -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      Delivery History
+    </h2>
+    
+    <div class="space-y-3">
+      <% if @deliveries.any? %>
+        <% @deliveries.each do |delivery| %>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 <%= delivery.success_status? ? 'bg-green-50 dark:bg-green-900/10' : 'bg-red-50 dark:bg-red-900/10' %>">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3">
+                <% if delivery.success_status? %>
+                  <svg class="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                <% else %>
+                  <svg class="w-5 h-5 text-red-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                  </svg>
+                <% end %>
+                
+                <div>
+                  <div class="flex items-center space-x-3 mb-1">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">
+                      <%= delivery.event_type %>
+                    </span>
+                    <% if delivery.response_code %>
+                      <span class="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-mono">
+                        HTTP <%= delivery.response_code %>
+                      </span>
+                    <% end %>
+                    <% if delivery.retry_count > 0 %>
+                      <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                        Retry #<%= delivery.retry_count %>
+                      </span>
+                    <% end %>
+                  </div>
+                  
+                  <div class="text-xs text-gray-500 dark:text-gray-400 space-x-2">
+                    <span><%= delivery.created_at.strftime('%Y-%m-%d %H:%M:%S') %></span>
+                    <span>•</span>
+                    <span class="font-mono"><%= delivery.request_id %></span>
+                  </div>
+                  
+                  <% if delivery.error_message.present? %>
+                    <div class="mt-2 text-sm text-red-700 dark:text-red-300 font-mono">
+                      <%= delivery.error_message %>
+                    </div>
+                  <% end %>
+                  
+                  <% if delivery.response_body.present? %>
+                    <details class="mt-2">
+                      <summary class="text-xs text-indigo-600 dark:text-indigo-400 cursor-pointer hover:text-indigo-700">
+                        View Response
+                      </summary>
+                      <pre class="mt-2 text-xs bg-gray-900 text-green-400 p-3 rounded overflow-x-auto"><%= delivery.response_body.truncate(500) %></pre>
+                    </details>
+                  <% end %>
+                </div>
+              </div>
+              
+              <div class="text-right text-xs text-gray-500 dark:text-gray-400">
+                <% if delivery.delivered_at %>
+                  <%= time_ago_in_words(delivery.delivered_at) %> ago
+                <% elsif delivery.next_retry_at %>
+                  Retry in <%= time_ago_in_words(delivery.next_retry_at) %>
+                <% else %>
+                  Pending
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        
+        <!-- Pagination -->
+        <% if @deliveries.total_pages > 1 %>
+          <div class="mt-6 flex justify-center">
+            <%= link_to "← Previous", admin_webhook_path(@webhook, page: @deliveries.prev_page), class: "px-4 py-2 text-indigo-600" if @deliveries.prev_page %>
+            <span class="px-4 py-2 text-gray-600">Page <%= @deliveries.current_page %> of <%= @deliveries.total_pages %></span>
+            <%= link_to "Next →", admin_webhook_path(@webhook, page: @deliveries.next_page), class: "px-4 py-2 text-indigo-600" if @deliveries.next_page %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+          <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="mb-4">No deliveries yet</p>
+          <p class="text-sm">Deliveries will appear here when events are triggered</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Usage Instructions -->
+  <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">
+      How to Verify Webhook Signatures
+    </h3>
+    
+    <p class="text-blue-800 dark:text-blue-200 mb-4">
+      Webhook payloads are signed with HMAC-SHA256. Verify signatures in your webhook handler:
+    </p>
+    
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre class="text-green-400 text-sm"><code># Ruby example
+signature = request.headers['X-RailsPress-Signature']
+payload = request.body.read
+expected = OpenSSL::HMAC.hexdigest('SHA256', secret_key, payload)
+
+if signature == expected
+  # Valid webhook
+else
+  # Invalid signature - reject
+end
+
+# Node.js example
+const crypto = require('crypto');
+const signature = req.headers['x-railspress-signature'];
+const payload = JSON.stringify(req.body);
+const expected = crypto
+  .createHmac('sha256', secretKey)
+  .update(payload)
+  .digest('hex');
+
+if (signature === expected) {
+  // Valid webhook
+}
+</code></pre>
+    </div>
+  </div>
+</div>
+
+
+
+

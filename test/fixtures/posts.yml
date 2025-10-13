@@ -1,0 +1,54 @@
+one:
+  title: "First Post"
+  content: "This is the content of the first post. It contains some interesting information about web development and Rails."
+  excerpt: "This is the excerpt of the first post."
+  slug: "first-post"
+  status: published
+  user: admin
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
+  published_at: <%= 1.week.ago %>
+
+two:
+  title: "Second Post"
+  content: "This is the content of the second post. It talks about Ruby on Rails and its amazing features."
+  excerpt: "This is the excerpt of the second post."
+  slug: "second-post"
+  status: draft
+  user: admin
+  created_at: <%= 2.days.ago %>
+  updated_at: <%= 2.days.ago %>
+  published_at: null
+
+published:
+  title: "Published Post"
+  content: "This is a published post with some content about web development."
+  excerpt: "This is the excerpt of the published post."
+  slug: "published-post"
+  status: published
+  user: author
+  created_at: <%= 3.days.ago %>
+  updated_at: <%= 3.days.ago %>
+  published_at: <%= 3.days.ago %>
+
+draft:
+  title: "Draft Post"
+  content: "This is a draft post that hasn't been published yet."
+  excerpt: "This is the excerpt of the draft post."
+  slug: "draft-post"
+  status: draft
+  user: author
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+  published_at: null
+
+private:
+  title: "Private Post"
+  content: "This is a private post that only administrators can see."
+  excerpt: "This is the excerpt of the private post."
+  slug: "private-post-test"
+  status: private_post
+  user: admin
+  created_at: <%= 4.days.ago %>
+  updated_at: <%= 4.days.ago %>
+  published_at: <%= 4.days.ago %>

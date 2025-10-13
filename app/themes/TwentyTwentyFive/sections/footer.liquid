@@ -1,0 +1,23 @@
+{% comment %} WordPress Twenty Twenty-Five inspired footer {% endcomment %}
+<footer class="footer">
+  <div class="footer-content">
+    <h2 class="footer-brand">{{ site.title }}</h2>
+    <nav class="footer-nav">
+      <div class="footer-nav-column">
+        {% assign half_size = site.menus.footer.size | divided_by: 2 %}
+        {% for item in site.menus.footer limit: half_size %}
+          <a href="{{ item.url }}">{{ item.title }}</a>
+        {% endfor %}
+      </div>
+      <div class="footer-nav-column">
+        {% for item in site.menus.footer offset: half_size %}
+          <a href="{{ item.url }}">{{ item.title }}</a>
+        {% endfor %}
+      </div>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <span>Twenty Twenty-Five</span>
+    <span>Designed with <a href="https://wordpress.org">WordPress</a></span>
+  </div>
+</footer>

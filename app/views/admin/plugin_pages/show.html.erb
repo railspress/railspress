@@ -1,0 +1,132 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <%= link_to admin_plugins_path, class: "inline-flex items-center text-sm text-gray-400 hover:text-white mb-4" do %>
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to Plugins
+    <% end %>
+    <h1 class="text-3xl font-bold text-white mb-2"><%= @page_data[:title] %></h1>
+    <% if @plugin.description.present? %>
+      <p class="text-gray-400"><%= @plugin.description %></p>
+    <% end %>
+  </div>
+
+  <% if flash[:notice] %>
+    <div class="bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3 rounded-lg mb-6">
+      <%= flash[:notice] %>
+    </div>
+  <% end %>
+
+  <% if flash[:alert] %>
+    <div class="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-6">
+      <%= flash[:alert] %>
+    </div>
+  <% end %>
+
+  <%= form_tag admin_plugin_page_path(plugin_identifier: params[:plugin_identifier], page_slug: @page_slug), method: :patch, class: "space-y-6" do %>
+    <!-- Settings Form -->
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <% if @page_data[:settings].present? %>
+        <div class="space-y-6">
+          <% @page_data[:settings].each do |setting| %>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">
+                <%= setting[:label] %>
+                <% if setting[:required] %>
+                  <span class="text-red-400">*</span>
+                <% end %>
+              </label>
+              
+              <% case setting[:type]
+                 when 'string', 'text' %>
+                <%= text_field_tag "settings[#{setting[:key]}]", 
+                                   @page_data[:current_values][setting[:key]] || setting[:default],
+                                   class: "w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500",
+                                   placeholder: setting[:placeholder] %>
+              
+              <% when 'textarea' %>
+                <%= text_area_tag "settings[#{setting[:key]}]",
+                                  @page_data[:current_values][setting[:key]] || setting[:default],
+                                  class: "w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500",
+                                  rows: setting[:rows] || 4 %>
+              
+              <% when 'boolean' %>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <%= check_box_tag "settings[#{setting[:key]}]",
+                                    '1',
+                                    @page_data[:current_values][setting[:key]] || setting[:default],
+                                    class: "sr-only peer" %>
+                  <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <span class="ml-3 text-sm font-medium text-gray-300"><%= setting[:description] || 'Enable' %></span>
+                </label>
+              
+              <% when 'select' %>
+                <%= select_tag "settings[#{setting[:key]}]",
+                               options_for_select(setting[:options], @page_data[:current_values][setting[:key]] || setting[:default]),
+                               class: "w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+              
+              <% when 'number' %>
+                <%= number_field_tag "settings[#{setting[:key]}]",
+                                     @page_data[:current_values][setting[:key]] || setting[:default],
+                                     min: setting[:min],
+                                     max: setting[:max],
+                                     class: "w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+              <% end %>
+              
+              <% if setting[:help] %>
+                <p class="text-sm text-gray-500 mt-1"><%= setting[:help] %></p>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center text-gray-400 py-8">
+          <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+          <p>No settings available for this plugin</p>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-gray-400">
+        Plugin Version: <%= @plugin.version %>
+      </div>
+      <%= submit_tag 'Save Changes', 
+                     class: "px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors cursor-pointer" %>
+    </div>
+  <% end %>
+
+  <!-- Plugin Info -->
+  <div class="mt-8 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+    <h3 class="text-lg font-semibold text-white mb-4">Plugin Information</h3>
+    <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div>
+        <dt class="text-gray-400">Name</dt>
+        <dd class="text-white font-medium"><%= @plugin.name %></dd>
+      </div>
+      <div>
+        <dt class="text-gray-400">Version</dt>
+        <dd class="text-white font-medium"><%= @plugin.version %></dd>
+      </div>
+      <% if @plugin.author.present? %>
+        <div>
+          <dt class="text-gray-400">Author</dt>
+          <dd class="text-white font-medium"><%= @plugin.author %></dd>
+        </div>
+      <% end %>
+      <% if @plugin.respond_to?(:url) && @plugin.url.present? %>
+        <div>
+          <dt class="text-gray-400">Website</dt>
+          <dd>
+            <%= link_to @plugin.url, @plugin.url, target: '_blank', class: "text-blue-400 hover:text-blue-300" %>
+          </dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+</div>

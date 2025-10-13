@@ -1,0 +1,44 @@
+<% content_for :page_title, "Reset Password" %>
+
+<div class="text-center mb-6">
+  <h2 class="text-2xl font-bold text-white">Reset Your Password</h2>
+  <p class="mt-2 text-sm text-secondary">
+    Enter your email address and we'll send you a link to reset your password.
+  </p>
+</div>
+
+<%= form_for(resource, as: resource_name, url: admin_user_password_path(resource_name), html: { method: :post, class: "space-y-6" }) do |f| %>
+  <% if alert %>
+    <div class="bg-red-900/20 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+      <%= alert %>
+    </div>
+  <% end %>
+
+  <% if notice %>
+    <div class="bg-green-900/20 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg text-sm">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <div>
+    <label for="user_email" class="block text-sm font-medium text-secondary mb-2">
+      Email Address
+    </label>
+    <%= f.email_field :email, 
+        autofocus: true, 
+        autocomplete: "email",
+        class: "form-input w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+        placeholder: "Enter your email address",
+        required: true %>
+  </div>
+
+  <div>
+    <%= f.submit "Send Reset Instructions", 
+        class: "btn-primary w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+  </div>
+<% end %>
+
+<div class="mt-6 text-center">
+  <%= link_to "← Back to Login", new_admin_user_session_path, 
+      class: "text-sm text-blue-600 hover:text-blue-500 transition-colors" %>
+</div>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{{ page.title | default: 'Sign in' }} · {{ site.title }}</title>
+  <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}">
+  <link rel="stylesheet" href="{{ 'login.css' | asset_url }}">
+</head>
+<body class="auth-bg">
+  <main class="auth-container">
+    <a href="/" class="auth-logo">{{ site.title }}</a>
+    {{ content_for_layout }}
+  </main>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{{ page.seo_title | default: page.title | default: site.title }}</title>
+  {% section 'seo-head' %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}">
+</head>
+<body>
+  {% section 'header' %}
+  <main id="main" class="container">
+    {{ content_for_layout }}
+  </main>
+  {% section 'footer' %}
+  <script src="{{ 'theme.js' | asset_url }}"></script>
+</body>
+</html>

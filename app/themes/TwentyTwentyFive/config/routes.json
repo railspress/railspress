@@ -1,0 +1,40 @@
+{
+  "routes": [
+    {
+      "pattern": "/",
+      "template": "index"
+    },
+    {
+      "pattern": "/blog",
+      "template": "blog"
+    },
+    {
+      "pattern": "/post/:slug",
+      "template": "post"
+    },
+    {
+      "pattern": "/page/:slug",
+      "template": "page"
+    },
+    {
+      "pattern": "/category/:slug",
+      "template": "category"
+    },
+    {
+      "pattern": "/tag/:slug",
+      "template": "tag"
+    },
+    {
+      "pattern": "/author/:slug",
+      "template": "author"
+    },
+    {
+      "pattern": "/tax/:taxonomy/:slug",
+      "template": "taxonomy"
+    },
+    {
+      "pattern": "/search",
+      "template": "search"
+    }
+  ]
+}

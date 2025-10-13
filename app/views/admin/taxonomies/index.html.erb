@@ -1,0 +1,158 @@
+<% content_for :title, "Taxonomies" %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-white mb-2">Custom Taxonomies</h1>
+      <p class="text-gray-400">Create and manage custom taxonomies for organizing content</p>
+    </div>
+    <%= link_to new_admin_taxonomy_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      New Taxonomy
+    <% end %>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Total Taxonomies</p>
+          <p class="text-2xl font-bold text-white"><%= Taxonomy.count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Total Terms</p>
+          <p class="text-2xl font-bold text-white"><%= Term.count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Hierarchical</p>
+          <p class="text-2xl font-bold text-white"><%= Taxonomy.where(hierarchical: true).count %></p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Flat</p>
+          <p class="text-2xl font-bold text-white"><%= Taxonomy.where(hierarchical: false).count %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if @taxonomies.any? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @taxonomies.each do |taxonomy| %>
+        <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-[#3a3a3a] transition group">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-white mb-1 group-hover:text-indigo-400 transition">
+                  <%= link_to taxonomy.name, admin_taxonomy_path(taxonomy) %>
+                </h3>
+                <p class="text-sm text-gray-400"><%= taxonomy.slug %></p>
+              </div>
+              <span class="px-2 py-1 <%= taxonomy.hierarchical? ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400' %> rounded-md text-xs font-semibold">
+                <%= taxonomy.hierarchical? ? 'Hierarchical' : 'Flat' %>
+              </span>
+            </div>
+            
+            <% if taxonomy.description.present? %>
+              <p class="text-gray-300 text-sm mb-4"><%= truncate(taxonomy.description, length: 100) %></p>
+            <% end %>
+            
+            <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+              <span><%= taxonomy.term_count %> terms</span>
+              <span class="px-2 py-1 bg-[#0a0a0a] rounded text-xs">
+                <%= taxonomy.object_types.join(', ') %>
+              </span>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+              <%= link_to "Manage Terms", admin_taxonomy_terms_path(taxonomy), 
+                  class: "flex-1 text-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm" %>
+              <%= link_to "Edit", edit_admin_taxonomy_path(taxonomy), 
+                  class: "px-3 py-2 border border-[#2a2a2a] hover:border-[#3a3a3a] text-gray-300 hover:text-white rounded-lg transition text-sm" %>
+              <%= link_to admin_taxonomy_path(taxonomy), 
+                  data: { turbo_method: :delete, turbo_confirm: "Delete #{taxonomy.name} and all its terms?" },
+                  class: "px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-12 text-center">
+      <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+      </svg>
+      <h3 class="text-lg font-semibold text-white mb-2">No Custom Taxonomies</h3>
+      <p class="text-gray-400 mb-6">Create custom taxonomies to organize your content beyond categories and tags</p>
+      <%= link_to "Create Your First Taxonomy", new_admin_taxonomy_path, class: "inline-flex items-center space-x-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Create Taxonomy</span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Built-in Taxonomies Info -->
+  <div class="mt-8 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-6">
+    <div class="flex items-start space-x-4">
+      <div class="bg-indigo-500/20 p-3 rounded-lg">
+        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-white font-semibold mb-2">About Taxonomies</h3>
+        <p class="text-gray-400 text-sm mb-3">
+          <strong>Taxonomies</strong> are grouping mechanisms for content. Categories and Tags are built-in taxonomies. 
+          You can create custom taxonomies for more specific classification needs.
+        </p>
+        <div class="space-y-2 text-sm text-gray-400">
+          <p><strong class="text-indigo-400">Hierarchical:</strong> Like categories - can have parent/child relationships</p>
+          <p><strong class="text-blue-400">Flat:</strong> Like tags - no hierarchy, just labels</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

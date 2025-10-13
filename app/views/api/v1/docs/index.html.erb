@@ -1,0 +1,193 @@
+<div class="min-h-screen bg-[#0a0a0a]">
+  <!-- Header -->
+  <header class="bg-[#111111] border-b border-[#2a2a2a] sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          RailsPress API Documentation
+        </h1>
+        <div class="flex items-center space-x-4">
+          <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-full text-sm">v1.0.0</span>
+          <%= link_to "Back to Admin", admin_root_path, class: "px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition" %>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container mx-auto px-6 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <!-- Sidebar Navigation -->
+      <aside class="lg:col-span-1">
+        <nav class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 sticky top-24">
+          <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Endpoints</h3>
+          <ul class="space-y-1">
+            <% @api_endpoints.each do |key, section| %>
+              <li>
+                <a href="#<%= key %>" class="block px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+                  <%= section[:name] %>
+                </a>
+              </li>
+            <% end %>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="lg:col-span-3 space-y-12">
+        <!-- Introduction -->
+        <section class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-8">
+          <h2 class="text-3xl font-bold mb-4">Welcome to RailsPress API</h2>
+          <p class="text-gray-400 mb-4">
+            A comprehensive RESTful API for managing your RailsPress CMS. Access all functionality programmatically with JSON responses.
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div class="bg-[#0a0a0a] rounded-lg p-4">
+              <h4 class="font-semibold text-indigo-400 mb-2">Base URL</h4>
+              <code class="text-sm text-gray-300">http://localhost:3000/api/v1</code>
+            </div>
+            <div class="bg-[#0a0a0a] rounded-lg p-4">
+              <h4 class="font-semibold text-emerald-400 mb-2">Format</h4>
+              <code class="text-sm text-gray-300">JSON</code>
+            </div>
+            <div class="bg-[#0a0a0a] rounded-lg p-4">
+              <h4 class="font-semibold text-purple-400 mb-2">Authentication</h4>
+              <code class="text-sm text-gray-300">Bearer Token</code>
+            </div>
+          </div>
+
+          <div class="mt-6 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+            <p class="text-sm text-indigo-300">
+              📖 <strong>Full Documentation:</strong> See <code>API_DOCUMENTATION.md</code> for complete details
+            </p>
+          </div>
+          
+          <div class="mt-4 p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+            <p class="text-sm text-purple-300">
+              🧪 <strong>Interactive Client:</strong> Open <code>API_CLIENT_EXAMPLE.html</code> in your browser to test the API
+            </p>
+          </div>
+        </section>
+
+        <!-- API Endpoints -->
+        <% @api_endpoints.each do |key, section| %>
+          <section id="<%= key %>" class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-8">
+            <h2 class="text-2xl font-bold mb-6"><%= section[:name] %></h2>
+            
+            <div class="space-y-4">
+              <% section[:endpoints].each do |endpoint| %>
+                <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-4 hover:border-[#3a3a3a] transition">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-3">
+                      <span class="px-2 py-1 rounded text-xs font-bold <%= method_badge_class(endpoint[:method]) %>">
+                        <%= endpoint[:method] %>
+                      </span>
+                      <code class="text-gray-300"><%= endpoint[:path] %></code>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <% if endpoint[:auth] %>
+                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 rounded text-xs">🔐 Auth Required</span>
+                      <% end %>
+                      <% if endpoint[:admin] %>
+                        <span class="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs">👑 Admin Only</span>
+                      <% end %>
+                    </div>
+                  </div>
+                  <p class="text-gray-400 text-sm"><%= endpoint[:description] %></p>
+                </div>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+
+        <!-- Quick Start Guide -->
+        <section class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-8">
+          <h2 class="text-2xl font-bold mb-6">Quick Start</h2>
+          
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold text-white mb-3">1. Get Your API Token</h3>
+              <pre class="text-sm text-gray-300"><code>curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@railspress.com",
+    "password": "password"
+  }'</code></pre>
+            </div>
+
+            <div>
+              <h3 class="text-lg font-semibold text-white mb-3">2. Fetch Posts</h3>
+              <pre class="text-sm text-gray-300"><code>curl -X GET "http://localhost:3000/api/v1/posts?status=published" \
+  -H "Authorization: Bearer your-token-here"</code></pre>
+            </div>
+
+            <div>
+              <h3 class="text-lg font-semibold text-white mb-3">3. Create Content</h3>
+              <pre class="text-sm text-gray-300"><code>curl -X POST http://localhost:3000/api/v1/posts \
+  -H "Authorization: Bearer your-token-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "post": {
+      "title": "My New Post",
+      "content": "<p>Content here</p>",
+      "status": "published"
+    }
+  }'</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Response Format -->
+        <section class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-8">
+          <h2 class="text-2xl font-bold mb-6">Response Format</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-lg font-semibold text-emerald-400 mb-3">Success Response</h3>
+              <pre class="text-sm"><code class="text-emerald-300">{
+  "success": true,
+  "data": { ... },
+  "meta": {
+    "current_page": 1,
+    "total_pages": 5,
+    "total_count": 120
+  }
+}</code></pre>
+            </div>
+
+            <div>
+              <h3 class="text-lg font-semibold text-red-400 mb-3">Error Response</h3>
+              <pre class="text-sm"><code class="text-red-300">{
+  "success": false,
+  "error": "Error message"
+}</code></pre>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<% content_for :helper_methods do %>
+  <%
+    def method_badge_class(method)
+      case method.upcase
+      when 'GET'
+        'bg-blue-500/10 text-blue-400'
+      when 'POST'
+        'bg-green-500/10 text-green-400'
+      when 'PATCH', 'PUT'
+        'bg-yellow-500/10 text-yellow-400'
+      when 'DELETE'
+        'bg-red-500/10 text-red-400'
+      else
+        'bg-gray-500/10 text-gray-400'
+      end
+    end
+  %>
+<% end %>
+
+
+
+

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GraphQL Playground - RailsPress</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="<%= form_authenticity_token %>">
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #0d0d0d;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    #graphiql {
+      height: 100vh;
+      width: 100%;
+    }
+    
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10000;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s;
+    }
+    
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .back-button svg {
+      margin-right: 8px;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      font-size: 18px;
+    }
+  </style>
+  
+  <link rel="stylesheet" href="https://unpkg.com/graphiql@3.0.0/graphiql.min.css" />
+</head>
+<body>
+  <a href="<%= admin_api_docs_path %>" class="back-button">
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    </svg>
+    Back to API Docs
+  </a>
+  
+  <div id="graphiql">
+    <div class="loading">Loading GraphQL Playground...</div>
+  </div>
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/graphiql@3.0.0/graphiql.min.js"></script>
+  
+  <script>
+    // Wait for libraries to load
+    function initGraphiQL() {
+      if (typeof GraphiQL === 'undefined' || typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+        console.log('Waiting for libraries to load...');
+        setTimeout(initGraphiQL, 100);
+        return;
+      }
+
+      const fetcher = GraphiQL.createFetcher({
+        url: '<%= request.protocol %><%= request.host_with_port %>/graphql',
+        headers: {
+          'X-CSRF-Token': '<%= form_authenticity_token %>'
+        }
+      });
+
+      const root = ReactDOM.createRoot(document.getElementById('graphiql'));
+      const defaultQuery = `# Welcome to RailsPress GraphQL API!
+#
+# This is an interactive GraphQL playground where you can:
+# - Write and execute queries and mutations
+# - Explore the schema with auto-complete (Ctrl+Space)
+# - View documentation for all types and fields
+#
+# Try these example queries:
+
+# 1. List published posts
+query GetPosts {
+  publishedPosts(limit: 5) {
+    id
+    title
+    slug
+    excerpt
+    publishedAt
+    user {
+      email
+      name
+    }
+    categories {
+      name
+      slug
+    }
+    tags {
+      name
+      slug
+    }
+  }
+}
+
+# 2. Get a specific post by slug
+# query GetPost {
+#   post(slug: "hello-world") {
+#     id
+#     title
+#     content
+#     user {
+#       name
+#       email
+#     }
+#     categories {
+#       name
+#       slug
+#     }
+#     comments {
+#       id
+#       content
+#       authorName
+#       authorEmail
+#       createdAt
+#     }
+#   }
+# }
+
+# 3. Get all taxonomies with their terms
+# query GetTaxonomies {
+#   taxonomies {
+#     id
+#     name
+#     slug
+#     hierarchical
+#     terms {
+#       id
+#       name
+#       slug
+#       description
+#       count
+#     }
+#   }
+# }
+
+# 4. Search across content
+# query Search {
+#   search(query: "wordpress") {
+#     total
+#     posts {
+#       title
+#       slug
+#       excerpt
+#     }
+#     pages {
+#       title
+#       slug
+#       excerpt
+#     }
+#   }
+# }
+
+# 5. Get site statistics
+# query GetStats {
+#   stats {
+#     postsCount
+#     pagesCount
+#     usersCount
+#     commentsCount
+#   }
+# }
+
+# Press Ctrl+Space anywhere to see available queries!
+# Click "Docs" in the top-right to explore the schema.
+`;
+
+      root.render(
+        React.createElement(GraphiQL, {
+          fetcher: fetcher,
+          defaultQuery: defaultQuery,
+          defaultEditorToolsVisibility: true,
+          headerEditorEnabled: true,
+          shouldPersistHeaders: true
+        })
+      );
+      
+      console.log('GraphiQL initialized successfully!');
+    }
+
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGraphiQL);
+    } else {
+      initGraphiQL();
+    }
+  </script>
+</body>
+</html>

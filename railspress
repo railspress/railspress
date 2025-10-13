@@ -1,0 +1,224 @@
+#!/bin/bash
+
+# RailsPress CLI Tool
+# Usage: ./railspress [command]
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Functions
+print_header() {
+    echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║         RailsPress CLI Tool            ║${NC}"
+    echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
+    echo ""
+}
+
+print_help() {
+    echo "Usage: ./railspress [command]"
+    echo ""
+    echo "Commands:"
+    echo "  runtests         Run the full test suite"
+    echo "  test [file]      Run specific test file"
+    echo "  server           Start the Rails server"
+    echo "  restart          Restart the Rails server"
+    echo "  stop             Stop the Rails server"
+    echo "  console          Open Rails console"
+    echo "  db:setup         Setup database"
+    echo "  db:migrate       Run migrations"
+    echo "  db:seed          Seed database"
+    echo "  db:reset         Reset database"
+    echo "  lint             Run linter"
+    echo "  format           Format code"
+    echo "  coverage         Generate test coverage report"
+    echo "  help             Show this help message"
+    echo ""
+}
+
+run_tests() {
+    echo -e "${YELLOW}Running RailsPress Test Suite...${NC}"
+    echo ""
+    
+    if [ -f "run_tests.sh" ]; then
+        bash run_tests.sh
+    else
+        echo -e "${RED}Error: run_tests.sh not found${NC}"
+        exit 1
+    fi
+}
+
+run_specific_test() {
+    local test_file="$1"
+    
+    if [ -z "$test_file" ]; then
+        echo -e "${RED}Error: Please specify a test file${NC}"
+        echo "Usage: ./railspress test [file]"
+        exit 1
+    fi
+    
+    if [ ! -f "$test_file" ]; then
+        echo -e "${RED}Error: Test file not found: $test_file${NC}"
+        exit 1
+    fi
+    
+    echo -e "${YELLOW}Running test: $test_file${NC}"
+    rails test "$test_file"
+}
+
+start_server() {
+    echo -e "${GREEN}Starting Rails server...${NC}"
+    rails server
+}
+
+stop_server() {
+    echo -e "${YELLOW}Stopping Rails server...${NC}"
+    
+    if [ -f "tmp/pids/server.pid" ]; then
+        local pid=$(cat tmp/pids/server.pid)
+        echo -e "${YELLOW}Killing process $pid...${NC}"
+        kill -9 $pid 2>/dev/null || true
+        rm -f tmp/pids/server.pid
+        echo -e "${GREEN}Server stopped.${NC}"
+    else
+        echo -e "${YELLOW}No server.pid file found. Checking for running Rails processes...${NC}"
+        pkill -9 -f "rails server" 2>/dev/null || true
+        echo -e "${GREEN}Done.${NC}"
+    fi
+}
+
+restart_server() {
+    echo -e "${YELLOW}Restarting Rails server...${NC}"
+    stop_server
+    sleep 2
+    echo -e "${GREEN}Starting server...${NC}"
+    rails server -d -p 3000
+    echo -e "${GREEN}Server restarted on http://localhost:3000${NC}"
+}
+
+open_console() {
+    echo -e "${GREEN}Opening Rails console...${NC}"
+    rails console
+}
+
+setup_database() {
+    echo -e "${YELLOW}Setting up database...${NC}"
+    rails db:setup
+}
+
+run_migrations() {
+    echo -e "${YELLOW}Running migrations...${NC}"
+    rails db:migrate
+}
+
+seed_database() {
+    echo -e "${YELLOW}Seeding database...${NC}"
+    rails db:seed
+}
+
+reset_database() {
+    echo -e "${YELLOW}Resetting database...${NC}"
+    rails db:reset
+}
+
+run_linter() {
+    echo -e "${YELLOW}Running linter...${NC}"
+    if command -v rubocop &> /dev/null; then
+        rubocop
+    else
+        echo -e "${RED}Error: rubocop not installed${NC}"
+        echo "Install with: gem install rubocop"
+        exit 1
+    fi
+}
+
+format_code() {
+    echo -e "${YELLOW}Formatting code...${NC}"
+    if command -v rubocop &> /dev/null; then
+        rubocop -a
+    else
+        echo -e "${RED}Error: rubocop not installed${NC}"
+        echo "Install with: gem install rubocop"
+        exit 1
+    fi
+}
+
+generate_coverage() {
+    echo -e "${YELLOW}Generating test coverage report...${NC}"
+    COVERAGE=true rails test
+    
+    if [ -d "coverage" ]; then
+        echo -e "${GREEN}Coverage report generated in coverage/index.html${NC}"
+        
+        # Open coverage report if on macOS
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            open coverage/index.html
+        fi
+    else
+        echo -e "${RED}Error: Coverage report not generated${NC}"
+    fi
+}
+
+# Main script
+print_header
+
+COMMAND="${1:-help}"
+
+case "$COMMAND" in
+    runtests)
+        run_tests
+        ;;
+    test)
+        run_specific_test "$2"
+        ;;
+    server)
+        start_server
+        ;;
+    restart)
+        restart_server
+        ;;
+    stop)
+        stop_server
+        ;;
+    console)
+        open_console
+        ;;
+    db:setup)
+        setup_database
+        ;;
+    db:migrate)
+        run_migrations
+        ;;
+    db:seed)
+        seed_database
+        ;;
+    db:reset)
+        reset_database
+        ;;
+    lint)
+        run_linter
+        ;;
+    format)
+        format_code
+        ;;
+    coverage)
+        generate_coverage
+        ;;
+    help|--help|-h)
+        print_help
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $COMMAND${NC}"
+        echo ""
+        print_help
+        exit 1
+        ;;
+esac

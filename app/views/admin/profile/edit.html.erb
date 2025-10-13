@@ -1,0 +1,172 @@
+<% content_for :page_title, "Edit Profile" %>
+
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center gap-3 mb-4">
+      <%= link_to admin_profile_path, class: "text-gray-400 hover:text-white transition" do %>
+        ← Back to Profile
+      <% end %>
+    </div>
+    <h1 class="text-3xl font-bold text-white mb-2">Edit Profile</h1>
+    <p class="text-gray-400">Update your personal information</p>
+  </div>
+
+  <%= form_with model: @user, url: admin_profile_path, method: :patch, class: 'space-y-6' do |form| %>
+    <% if @user.errors.any? %>
+      <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+        <h3 class="text-red-400 font-semibold mb-2"><%= pluralize(@user.errors.count, "error") %> prohibited this from being saved:</h3>
+        <ul class="list-disc list-inside text-red-300 text-sm space-y-1">
+          <% @user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Avatar & Basic Info -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-6">Avatar & Basic Info</h2>
+      
+      <div class="space-y-4">
+        <!-- Avatar Preview -->
+        <div class="flex items-center gap-6">
+          <% if @user.avatar_url.present? %>
+            <img src="<%= @user.avatar_url %>" alt="Avatar" class="w-24 h-24 rounded-full object-cover border-4 border-[#2a2a2a]">
+          <% else %>
+            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white">
+              <%= (@user.name || @user.email).first.upcase %>
+            </div>
+          <% end %>
+          <div class="flex-1">
+            <%= form.label :avatar_url, 'Avatar URL', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= form.text_field :avatar_url,
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'https://example.com/avatar.jpg' %>
+            <p class="mt-1 text-sm text-gray-500">Link to your profile picture</p>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div>
+          <%= form.label :name, 'Full Name', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= form.text_field :name,
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+              placeholder: 'John Doe' %>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <%= form.label :email, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= form.email_field :email, required: true,
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+          <p class="mt-1 text-sm text-gray-500">Your email address (used for login)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bio -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-6">Bio</h2>
+      <%= form.text_area :bio,
+          rows: 4,
+          class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+          placeholder: 'Tell us about yourself...' %>
+      <p class="mt-2 text-sm text-gray-500">A brief description about you</p>
+    </div>
+
+    <!-- Editor Preference -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-6">Editor Preference</h2>
+      
+      <%= form.label :editor_preference, 'Preferred Content Editor', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+      <%= form.select :editor_preference,
+          options_for_select(available_editors, @user.editor_preference || 'blocknote'),
+          {},
+          class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+      
+      <div class="mt-4 space-y-3">
+        <div class="p-3 bg-[#0a0a0a] rounded-lg">
+          <div class="flex items-start gap-2">
+            <div class="w-8 h-8 bg-indigo-500/10 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-sm font-medium text-white">BlockNote</h4>
+              <p class="text-xs text-gray-400 mt-1">Modern, Notion-style block editor with slash commands and drag-and-drop</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-3 bg-[#0a0a0a] rounded-lg">
+          <div class="flex items-start gap-2">
+            <div class="w-8 h-8 bg-emerald-500/10 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-sm font-medium text-white">ActionText / Trix</h4>
+              <p class="text-xs text-gray-400 mt-1">Rails' built-in editor, simple and lightweight</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-3 bg-[#0a0a0a] rounded-lg">
+          <div class="flex items-start gap-2">
+            <div class="w-8 h-8 bg-blue-500/10 rounded flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-sm font-medium text-white">CKEditor 5</h4>
+              <p class="text-xs text-gray-400 mt-1">Classic WYSIWYG editor with extensive formatting options</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <p class="mt-4 text-sm text-yellow-300">⚠️ Changes take effect on your next edit</p>
+    </div>
+
+    <!-- Contact Details -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-6">Contact Details</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Phone -->
+        <div>
+          <%= form.label :phone, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= form.telephone_field :phone,
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+              placeholder: '+1 (555) 123-4567' %>
+        </div>
+
+        <!-- Location -->
+        <div>
+          <%= form.label :location, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= form.text_field :location,
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+              placeholder: 'San Francisco, CA' %>
+        </div>
+      </div>
+
+      <!-- Website -->
+      <div class="mt-4">
+        <%= form.label :website, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= form.url_field :website,
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            placeholder: 'https://yourwebsite.com' %>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex items-center justify-between pt-6 border-t border-[#2a2a2a]">
+      <%= link_to "Cancel", admin_profile_path, class: "px-4 py-2 text-gray-400 hover:text-white transition" %>
+      <%= form.submit 'Save Changes', class: 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
+    </div>
+  <% end %>
+</div>

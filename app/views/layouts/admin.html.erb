@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html class="dark">
+  <head>
+    <title>Admin - <%= admin_app_name %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <% if admin_favicon_url.present? %>
+      <link rel="icon" type="image/x-icon" href="<%= admin_favicon_url %>">
+    <% end %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "tabulator_custom", "data-turbo-track": "reload" %>
+    
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      /* SweetAlert2 Dark Theme Customization */
+      .swal2-popup {
+        background: #1a1a1a !important;
+        border: 1px solid #2a2a2a !important;
+      }
+      .swal2-title {
+        color: #ffffff !important;
+      }
+      .swal2-html-container {
+        color: #e5e5e5 !important;
+      }
+      .swal2-confirm {
+        background-color: #6366f1 !important;
+      }
+      .swal2-confirm:hover {
+        background-color: #4f46e5 !important;
+      }
+      .swal2-cancel {
+        background-color: #374151 !important;
+      }
+      .swal2-cancel:hover {
+        background-color: #4b5563 !important;
+      }
+      .swal2-input, .swal2-textarea {
+        background: #0a0a0a !important;
+        border: 1px solid #2a2a2a !important;
+        color: #ffffff !important;
+      }
+      .swal2-input:focus, .swal2-textarea:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1) !important;
+      }
+    </style>
+    
+    <!-- Dynamic Appearance CSS -->
+    <%= dynamic_appearance_css %>
+    <%= javascript_importmap_tags %>
+    
+    <style>
+      /* Dark theme variables */
+      :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #111111;
+        --bg-tertiary: #1a1a1a;
+        --bg-hover: #222222;
+        --border-color: #2a2a2a;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --text-tertiary: #6b6b6b;
+        --accent-primary: #6366f1;
+        --accent-hover: #7c3aed;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+      }
+      
+      body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+      }
+      
+      /* Smooth transitions */
+      * {
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+      
+      /* Hide mobile close button on desktop */
+      @media (min-width: 1024px) {
+        .mobile-only-close {
+          display: none !important;
+        }
+      }
+      
+      /* Show mobile close button only on mobile */
+      @media (max-width: 1023px) {
+        .mobile-only-close {
+          display: block !important;
+        }
+        .desktop-collapse-btn {
+          display: none !important;
+        }
+      }
+      
+      /* Hide hamburger menu on desktop */
+      @media (min-width: 1024px) {
+        .mobile-hamburger {
+          display: none !important;
+        }
+      }
+      
+      /* Show hamburger menu only on mobile */
+      @media (max-width: 1023px) {
+        .mobile-hamburger {
+          display: block !important;
+        }
+      }
+      
+      /* Show desktop collapse button only on desktop */
+      @media (min-width: 1024px) {
+        .desktop-collapse-btn {
+          display: block !important;
+        }
+      }
+      
+      /* Admin Layout Fix */
+      @media (min-width: 1024px) {
+        main {
+          margin-left: 16rem !important; /* 256px = 64 * 0.25rem */
+          width: calc(100% - 16rem) !important;
+          transition: margin-left 0.3s ease, width 0.3s ease;
+        }
+        
+        aside#sidebar {
+          transform: translateX(0) !important;
+        }
+        
+        /* Collapsed sidebar styles */
+        aside#sidebar[data-collapsed="true"] {
+          width: 4rem !important; /* 64px */
+        }
+        
+        aside#sidebar[data-collapsed="true"] .sidebar-text {
+          display: none !important;
+        }
+        
+        aside#sidebar[data-collapsed="true"] .sidebar-section-title {
+          display: none !important;
+        }
+        
+        aside#sidebar[data-collapsed="true"] .logo-text {
+          display: none !important;
+        }
+        
+        /* Smaller logo when collapsed */
+        aside#sidebar[data-collapsed="true"] .w-8 {
+          width: 1.5rem !important; /* 24px */
+          height: 1.5rem !important; /* 24px */
+        }
+        
+        aside#sidebar[data-collapsed="true"] .h-10 {
+          height: 1.5rem !important; /* 24px */
+        }
+        
+        /* Arrow points right when collapsed (to expand) */
+        aside#sidebar[data-collapsed="true"] .collapse-arrow {
+          transform: rotate(180deg) !important;
+        }
+        
+        /* Collapsible sections */
+        .sidebar-section-content {
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        
+        .section-arrow {
+          transition: transform 0.2s ease;
+        }
+        
+        /* Active state for nav links */
+        .nav-link.active,
+        .nav-link.bg-indigo-600 {
+          background-color: rgb(79 70 229) !important;
+          color: white !important;
+        }
+        
+        /* Font sizes for hierarchy - correct hierarchy */
+        .sidebar-section-header .sidebar-text {
+          font-size: 0.875rem !important; /* 14px - parents should be larger */
+        }
+        
+        .sidebar-section-content .sidebar-text {
+          font-size: 0.8125rem !important; /* 13px - children should be smaller */
+        }
+        
+        /* Active section header styling - color without background */
+        .sidebar-section-header.section-header-active,
+        .sidebar-section-header.section-header-active .sidebar-text {
+          color: var(--color-primary) !important;
+        }
+        
+        aside#sidebar[data-collapsed="true"] nav {
+          padding-left: 0.75rem !important;
+          padding-right: 0.75rem !important;
+        }
+        
+        /* Remove indentation for collapsed sidebar sections */
+        aside#sidebar[data-collapsed="true"] .sidebar-section-content {
+          padding-left: 0 !important;
+        }
+        
+        aside#sidebar[data-collapsed="true"] .nav-link {
+          justify-content: center !important;
+          padding-left: 0.75rem !important;
+          padding-right: 0.75rem !important;
+          min-width: 2.5rem !important;
+        }
+        
+        aside#sidebar[data-collapsed="true"] .nav-link svg {
+          display: block !important;
+          margin: 0 auto !important;
+        }
+        
+        aside#sidebar[data-collapsed="true"] .h-16 {
+          justify-content: center !important;
+          padding-left: 0.75rem !important;
+          padding-right: 0.75rem !important;
+        }
+        
+        /* Adjust main content when sidebar is collapsed */
+        main.sidebar-collapsed {
+          margin-left: 4rem !important; /* 64px */
+          width: calc(100% - 4rem) !important;
+        }
+      }
+      
+      @media (max-width: 1023px) {
+        main {
+          margin-left: 0 !important;
+          width: 100% !important;
+        }
+        
+        aside#sidebar {
+          transform: translateX(-100%) !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="bg-[#0a0a0a] text-white antialiased">
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden" onclick="toggleMobileMenu()"></div>
+    
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 lg:w-64 bg-[#111111] border-r border-[#2a2a2a] flex flex-col z-40 -translate-x-full lg:translate-x-0 transition-all duration-300 ease-in-out" data-collapsed="false">
+      <!-- Logo -->
+      <div class="h-16 flex items-center justify-between px-6 border-b border-[#2a2a2a]">
+        <%= link_to admin_root_path, class: "flex items-center space-x-3 group" do %>
+          <% if admin_logo_url.present? %>
+            <img src="<%= admin_logo_url %>" alt="<%= admin_app_name %>" class="h-10 object-contain">
+          <% else %>
+            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <span class="sidebar-text text-lg font-semibold text-white logo-text"><%= admin_app_name %></span>
+          <% end %>
+        <% end %>
+        
+        <!-- Mobile Close Button -->
+        <button onclick="toggleMobileMenu()" class="mobile-only-close p-2 rounded-lg hover:bg-[#1a1a1a] text-gray-400 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+        
+        <!-- Desktop Collapse Button -->
+        <button onclick="toggleSidebarCollapse()" class="desktop-collapse-btn p-2 rounded-lg hover:bg-[#1a1a1a] text-gray-400 hover:text-white transition">
+          <svg class="w-5 h-5 collapse-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7m8 14l-7-7 7-7"/>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <%= link_to admin_root_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white group" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span class="sidebar-text">Dashboard</span>
+        <% end %>
+
+        <!-- Content Section -->
+        <div class="sidebar-section" data-section="content">
+          <button onclick="toggleSection('content')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">Content</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="content-section">
+        
+        <%= link_to admin_posts_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="sidebar-text">Posts</span>
+        <% end %>
+        
+        <%= link_to admin_pages_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Pages</span>
+        <% end %>
+        
+        <%= link_to admin_media_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Media</span>
+        <% end %>
+        
+        <%= link_to admin_comments_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+          </svg>
+          <span class="sidebar-text">Comments</span>
+        <% end %>
+          </div>
+        </div>
+
+        <!-- Outreach Section -->
+        <div class="sidebar-section" data-section="outreach">
+          <button onclick="toggleSection('outreach')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">Outreach</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="outreach-section">
+        
+        <%= link_to admin_analytics_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span class="sidebar-text">Analytics</span>
+        <% end %>
+        
+        <%= link_to admin_subscribers_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/>
+          </svg>
+          <span class="sidebar-text">Subscribers</span>
+        <% end %>
+          </div>
+        </div>
+
+        <!-- Organize Section -->
+        <div class="sidebar-section" data-section="organize">
+          <button onclick="toggleSection('organize')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">Organize</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="organize-section">
+        
+        <%= link_to admin_content_types_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="sidebar-text">Content Types</span>
+        <% end %>
+        
+        <%= link_to admin_categories_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          <span class="sidebar-text">Categories</span>
+        <% end %>
+        
+        <%= link_to admin_tags_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+          <span class="sidebar-text">Tags</span>
+        <% end %>
+        
+        <%= link_to admin_taxonomies_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+          <span class="sidebar-text">Taxonomies</span>
+        <% end %>
+          </div>
+        </div>
+
+        <!-- Appearance Section -->
+        <div class="sidebar-section" data-section="appearance">
+          <button onclick="toggleSection('appearance')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">Appearance</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="appearance-section">
+        
+        <%= link_to admin_template_customizer_path, data: { turbo: false }, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+          <span class="sidebar-text">Customize</span>
+        <% end %>
+        
+        <%= link_to admin_theme_editor_index_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+          </svg>
+          <span class="sidebar-text">Theme Editor</span>
+        <% end %>
+        
+        <%= link_to admin_page_templates_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="sidebar-text">Templates</span>
+        <% end %>
+        
+        <%= link_to admin_themes_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343"/>
+          </svg>
+          <span class="sidebar-text">Themes</span>
+        <% end %>
+        
+        <%= link_to admin_fonts_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          <span class="sidebar-text">Fonts</span>
+        <% end %>
+        
+        <%= link_to admin_menus_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          <span class="sidebar-text">Menus</span>
+        <% end %>
+        
+        <%= link_to admin_widgets_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"/>
+          </svg>
+          <span class="sidebar-text">Widgets</span>
+        <% end %>
+          </div>
+        </div>
+        
+        <!-- System Section -->
+        <div class="sidebar-section" data-section="system">
+          <button onclick="toggleSection('system')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">System</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="system-section">
+        
+        <%= link_to admin_users_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <span class="sidebar-text">Users</span>
+        <% end %>
+        
+        <%= link_to admin_plugins_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/>
+          </svg>
+          <span class="sidebar-text">Plugins</span>
+        <% end %>
+        
+        <%= link_to admin_field_groups_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          <span class="sidebar-text">Custom Fields</span>
+        <% end %>
+        
+        <%= link_to admin_integrations_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+          <span class="sidebar-text">Integrations</span>
+        <% end %>
+        
+        <%= link_to admin_system_headless_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Headless</span>
+        <% end %>
+        
+        <%= link_to admin_system_api_tokens_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+          </svg>
+          <span class="sidebar-text">API Tokens</span>
+        <% end %>
+        
+        <%= link_to admin_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span class="sidebar-text">Settings</span>
+        <% end %>
+          </div>
+        </div>
+
+        <!-- AI Agents Section -->
+        <div class="sidebar-section" data-section="ai">
+          <button onclick="toggleSection('ai')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <span class="sidebar-text sidebar-section-title">AI Agents</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <div id="ai-section" class="sidebar-section-content">
+            <%= link_to admin_ai_providers_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              <span class="sidebar-text">Providers</span>
+            <% end %>
+            
+            <%= link_to admin_ai_agents_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              <span class="sidebar-text">Agents</span>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Tools Section -->
+        <div class="sidebar-section" data-section="tools">
+          <button onclick="toggleSection('tools')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">Tools</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="tools-section">
+        
+        <%= link_to admin_tools_import_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          <span class="sidebar-text">Import</span>
+        <% end %>
+        
+        <%= link_to admin_tools_export_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <span class="sidebar-text">Export</span>
+        <% end %>
+        
+        <%= link_to admin_tools_site_health_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span class="sidebar-text">Site Health</span>
+        <% end %>
+        
+        <%= link_to admin_tools_export_personal_data_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span class="sidebar-text">Export Personal Data</span>
+        <% end %>
+        
+        <%= link_to admin_tools_erase_personal_data_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          <span class="sidebar-text">Erase Personal Data</span>
+        <% end %>
+        
+        <%= link_to admin_tools_shortcuts_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Shortcuts</span>
+        <% end %>
+          </div>
+        </div>
+
+        <!-- Developer Section -->
+        <div class="sidebar-section" data-section="developer">
+          <button onclick="toggleSection('developer')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">Developer</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="developer-section">
+        
+        <%= link_to admin_logs_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="sidebar-text">App Logs</span>
+        <% end %>
+        
+        <%= link_to admin_shortcodes_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+          <span class="sidebar-text">Shortcodes</span>
+        <% end %>
+        
+        <%= link_to admin_api_docs_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="sidebar-text">API Docs</span>
+        <% end %>
+        
+        <% if current_user&.administrator? %>
+          <%= link_to "/admin/flipper", target: "_blank", class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+            </svg>
+            <span class="sidebar-text">Feature Flags</span>
+          <% end %>
+          
+          <%= link_to "/admin/sidekiq", target: "_blank", class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="sidebar-text">Background Jobs</span>
+          <% end %>
+          
+          <%= link_to admin_cache_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span class="sidebar-text">Cache</span>
+          <% end %>
+          
+          <%= link_to admin_updates_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span class="sidebar-text">Updates</span>
+          <% end %>
+          
+          <%= link_to admin_webhooks_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span class="sidebar-text">Webhooks</span>
+          <% end %>
+        <% end %>
+          </div>
+        </div>
+      </nav>
+      
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="min-h-screen w-full ml-0 lg:ml-64 lg:w-auto transition-all duration-300">
+      <!-- Top Bar -->
+      <div class="h-16 bg-[#111111] border-b border-[#2a2a2a] flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
+        <div class="flex items-center space-x-4">
+          <!-- Mobile Menu Button -->
+          <button onclick="toggleMobileMenu()" class="mobile-hamburger p-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          
+          <h1 class="text-xl font-semibold text-white">
+            <%= content_for?(:page_title) ? yield(:page_title) : (content_for?(:title) ? yield(:title) : "Dashboard") %>
+          </h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <!-- External Link -->
+          <button onclick="window.open('<%= root_path %>', '_blank')" 
+                  class="hidden md:flex items-center gap-2 px-3 py-2 bg-[#0a0a0a] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-gray-300 hover:text-white transition group">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+          </button>
+          
+          <!-- Command Palette Trigger -->
+          <button onclick="document.querySelector('[data-controller=command-palette]').open()" 
+                  class="hidden md:flex items-center gap-2 px-4 py-2 bg-[#0a0a0a] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-gray-300 hover:text-white transition group">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <span class="text-sm">Search</span>
+            <kbd class="px-2 py-0.5 bg-[#2a2a2a] text-gray-500 text-xs rounded border border-[#3a3a3a] font-mono group-hover:text-gray-400">⌘K</kbd>
+          </button>
+          
+          <!-- User Dropdown -->
+          <div class="relative" id="user-dropdown">
+            <button onclick="toggleUserDropdown()" class="flex items-center gap-3 px-3 py-2 hover:bg-[#1a1a1a] rounded-lg transition">
+              <!-- Avatar -->
+              <% if current_user.avatar.attached? %>
+                <%= image_tag current_user.avatar, class: "w-8 h-8 rounded-full object-cover border-2 border-[#2a2a2a]" %>
+              <% else %>
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
+                  <%= (current_user.name.presence || current_user.email).first.upcase %>
+                </div>
+              <% end %>
+              
+              <!-- Name & Role (hidden on small screens) -->
+              <div class="text-left hidden lg:block">
+                <p class="text-sm font-medium text-white"><%= current_user.name || current_user.email.split('@').first.titleize %></p>
+                <p class="text-xs text-gray-500"><%= current_user.role.titleize %></p>
+              </div>
+              
+              <svg class="w-4 h-4 text-gray-400 dropdown-arrow transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div class="absolute right-0 mt-2 w-64 bg-[#111111] border border-[#2a2a2a] rounded-xl shadow-2xl hidden z-50" id="user-dropdown-menu">
+              <!-- User Info Header -->
+              <div class="px-4 py-3 border-b border-[#2a2a2a]">
+                <p class="text-sm font-medium text-white"><%= current_user.name || current_user.email.split('@').first.titleize %></p>
+                <p class="text-xs text-gray-500 truncate"><%= current_user.email %></p>
+                <span class="inline-block mt-2 px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-xs font-medium rounded">
+                  <%= current_user.role.titleize %>
+                </span>
+              </div>
+              
+              <!-- Menu Items -->
+              <div class="py-2">
+                <%= link_to edit_admin_profile_path, class: "flex items-center gap-3 px-4 py-2 hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                  <span class="text-sm">Profile</span>
+                <% end %>
+                
+                <%= link_to admin_security_path, class: "flex items-center gap-3 px-4 py-2 hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  </svg>
+                  <span class="text-sm">Security</span>
+                <% end %>
+                
+                <%= link_to "#", class: "flex items-center gap-3 px-4 py-2 hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                  </svg>
+                  <span class="text-sm">Notification Preferences</span>
+                <% end %>
+              </div>
+              
+              <!-- Separator -->
+              <div class="border-t border-[#2a2a2a]"></div>
+              
+              <!-- Logout -->
+              <div class="py-2">
+                <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "flex items-center gap-3 px-4 py-2 hover:bg-red-500/10 text-gray-300 hover:text-red-400 transition" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                  </svg>
+                  <span class="text-sm">Sign Out</span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Messages -->
+      <!-- Flash messages now shown as SweetAlert2 toasts (see script at bottom) -->
+
+      <!-- Page Content -->
+      <div class="p-4 lg:p-8">
+        <%= yield %>
+      </div>
+    </main>
+    
+    <!-- Command Palette (CMD+I) -->
+    <%= render 'admin/shared/command_palette' %>
+    
+    <!-- SweetAlert2 Helper Functions -->
+    <script>
+      // Global toast configuration
+      window.Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+      })
+
+      // Helper functions
+      window.showSuccessToast = (message) => Toast.fire({ icon: 'success', title: message })
+      window.showErrorToast = (message) => Toast.fire({ icon: 'error', title: message })
+      window.showInfoToast = (message) => Toast.fire({ icon: 'info', title: message })
+      window.showWarningToast = (message) => Toast.fire({ icon: 'warning', title: message })
+
+      window.showSuccessAlert = (title, message) => {
+        return Swal.fire({ icon: 'success', title: title, text: message, confirmButtonText: 'OK' })
+      }
+
+      window.showErrorAlert = (title, message) => {
+        return Swal.fire({ icon: 'error', title: title, text: message, confirmButtonText: 'OK' })
+      }
+
+      window.showConfirmDialog = (title, message, confirmText = 'Yes', cancelText = 'No') => {
+        return Swal.fire({
+          title: title,
+          text: message,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: confirmText,
+          cancelButtonText: cancelText,
+          reverseButtons: true
+        })
+      }
+
+      window.showDeleteConfirm = (itemName = 'this item') => {
+        return Swal.fire({
+          title: 'Are you sure?',
+          text: `Do you want to delete ${itemName}? This action cannot be undone.`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, delete it',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#ef4444',
+          reverseButtons: true
+        })
+      }
+
+      window.showLoading = (title = 'Processing...') => {
+        Swal.fire({
+          title: title,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showConfirmButton: false,
+          didOpen: () => { Swal.showLoading() }
+        })
+      }
+
+      window.closeLoading = () => Swal.close()
+
+      // Show flash notices as toasts
+      <% if notice.present? %>
+        document.addEventListener('turbo:load', () => {
+          showSuccessToast('<%= j(notice) %>');
+        });
+      <% end %>
+      
+      <% if alert.present? %>
+        document.addEventListener('turbo:load', () => {
+          showErrorToast('<%= j(alert) %>');
+        });
+      <% end %>
+      
+      // Mobile menu toggle
+      function toggleMobileMenu() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        
+        if (sidebar.classList.contains('-translate-x-full')) {
+          // Open menu
+          sidebar.classList.remove('-translate-x-full');
+          overlay.classList.remove('hidden');
+        } else {
+          // Close menu
+          sidebar.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+        }
+      }
+      
+      // Desktop sidebar collapse toggle
+      function toggleSidebarCollapse() {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.querySelector('main');
+        const isCollapsed = sidebar.getAttribute('data-collapsed') === 'true';
+        
+        if (isCollapsed) {
+          // Expand sidebar
+          sidebar.setAttribute('data-collapsed', 'false');
+          main.classList.remove('sidebar-collapsed');
+          localStorage.setItem('sidebarCollapsed', 'false');
+        } else {
+          // Collapse sidebar
+          sidebar.setAttribute('data-collapsed', 'true');
+          main.classList.add('sidebar-collapsed');
+          localStorage.setItem('sidebarCollapsed', 'true');
+        }
+      }
+      
+      // Restore sidebar state on page load
+      document.addEventListener('turbo:load', () => {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.querySelector('main');
+        const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        
+        if (window.innerWidth >= 1024) { // Desktop only
+          if (collapsed) {
+            sidebar.setAttribute('data-collapsed', 'true');
+            main.classList.add('sidebar-collapsed');
+          } else {
+            sidebar.setAttribute('data-collapsed', 'false');
+            main.classList.remove('sidebar-collapsed');
+          }
+        }
+        
+        // Restore section states and set active state
+        restoreSectionStates();
+        setActiveState();
+      });
+      
+      // Close menu when clicking on a link (mobile)
+      document.addEventListener('turbo:load', () => {
+        const sidebarLinks = document.querySelectorAll('#sidebar a');
+        sidebarLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            if (window.innerWidth < 1024) {
+              toggleMobileMenu();
+            }
+          });
+        });
+      });
+      
+      // Toggle collapsible sections
+      function toggleSection(sectionName) {
+        const section = document.querySelector(`[data-section="${sectionName}"]`);
+        const content = document.getElementById(`${sectionName}-section`);
+        const arrow = section.querySelector('.section-arrow');
+        const isCollapsed = content.style.display === 'none';
+        
+        if (isCollapsed) {
+          content.style.display = 'block';
+          arrow.style.transform = 'rotate(0deg)';
+          localStorage.setItem(`section_${sectionName}_collapsed`, 'false');
+        } else {
+          content.style.display = 'none';
+          arrow.style.transform = 'rotate(-90deg)';
+          localStorage.setItem(`section_${sectionName}_collapsed`, 'true');
+        }
+      }
+      
+      // Set active state for current page
+      function setActiveState() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        // First, remove all active states
+        navLinks.forEach(link => {
+          link.classList.remove('bg-primary', 'text-white');
+          link.classList.add('text-gray-300', 'hover:bg-[#1a1a1a]', 'hover:text-white');
+        });
+        
+        // Remove active state from all section headers
+        document.querySelectorAll('.sidebar-section-header').forEach(header => {
+          header.classList.remove('section-header-active');
+        });
+        
+        // Then, collapse ALL sections first
+        const sections = ['content', 'outreach', 'organize', 'appearance', 'system', 'tools', 'developer'];
+        sections.forEach(sectionName => {
+          const content = document.getElementById(`${sectionName}-section`);
+          const section = document.querySelector(`[data-section="${sectionName}"]`);
+          if (section) {
+            const arrow = section.querySelector('.section-arrow');
+            if (content && arrow) {
+              content.style.display = 'none';
+              arrow.style.transform = 'rotate(-90deg)';
+            }
+          }
+        });
+        
+        // Map current path to the correct section
+        let targetSection = null;
+        
+        if (currentPath.includes('/admin/posts') || currentPath.includes('/admin/pages') || 
+            currentPath.includes('/admin/media') || currentPath.includes('/admin/comments')) {
+          targetSection = 'content';
+        } else if (currentPath.includes('/admin/analytics') || currentPath.includes('/admin/subscribers')) {
+          targetSection = 'outreach';
+        } else if (currentPath.includes('/admin/categories') || currentPath.includes('/admin/tags') || 
+                   currentPath.includes('/admin/taxonomies')) {
+          targetSection = 'organize';
+        } else if (currentPath.includes('/admin/template_customizer') || currentPath.includes('/admin/theme_editor') || 
+                   currentPath.includes('/admin/themes') || currentPath.includes('/admin/page_templates') ||
+                   currentPath.includes('/admin/fonts') || currentPath.includes('/admin/menus') || 
+                   currentPath.includes('/admin/widgets')) {
+          targetSection = 'appearance';
+        } else if (currentPath.includes('/admin/users') || currentPath.includes('/admin/plugins') || 
+                   currentPath.includes('/admin/field_groups') || currentPath.includes('/admin/integrations') || 
+                   currentPath.includes('/admin/settings')) {
+          targetSection = 'system';
+        } else if (currentPath.includes('/admin/tools') || currentPath.includes('/admin/import') || 
+                   currentPath.includes('/admin/export') || currentPath.includes('/admin/site_health') ||
+                   currentPath.includes('/admin/shortcuts')) {
+          targetSection = 'tools';
+        } else if (currentPath.includes('/admin/logs') || currentPath.includes('/admin/shortcodes') || 
+                   currentPath.includes('/api/v1/docs') || currentPath.includes('/graphiql') ||
+                   currentPath.includes('/admin/flipper') || currentPath.includes('/admin/sidekiq') ||
+                   currentPath.includes('/admin/cache') || currentPath.includes('/admin/updates') ||
+                   currentPath.includes('/admin/webhooks')) {
+          targetSection = 'developer';
+        }
+        
+        // Now find and highlight the active link and expand its parent section
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href) {
+            // Special case for dashboard - exact match only
+            if (href === '/admin' && currentPath === '/admin') {
+              link.classList.add('bg-primary', 'text-white');
+              link.classList.remove('text-gray-300', 'hover:bg-[#1a1a1a]', 'hover:text-white');
+            } 
+            // For other links, check if path starts with href (but not dashboard)
+            else if (href !== '/admin' && currentPath.startsWith(href)) {
+              link.classList.add('bg-primary', 'text-white');
+              link.classList.remove('text-gray-300', 'hover:bg-[#1a1a1a]', 'hover:text-white');
+            }
+          }
+        });
+        
+        // Expand only the target section and highlight its header
+        if (targetSection) {
+          const content = document.getElementById(`${targetSection}-section`);
+          const section = document.querySelector(`[data-section="${targetSection}"]`);
+          if (section) {
+            const arrow = section.querySelector('.section-arrow');
+            const header = section.querySelector('.sidebar-section-header');
+            if (content && arrow) {
+              content.style.display = 'block';
+              arrow.style.transform = 'rotate(0deg)';
+            }
+            // Add active color to parent header
+            if (header) {
+              header.classList.add('section-header-active');
+            }
+          }
+        }
+      }
+      
+      // Restore section states on page load
+      function restoreSectionStates() {
+        const sections = ['content', 'outreach', 'organize', 'appearance', 'system', 'ai', 'tools', 'developer'];
+        
+        sections.forEach(sectionName => {
+          const content = document.getElementById(`${sectionName}-section`);
+          const section = document.querySelector(`[data-section="${sectionName}"]`);
+          const arrow = section.querySelector('.section-arrow');
+          
+          if (content && section && arrow) {
+            // Check if this section contains the active page
+            const activeLink = content.querySelector('.nav-link.bg-indigo-600, .nav-link.active');
+            
+            if (activeLink) {
+              // This section contains the active page, so expand it
+              content.style.display = 'block';
+              arrow.style.transform = 'rotate(0deg)';
+            } else {
+              // This section doesn't contain the active page, so collapse it
+              content.style.display = 'none';
+              arrow.style.transform = 'rotate(-90deg)';
+            }
+          }
+        });
+      }
+      
+      // Close menu on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const sidebar = document.getElementById('sidebar');
+          const overlay = document.getElementById('mobile-menu-overlay');
+          if (!sidebar.classList.contains('-translate-x-full')) {
+            toggleMobileMenu();
+          }
+          // Also close user dropdown
+          closeUserDropdown();
+        }
+      });
+      
+      // User dropdown toggle
+      function toggleUserDropdown() {
+        const dropdown = document.getElementById('user-dropdown-menu');
+        const arrow = document.querySelector('.dropdown-arrow');
+        
+        if (dropdown.classList.contains('hidden')) {
+          dropdown.classList.remove('hidden');
+          arrow.style.transform = 'rotate(180deg)';
+        } else {
+          dropdown.classList.add('hidden');
+          arrow.style.transform = 'rotate(0deg)';
+        }
+      }
+      
+      // Close user dropdown
+      function closeUserDropdown() {
+        const dropdown = document.getElementById('user-dropdown-menu');
+        const arrow = document.querySelector('.dropdown-arrow');
+        
+        if (dropdown) {
+          dropdown.classList.add('hidden');
+          arrow.style.transform = 'rotate(0deg)';
+        }
+      }
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const userDropdown = document.getElementById('user-dropdown');
+        const dropdownMenu = document.getElementById('user-dropdown-menu');
+        
+        if (userDropdown && dropdownMenu && !userDropdown.contains(e.target)) {
+          closeUserDropdown();
+        }
+      });
+    </script>
+    
+    <!-- Command Palette Styles -->
+    <style>
+      .command-item {
+        @apply px-4 py-3 cursor-pointer hover:bg-[#111111] transition-colors;
+        border-bottom: 1px solid #1a1a1a;
+      }
+      
+      .command-item:last-child {
+        border-bottom: none;
+      }
+      
+      .command-item-selected {
+        @apply bg-indigo-600 text-white;
+      }
+      
+      .command-item-selected .command-icon,
+      .command-item-selected .command-title,
+      .command-item-selected .command-description {
+        @apply text-white;
+      }
+      
+      .command-icon {
+        @apply w-6 h-6 flex items-center justify-center text-gray-400 mr-3 text-sm font-bold;
+      }
+      
+      .command-title {
+        @apply text-white font-medium text-sm;
+      }
+      
+      .command-description {
+        @apply text-gray-400 text-xs mt-1;
+      }
+      
+      .command-action {
+        @apply text-gray-500 text-xs px-2 py-1 bg-[#2a2a2a] rounded;
+      }
+      
+      .command-category {
+        @apply mb-2;
+      }
+      
+      .category-title {
+        @apply px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider;
+      }
+    </style>
+    
+    <!-- Command Palette Dialog -->
+    <div data-controller="command-palette" data-shortcut="<%= SiteSetting.get('command_palette_shortcut', 'cmd+k') %>">
+      <div data-command-palette-target="dialog" class="fixed inset-0 z-50 hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-action="click->command-palette#close"></div>
+        
+        <!-- Dialog -->
+        <div class="relative flex items-start justify-center min-h-screen pt-[20vh] px-4">
+          <div class="w-full max-w-2xl bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-2xl">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-[#2a2a2a]">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white">Global Command Palette</h3>
+                <button type="button" 
+                        data-action="click->command-palette#close"
+                        class="text-gray-400 hover:text-white transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+              
+              <!-- Search Input -->
+              <div class="mt-4">
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                  </div>
+                  <input type="text" 
+                         data-command-palette-target="input"
+                         data-action="keydown->command-palette#handleKeyboard input->command-palette#search"
+                         placeholder="Type a command or search..."
+                         class="w-full pl-10 pr-4 py-3 bg-[#111111] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Results -->
+            <div class="max-h-96 overflow-y-auto">
+              <div data-command-palette-target="results" class="py-2">
+                <!-- Results will be populated here -->
+              </div>
+              
+              <div data-command-palette-target="empty" class="hidden">
+                <!-- Empty state will be shown here -->
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="px-6 py-3 border-t border-[#2a2a2a] text-xs text-gray-400">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                  <span class="flex items-center gap-1">↑↓ Navigate</span>
+                  <span class="flex items-center gap-1">↩ Select</span>
+                  <span class="flex items-center gap-1">esc Close</span>
+                </div>
+                <span>Global Command Palette</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

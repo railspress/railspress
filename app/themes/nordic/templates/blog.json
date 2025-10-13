@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "list": {
+      "type": "post-list",
+      "settings": {
+        "layout": "list",
+        "items_per_page": 10
+      }
+    },
+    "pagination": {
+      "type": "pagination"
+    }
+  },
+  "order": [
+    "list",
+    "pagination"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "name": "@editorjs/warning",
+  "version": "1.4.1",
+  "keywords": [
+    "codex editor",
+    "warning",
+    "editorjs",
+    "editor.js",
+    "editor"
+  ],
+  "description": "Warning Tool for Editor.js",
+  "license": "MIT",
+  "repository": "https://github.com/editor-js/warning",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/warning.umd.js",
+  "module": "./dist/warning.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/warning.mjs",
+      "require": "./dist/warning.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "author": {
+    "name": "CodeX Team",
+    "email": "team@ifmo.su"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^4.5.0",
+    "vite-plugin-css-injected-by-js": "^3.3.0",
+    "vite-plugin-dts": "^4.3.0"
+  },
+  "dependencies": {
+    "@codexteam/icons": "^0.3.2",
+    "@editorjs/editorjs": "^2.30.7"
+  }
+}

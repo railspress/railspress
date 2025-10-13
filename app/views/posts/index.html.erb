@@ -1,0 +1,138 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Page Header -->
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-2"><%= @title || "Blog" %></h1>
+    <% if @category %>
+      <p class="text-gray-600"><%= @category.description %></p>
+    <% elsif @tag %>
+      <p class="text-gray-600">Posts tagged with "<%= @tag.name %>"</p>
+    <% end %>
+  </div>
+
+  <!-- Posts Grid -->
+  <% if @posts.any? %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-2 space-y-8">
+        <% @posts.each do |post| %>
+          <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
+            <div class="md:flex">
+              <% if post.featured_image_file.attached? %>
+                <div class="md:w-1/3">
+                  <%= image_tag post.featured_image_file, class: "w-full h-full object-cover" %>
+                </div>
+              <% end %>
+              
+              <div class="p-6 <%= post.featured_image_file.attached? ? 'md:w-2/3' : 'w-full' %>">
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <% post.categories.first(3).each do |category| %>
+                    <%= link_to category.name, category_path(category.slug), class: "text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200" %>
+                  <% end %>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-900 mb-3">
+                  <%= link_to post.title, blog_post_path(post.slug), class: "hover:text-blue-600" %>
+                </h2>
+                
+                <div class="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                  <span><%= post.published_at.strftime("%B %d, %Y") %></span>
+                  <span>•</span>
+                  <span>By <%= post.author_name %></span>
+                  <% if post.comments.approved.any? %>
+                    <span>•</span>
+                    <span><%= post.comments.approved.count %> comments</span>
+                  <% end %>
+                </div>
+                
+                <% if post.excerpt.present? %>
+                  <p class="text-gray-600 mb-4"><%= post.excerpt %></p>
+                <% else %>
+                  <div class="text-gray-600 mb-4">
+                    <%= truncate(strip_tags(post.content.to_s), length: 200) %>
+                  </div>
+                <% end %>
+                
+                <div class="flex items-center justify-between">
+                  <%= link_to "Read More →", blog_post_path(post.slug), class: "text-blue-600 hover:text-blue-800 font-medium" %>
+                  
+                  <% if post.tags.any? %>
+                    <div class="flex flex-wrap gap-1">
+                      <% post.tags.first(3).each do |tag| %>
+                        <%= link_to "##{tag.name}", tag_path(tag.slug), class: "text-xs text-gray-500 hover:text-blue-600" %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </article>
+        <% end %>
+
+        <!-- Pagination -->
+        <div class="flex justify-center mt-8">
+          <%= paginate @posts, theme: 'twitter-bootstrap-4' %>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- Search Widget -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Search</h3>
+          <%= form_with url: search_path, method: :get do |f| %>
+            <div class="flex">
+              <%= f.text_field :q, placeholder: "Search posts...", class: "flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+              <%= f.submit "Go", class: "px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 cursor-pointer" %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Categories Widget -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Categories</h3>
+          <ul class="space-y-2">
+            <% Term.for_taxonomy('category').each do |term| %>
+              <li class="flex items-center justify-between">
+                <%= link_to term.name, category_path(term.slug), class: "text-gray-700 hover:text-blue-600" %>
+                <span class="text-sm text-gray-500">(<%= term.posts.count %>)</span>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+
+        <!-- Recent Posts Widget -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Posts</h3>
+          <ul class="space-y-3">
+            <% Post.published.recent.limit(5).each do |recent_post| %>
+              <li class="border-b border-gray-200 pb-3 last:border-0">
+                <%= link_to recent_post.title, blog_post_path(recent_post.slug), class: "text-gray-900 hover:text-blue-600 font-medium" %>
+                <p class="text-xs text-gray-500 mt-1"><%= recent_post.published_at.strftime("%B %d, %Y") %></p>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+
+        <!-- Tags Widget -->
+        <% if Term.for_taxonomy('post_tag').any? %>
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              <% Term.for_taxonomy('post_tag').limit(20).each do |term| %>
+                <%= link_to term.name, tag_path(term.slug), class: "px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-blue-100 hover:text-blue-800" %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="text-center py-16">
+      <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="text-2xl font-bold text-gray-900 mb-2">No posts found</h3>
+      <p class="text-gray-600">Check back later for new content.</p>
+    </div>
+  <% end %>
+</div>

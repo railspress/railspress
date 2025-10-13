@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for?(:title) ? yield(:title) + " - " : "" %>RailsPress</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <!-- RSS Feed Links -->
+    <%= auto_discovery_link_tag(:rss, feed_url, title: "#{SiteSetting.get('site_title', 'RailsPress')} RSS Feed") %>
+    <%= auto_discovery_link_tag(:atom, feed_url(format: :atom), title: "#{SiteSetting.get('site_title', 'RailsPress')} Atom Feed") %>
+    
+    <%= render_pixels(:head) %>
+  </head>
+
+  <body class="bg-gray-50">
+    <%= render_pixels(:body_start) %>
+    <%= render_analytics_tracker %>
+    <!-- Main Navigation -->
+    <nav class="bg-white shadow-md">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center space-x-8">
+            <%= link_to "RailsPress", root_path, class: "text-2xl font-bold text-gray-900" %>
+            
+            <div class="hidden md:flex space-x-6">
+              <%= link_to "Home", root_path, class: "text-gray-700 hover:text-blue-600" %>
+              <%= link_to "Blog", blog_path, class: "text-gray-700 hover:text-blue-600" %>
+              <% Term.for_taxonomy('category').limit(5).each do |term| %>
+                <%= link_to term.name, category_path(term.slug), class: "text-gray-700 hover:text-blue-600" %>
+              <% end %>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <%= form_with url: search_path, method: :get, class: "flex" do |f| %>
+              <%= f.text_field :q, placeholder: "Search...", class: "px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+              <%= f.submit "Search", class: "px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 cursor-pointer" %>
+            <% end %>
+            
+            <% if current_user %>
+              <% if current_user.author? || current_user.editor? || current_user.administrator? %>
+                <%= link_to "Admin", admin_root_path, class: "px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800" %>
+              <% end %>
+              <%= button_to "Logout", destroy_user_session_path, method: :delete, class: "px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" %>
+            <% else %>
+              <%= link_to "Login", new_user_session_path, class: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if notice %>
+      <div class="container mx-auto px-4 mt-4">
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded" role="alert">
+          <%= notice %>
+        </div>
+      </div>
+    <% end %>
+    
+    <% if alert %>
+      <div class="container mx-auto px-4 mt-4">
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
+          <%= alert %>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Main Content -->
+    <main class="min-h-screen">
+      <%= yield %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+      <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-xl font-bold mb-4">RailsPress</h3>
+            <p class="text-gray-400">A Ruby on Rails CMS inspired by WordPress</p>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold mb-4">Categories</h4>
+            <ul class="space-y-2">
+              <% Term.for_taxonomy('category').limit(5).each do |term| %>
+                <li><%= link_to term.name, category_path(term.slug), class: "text-gray-400 hover:text-white" %></li>
+              <% end %>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold mb-4">Recent Posts</h4>
+            <ul class="space-y-2">
+              <% Post.published.recent.limit(5).each do |post| %>
+                <li><%= link_to post.title, blog_post_path(post.slug), class: "text-gray-400 hover:text-white" %></li>
+              <% end %>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold mb-4">Links</h4>
+            <ul class="space-y-2">
+              <%= link_to "Home", root_path, class: "block text-gray-400 hover:text-white" %>
+              <%= link_to "Blog", blog_path, class: "block text-gray-400 hover:text-white" %>
+              <% if current_user %>
+                <%= link_to "Admin", admin_root_path, class: "block text-gray-400 hover:text-white" %>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <p>&copy; <%= Time.current.year %> RailsPress. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+    
+    <%= render_pixels(:body_end) %>
+  </body>
+</html>

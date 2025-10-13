@@ -1,0 +1,285 @@
+<% content_for :page_title, "Subscribers" %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Newsletter Subscribers</h1>
+      <p class="text-gray-400">Manage your email subscribers and mailing lists</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to export_admin_subscribers_path, class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Export CSV</span>
+      <% end %>
+      <%= link_to import_admin_subscribers_path, class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        <span>Import CSV</span>
+      <% end %>
+      <%= link_to new_admin_subscriber_path, class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Add Subscriber</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Total Subscribers</p>
+          <p class="text-2xl font-bold text-white"><%= number_with_delimiter(@stats[:total]) %></p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Confirmed</p>
+          <p class="text-2xl font-bold text-emerald-400"><%= number_with_delimiter(@stats[:confirmed]) %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= @stats[:confirmation_rate] %>% rate</p>
+        </div>
+        <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Pending</p>
+          <p class="text-2xl font-bold text-yellow-400"><%= number_with_delimiter(@stats[:pending]) %></p>
+        </div>
+        <div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">This Month</p>
+          <p class="text-2xl font-bold text-blue-400">+<%= number_with_delimiter(@stats[:growth_this_month]) %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= number_with_delimiter(@stats[:growth_this_week]) %> this week</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Bulk Actions -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 mb-6">
+    <div class="flex items-center gap-4">
+      <%= form_with url: admin_subscribers_path, method: :get, class: "flex-1 flex items-center gap-4" do |f| %>
+        <div class="flex-1">
+          <%= f.text_field :q, 
+              value: params[:q],
+              placeholder: "Search by email or name...", 
+              class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+        </div>
+        
+        <%= f.select :status, 
+            options_for_select([['All Status', ''], ['Confirmed', 'confirmed'], ['Pending', 'pending'], ['Unsubscribed', 'unsubscribed'], ['Bounced', 'bounced']], params[:status]),
+            {},
+            class: "px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+        
+        <%= f.submit "Filter", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+        
+        <% if params[:q].present? || params[:status].present? %>
+          <%= link_to "Clear", admin_subscribers_path, class: "px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Subscribers Table -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div id="subscribers-table"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+<link href="https://unpkg.com/tabulator-tables@6.2.1/dist/css/tabulator_midnight.min.css" rel="stylesheet">
+
+<script>
+document.addEventListener('turbo:load', function() {
+  if (document.getElementById('subscribers-table')) {
+    const table = new Tabulator("#subscribers-table", {
+      layout: "fitColumns",
+      responsiveLayout: "collapse",
+      pagination: true,
+      paginationMode: "local",
+      paginationSize: 20,
+      paginationSizeSelector: [10, 20, 50, 100],
+      movableColumns: true,
+      resizableColumnFit: true,
+      initialSort: [{ column: "created_at", dir: "desc" }],
+      
+      columns: [
+        {
+          formatter: "rowSelection",
+          titleFormatter: "rowSelection",
+          hozAlign: "center",
+          headerSort: false,
+          width: 40
+        },
+        {
+          title: "Email",
+          field: "email",
+          widthGrow: 2,
+          headerFilter: "input",
+          formatter: function(cell) {
+            const email = cell.getValue();
+            const status = cell.getRow().getData().status;
+            let icon = '';
+            if (status === 'confirmed') {
+              icon = '<svg class="w-3 h-3 text-emerald-400 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+            }
+            return `${icon}<span class="text-white font-mono text-sm">${email}</span>`;
+          }
+        },
+        {
+          title: "Name",
+          field: "name",
+          widthGrow: 1,
+          formatter: function(cell) {
+            return cell.getValue() || '<span class="text-gray-500">—</span>';
+          }
+        },
+        {
+          title: "Status",
+          field: "status",
+          width: 120,
+          headerFilter: "select",
+          headerFilterParams: {
+            values: {"": "All", "confirmed": "Confirmed", "pending": "Pending", "unsubscribed": "Unsubscribed"}
+          },
+          formatter: function(cell) {
+            const status = cell.getValue();
+            const badges = {
+              confirmed: '<span class="px-2 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-400 rounded-full">Confirmed</span>',
+              pending: '<span class="px-2 py-1 text-xs font-medium bg-yellow-500/10 text-yellow-400 rounded-full">Pending</span>',
+              unsubscribed: '<span class="px-2 py-1 text-xs font-medium bg-gray-500/10 text-gray-400 rounded-full">Unsubscribed</span>',
+              bounced: '<span class="px-2 py-1 text-xs font-medium bg-red-500/10 text-red-400 rounded-full">Bounced</span>',
+              complained: '<span class="px-2 py-1 text-xs font-medium bg-orange-500/10 text-orange-400 rounded-full">Complained</span>'
+            };
+            return badges[status] || status;
+          }
+        },
+        {
+          title: "Source",
+          field: "source",
+          width: 120,
+          formatter: function(cell) {
+            return cell.getValue() || '<span class="text-gray-500">—</span>';
+          }
+        },
+        {
+          title: "Tags",
+          field: "tags",
+          widthGrow: 1,
+          formatter: function(cell) {
+            const tags = cell.getValue() || [];
+            if (tags.length === 0) return '<span class="text-gray-500">—</span>';
+            return tags.map(tag => 
+              `<span class="px-2 py-0.5 text-xs bg-blue-500/10 text-blue-400 rounded mr-1">${tag}</span>`
+            ).join('');
+          }
+        },
+        {
+          title: "Date Added",
+          field: "created_at",
+          width: 150,
+          formatter: function(cell) {
+            return `<span class="text-sm text-gray-400">${cell.getValue()}</span>`;
+          }
+        },
+        {
+          title: "Actions",
+          field: "actions",
+          width: 100,
+          headerSort: false,
+          hozAlign: "center",
+          formatter: "html"
+        }
+      ],
+      
+      data: <%= raw @subscribers.limit(100).map { |s| subscriber_json(s) }.to_json %>
+    });
+
+    // Bulk actions
+    document.getElementById('bulk-confirm')?.addEventListener('click', function() {
+      const selected = table.getSelectedData();
+      if (selected.length === 0) {
+        alert('Please select subscribers');
+        return;
+      }
+      
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '<%= bulk_action_admin_subscribers_path %>';
+      form.innerHTML = `
+        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+        <input type="hidden" name="bulk_action" value="confirm">
+        ${selected.map(s => `<input type="hidden" name="subscriber_ids[]" value="${s.id}">`).join('')}
+      `;
+      document.body.appendChild(form);
+      form.submit();
+    });
+  }
+});
+</script>
+
+<style>
+  .tabulator {
+    background-color: transparent;
+    border: none;
+  }
+  .tabulator .tabulator-header {
+    background-color: #0a0a0a;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .tabulator .tabulator-header .tabulator-col {
+    background-color: #0a0a0a;
+    border-right: 1px solid #2a2a2a;
+    color: #9ca3af;
+  }
+  .tabulator .tabulator-row {
+    background-color: #111111;
+    border-bottom: 1px solid #2a2a2a;
+    color: #e5e5e5;
+  }
+  .tabulator .tabulator-row:hover {
+    background-color: #0a0a0a;
+  }
+  .tabulator .tabulator-row.tabulator-selected {
+    background-color: #1a1a3a;
+  }
+</style>
+
+
+
+

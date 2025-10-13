@@ -1,0 +1,10 @@
+{% if search and search.active %}
+  <p class="muted">{{ search.total }} result(s) for “{{ search.query }}”</p>
+  <div class="post-list post-list--list">
+    {% for post in search.results %}
+      {% render 'post-card', post: post %}
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="muted">Type to search.</p>
+{% endif %}

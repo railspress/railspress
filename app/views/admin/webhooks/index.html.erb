@@ -1,0 +1,177 @@
+<div class="max-w-7xl mx-auto py-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        Webhooks
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400">
+        Manage webhook subscriptions for real-time integrations
+      </p>
+    </div>
+    
+    <%= link_to new_admin_webhook_path, 
+        class: "inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition" do %>
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Webhook
+    <% end %>
+  </div>
+
+  <!-- Webhooks List -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <thead class="bg-gray-50 dark:bg-gray-900">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Name & URL
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Events
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Status
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Stats
+          </th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <% if @webhooks.any? %>
+          <% @webhooks.each do |webhook| %>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <td class="px-6 py-4">
+                <div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">
+                    <%= webhook.name %>
+                  </div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 font-mono truncate max-w-md">
+                    <%= webhook.url %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex flex-wrap gap-1">
+                  <% webhook.events.first(3).each do |event| %>
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                      <%= event %>
+                    </span>
+                  <% end %>
+                  <% if webhook.events.count > 3 %>
+                    <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                      +<%= webhook.events.count - 3 %> more
+                    </span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <% if webhook.active? %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                      <circle cx="4" cy="4" r="3"/>
+                    </svg>
+                    Active
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
+                    Inactive
+                  </span>
+                <% end %>
+                
+                <% unless webhook.healthy? %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 ml-2">
+                    Unhealthy
+                  </span>
+                <% end %>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900 dark:text-white">
+                  <%= webhook.total_deliveries %> total
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  <%= webhook.failed_deliveries %> failed
+                </div>
+              </td>
+              <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
+                <%= link_to "View", admin_webhook_path(webhook), class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-900" %>
+                <%= link_to "Edit", edit_admin_webhook_path(webhook), class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-900" %>
+                <%= link_to "Test", test_admin_webhook_path(webhook), method: :post, class: "text-green-600 dark:text-green-400 hover:text-green-900" %>
+                <%= link_to webhook.active? ? "Disable" : "Enable", toggle_active_admin_webhook_path(webhook), method: :patch, class: "text-yellow-600 dark:text-yellow-400 hover:text-yellow-900" %>
+                <%= link_to "Delete", admin_webhook_path(webhook), method: :delete, data: { confirm: 'Are you sure?' }, class: "text-red-600 dark:text-red-400 hover:text-red-900" %>
+              </td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+              <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              <p class="mb-4">No webhooks configured yet.</p>
+              <%= link_to "Create your first webhook", new_admin_webhook_path, class: "text-indigo-600 hover:text-indigo-700 font-medium" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent Deliveries -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      Recent Deliveries
+    </h2>
+    
+    <div class="space-y-3">
+      <% if @recent_deliveries.any? %>
+        <% @recent_deliveries.each do |delivery| %>
+          <div class="flex items-center justify-between p-3 rounded-lg <%= delivery.success_status? ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20' %>">
+            <div class="flex items-center space-x-3">
+              <% if delivery.success_status? %>
+                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+              <% else %>
+                <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+              <% end %>
+              
+              <div>
+                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                  <%= delivery.webhook.name %> - <%= delivery.event_type %>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  <%= time_ago_in_words(delivery.created_at) %> ago
+                  <% if delivery.response_code %>
+                    · HTTP <%= delivery.response_code %>
+                  <% end %>
+                  <% if delivery.retry_count > 0 %>
+                    · Retry #<%= delivery.retry_count %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+            
+            <%= link_to admin_webhook_path(delivery.webhook), class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 text-sm font-medium" do %>
+              View Details →
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-center text-gray-500 dark:text-gray-400 py-8">
+          No deliveries yet. Webhooks will appear here when events are triggered.
+        </p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+
+
+

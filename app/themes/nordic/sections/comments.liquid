@@ -1,0 +1,25 @@
+{% comment %} Comments section {% endcomment %}
+{% if comments and comments.size > 0 %}
+<section class="comments" id="comments">
+  <h2 class="comments-title">Comments ({{ comments.size }})</h2>
+  
+  <div class="comments-list">
+    {% for comment in comments %}
+      <article class="comment" id="comment-{{ comment.id }}">
+        <div class="comment-header">
+          <strong class="comment-author">{{ comment.author.name | default: 'Anonymous' }}</strong>
+          <span class="comment-date muted">{{ comment.created_at | date: "%b %e, %Y at %l:%M %p" }}</span>
+        </div>
+        <div class="comment-content">
+          {{ comment.content }}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<section class="comments" id="comments">
+  <h2 class="comments-title">Comments</h2>
+  <p class="muted">No comments yet. Be the first to comment!</p>
+</section>
+{% endif %}

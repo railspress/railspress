@@ -1,0 +1,127 @@
+<% content_for :title, "Edit AI Provider" %>
+
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center gap-4 mb-4">
+      <%= link_to admin_ai_providers_path, class: "p-2 text-gray-400 hover:text-white hover:bg-[#2a2a2a] rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      <% end %>
+      <h1 class="text-3xl font-bold text-white">Edit AI Provider</h1>
+    </div>
+    <p class="text-gray-400">Update AI provider configuration</p>
+  </div>
+
+  <!-- Form -->
+  <%= form_with model: [:admin, @ai_provider], class: "space-y-8" do |f| %>
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Provider Information</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Name *</label>
+          <%= f.text_field :name, placeholder: "e.g., OpenAI GPT-4o", class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          <% if @ai_provider.errors[:name].any? %>
+            <p class="text-red-400 text-sm mt-1"><%= @ai_provider.errors[:name].first %></p>
+          <% end %>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Provider Type *</label>
+          <%= f.select :provider_type, 
+              options_for_select(AiProvider::PROVIDER_TYPES.map { |t| [t.titleize, t] }, @ai_provider.provider_type),
+              { prompt: "Select provider type" },
+              { class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" } %>
+          <% if @ai_provider.errors[:provider_type].any? %>
+            <p class="text-red-400 text-sm mt-1"><%= @ai_provider.errors[:provider_type].first %></p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">API Configuration</h2>
+      
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">API Key *</label>
+          <%= f.password_field :api_key, placeholder: "Enter your API key", value: @ai_provider.api_key.present? ? "••••••••••••••••" : "", class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          <p class="text-gray-500 text-sm mt-1">Enter a new key to update, or leave as is to keep current key</p>
+          <% if @ai_provider.errors[:api_key].any? %>
+            <p class="text-red-400 text-sm mt-1"><%= @ai_provider.errors[:api_key].first %></p>
+          <% end %>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">API URL</label>
+          <%= f.url_field :api_url, placeholder: "https://api.openai.com/v1/chat/completions", class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          <p class="text-gray-500 text-sm mt-1">Leave blank to use default URL for the provider type</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Model Identifier *</label>
+            <%= f.text_field :model_identifier, placeholder: "e.g., gpt-4o", class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+            <% if @ai_provider.errors[:model_identifier].any? %>
+              <p class="text-red-400 text-sm mt-1"><%= @ai_provider.errors[:model_identifier].first %></p>
+            <% end %>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Max Tokens *</label>
+            <%= f.number_field :max_tokens, placeholder: "4000", class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+            <% if @ai_provider.errors[:max_tokens].any? %>
+              <p class="text-red-400 text-sm mt-1"><%= @ai_provider.errors[:max_tokens].first %></p>
+            <% end %>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Temperature (0.0 - 2.0) *</label>
+          <%= f.number_field :temperature, step: 0.1, min: 0.0, max: 2.0, placeholder: "0.7", class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          <p class="text-gray-500 text-sm mt-1">Controls randomness: 0.0 = deterministic, 2.0 = very creative</p>
+          <% if @ai_provider.errors[:temperature].any? %>
+            <p class="text-red-400 text-sm mt-1"><%= @ai_provider.errors[:temperature].first %></p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Settings</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Position</label>
+          <%= f.number_field :position, placeholder: "0", class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+          <p class="text-gray-500 text-sm mt-1">Order in the list (lower numbers appear first)</p>
+        </div>
+
+        <div class="flex items-center">
+          <div class="flex items-center h-5">
+            <%= f.check_box :active, class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
+          </div>
+          <div class="ml-3">
+            <label class="text-sm font-medium text-gray-300">Active</label>
+            <p class="text-gray-500 text-sm">Enable this provider for use</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-between pt-6 border-t border-[#2a2a2a]">
+      <div class="text-sm text-gray-400">
+        Required fields are marked with *
+      </div>
+      <div class="flex items-center gap-3">
+        <%= link_to admin_ai_providers_path, class: "px-6 py-3 bg-[#0a0a0a] hover:bg-[#111111] border border-[#2a2a2a] text-gray-300 hover:text-white rounded-lg transition" do %>
+          Cancel
+        <% end %>
+        <%= f.submit "Update Provider", class: "px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition" %>
+      </div>
+    </div>
+  <% end %>
+</div>

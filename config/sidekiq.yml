@@ -1,0 +1,34 @@
+---
+:concurrency: 5
+:queues:
+  - critical
+  - default
+  - mailers
+  - low
+
+# Sidekiq Cron Jobs
+:schedule:
+  # Clean up old sessions
+  cleanup_sessions:
+    cron: '0 2 * * *'  # Every day at 2am
+    class: 'CleanupSessionsJob'
+    queue: low
+  
+  # Generate sitemap
+  generate_sitemap:
+    cron: '0 3 * * *'  # Every day at 3am
+    class: 'GenerateSitemapJob'
+    queue: default
+  
+  # Clear old versions
+  cleanup_versions:
+    cron: '0 4 * * 0'  # Every Sunday at 4am
+    class: 'CleanupVersionsJob'
+    queue: low
+  
+  # Check for updates
+  check_updates:
+    cron: '0 6 * * *'  # Every day at 6am
+    class: 'CheckUpdatesJob'
+    queue: low
+

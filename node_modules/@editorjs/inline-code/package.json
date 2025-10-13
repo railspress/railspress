@@ -1,0 +1,45 @@
+{
+  "name": "@editorjs/inline-code",
+  "version": "1.5.2",
+  "keywords": [
+    "codex editor",
+    "inline",
+    "code",
+    "editor.js",
+    "editorjs"
+  ],
+  "description": "InlineCode Tool for Editor.js",
+  "license": "MIT",
+  "repository": "https://github.com/editor-js/inline-code",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/inline-code.umd.js",
+  "module": "./dist/inline-code.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/inline-code.mjs",
+      "require": "./dist/inline-code.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "author": {
+    "name": "CodeX Team",
+    "email": "team@ifmo.su"
+  },
+  "devDependencies": {
+    "@editorjs/editorjs": "^2.30.2",
+    "typescript": "^5.5.3",
+    "vite": "^4.5.0",
+    "vite-plugin-css-injected-by-js": "^3.3.0",
+    "vite-plugin-dts": "^4.0.0-beta.1"
+  },
+  "dependencies": {
+    "@codexteam/icons": "^0.3.2"
+  }
+}

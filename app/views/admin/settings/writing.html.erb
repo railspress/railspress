@@ -1,0 +1,109 @@
+<% content_for :page_title, "Writing Settings" %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">Settings</h1>
+    <p class="text-gray-400">Configure your RailsPress site</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <aside class="lg:col-span-1">
+      <%= render 'settings_nav' %>
+    </aside>
+
+    <main class="lg:col-span-3">
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-bold text-white mb-6">Writing Settings</h2>
+        
+        <%= form_with url: admin_settings_writing_path, method: :patch, class: "space-y-6" do |f| %>
+          <!-- Default Post Status -->
+          <div>
+            <%= label_tag 'settings[default_post_status]', 'Default Post Status', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= select_tag 'settings[default_post_status]',
+                options_for_select([
+                  ['Draft', 'draft'],
+                  ['Pending Review', 'pending_review'],
+                  ['Published', 'published']
+                ], @settings[:default_post_status]),
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+          </div>
+
+          <!-- Default Category -->
+          <div>
+            <%= label_tag 'settings[default_post_category]', 'Default Post Category', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <% category_taxonomy = Taxonomy.find_by(slug: 'category') %>
+            <% category_terms = category_taxonomy ? category_taxonomy.terms.order(:name) : [] %>
+            <%= select_tag 'settings[default_post_category]',
+                options_for_select([['None', '']] + category_terms.map { |c| [c.name, c.id] }, @settings[:default_post_category]),
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+          </div>
+
+          <!-- Personal Editor Preference -->
+          <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-4">
+            <div class="flex items-start gap-3 mb-3">
+              <svg class="w-5 h-5 text-indigo-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              <div class="flex-1">
+                <h3 class="text-sm font-semibold text-indigo-300 mb-1">Your Editor Preference</h3>
+                <p class="text-xs text-gray-400 mb-3">Choose your preferred content editor. This setting is personal and won't affect other users.</p>
+              </div>
+            </div>
+            
+            <%= label_tag 'user[editor_preference]', 'Content Editor', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= select_tag 'user[editor_preference]',
+                options_for_select(editor_preference_options, current_user.editor_preference),
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-2 text-xs text-gray-500">
+              <%= editor_icon(current_user.preferred_editor) %>
+              Currently using: <strong class="text-gray-300"><%= editor_display_name(current_user.preferred_editor) %></strong>
+            </p>
+          </div>
+
+          <!-- Auto-save -->
+          <div class="bg-[#0a0a0a] rounded-lg p-4 border border-[#2a2a2a]">
+            <div class="flex items-center justify-between mb-4">
+              <%= label_tag 'settings[enable_auto_save]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[enable_auto_save]', '1', @settings[:enable_auto_save],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#111111] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300 font-medium">Enable Auto-save</span>
+              <% end %>
+            </div>
+            
+            <div>
+              <%= label_tag 'settings[auto_save_interval]', 'Auto-save Interval (seconds)', class: 'block text-sm font-medium text-gray-400 mb-2' %>
+              <%= number_field_tag 'settings[auto_save_interval]', @settings[:auto_save_interval],
+                  min: 30, max: 300,
+                  class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            </div>
+          </div>
+
+          <!-- Revisions -->
+          <div class="bg-[#0a0a0a] rounded-lg p-4 border border-[#2a2a2a]">
+            <div class="flex items-center justify-between mb-4">
+              <%= label_tag 'settings[enable_revisions]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[enable_revisions]', '1', @settings[:enable_revisions],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#111111] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300 font-medium">Enable Post Revisions</span>
+              <% end %>
+            </div>
+            
+            <div>
+              <%= label_tag 'settings[max_revisions]', 'Maximum Revisions to Keep', class: 'block text-sm font-medium text-gray-400 mb-2' %>
+              <%= number_field_tag 'settings[max_revisions]', @settings[:max_revisions],
+                  min: 0, max: 100,
+                  class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+              <p class="mt-1 text-xs text-gray-500">Set to 0 for unlimited revisions</p>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-6 border-t border-[#2a2a2a] flex items-center justify-end">
+            <%= f.submit "Save Changes", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer font-medium" %>
+          </div>
+        <% end %>
+      </div>
+    </main>
+  </div>
+</div>
+

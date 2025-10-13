@@ -1,0 +1,78 @@
+# Default terms matching WordPress structure
+
+uncategorized:
+  taxonomy: category
+  name: Uncategorized
+  slug: uncategorized
+  description: Posts without a specific category
+  count: 0
+  parent: null
+
+# Test category terms
+technology:
+  taxonomy: category
+  name: Technology
+  slug: technology
+  description: Technology related posts
+  count: 0
+  parent: null
+
+programming:
+  taxonomy: category
+  name: Programming
+  slug: programming
+  description: Programming tutorials
+  count: 0
+  parent: technology
+
+ruby:
+  taxonomy: category
+  name: Ruby
+  slug: ruby
+  description: Ruby programming
+  count: 0
+  parent: programming
+
+# Test tag terms
+rails_tag:
+  taxonomy: tag
+  name: rails
+  slug: rails
+  description: Ruby on Rails
+  count: 0
+  parent: null
+
+webdev_tag:
+  taxonomy: tag
+  name: webdev
+  slug: webdev
+  description: Web development
+  count: 0
+  parent: null
+
+tutorial_tag:
+  taxonomy: tag
+  name: tutorial
+  slug: tutorial
+  description: Tutorial posts
+  count: 0
+  parent: null
+
+# Test topic terms (custom taxonomy)
+design_topic:
+  taxonomy: topics
+  name: Design
+  slug: design
+  description: Design topics
+  count: 0
+  parent: null
+
+development_topic:
+  taxonomy: topics
+  name: Development
+  slug: development
+  description: Development topics
+  count: 0
+  parent: null
+
+

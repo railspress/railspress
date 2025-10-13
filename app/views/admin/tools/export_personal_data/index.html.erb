@@ -1,0 +1,165 @@
+<% content_for :title, "Export Personal Data" %>
+
+<div class="max-w-5xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Export Personal Data</h1>
+    <p class="text-gray-400">GDPR-compliant personal data export for users</p>
+  </div>
+
+  <!-- GDPR Notice -->
+  <div class="bg-blue-500/5 border border-blue-500/20 rounded-xl p-6 mb-8">
+    <div class="flex gap-3">
+      <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div class="text-sm text-gray-300">
+        <p class="font-semibold text-white mb-2">GDPR Compliance</p>
+        <p>Under GDPR Article 20, users have the right to receive their personal data in a structured, commonly used format. This tool generates a comprehensive JSON export containing all data associated with a user's email address.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Form -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8 mb-8">
+    <h2 class="text-xl font-semibold text-white mb-6">Create Export Request</h2>
+    
+    <%= form_with url: admin_tools_export_personal_data_request_path, class: "space-y-6" do |f| %>
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-2">User Email Address</label>
+        <input type="email" 
+               name="email" 
+               placeholder="user@example.com" 
+               required
+               class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-600">
+        <p class="text-xs text-gray-500 mt-2">Enter the email address of the user requesting their data</p>
+      </div>
+      
+      <!-- What Will Be Included -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-white mb-3">Data Included in Export</h3>
+        <ul class="space-y-2 text-sm text-gray-300">
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            User account information (name, email, profile data)
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            All posts and pages created by the user
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Comments submitted by the user
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Media files uploaded by the user
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Newsletter subscriptions
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Activity logs and timestamps
+          </li>
+        </ul>
+      </div>
+      
+      <%= f.submit "Generate Personal Data Export", class: "w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition" %>
+    <% end %>
+  </div>
+  
+  <!-- Export Requests History -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-[#2a2a2a]">
+      <h2 class="text-lg font-semibold text-white">Export Requests</h2>
+    </div>
+    
+    <div class="divide-y divide-[#2a2a2a]">
+      <% if @export_requests&.any? %>
+        <% @export_requests.each do |request| %>
+          <div class="px-6 py-4 hover:bg-[#111111] transition">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-white font-medium"><%= request.email %></h3>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= 
+                    case request.status
+                    when 'completed' then 'bg-green-500/10 text-green-400'
+                    when 'processing' then 'bg-blue-500/10 text-blue-400'
+                    when 'failed' then 'bg-red-500/10 text-red-400'
+                    else 'bg-gray-500/10 text-gray-400'
+                    end %>">
+                    <%= request.status.humanize %>
+                  </span>
+                </div>
+                
+                <p class="text-xs text-gray-500">
+                  Requested <%= time_ago_in_words(request.created_at) %> ago by <%= User.find(request.requested_by).email rescue 'Admin' %>
+                </p>
+                
+                <% if request.status == 'completed' && request.file_path %>
+                  <p class="text-sm text-gray-400 mt-1">
+                    Ready for download • Expires in <%= ((request.created_at + 7.days - Time.current) / 1.day).to_i %> days
+                  </p>
+                <% end %>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <% if request.status == 'completed' %>
+                  <%= link_to admin_download_personal_data_path(request.token), class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm" do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Download
+                  <% end %>
+                <% elsif request.status == 'processing' %>
+                  <div class="flex items-center gap-2 text-blue-400">
+                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm">Processing...</span>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-400">No export requests yet</h3>
+          <p class="mt-1 text-sm text-gray-500">Create a request above to export user data</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-refresh if there are processing requests
+  <% if @export_requests&.any? { |req| req.status == 'processing' } %>
+    setTimeout(() => {
+      location.reload();
+    }, 5000);
+  <% end %>
+</script>
+
+
+
+

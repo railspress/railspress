@@ -1,0 +1,134 @@
+<%= form_with(model: [:admin, pixel], class: "space-y-6", data: { controller: "pixel-form" }) do |form| %>
+  <% if pixel.errors.any? %>
+    <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+      <h3 class="font-semibold mb-2"><%= pluralize(pixel.errors.count, "error") %> prohibited this pixel from being saved:</h3>
+      <ul class="list-disc ml-6 text-sm">
+        <% pixel.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Name -->
+    <div class="lg:col-span-2">
+      <%= form.label :name, "Pixel Name", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.text_field :name, 
+          placeholder: "e.g., Google Analytics - Main Site",
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none",
+          required: true,
+          data: { pixel_form_target: "name" } %>
+      <p class="mt-1 text-xs text-gray-500">
+        A descriptive name to identify this pixel in your list.
+      </p>
+    </div>
+
+    <!-- Pixel Type -->
+    <div>
+      <%= form.label :pixel_type, "Provider Type", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.select :pixel_type, 
+          options_for_select([
+            ['Google Analytics (GA4)', 'google_analytics'],
+            ['Google Tag Manager', 'google_tag_manager'],
+            ['Facebook Pixel (Meta)', 'facebook_pixel'],
+            ['TikTok Pixel', 'tiktok_pixel'],
+            ['LinkedIn Insight Tag', 'linkedin_insight'],
+            ['Twitter Pixel', 'twitter_pixel'],
+            ['Pinterest Tag', 'pinterest_tag'],
+            ['Snapchat Pixel', 'snapchat_pixel'],
+            ['Reddit Pixel', 'reddit_pixel'],
+            ['Hotjar', 'hotjar'],
+            ['Microsoft Clarity', 'clarity'],
+            ['Mixpanel', 'mixpanel'],
+            ['Segment', 'segment'],
+            ['Heap Analytics', 'heap'],
+            ['Custom HTML/JavaScript', 'custom']
+          ], pixel.pixel_type || 'google_analytics'),
+          {},
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none",
+          data: { action: "change->pixel-form#toggleFields", pixel_form_target: "pixelType" } %>
+    </div>
+
+    <!-- Position -->
+    <div>
+      <%= form.label :position, "Load Position", class: "block text-sm font-medium text-gray-300 mb-2" %>
+      <%= form.select :position, 
+          options_for_select([
+            ['Head (<head>) - Recommended', 'head'],
+            ['Body Start (After <body>)', 'body_start'],
+            ['Body End (Before </body>)', 'body_end']
+          ], pixel.position || 'head'),
+          {},
+          class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+      <p class="mt-1 text-xs text-gray-500">
+        Where the pixel code will be injected in your pages.
+      </p>
+    </div>
+  </div>
+
+  <!-- Pixel ID (for known providers) -->
+  <div data-pixel-form-target="pixelIdField">
+    <%= form.label :pixel_id, "Pixel/Tracking ID", class: "block text-sm font-medium text-gray-300 mb-2" %>
+    <%= form.text_field :pixel_id, 
+        placeholder: "e.g., G-XXXXXXXXXX, GTM-XXXXXXX, 1234567890",
+        class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none font-mono",
+        data: { pixel_form_target: "pixelId" } %>
+    <p class="mt-1 text-xs text-gray-500">
+      <span data-pixel-form-target="pixelIdHint">
+        Enter your tracking ID (e.g., G-XXXXXXXXXX for Google Analytics).
+      </span>
+    </p>
+  </div>
+
+  <!-- Custom Code (for custom type) -->
+  <div data-pixel-form-target="customCodeField" style="display: none;">
+    <%= form.label :custom_code, "Custom Code", class: "block text-sm font-medium text-gray-300 mb-2" %>
+    <%= form.text_area :custom_code, 
+        rows: 10,
+        placeholder: "<script>\n  // Your custom tracking code here\n</script>",
+        class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none font-mono text-sm",
+        data: { pixel_form_target: "customCode" } %>
+    <p class="mt-1 text-xs text-gray-500">
+      Paste your complete tracking code. Include <code class="px-1 bg-[#1a1a1a] rounded">&lt;script&gt;</code> tags if needed.
+    </p>
+    <div class="mt-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded text-xs text-yellow-300">
+      ⚠️ Custom code is inserted as-is. Ensure it's from a trusted source.
+    </div>
+  </div>
+
+  <!-- Active Toggle -->
+  <div>
+    <label class="flex items-start cursor-pointer">
+      <%= form.check_box :active, 
+          class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500 focus:ring-2 mt-0.5" %>
+      <span class="ml-3">
+        <span class="text-sm font-medium text-gray-300">Active</span>
+        <span class="block text-xs text-gray-500 mt-1">Enable this pixel to start tracking (you can disable it later without deleting)</span>
+      </span>
+    </label>
+  </div>
+
+  <!-- Notes -->
+  <div>
+    <%= form.label :notes, "Notes (Optional)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+    <%= form.text_area :notes, 
+        rows: 3,
+        placeholder: "Add any notes about this pixel...",
+        class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none" %>
+    <p class="mt-1 text-xs text-gray-500">
+      Optional notes for reference (not shown to users).
+    </p>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="flex items-center justify-end gap-3 pt-6 border-t border-[#2a2a2a]">
+    <%= link_to "Cancel", admin_pixels_path, class: "px-6 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+    <%= form.submit pixel.new_record? ? "Add Pixel" : "Update Pixel", 
+        class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium cursor-pointer" %>
+  </div>
+<% end %>
+
+
+
+

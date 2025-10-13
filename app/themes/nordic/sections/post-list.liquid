@@ -1,0 +1,29 @@
+{% schema %}
+{
+  "name": "Post list",
+  "settings": [
+    { "id":"layout", "type":"select", "options":["list","grid"], "default":"list", "label":"Layout" },
+    { "id":"items_per_page", "type":"number", "default":10, "label":"Items per page" },
+    { "id":"scope", "type":"select", "options":["all","category","tag","taxonomy","author"], "default":"all", "label":"Scope" }
+  ]
+}
+{% endschema %}
+
+{% assign layout = section.settings.layout | default: 'list' %}
+{% assign posts = collections.posts | default: posts | default: recent_posts | default: featured_posts %}
+
+{% if posts.size > 0 %}
+  <div class="post-list post-list--{{ layout }}">
+    {% for post in posts limit: 6 %}
+      {% render 'post-card', post: post %}
+    {% endfor %}
+  </div>
+  
+  {% if paginate %}
+    {% section 'pagination' %}
+  {% endif %}
+{% else %}
+  <div class="container">
+    <p class="muted">No posts found.</p>
+  </div>
+{% endif %}

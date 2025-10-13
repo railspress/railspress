@@ -1,0 +1,21 @@
+{
+  "sections": {
+    "post": {
+      "type": "post-content"
+    },
+    "related": {
+      "type": "related-posts",
+      "settings": {
+        "limit": 3
+      }
+    },
+    "comments": {
+      "type": "comments"
+    }
+  },
+  "order": [
+    "post",
+    "related",
+    "comments"
+  ]
+}

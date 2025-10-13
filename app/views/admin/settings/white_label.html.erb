@@ -1,0 +1,161 @@
+<div class="flex gap-6 max-w-7xl mx-auto">
+  <!-- Settings Navigation -->
+  <div class="w-64 flex-shrink-0">
+    <%= render 'settings_nav' %>
+  </div>
+
+  <!-- Settings Content -->
+  <div class="flex-1">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-white mb-2">White Label Settings</h1>
+      <p class="text-gray-400">Customize the branding and identity of your admin panel</p>
+    </div>
+
+    <%= form_with url: admin_settings_white_label_path, method: :patch, class: 'space-y-6' do |f| %>
+      <!-- App Identity -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-6">App Identity</h2>
+        
+        <div class="space-y-6">
+          <!-- App Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Application Name
+            </label>
+            <%= text_field_tag 'settings[admin_app_name]', @settings[:admin_app_name], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'RailsPress' %>
+            <p class="mt-1 text-sm text-gray-500">This name will appear in the admin header and page titles</p>
+          </div>
+
+          <!-- App URL -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Application URL
+            </label>
+            <%= url_field_tag 'settings[admin_app_url]', @settings[:admin_app_url], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'https://yoursite.com' %>
+            <p class="mt-1 text-sm text-gray-500">The base URL of your application</p>
+          </div>
+
+          <!-- Logo URL -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Logo URL
+            </label>
+            <%= text_field_tag 'settings[admin_logo_url]', @settings[:admin_logo_url], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'https://yoursite.com/logo.png' %>
+            <p class="mt-1 text-sm text-gray-500">URL to your logo image (recommended: 40px height)</p>
+            
+            <% if @settings[:admin_logo_url].present? %>
+              <div class="mt-3 p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
+                <p class="text-sm text-gray-400 mb-2">Preview:</p>
+                <img src="<%= @settings[:admin_logo_url] %>" alt="Logo" class="h-10" onerror="this.style.display='none'">
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Favicon URL -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Favicon URL
+            </label>
+            <%= text_field_tag 'settings[admin_favicon_url]', @settings[:admin_favicon_url], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'https://yoursite.com/favicon.ico' %>
+            <p class="mt-1 text-sm text-gray-500">URL to your favicon (16x16 or 32x32 px)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer & Support -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-6">Footer & Support</h2>
+        
+        <div class="space-y-6">
+          <!-- Footer Text -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Footer Text
+            </label>
+            <%= text_field_tag 'settings[admin_footer_text]', @settings[:admin_footer_text], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'Powered by Your Company' %>
+            <p class="mt-1 text-sm text-gray-500">Text to display in the admin footer</p>
+          </div>
+
+          <!-- Support Email -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Support Email
+            </label>
+            <%= email_field_tag 'settings[admin_support_email]', @settings[:admin_support_email], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'support@yoursite.com' %>
+            <p class="mt-1 text-sm text-gray-500">Email for support inquiries</p>
+          </div>
+
+          <!-- Support URL -->
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Support/Help URL
+            </label>
+            <%= url_field_tag 'settings[admin_support_url]', @settings[:admin_support_url], 
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                placeholder: 'https://yoursite.com/support' %>
+            <p class="mt-1 text-sm text-gray-500">Link to your support or documentation</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branding Options -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-white mb-6">Branding Options</h2>
+        
+        <div class="space-y-4">
+          <!-- Hide Branding -->
+          <div class="flex items-start">
+            <div class="flex items-center h-5">
+              <%= check_box_tag 'settings[hide_branding]', '1', @settings[:hide_branding] == true || @settings[:hide_branding] == '1', 
+                  class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500' %>
+            </div>
+            <div class="ml-3">
+              <label class="text-sm font-medium text-gray-300">
+                Hide RailsPress Branding
+              </label>
+              <p class="text-sm text-gray-500">Remove "Powered by RailsPress" from the admin panel</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Box -->
+      <div class="bg-blue-900/20 border-l-4 border-blue-500 rounded-lg p-6">
+        <div class="flex items-start gap-3">
+          <svg class="w-6 h-6 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <h3 class="text-sm font-semibold text-blue-400 mb-2">
+              Tip: Complete White-Label Experience
+            </h3>
+            <p class="text-sm text-blue-300">
+              For a fully branded experience, also configure the <strong>Appearance</strong> settings to match your brand colors and fonts.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="flex items-center justify-between pt-6 border-t border-[#2a2a2a]">
+        <div class="text-sm text-gray-400">
+          Changes will take effect immediately after saving
+        </div>
+        <%= f.submit 'Save White Label Settings', class: 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
+      </div>
+    <% end %>
+  </div>
+</div>
+

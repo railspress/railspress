@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Theme",
+    "settings": [
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Accent color",
+        "default": "#0E7C86"
+      },
+      {
+        "type": "range",
+        "id": "container_max",
+        "label": "Container width",
+        "min": 900,
+        "max": 1400,
+        "step": 10,
+        "default": 1100,
+        "unit": "px"
+      }
+    ]
+  }
+]

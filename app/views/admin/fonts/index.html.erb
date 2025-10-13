@@ -1,0 +1,230 @@
+<% content_for :page_title, "Custom Fonts" %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Custom Fonts</h1>
+      <p class="text-gray-400">Manage custom fonts for your site</p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <%= link_to new_admin_font_path, class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Add Custom Font</span>
+      <% end %>
+      
+      <%= link_to google_admin_fonts_path, class: "flex items-center gap-2 px-4 py-2 border border-indigo-600 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-lg transition", data: { turbo_frame: "google_fonts_modal" } do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+        </svg>
+        <span>Add from Google Fonts</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Total Fonts</p>
+          <p class="text-3xl font-bold text-white"><%= @fonts.count %></p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Active</p>
+          <p class="text-3xl font-bold text-white"><%= @fonts.active.count %></p>
+        </div>
+        <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+          <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Google Fonts</p>
+          <p class="text-3xl font-bold text-white"><%= @fonts.google_fonts.count %></p>
+        </div>
+        <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Custom Fonts</p>
+          <p class="text-3xl font-bold text-white"><%= @fonts.custom_fonts.count %></p>
+        </div>
+        <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-between">
+          <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fonts Table -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div class="p-6">
+      <div id="fonts-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Turbo Frame for Google Fonts Modal -->
+<turbo-frame id="google_fonts_modal"></turbo-frame>
+
+<script>
+function initFontsTable() {
+  const tableElement = document.getElementById('fonts-table');
+  if (!tableElement) return;
+  
+  if (tableElement._tabulator) {
+    tableElement._tabulator.destroy();
+  }
+  
+  const table = new Tabulator("#fonts-table", {
+    height: "600px",
+    data: <%= raw @fonts.to_json(methods: [:font_url]) %>,
+    layout: "fitColumns",
+    placeholder: "No fonts added yet",
+    columns: [
+      {
+        title: "Name",
+        field: "name",
+        width: 200,
+        formatter: function(cell) {
+          const row = cell.getData();
+          return `<div style="font-family: '${row.family}', ${row.fallback}; font-weight: 600;">
+            ${row.name}
+          </div>`;
+        }
+      },
+      {
+        title: "Family",
+        field: "family",
+        width: 180,
+        formatter: function(cell) {
+          return `<code class="text-sm text-gray-400">${cell.getValue()}</code>`;
+        }
+      },
+      {
+        title: "Source",
+        field: "source",
+        width: 130,
+        formatter: function(cell) {
+          const source = cell.getValue();
+          const badges = {
+            'google': '<span class="px-2 py-1 text-xs bg-blue-500/10 text-blue-400 rounded">Google</span>',
+            'bunny': '<span class="px-2 py-1 text-xs bg-green-500/10 text-green-400 rounded">Bunny</span>',
+            'adobe': '<span class="px-2 py-1 text-xs bg-red-500/10 text-red-400 rounded">Adobe</span>',
+            'custom': '<span class="px-2 py-1 text-xs bg-purple-500/10 text-purple-400 rounded">Custom</span>'
+          };
+          return badges[source] || source;
+        }
+      },
+      {
+        title: "Weights",
+        field: "weights",
+        width: 150,
+        formatter: function(cell) {
+          const weights = cell.getValue() || [];
+          return weights.join(', ');
+        }
+      },
+      {
+        title: "Preview",
+        width: 200,
+        formatter: function(cell) {
+          const row = cell.getData();
+          return `<div style="font-family: '${row.family}', ${row.fallback};">
+            The quick brown fox jumps
+          </div>`;
+        }
+      },
+      {
+        title: "Status",
+        field: "active",
+        width: 100,
+        hozAlign: "center",
+        formatter: function(cell) {
+          const active = cell.getValue();
+          if (active) {
+            return '<span class="px-2 py-1 text-xs bg-green-500/10 text-green-400 rounded">Active</span>';
+          } else {
+            return '<span class="px-2 py-1 text-xs bg-gray-500/10 text-gray-400 rounded">Inactive</span>';
+          }
+        }
+      },
+      {
+        title: "Actions",
+        width: 180,
+        hozAlign: "center",
+        formatter: function(cell) {
+          const row = cell.getData();
+          return `
+            <div class="flex items-center justify-center gap-2">
+              <a href="/admin/fonts/${row.id}/edit" class="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded transition">
+                Edit
+              </a>
+              <button onclick="toggleFont(${row.id})" class="px-3 py-1 text-sm bg-yellow-600 hover:bg-yellow-700 text-white rounded transition">
+                ${row.active ? 'Disable' : 'Enable'}
+              </button>
+              <a href="/admin/fonts/${row.id}" data-turbo-method="delete" data-turbo-confirm="Delete this font?" class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition">
+                Delete
+              </a>
+            </div>
+          `;
+        }
+      }
+    ]
+  });
+
+  // Toggle font active status
+  window.toggleFont = async function(id) {
+    const response = await fetch(`/admin/fonts/${id}/toggle`, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      location.reload();
+    }
+  };
+}
+
+// Initialize on page load
+document.addEventListener('turbo:load', initFontsTable);
+document.addEventListener('DOMContentLoaded', initFontsTable);
+
+// Cleanup before Turbo caches the page
+document.addEventListener('turbo:before-cache', function() {
+  const tableElement = document.getElementById('fonts-table');
+  if (tableElement && tableElement._tabulator) {
+    tableElement._tabulator.destroy();
+  }
+});
+</script>
+

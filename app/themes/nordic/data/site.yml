@@ -1,0 +1,14 @@
+title: "Nordic Minimal"
+description: "Calm, content-first, Scandinavian minimal theme."
+logo: ""
+socials:
+  twitter: ""
+  github: ""
+menus:
+  primary:
+    - { title: "Home", url: "/" }
+    - { title: "Blog", url: "/blog" }
+    - { title: "About", url: "/page/about" }
+  footer:
+    - { title: "Privacy", url: "/page/privacy" }
+    - { title: "RSS", url: "/feed.xml" }

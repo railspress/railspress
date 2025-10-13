@@ -1,0 +1,9 @@
+{% comment %} Minimal footer {% endcomment %}
+<footer class="footer">
+  <div class="muted">&copy; {{ 'now' | date: '%Y' }} {{ site.title }}</div>
+  <nav class="nav small">
+    {% for item in site.menus.footer %}
+      <a href="{{ item.url }}">{{ item.title }}</a>
+    {% endfor %}
+  </nav>
+</footer>

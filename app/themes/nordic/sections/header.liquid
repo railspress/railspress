@@ -1,0 +1,9 @@
+{% comment %} Scandinavian minimal header {% endcomment %}
+<header class="header">
+  <a class="brand" href="/">{{ site.title }}</a>
+  <nav class="nav">
+    {% for item in site.menus.primary %}
+      <a href="{{ item.url }}">{{ item.title }}</a>
+    {% endfor %}
+  </nav>
+</header>

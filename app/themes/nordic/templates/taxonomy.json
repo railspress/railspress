@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "list": {
+      "type": "post-list",
+      "settings": {
+        "scope": "taxonomy"
+      }
+    },
+    "pagination": {
+      "type": "pagination"
+    }
+  },
+  "order": [
+    "list",
+    "pagination"
+  ]
+}

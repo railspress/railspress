@@ -1,0 +1,188 @@
+<% content_for :title, "Import" %>
+
+<div class="max-w-5xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Import</h1>
+    <p class="text-gray-400">Import content from WordPress, JSON, or CSV files</p>
+  </div>
+
+  <!-- Import Form -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8 mb-8">
+    <h2 class="text-xl font-semibold text-white mb-6">Upload Import File</h2>
+    
+    <%= form_with url: admin_tools_import_upload_path, multipart: true, class: "space-y-6" do |f| %>
+      <!-- Import Type -->
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-2">Import Type</label>
+        <select name="import_type" class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="wordpress">WordPress XML</option>
+          <option value="json">JSON Export</option>
+          <option value="csv_posts">CSV - Posts</option>
+          <option value="csv_pages">CSV - Pages</option>
+          <option value="csv_users">CSV - Users</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-2">Select the format of your import file</p>
+      </div>
+      
+      <!-- File Upload -->
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-2">Import File</label>
+        <div class="flex items-center justify-center w-full">
+          <label class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-[#2a2a2a] rounded-lg cursor-pointer bg-[#0a0a0a] hover:bg-[#111111] transition">
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <svg class="w-12 h-12 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+              <p class="mb-2 text-sm text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+              <p class="text-xs text-gray-500">WordPress XML, JSON, or CSV files</p>
+              <p class="text-xs text-gray-600 mt-2" id="file-name"></p>
+            </div>
+            <input type="file" name="file" class="hidden" accept=".xml,.json,.csv" onchange="document.getElementById('file-name').textContent = this.files[0]?.name || ''" required>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Import Options -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-white mb-3">Import Options</h3>
+        <div class="space-y-3">
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[import_authors]" value="1" checked class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Import authors (create if missing)</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[import_categories]" value="1" checked class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Import categories and tags</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[import_media]" value="1" checked class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Download and import media files</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[import_comments]" value="1" class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Import comments</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input type="checkbox" name="options[skip_duplicates]" value="1" checked class="w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500">
+            <span>Skip duplicate content (based on slug)</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Submit Button -->
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-gray-500">
+          <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Large imports may take several minutes to complete
+        </p>
+        <%= f.submit "Start Import", class: "px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition" %>
+      </div>
+    <% end %>
+  </div>
+  
+  <!-- Import History -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-[#2a2a2a]">
+      <h2 class="text-lg font-semibold text-white">Recent Imports</h2>
+    </div>
+    
+    <div class="divide-y divide-[#2a2a2a]">
+      <% if @import_jobs&.any? %>
+        <% @import_jobs.each do |job| %>
+          <div class="px-6 py-4 hover:bg-[#111111] transition">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-white font-medium"><%= job.file_name %></h3>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= 
+                    case job.status
+                    when 'completed' then 'bg-green-500/10 text-green-400'
+                    when 'processing' then 'bg-blue-500/10 text-blue-400'
+                    when 'failed' then 'bg-red-500/10 text-red-400'
+                    else 'bg-gray-500/10 text-gray-400'
+                    end %>">
+                    <%= job.status.humanize %>
+                  </span>
+                  <span class="text-xs text-gray-500"><%= job.import_type.humanize %></span>
+                </div>
+                
+                <% if job.status == 'processing' && job.progress %>
+                  <div class="w-full bg-[#0a0a0a] rounded-full h-2 mb-2">
+                    <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: <%= job.progress %>%"></div>
+                  </div>
+                  <p class="text-xs text-gray-500">
+                    <%= job.imported_items %> of <%= job.total_items %> items imported
+                  </p>
+                <% elsif job.status == 'completed' %>
+                  <p class="text-sm text-gray-400">
+                    Imported <%= job.imported_items %> items
+                    <% if job.failed_items && job.failed_items > 0 %>
+                      <span class="text-red-400">(#{job.failed_items} failed)</span>
+                    <% end %>
+                  </p>
+                <% elsif job.status == 'failed' %>
+                  <p class="text-sm text-red-400"><%= job.error_log&.truncate(100) %></p>
+                <% end %>
+                
+                <p class="text-xs text-gray-600 mt-1">
+                  <%= job.created_at.strftime('%B %d, %Y at %I:%M %p') %> by <%= User.find(job.user_id).email rescue 'Unknown' %>
+                </p>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <% if job.status == 'failed' %>
+                  <%= button_to admin_tools_import_process_path(id: job.id), method: :post, class: "text-gray-400 hover:text-blue-400 p-2 rounded-lg hover:bg-blue-500/10 transition" do %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-400">No imports yet</h3>
+          <p class="mt-1 text-sm text-gray-500">Upload a file above to get started</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Import Guide -->
+  <div class="mt-8 bg-blue-500/5 border border-blue-500/20 rounded-xl p-6">
+    <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Import Guide
+    </h3>
+    <div class="text-sm text-gray-300 space-y-2">
+      <p><strong class="text-white">WordPress XML:</strong> Export from WordPress using Tools → Export, then upload the WXR file here.</p>
+      <p><strong class="text-white">JSON:</strong> Use RailsPress JSON export format (includes posts, pages, media, and settings).</p>
+      <p><strong class="text-white">CSV:</strong> Upload CSV files with proper headers (title, content, status, etc.).</p>
+      <p class="mt-4 text-yellow-400">
+        ⚠️ Large imports are processed in the background. You can leave this page and check back later.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-refresh if there are processing jobs
+  <% if @import_jobs&.any? { |job| job.status == 'processing' } %>
+    setTimeout(() => {
+      location.reload();
+    }, 5000); // Refresh every 5 seconds
+  <% end %>
+</script>
+
+
+
+

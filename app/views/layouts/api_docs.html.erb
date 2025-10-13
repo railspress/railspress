@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html class="dark">
+<head>
+  <title>RailsPress API Documentation</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <%= csrf_meta_tags %>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #0a0a0a;
+    }
+    code {
+      background: #1a1a1a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', monospace;
+    }
+    pre {
+      background: #111111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body class="text-white antialiased">
+  <%= yield %>
+</body>
+</html>
+
+
+
+

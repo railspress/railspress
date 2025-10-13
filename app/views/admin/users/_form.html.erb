@@ -1,0 +1,96 @@
+<%= form_with(model: [:admin, user], class: 'space-y-6') do |form| %>
+  <% if user.errors.any? %>
+    <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+      <h3 class="text-red-400 font-semibold mb-2"><%= pluralize(user.errors.count, "error") %> prohibited this user from being saved:</h3>
+      <ul class="list-disc list-inside text-red-300 text-sm space-y-1">
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Account Information -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-6">Account Information</h2>
+    
+    <div class="space-y-4">
+      <!-- Email -->
+      <div>
+        <%= form.label :email, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= form.email_field :email, required: true, 
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            placeholder: 'user@example.com' %>
+        <p class="mt-1 text-sm text-gray-500">User's email address (used for login)</p>
+      </div>
+
+      <!-- Name -->
+      <div>
+        <%= form.label :name, 'Full Name', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= form.text_field :name,
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            placeholder: 'John Doe' %>
+        <p class="mt-1 text-sm text-gray-500">Display name for the user</p>
+      </div>
+
+      <!-- Role -->
+      <div>
+        <%= form.label :role, 'Role / Access Level', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= form.select :role, 
+            options_for_select(
+              [
+                ['Administrator', 'administrator'],
+                ['Editor', 'editor'],
+                ['Author', 'author'],
+                ['Contributor', 'contributor'],
+                ['Subscriber', 'subscriber']
+              ],
+              user.role
+            ),
+            {},
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        <p class="mt-1 text-sm text-gray-500">Determines user's permissions</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-2">Password</h2>
+    <p class="text-sm text-gray-400 mb-6">
+      <%= user.new_record? ? 'Set initial password' : 'Leave blank to keep current password' %>
+    </p>
+    
+    <div class="space-y-4">
+      <!-- Password -->
+      <div>
+        <%= form.label :password, class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= form.password_field :password, 
+            autocomplete: 'new-password',
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            placeholder: user.new_record? ? 'Enter password' : 'Leave blank to keep current' %>
+        <p class="mt-1 text-sm text-gray-500">Minimum 6 characters</p>
+      </div>
+
+      <!-- Password Confirmation -->
+      <div>
+        <%= form.label :password_confirmation, 'Confirm Password', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+        <%= form.password_field :password_confirmation, 
+            autocomplete: 'new-password',
+            class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            placeholder: user.new_record? ? 'Confirm password' : 'Leave blank to keep current' %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="flex items-center justify-between pt-6 border-t border-[#2a2a2a]">
+    <%= link_to "Cancel", admin_users_path, class: "px-4 py-2 text-gray-400 hover:text-white transition" %>
+    <%= form.submit user.new_record? ? 'Create User' : 'Update User', 
+        class: 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
+  </div>
+<% end %>
+
+
+
+

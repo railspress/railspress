@@ -1,0 +1,58 @@
+# Default taxonomies matching WordPress structure
+
+category:
+  name: Category
+  singular_name: Category
+  plural_name: Categories
+  slug: category
+  description: Organize posts into categories
+  hierarchical: true
+  object_types: ["Post"]
+  settings: 
+    show_in_menu: true
+    show_in_api: true
+    show_ui: true
+    public: true
+
+tag:
+  name: Tag
+  singular_name: Tag
+  plural_name: Tags
+  slug: tag
+  description: Tag your posts with keywords
+  hierarchical: false
+  object_types: ["Post"]
+  settings:
+    show_in_menu: true
+    show_in_api: true
+    show_ui: true
+    public: true
+
+post_format:
+  name: Post Format
+  singular_name: Format
+  plural_name: Formats
+  slug: post_format
+  description: Post format types (video, audio, gallery, etc.)
+  hierarchical: false
+  object_types: ["Post"]
+  settings:
+    show_in_menu: false
+    show_in_api: true
+    show_ui: true
+    public: false
+
+# Custom test taxonomy
+topics:
+  name: Topics
+  singular_name: Topic
+  plural_name: Topics
+  slug: topics
+  description: Content topics
+  hierarchical: true
+  object_types: ["Post", "Page"]
+  settings:
+    show_in_menu: true
+    public: true
+
+

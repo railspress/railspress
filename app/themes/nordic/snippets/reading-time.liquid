@@ -1,0 +1,1 @@
+{% assign words = input | strip_html | number_of_words %}{{ words | divided_by: 200 | plus: 1 }} min read

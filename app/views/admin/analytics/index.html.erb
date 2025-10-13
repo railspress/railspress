@@ -1,0 +1,312 @@
+<% content_for :page_title, "Analytics" %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Analytics Dashboard</h1>
+      <p class="text-gray-400">Privacy-friendly analytics for your site</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Period Selector -->
+      <%= form_with url: admin_analytics_path, method: :get, class: "flex items-center gap-2" do |f| %>
+        <%= f.select :period,
+            options_for_select([
+              ['Today', 'today'],
+              ['Last 7 Days', 'week'],
+              ['Last 30 Days', 'month'],
+              ['Last Year', 'year']
+            ], @period),
+            {},
+            class: "px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500",
+            onchange: "this.form.submit()" %>
+      <% end %>
+      
+      <%= link_to admin_analytics_export_path(period: @period), class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Export CSV</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Real-time & Key Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <!-- Active Now -->
+    <div class="bg-gradient-to-br from-emerald-900/30 to-emerald-800/20 border border-emerald-500/30 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-emerald-300 mb-1">Active Now</p>
+          <p class="text-3xl font-bold text-white"><%= @active_now %></p>
+          <p class="text-xs text-emerald-400 mt-1">👁️ Live visitors</p>
+        </div>
+        <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+          <div class="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today Views -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Today</p>
+          <p class="text-3xl font-bold text-white"><%= format_number(@today_views) %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= format_number(@today_unique) %> unique</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Period Pageviews -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Pageviews</p>
+          <p class="text-3xl font-bold text-white"><%= format_number(@stats[:total_pageviews]) %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= format_number(@stats[:unique_visitors]) %> unique</p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avg Duration -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Avg. Duration</p>
+          <p class="text-3xl font-bold text-white"><%= @stats[:avg_duration] %>s</p>
+          <p class="text-xs text-gray-500 mt-1">Bounce: <%= format_percentage(@stats[:bounce_rate]) %></p>
+        </div>
+        <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Trend Chart -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+    <h2 class="text-lg font-semibold text-white mb-4">Pageviews Trend</h2>
+    <div class="h-64" id="trend-chart"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+      const trendData = <%= raw @stats[:daily_trend].to_json %>;
+      const ctx = document.getElementById('trend-chart');
+      
+      if (ctx) {
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: trendData.map(d => d.date),
+            datasets: [{
+              label: 'Pageviews',
+              data: trendData.map(d => d.count),
+              borderColor: 'rgb(99, 102, 241)',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#9ca3af' },
+                grid: { color: '#2a2a2a' }
+              },
+              x: {
+                ticks: { color: '#9ca3af' },
+                grid: { color: '#2a2a2a' }
+              }
+            }
+          }
+        });
+      }
+    </script>
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Top Pages -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Top Pages</h2>
+      <div class="space-y-2">
+        <% @stats[:top_pages].first(10).each do |page| %>
+          <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded hover:bg-[#1a1a1a] transition">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-white font-medium truncate"><%= page[:title] || page[:path] %></p>
+              <p class="text-xs text-gray-500 font-mono"><%= page[:path] %></p>
+            </div>
+            <div class="ml-4 text-right">
+              <p class="text-sm font-semibold text-indigo-400"><%= format_number(page[:views]) %></p>
+              <p class="text-xs text-gray-500">views</p>
+            </div>
+          </div>
+        <% end %>
+        <% if @stats[:top_pages].empty? %>
+          <p class="text-center text-gray-500 py-8">No data yet</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Top Countries -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Top Countries</h2>
+      <div class="space-y-2">
+        <% @stats[:top_countries].each do |country| %>
+          <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl"><%= country_flag(country[:country_code]) %></span>
+              <span class="text-sm text-white"><%= country[:country_code] %></span>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-semibold text-indigo-400"><%= format_number(country[:count]) %></p>
+            </div>
+          </div>
+        <% end %>
+        <% if @stats[:top_countries].empty? %>
+          <p class="text-center text-gray-500 py-8">No location data yet</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Browser & Device Stats -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Browsers -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Browsers</h2>
+      <div class="space-y-2">
+        <% @stats[:top_browsers].each do |browser, count| %>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300"><%= browser_icon(browser).html_safe %> <%= browser %></span>
+            <span class="text-sm font-semibold text-indigo-400"><%= format_number(count) %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Devices -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Devices</h2>
+      <div class="space-y-2">
+        <% @stats[:top_devices].each do |device, count| %>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300"><%= device_icon(device).html_safe %> <%= device %></span>
+            <span class="text-sm font-semibold text-indigo-400"><%= format_number(count) %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- GDPR Compliance -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h2 class="text-lg font-semibold text-white mb-4">Privacy</h2>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-300">Consent Rate</span>
+          <span class="text-sm font-semibold text-emerald-400"><%= format_percentage(@consent_rate) %></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-300">Consented</span>
+          <span class="text-sm font-semibold text-indigo-400"><%= format_number(@consented_tracked) %></span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-300">Total Tracked</span>
+          <span class="text-sm font-semibold text-gray-400"><%= format_number(@total_tracked) %></span>
+        </div>
+        <div class="pt-3 border-t border-[#2a2a2a]">
+          <p class="text-xs text-gray-500">✅ GDPR Compliant</p>
+          <p class="text-xs text-gray-500">✅ No Personal Data</p>
+          <p class="text-xs text-gray-500">✅ IP Anonymization</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Posts (if any) -->
+  <% if @stats[:top_posts].any? %>
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+      <h2 class="text-lg font-semibold text-white mb-4">Top Blog Posts</h2>
+      <div class="space-y-2">
+        <% @stats[:top_posts].first(10).each do |post_stat| %>
+          <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded hover:bg-[#1a1a1a] transition">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-white font-medium truncate"><%= post_stat[:title] || "Post ##{post_stat[:post_id]}" %></p>
+              <% if post_stat[:post_id] %>
+                <%= link_to "View Post", [:admin, Post.find(post_stat[:post_id])], class: "text-xs text-indigo-400 hover:text-indigo-300", target: "_blank" %>
+              <% end %>
+            </div>
+            <div class="ml-4 text-right">
+              <p class="text-sm font-semibold text-indigo-400"><%= format_number(post_stat[:views]) %></p>
+              <p class="text-xs text-gray-500">views</p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Top Referrers -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <h2 class="text-lg font-semibold text-white mb-4">Top Referrers</h2>
+    <div class="space-y-2">
+      <% @stats[:top_referrers].first(10).each do |ref| %>
+        <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded">
+          <p class="text-sm text-gray-300 font-mono truncate flex-1"><%= ref[:referrer] %></p>
+          <p class="text-sm font-semibold text-indigo-400 ml-4"><%= format_number(ref[:count]) %></p>
+        </div>
+      <% end %>
+      <% if @stats[:top_referrers].empty? %>
+        <p class="text-center text-gray-500 py-8">No referrer data yet</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- GDPR Tools -->
+  <div class="mt-8 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <div class="flex items-start gap-4">
+      <div class="bg-yellow-500/10 p-3 rounded-lg">
+        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-white font-semibold mb-2">Data Retention & Privacy</h3>
+        <p class="text-gray-400 text-sm mb-4">
+          Manage your analytics data to stay GDPR compliant. Anonymize or delete old data regularly.
+        </p>
+        <div class="flex gap-3">
+          <%= button_to "Anonymize Data (90+ days)", admin_analytics_purge_path(purge_type: 'anonymize', days: 90), 
+              method: :post,
+              data: { confirm: "This will anonymize IP addresses and sessions for data older than 90 days. Continue?" },
+              class: "px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition text-sm" %>
+          
+          <%= button_to "Delete Non-Consented (30+ days)", admin_analytics_purge_path(purge_type: 'delete_non_consented', days: 30), 
+              method: :post,
+              data: { confirm: "This will delete non-consented pageviews older than 30 days. Continue?" },
+              class: "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,217 @@
+<% content_for :title, "Erase Personal Data" %>
+
+<div class="max-w-5xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">Erase Personal Data</h1>
+    <p class="text-gray-400">GDPR-compliant personal data erasure for users</p>
+  </div>
+
+  <!-- Warning Notice -->
+  <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mb-8">
+    <div class="flex gap-3">
+      <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <div class="text-sm text-gray-300">
+        <p class="font-semibold text-red-400 mb-2">⚠️ Permanent Action - Cannot Be Undone</p>
+        <p>Under GDPR Article 17 (Right to Erasure), users can request deletion of their personal data. This action will permanently remove all user data including posts, comments, and media. This requires two-step confirmation to prevent accidental deletion.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Request Form -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-8 mb-8">
+    <h2 class="text-xl font-semibold text-white mb-6">Create Erasure Request</h2>
+    
+    <%= form_with url: admin_tools_erase_personal_data_request_path, class: "space-y-6" do |f| %>
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-2">User Email Address</label>
+        <input type="email" 
+               name="email" 
+               placeholder="user@example.com" 
+               required
+               class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 placeholder-gray-600">
+        <p class="text-xs text-gray-500 mt-2">Enter the email address of the user requesting data erasure</p>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-400 mb-2">Reason for Erasure</label>
+        <textarea name="reason" 
+                  rows="3" 
+                  placeholder="GDPR request, user account deletion, etc."
+                  required
+                  class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 placeholder-gray-600 resize-none"></textarea>
+        <p class="text-xs text-gray-500 mt-2">Document the reason for this erasure request</p>
+      </div>
+      
+      <!-- What Will Be Erased -->
+      <div class="bg-[#111111] border border-red-500/20 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-red-400 mb-3">Data That Will Be Permanently Erased</h3>
+        <ul class="space-y-2 text-sm text-gray-300">
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            User account and all personal information
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            All posts and pages authored by the user
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            All comments submitted by the user
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Media files uploaded by the user
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Newsletter subscriptions and preferences
+          </li>
+          <li class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            All analytics and tracking data
+          </li>
+        </ul>
+      </div>
+      
+      <%= f.submit "Create Erasure Request", class: "w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition" %>
+    <% end %>
+  </div>
+  
+  <!-- Erasure Requests History -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-[#2a2a2a]">
+      <h2 class="text-lg font-semibold text-white">Erasure Requests</h2>
+    </div>
+    
+    <div class="divide-y divide-[#2a2a2a]">
+      <% if @erasure_requests&.any? %>
+        <% @erasure_requests.each do |request| %>
+          <div class="px-6 py-4 hover:bg-[#111111] transition">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="text-white font-medium"><%= request.email %></h3>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= 
+                    case request.status
+                    when 'completed' then 'bg-gray-500/10 text-gray-400'
+                    when 'processing' then 'bg-blue-500/10 text-blue-400'
+                    when 'pending_confirmation' then 'bg-yellow-500/10 text-yellow-400'
+                    when 'failed' then 'bg-red-500/10 text-red-400'
+                    else 'bg-gray-500/10 text-gray-400'
+                    end %>">
+                    <%= request.status.humanize %>
+                  </span>
+                </div>
+                
+                <% if request.reason.present? %>
+                  <p class="text-sm text-gray-400 mb-1"><%= request.reason %></p>
+                <% end %>
+                
+                <p class="text-xs text-gray-500">
+                  Requested <%= time_ago_in_words(request.created_at) %> ago
+                  <% if request.confirmed_at %>
+                    • Confirmed <%= time_ago_in_words(request.confirmed_at) %> ago
+                  <% end %>
+                  <% if request.completed_at %>
+                    • Completed <%= time_ago_in_words(request.completed_at) %> ago
+                  <% end %>
+                </p>
+                
+                <% if request.metadata.present? %>
+                  <p class="text-xs text-gray-600 mt-1">
+                    Will erase: <%= request.metadata['user_posts_count'] %> posts, 
+                    <%= request.metadata['user_comments_count'] %> comments, 
+                    <%= request.metadata['user_media_count'] %> media files
+                  </p>
+                <% end %>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <% if request.status == 'pending_confirmation' %>
+                  <%= button_to "Confirm Erasure", admin_confirm_erase_personal_data_path(request.token), 
+                      method: :post,
+                      class: "flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm",
+                      data: { confirm: "This will PERMANENTLY delete all data for #{request.email}. Are you absolutely sure?" } do %>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Confirm
+                  <% end %>
+                <% elsif request.status == 'processing' %>
+                  <div class="flex items-center gap-2 text-blue-400">
+                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm">Erasing...</span>
+                  </div>
+                <% elsif request.status == 'completed' %>
+                  <span class="flex items-center gap-2 text-gray-500 text-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Completed
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-400">No erasure requests</h3>
+          <p class="mt-1 text-sm text-gray-500">No data erasure requests have been submitted</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- GDPR Compliance Info -->
+  <div class="mt-8 bg-blue-500/5 border border-blue-500/20 rounded-xl p-6">
+    <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+      <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      GDPR Compliance Notes
+    </h3>
+    <div class="text-sm text-gray-300 space-y-2">
+      <p><strong class="text-white">Two-Step Process:</strong> Erasure requests require confirmation before execution to prevent accidental deletion.</p>
+      <p><strong class="text-white">Audit Trail:</strong> All erasure requests are logged with timestamps and the administrator who performed the action.</p>
+      <p><strong class="text-white">What Gets Kept:</strong> Essential business records may be retained as permitted under GDPR (e.g., financial transactions, legal obligations).</p>
+      <p><strong class="text-white">Response Time:</strong> GDPR requires response within 30 days of receiving a valid request.</p>
+      <p class="mt-4 text-yellow-400">
+        💡 Before erasing, consider exporting the user's data first as a backup or for compliance records.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-refresh if there are processing requests
+  <% if @erasure_requests&.any? { |req| req.status == 'processing' } %>
+    setTimeout(() => {
+      location.reload();
+    }, 5000);
+  <% end %>
+</script>
+
+
+
+

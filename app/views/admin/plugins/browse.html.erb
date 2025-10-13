@@ -1,0 +1,81 @@
+<% content_for :page_title, "Browse Plugins" %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">Plugin Marketplace</h1>
+      <p class="text-gray-400">Discover and install plugins to extend your RailsPress site</p>
+    </div>
+    <%= link_to admin_plugins_path, class: "flex items-center space-x-2 px-4 py-2 border border-[#2a2a2a] hover:border-[#3a3a3a] text-gray-300 hover:text-white rounded-lg transition" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      <span>Back to Installed</span>
+    <% end %>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
+    <%= form_with url: browse_admin_plugins_path, method: :get, class: "space-y-4" do |f| %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <%= f.text_field :q, value: params[:q], placeholder: "Search plugins...", class: "w-full pl-10 pr-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <%= f.select :category, 
+              options_for_select([['All Categories', '']] + @categories.map { |c| [c, c] }, params[:category]),
+              {},
+              class: "flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <%= f.submit "Filter", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Featured Plugins -->
+  <% if @featured_plugins.any? && params[:q].blank? && params[:category].blank? %>
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-white mb-4">Featured Plugins</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <% @featured_plugins.first(3).each do |plugin| %>
+          <%= render partial: 'plugin_card', locals: { plugin: plugin, featured: true } %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- All Plugins -->
+  <div class="mb-4">
+    <h2 class="text-xl font-semibold text-white mb-4">
+      <%= params[:category].present? ? params[:category] : "All Plugins" %>
+      <span class="text-gray-500 text-sm font-normal">(<%= @available_plugins.count %> results)</span>
+    </h2>
+  </div>
+
+  <% if @available_plugins.any? %>
+    <div class="space-y-4">
+      <% @available_plugins.each do |plugin| %>
+        <%= render partial: 'plugin_row', locals: { plugin: plugin } %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-12 text-center">
+      <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <h3 class="text-lg font-semibold text-white mb-2">No Plugins Found</h3>
+      <p class="text-gray-400 mb-4">Try adjusting your search or filters</p>
+      <%= link_to "Clear Filters", browse_admin_plugins_path, class: "text-indigo-400 hover:text-indigo-300" %>
+    </div>
+  <% end %>
+</div>
+
+
+
+

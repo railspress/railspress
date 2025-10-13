@@ -1,0 +1,61 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto">
+    <article class="bg-white rounded-lg shadow-md p-8">
+      <!-- Breadcrumbs -->
+      <% if @page.breadcrumbs.length > 1 %>
+        <nav class="text-sm text-gray-500 mb-6">
+          <ol class="flex items-center space-x-2">
+            <%= link_to "Home", root_path, class: "hover:text-blue-600" %>
+            <% @page.breadcrumbs.each do |breadcrumb| %>
+              <span>/</span>
+              <%= link_to breadcrumb.title, page_path(breadcrumb.slug), class: "hover:text-blue-600" %>
+            <% end %>
+          </ol>
+        </nav>
+      <% end %>
+      
+      <!-- Title -->
+      <h1 class="text-4xl font-bold text-gray-900 mb-8"><%= @page.title %></h1>
+      
+      <!-- Content -->
+      <div class="prose prose-lg max-w-none">
+        <%= process_shortcodes(@page.content).html_safe %>
+      </div>
+      
+      <!-- Meta Info -->
+      <div class="mt-8 pt-8 border-t border-gray-200 text-sm text-gray-500">
+        Last updated: <%= @page.updated_at.strftime("%B %d, %Y") %>
+      </div>
+    </article>
+
+    <!-- Comments Section -->
+    <% if @comments.any? %>
+      <div class="mt-8 bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Comments</h2>
+        
+        <div class="space-y-6">
+          <% @comments.each do |comment| %>
+            <div class="border-b border-gray-200 pb-6 last:border-0">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                    <%= comment.author[0].upcase %>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="font-semibold text-gray-900"><%= comment.author %></span>
+                    <span class="text-sm text-gray-500">
+                      <%= time_ago_in_words(comment.created_at) %> ago
+                    </span>
+                  </div>
+                  <p class="text-gray-700"><%= comment.content %></p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

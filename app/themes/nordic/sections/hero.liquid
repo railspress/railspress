@@ -1,0 +1,16 @@
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    { "id":"heading", "type":"text", "label":"Heading", "default":"Timeless, calm, considered." },
+    { "id":"subheading", "type":"text", "label":"Subheading", "default":"A Scandinavian-minimal theme inspired by Twenty Twenty-Five." },
+    { "id":"align", "type":"select", "label":"Alignment", "options":["left","center"], "default":"left" }
+  ]
+}
+{% endschema %}
+<section class="hero hero--{{ section.settings.align }}">
+  <h1 class="hero-title">{{ section.settings.heading }}</h1>
+  {% if section.settings.subheading %}
+    <p class="hero-sub">{{ section.settings.subheading }}</p>
+  {% endif %}
+</section>

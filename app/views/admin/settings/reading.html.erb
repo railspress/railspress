@@ -1,0 +1,95 @@
+<% content_for :page_title, "Reading Settings" %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">Settings</h1>
+    <p class="text-gray-400">Configure your RailsPress site</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <aside class="lg:col-span-1">
+      <%= render 'settings_nav' %>
+    </aside>
+
+    <main class="lg:col-span-3">
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-xl font-bold text-white mb-6">Reading Settings</h2>
+        
+        <%= form_with url: admin_settings_reading_path, method: :patch, class: "space-y-6" do |f| %>
+          <!-- Homepage Display -->
+          <div>
+            <%= label_tag 'settings[show_on_front]', 'Your homepage displays', class: 'block text-sm font-medium text-gray-300 mb-3' %>
+            <div class="space-y-3">
+              <%= label_tag 'show_on_front_posts', class: 'flex items-center space-x-3 cursor-pointer' do %>
+                <%= radio_button_tag 'settings[show_on_front]', 'posts', @settings[:show_on_front] == 'posts',
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+                <span class="text-gray-300">Your latest posts</span>
+              <% end %>
+              
+              <%= label_tag 'show_on_front_page', class: 'flex items-center space-x-3 cursor-pointer' do %>
+                <%= radio_button_tag 'settings[show_on_front]', 'page', @settings[:show_on_front] == 'page',
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+                <span class="text-gray-300">A static page</span>
+              <% end %>
+            </div>
+          </div>
+
+          <% if @settings[:show_on_front] == 'page' %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#0a0a0a] p-4 rounded-lg">
+              <div>
+                <%= label_tag 'settings[homepage_page_id]', 'Homepage', class: 'block text-sm font-medium text-gray-400 mb-2' %>
+                <%= select_tag 'settings[homepage_page_id]',
+                    options_for_select([['Select a page', '']] + Page.published.map { |p| [p.title, p.id] }, @settings[:homepage_page_id]),
+                    class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+              </div>
+              
+              <div>
+                <%= label_tag 'settings[blog_page_id]', 'Posts page', class: 'block text-sm font-medium text-gray-400 mb-2' %>
+                <%= select_tag 'settings[blog_page_id]',
+                    options_for_select([['Select a page', '']] + Page.published.map { |p| [p.title, p.id] }, @settings[:blog_page_id]),
+                    class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Posts per Page -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <%= label_tag 'settings[posts_per_page]', 'Blog pages show at most', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+              <div class="flex items-center space-x-2">
+                <%= number_field_tag 'settings[posts_per_page]', @settings[:posts_per_page],
+                    min: 1, max: 100,
+                    class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                <span class="text-gray-400">posts</span>
+              </div>
+            </div>
+
+            <div>
+              <%= label_tag 'settings[posts_per_rss]', 'Syndication feeds show', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+              <div class="flex items-center space-x-2">
+                <%= number_field_tag 'settings[posts_per_rss]', @settings[:posts_per_rss],
+                    min: 1, max: 50,
+                    class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                <span class="text-gray-400">items</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Excerpt Length -->
+          <div>
+            <%= label_tag 'settings[excerpt_length]', 'Excerpt Length (characters)', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= number_field_tag 'settings[excerpt_length]', @settings[:excerpt_length],
+                min: 50, max: 500,
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Maximum length for post excerpts</p>
+          </div>
+
+          <div class="pt-6 border-t border-[#2a2a2a] flex items-center justify-end">
+            <%= f.submit "Save Changes", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer font-medium" %>
+          </div>
+        <% end %>
+      </div>
+    </main>
+  </div>
+</div>
+
