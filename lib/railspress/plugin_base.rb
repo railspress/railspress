@@ -784,6 +784,66 @@ module Railspress
       posts
     end
     
+    # ========================================
+    # UPLOAD SYSTEM
+    # ========================================
+    
+    # Upload a file securely
+    def upload_file(file, options = {})
+      upload = Upload.new(
+        title: options[:title] || file.original_filename,
+        description: options[:description],
+        alt_text: options[:alt_text]
+      )
+      upload.file.attach(file)
+      upload.user = current_user if respond_to?(:current_user)
+      upload.storage_provider = StorageProvider.active.first
+      
+      # Security validation
+      security = UploadSecurity.current
+      unless security.file_allowed?(file)
+        raise "File not allowed: #{file.original_filename}"
+      end
+      
+      # Check for suspicious files
+      if security.file_suspicious?(file)
+        if security.quarantine_suspicious?
+          upload.quarantined = true
+          upload.quarantine_reason = 'Suspicious file pattern detected'
+        else
+          raise "File rejected: #{file.original_filename} appears suspicious"
+        end
+      end
+      
+      upload.save!
+      upload
+    end
+    
+    # Get approved uploads
+    def get_uploads(options = {})
+      uploads = Upload.approved
+      uploads = uploads.where(user: options[:user]) if options[:user]
+      uploads = uploads.where("title LIKE ?", "%#{options[:search]}%") if options[:search]
+      uploads = uploads.limit(options[:limit]) if options[:limit]
+      uploads = uploads.offset(options[:offset]) if options[:offset]
+      uploads
+    end
+    
+    # Get quarantined uploads
+    def get_quarantined_uploads
+      Upload.quarantined
+    end
+    
+    # Approve a quarantined upload
+    def approve_upload(upload)
+      upload.approve!
+    end
+    
+    # Reject a quarantined upload
+    def reject_upload(upload)
+      upload.reject!
+    end
+    
     private
     
     # Parse setting value based on type

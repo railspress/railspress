@@ -1,6 +1,6 @@
 class Template < ApplicationRecord
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   belongs_to :theme
 

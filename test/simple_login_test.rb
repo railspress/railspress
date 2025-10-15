@@ -36,3 +36,5 @@ class SimpleLoginTest < ActionDispatch::IntegrationTest
 end
 
 
+
+

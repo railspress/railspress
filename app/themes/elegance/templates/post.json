@@ -1,0 +1,86 @@
+{
+  "name": "Post",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    },
+    "post_header": {
+      "type": "post_header",
+      "settings": {
+        "show_breadcrumbs": true,
+        "show_featured_image": true,
+        "show_meta": true,
+        "show_author": true,
+        "show_date": true,
+        "show_categories": true,
+        "show_tags": true,
+        "background_color": "#f8fafc",
+        "text_alignment": "center"
+      }
+    },
+    "post_content": {
+      "type": "post_content",
+      "settings": {
+        "show_sidebar": true,
+        "sidebar_position": "right",
+        "show_author_bio": true,
+        "show_related_posts": true,
+        "show_social_sharing": true,
+        "show_comments": true,
+        "content_width": "standard",
+        "show_table_of_contents": true,
+        "show_reading_time": true
+      }
+    },
+    "related_posts": {
+      "type": "related_posts",
+      "settings": {
+        "heading": "Related Posts",
+        "show_featured_images": true,
+        "show_excerpts": true,
+        "show_meta": true,
+        "posts_count": 3,
+        "layout": "grid"
+      }
+    },
+    "comments": {
+      "type": "comments",
+      "settings": {
+        "show_comments": true,
+        "show_comment_form": true,
+        "require_approval": false,
+        "show_gravatar": true,
+        "max_depth": 3
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "post_header",
+    "post_content",
+    "related_posts",
+    "comments",
+    "footer"
+  ]
+}
+

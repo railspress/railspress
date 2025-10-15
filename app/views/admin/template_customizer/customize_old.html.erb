@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Theme Customizer - <%= @current_theme.titleize %></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <%= csrf_meta_tags %>
+  
+  <!-- GrapesJS CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.css">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body, html {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
+    /* Top Bar */
+    .editor-topbar {
+      height: 60px;
+      background: #1F2937;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .editor-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .btn-back {
+      background: #374151;
+      border: 1px solid #4B5563;
+      color: white;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn-back:hover {
+      background: #4B5563;
+      border-color: #6B7280;
+    }
+    
+    .template-selector {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .template-selector label {
+      font-size: 14px;
+      color: #D1D5DB;
+    }
+    
+    .template-selector select {
+      background: #374151;
+      border: 1px solid #4B5563;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+    
+    .template-selector select:focus {
+      outline: none;
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primary {
+      background: #374151;
+      border: 1px solid #4B5563;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #4B5563;
+      border-color: #6B7280;
+    }
+    
+    .btn-secondary {
+      background: #374151;
+      border: 1px solid #4B5563;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #4B5563;
+      border-color: #6B7280;
+    }
+    
+    .btn-success {
+      background: #059669;
+      border: 1px solid #047857;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #047857;
+      border-color: #065F46;
+    }
+    
+    /* Editor Container */
+    .editor-container {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+    
+    /* Left Sidebar */
+    .sidebar-left {
+      width: 280px;
+      background: #000000;
+      border-right: 1px solid #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .sidebar-left-tabs {
+      display: flex;
+      background: #0a0a0a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    
+    .sidebar-left-tab {
+      flex: 1;
+      padding: 12px 16px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #9CA3AF;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .sidebar-left-tab.active {
+      color: #F9FAFB;
+      background: #000000;
+      border-bottom-color: #6366f1;
+    }
+    
+    .sidebar-left-tab:hover {
+      background: #111111;
+      color: #D1D5DB;
+    }
+    
+    .sidebar-left-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    
+    /* Sections Panel */
+    .sections-panel {
+      display: block;
+    }
+    
+    .sections-panel.hidden {
+      display: none;
+    }
+    
+    .section-item {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+    
+    .section-item:hover {
+      border-color: #3B82F6;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+    }
+    
+    .section-item.dragging {
+      opacity: 0.5;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1F2937;
+      margin-bottom: 4px;
+    }
+    
+    .section-description {
+      font-size: 12px;
+      color: #6B7280;
+      line-height: 1.4;
+    }
+    
+    /* Theme Settings Panel */
+    .theme-settings-panel {
+      display: none;
+    }
+    
+    .theme-settings-panel.active {
+      display: block;
+    }
+    
+    .setting-group {
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .setting-group-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1F2937;
+      margin-bottom: 12px;
+    }
+    
+    .setting-field {
+      margin-bottom: 12px;
+    }
+    
+    .setting-field:last-child {
+      margin-bottom: 0;
+    }
+    
+    .setting-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+    
+    .setting-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    
+    .setting-input:focus {
+      outline: none;
+      border-color: #3B82F6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    /* Canvas Area */
+    .canvas-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #FFFFFF;
+      overflow: hidden;
+    }
+    
+    /* Right Sidebar */
+    .sidebar-right {
+      width: 280px;
+      background: #000000;
+      border-left: 1px solid #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .sidebar-right-tabs {
+      display: flex;
+      background: #0a0a0a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    
+    .sidebar-right-tab {
+      flex: 1;
+      padding: 12px 16px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #9CA3AF;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    
+    .sidebar-right-tab.active {
+      color: #F9FAFB;
+      background: #000000;
+      border-bottom-color: #6366f1;
+    }
+    
+    .sidebar-right-tab:hover {
+      background: #111111;
+      color: #D1D5DB;
+    }
+    
+    .sidebar-right-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+    
+    /* GrapesJS Canvas */
+    #gjs {
+      flex: 1;
+      border: none;
+    }
+    
+    /* Loading Overlay */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-size: 16px;
+      color: #6B7280;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar-left,
+      .sidebar-right {
+        width: 240px;
+      }
+      
+      .editor-topbar {
+        padding: 0 12px;
+      }
+      
+      .template-selector {
+        gap: 8px;
+      }
+      
+      .template-selector select {
+        min-width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loading-overlay">
+    <div>Loading Theme Customizer...</div>
+  </div>
+
+  <!-- Top Bar -->
+  <div class="editor-topbar">
+    <div class="editor-title">
+      <button class="btn-back" onclick="goBackToAdmin()" title="Back to Admin">
+        <svg style="width:20px;height:20px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </button>
+      <svg style="width:20px;height:20px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+      </svg>
+      Theme Customizer - <%= @current_theme.titleize %>
+    </div>
+    
+    <div class="template-selector">
+      <label for="template-select">Page:</label>
+      <select id="template-select">
+        <% @available_templates.each do |template| %>
+          <option value="<%= template %>" <%= 'selected' if template == @template_type %>>
+            <%= template.humanize %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+    
+    <div class="editor-actions">
+      <button class="btn btn-secondary" onclick="previewTemplate()">
+        <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+        Preview
+      </button>
+      <button class="btn btn-primary" onclick="saveCustomization()">
+        <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+        </svg>
+        Save Preview
+      </button>
+      <button class="btn btn-success" onclick="publishCustomization()">
+        <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+        Publish
+      </button>
+    </div>
+  </div>
+
+  <!-- Editor Container -->
+  <div class="editor-container">
+    <!-- Left Sidebar -->
+    <div class="sidebar-left">
+      <div class="sidebar-left-tabs">
+        <div class="sidebar-left-tab active" onclick="switchLeftTab('current')">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+          Page
+        </div>
+        <div class="sidebar-left-tab" onclick="switchLeftTab('sections')">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          Sections
+        </div>
+        <div class="sidebar-left-tab" onclick="switchLeftTab('settings')">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Theme
+        </div>
+      </div>
+      
+      <div class="sidebar-left-content">
+        <!-- Current Sections Panel -->
+        <div class="current-panel" id="current-panel">
+          <div class="mb-4">
+            <h3 class="text-white text-sm font-medium mb-2">Current Sections</h3>
+            <p class="text-gray-400 text-xs mb-3">Drag to reorder sections</p>
+            <div id="current-sections-list" class="space-y-2">
+              <!-- Current sections will be loaded here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sections Panel -->
+        <div class="sections-panel" id="sections-panel" style="display: none;">
+          <div id="blocks-container">
+            <!-- GrapesJS blocks will be loaded here -->
+          </div>
+          <div id="sections-container">
+            <!-- Sections will be loaded here -->
+          </div>
+        </div>
+        
+        <!-- Theme Settings Panel -->
+        <div class="theme-settings-panel" id="theme-settings-panel">
+          <div id="theme-settings-container">
+            <!-- Theme settings will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Canvas Area -->
+    <div class="canvas-area">
+      <!-- GrapesJS Canvas -->
+      <div id="gjs"></div>
+    </div>
+    
+    <!-- Right Sidebar -->
+    <div class="sidebar-right">
+      <div class="sidebar-right-tabs">
+        <div class="sidebar-right-tab active" onclick="switchRightTab('styles')">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+          Styles
+        </div>
+        <div class="sidebar-right-tab" onclick="switchRightTab('traits')">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+          Settings
+        </div>
+      </div>
+      
+      <div class="sidebar-right-content">
+        <div id="layers-container"></div>
+        <div id="styles-container" class="active"></div>
+        <div id="traits-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GrapesJS Scripts -->
+  <script src="https://unpkg.com/grapesjs"></script>
+  <script src="https://unpkg.com/grapesjs-preset-webpage"></script>
+  <script src="https://unpkg.com/grapesjs-blocks-basic"></script>
+
+  <script>
+    // Global variables
+    let editor;
+    let currentTemplateType = '<%= @template_type %>';
+    let themeSections = <%= raw @theme_sections.to_json %>;
+    let themeSettings = <%= raw @theme_settings.to_json %>;
+    let templateData = <%= raw @template_data.to_json %>;
+    
+    // Tab switching functions
+    function switchLeftTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.sidebar-left-tab').forEach(t => t.classList.remove('active'));
+      event.target.closest('.sidebar-left-tab').classList.add('active');
+      
+      // Show/hide panels
+      document.getElementById('current-panel').style.display = tab === 'current' ? 'block' : 'none';
+      document.getElementById('sections-panel').style.display = tab === 'sections' ? 'block' : 'none';
+      document.getElementById('theme-settings-panel').classList.toggle('active', tab === 'settings');
+      
+      // Load current sections when switching to current tab
+      if (tab === 'current') {
+        loadCurrentSections();
+      }
+    }
+    
+    function switchRightTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.sidebar-right-tab').forEach(t => t.classList.remove('active'));
+      event.target.closest('.sidebar-right-tab').classList.add('active');
+      
+      // Show/hide containers
+      document.getElementById('styles-container').classList.toggle('active', tab === 'styles');
+      document.getElementById('traits-container').classList.toggle('active', tab === 'traits');
+    }
+    
+    // Template selector
+    document.getElementById('template-select').addEventListener('change', function() {
+      currentTemplateType = this.value;
+      loadTemplateContent(currentTemplateType);
+    });
+    
+    // Load current sections
+    function loadCurrentSections() {
+      const currentSectionsList = document.getElementById('current-sections-list');
+      if (!templateData.order || !templateData.sections) {
+        currentSectionsList.innerHTML = '<p class="text-gray-400 text-xs">No sections found</p>';
+        return;
+      }
+      
+      let html = '';
+      templateData.order.forEach((sectionId, index) => {
+        const section = templateData.sections[sectionId];
+        if (section) {
+          html += `
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-3 cursor-move hover:bg-gray-700 transition-colors" 
+                 draggable="true" data-section-id="${sectionId}" data-index="${index}">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-white text-sm font-medium">${section.type}</h4>
+                  <p class="text-gray-400 text-xs">${Object.keys(section.settings || {}).length} settings</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <button onclick="editSection('${sectionId}')" class="text-gray-400 hover:text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button onclick="removeSection('${sectionId}')" class="text-gray-400 hover:text-red-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      
+      currentSectionsList.innerHTML = html || '<p class="text-gray-400 text-xs">No sections found</p>';
+      
+      // Add drag and drop functionality
+      makeSortable();
+    }
+    
+    // Make sections sortable
+    function makeSortable() {
+      const container = document.getElementById('current-sections-list');
+      let draggedElement = null;
+      
+      container.addEventListener('dragstart', (e) => {
+        draggedElement = e.target;
+        e.target.style.opacity = '0.5';
+      });
+      
+      container.addEventListener('dragend', (e) => {
+        e.target.style.opacity = '1';
+        draggedElement = null;
+      });
+      
+      container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+      
+      container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedElement && draggedElement !== e.target) {
+          const containerRect = container.getBoundingClientRect();
+          const draggedRect = draggedElement.getBoundingClientRect();
+          const targetRect = e.target.getBoundingClientRect();
+          
+          if (e.clientY < targetRect.top + targetRect.height / 2) {
+            container.insertBefore(draggedElement, e.target);
+          } else {
+            container.insertBefore(draggedElement, e.target.nextSibling);
+          }
+          
+          // Update template data order
+          updateSectionOrder();
+        }
+      });
+    }
+    
+    // Update section order in template data
+    function updateSectionOrder() {
+      const sections = Array.from(document.querySelectorAll('#current-sections-list > div'));
+      const newOrder = sections.map(section => section.dataset.sectionId);
+      templateData.order = newOrder;
+    }
+    
+    // Edit section
+    function editSection(sectionId) {
+      // Select the section in GrapesJS editor
+      if (editor) {
+        const component = editor.DomComponents.getWrapper().find(`[data-section-id="${sectionId}"]`)[0];
+        if (component) {
+          editor.select(component);
+        }
+      }
+    }
+    
+    // Remove section
+    function removeSection(sectionId) {
+      if (confirm('Are you sure you want to remove this section?')) {
+        // Remove from template data
+        delete templateData.sections[sectionId];
+        templateData.order = templateData.order.filter(id => id !== sectionId);
+        
+        // Reload current sections
+        loadCurrentSections();
+        
+        // Update GrapesJS
+        if (editor) {
+          const component = editor.DomComponents.getWrapper().find(`[data-section-id="${sectionId}"]`)[0];
+          if (component) {
+            component.remove();
+          }
+        }
+      }
+    }
+
+    // Load template content
+    function loadTemplateContent(templateType) {
+      fetch(`/admin/template_customizer/load_content?template_type=${templateType}`)
+        .then(response => response.json())
+        .then(data => {
+          templateData = data.template_data;
+          themeSections = data.sections;
+          themeSettings = data.settings;
+          
+          // Update sections panel
+          updateSectionsPanel();
+          
+          // Update theme settings panel
+          updateThemeSettingsPanel();
+          
+          // Reload editor with new content
+          loadEditorContent(data.html);
+          
+          // Load current sections if on current tab
+          const currentTab = document.querySelector('.sidebar-left-tab.active');
+          if (currentTab && currentTab.textContent.trim() === 'Current') {
+            loadCurrentSections();
+          }
+        })
+        .catch(error => {
+          console.error('Error loading template content:', error);
+        });
+    }
+    
+    // Update sections panel
+    function updateSectionsPanel() {
+      const container = document.getElementById('sections-container');
+      container.innerHTML = '';
+      
+      // Add existing sections in order
+      if (templateData.order) {
+        templateData.order.forEach(sectionId => {
+          const section = templateData.sections[sectionId];
+          if (section) {
+            addSectionToPanel(sectionId, section);
+          }
+        });
+      }
+      
+      // Add available sections
+      Object.keys(themeSections).forEach(sectionType => {
+        if (!templateData.sections || !templateData.sections[sectionType]) {
+          addAvailableSectionToPanel(sectionType);
+        }
+      });
+    }
+    
+    // Add section to panel
+    function addSectionToPanel(sectionId, section) {
+      const container = document.getElementById('sections-container');
+      const sectionInfo = themeSections[section.type];
+      
+      const sectionElement = document.createElement('div');
+      sectionElement.className = 'section-item';
+      sectionElement.draggable = true;
+      sectionElement.innerHTML = `
+        <div class="section-title">${sectionInfo.schema.name || section.type}</div>
+        <div class="section-description">${sectionInfo.schema.settings ? sectionInfo.schema.settings.length : 0} settings</div>
+      `;
+      
+      sectionElement.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+          type: 'existing',
+          sectionId: sectionId,
+          section: section
+        }));
+        this.classList.add('dragging');
+      });
+      
+      sectionElement.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+      });
+      
+      container.appendChild(sectionElement);
+    }
+    
+    // Add available section to panel
+    function addAvailableSectionToPanel(sectionType) {
+      const container = document.getElementById('sections-container');
+      const sectionInfo = themeSections[sectionType];
+      
+      const sectionElement = document.createElement('div');
+      sectionElement.className = 'section-item';
+      sectionElement.draggable = true;
+      sectionElement.innerHTML = `
+        <div class="section-title">${sectionInfo.schema.name || sectionType}</div>
+        <div class="section-description">${sectionInfo.schema.settings ? sectionInfo.schema.settings.length : 0} settings</div>
+      `;
+      
+      sectionElement.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+          type: 'new',
+          sectionType: sectionType
+        }));
+        this.classList.add('dragging');
+      });
+      
+      sectionElement.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+      });
+      
+      container.appendChild(sectionElement);
+    }
+    
+    // Update theme settings panel
+    function updateThemeSettingsPanel() {
+      const container = document.getElementById('theme-settings-container');
+      container.innerHTML = '';
+      
+      themeSettings.forEach(group => {
+        const groupElement = document.createElement('div');
+        groupElement.className = 'setting-group';
+        groupElement.innerHTML = `
+          <div class="setting-group-title">${group.name}</div>
+        `;
+        
+        group.settings.forEach(setting => {
+          const fieldElement = document.createElement('div');
+          fieldElement.className = 'setting-field';
+          
+          let inputHtml = '';
+          switch (setting.type) {
+            case 'color':
+              inputHtml = `<input type="color" class="setting-input" value="${setting.default || '#000000'}" data-setting="${setting.id}">`;
+              break;
+            case 'range':
+              inputHtml = `<input type="range" class="setting-input" min="${setting.min}" max="${setting.max}" step="${setting.step}" value="${setting.default}" data-setting="${setting.id}">`;
+              break;
+            case 'select':
+              const options = setting.options.map(opt => `<option value="${opt}" ${opt === setting.default ? 'selected' : ''}>${opt}</option>`).join('');
+              inputHtml = `<select class="setting-input" data-setting="${setting.id}">${options}</select>`;
+              break;
+            default:
+              inputHtml = `<input type="text" class="setting-input" value="${setting.default || ''}" data-setting="${setting.id}">`;
+          }
+          
+          fieldElement.innerHTML = `
+            <label class="setting-label">${setting.label}</label>
+            ${inputHtml}
+          `;
+          
+          groupElement.appendChild(fieldElement);
+        });
+        
+        container.appendChild(groupElement);
+      });
+    }
+    
+    // Load editor content
+    function loadEditorContent(html) {
+      if (editor) {
+        editor.setComponents(html);
+      }
+    }
+    
+    // Save customization (preview)
+    function saveCustomization() {
+      const components = editor.getComponents();
+      const styles = editor.getStyle();
+      
+      const saveData = {
+        template_type: currentTemplateType,
+        template_data: templateData,
+        components: components,
+        styles: styles
+      };
+      
+      fetch('/admin/template_customizer/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(saveData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Preview saved successfully!');
+        } else {
+          alert('Error saving preview: ' + data.errors.join(', '));
+        }
+      })
+      .catch(error => {
+        console.error('Error saving preview:', error);
+        alert('Error saving preview');
+      });
+    }
+    
+    // Publish customization (live)
+    function publishCustomization() {
+      if (!confirm('Are you sure you want to publish this theme? This will make it live on your site.')) {
+        return;
+      }
+      
+      const components = editor.getComponents();
+      const styles = editor.getStyle();
+      
+      const publishData = {
+        template_type: currentTemplateType,
+        template_data: templateData,
+        components: components,
+        styles: styles
+      };
+      
+      fetch('/admin/template_customizer/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify(publishData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Theme published successfully!');
+        } else {
+          alert('Error publishing theme: ' + data.errors.join(', '));
+        }
+      })
+      .catch(error => {
+        console.error('Error publishing theme:', error);
+        alert('Error publishing theme');
+      });
+    }
+    
+    // Go back to admin
+    function goBackToAdmin() {
+      window.location.href = '/admin';
+    }
+    
+    // Preview template
+    function previewTemplate() {
+      window.open(`/?preview=true&template=${currentTemplateType}`, '_blank');
+    }
+    
+    // Initialize GrapesJS
+    window.addEventListener('DOMContentLoaded', function() {
+      // Check if GrapesJS is loaded
+      if (typeof grapesjs === 'undefined') {
+        console.error('GrapesJS not loaded');
+        document.getElementById('loading-overlay').innerHTML = '<div>Error: GrapesJS failed to load. Please refresh.</div>';
+        return;
+      }
+      
+      // Initialize editor
+      editor = grapesjs.init({
+        container: '#gjs',
+        height: '100%',
+        width: 'auto',
+        storageManager: false,
+        
+          // Admin Onyx theme
+          colorPrimary: '#6366f1',
+          colorSecondary: '#000000',
+          colorTertiary: '#111111',
+          colorQuaternary: '#1a1a1a',
+        
+        // Canvas
+        canvas: {
+          styles: [
+            'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css'
+          ],
+          scripts: []
+        },
+        
+        // Layer Manager  
+        layerManager: {
+          appendTo: '#layers-container'
+        },
+        
+        // Style Manager
+        styleManager: {
+          appendTo: '#styles-container',
+          sectors: [
+            {
+              name: 'General',
+              open: false,
+              buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom']
+            },
+            {
+              name: 'Dimension',
+              open: false,
+              buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding']
+            },
+            {
+              name: 'Typography',
+              open: false,
+              buildProps: ['font-family', 'font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration', 'text-shadow']
+            },
+            {
+              name: 'Decorations',
+              open: false,
+              buildProps: ['opacity', 'background-color', 'border-radius', 'border', 'box-shadow', 'background']
+            },
+            {
+              name: 'Extra',
+              open: false,
+              buildProps: ['transition', 'perspective', 'transform']
+            }
+          ]
+        },
+        
+        // Trait Manager
+        traitManager: {
+          appendTo: '#traits-container'
+        },
+        
+        // Block Manager
+        blockManager: {
+          appendTo: '#blocks-container',
+          blocks: [
+            {
+              id: 'section',
+              label: '<b>Section</b>',
+              attributes: { class: 'gjs-block-section' },
+              content: `<section>
+                <h1>Put title here</h1>
+                <p>Put your text here</p>
+              </section>`
+            },
+            {
+              id: 'text',
+              label: 'Text',
+              content: '<div data-gjs-type="text">Insert your text here</div>',
+            },
+            {
+              id: 'image',
+              label: 'Image',
+              select: true,
+              content: { type: 'image' },
+              activate: true,
+            }
+          ]
+        },
+        
+        // Device Manager
+        deviceManager: {
+          devices: [
+            {
+              name: 'Desktop',
+              width: '',
+            },
+            {
+              name: 'Tablet',
+              width: '768px',
+              widthMedia: '992px',
+            },
+            {
+              name: 'Mobile',
+              width: '320px',
+              widthMedia: '768px',
+            }
+          ]
+        }
+      });
+      
+      // Load initial content
+      loadTemplateContent(currentTemplateType);
+      
+      // Hide loading overlay
+      document.getElementById('loading-overlay').style.display = 'none';
+    });
+  </script>
+</body>
+</html>

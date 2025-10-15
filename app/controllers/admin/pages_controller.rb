@@ -3,7 +3,7 @@ class Admin::PagesController < Admin::BaseController
 
   # GET /admin/pages or /admin/pages.json
   def index
-    @pages = Page.not_trashed
+    @pages = Page.kept
     
     # Filter by status if specified
     if params[:status].present? && Page.statuses.keys.include?(params[:status])
@@ -12,13 +12,76 @@ class Admin::PagesController < Admin::BaseController
     
     # Show trashed if explicitly requested
     if params[:show_trash] == 'true'
-      @pages = Page.trashed
+      @pages = Page.trashed.includes(:user).order(deleted_at: :desc)
+    else
+      @pages = @pages.includes(:user).order(created_at: :desc)
     end
     
-    @pages = @pages.includes(:user).order(created_at: :desc)
-    
     respond_to do |format|
-      format.html { @pages_data = pages_json }
+      format.html do
+        @pages_data = pages_json
+        @stats = {
+          total: Page.kept.count,
+          published: Page.published.count,
+          draft: Page.where(status: 'draft').count,
+          trash: Page.trashed.count
+        }
+        @bulk_actions = [
+          { value: 'trash', label: 'Move to Trash' },
+          { value: 'untrash', label: 'Restore' },
+          { value: 'delete', label: 'Delete Permanently' }
+        ]
+        @status_options = [
+          { value: 'published', label: 'Published' },
+          { value: 'draft', label: 'Draft' },
+          { value: 'pending', label: 'Pending' }
+        ]
+        @columns = [
+          {
+            title: "",
+            formatter: "rowSelection",
+            titleFormatter: "rowSelection",
+            width: 40,
+            headerSort: false
+          },
+          {
+            title: "Title",
+            field: "title",
+            width: 300,
+            formatter: "function(cell, formatterParams) { const data = cell.getRow().getData(); return '<a href=\"' + data.edit_url + '\" class=\"text-indigo-600 hover:text-indigo-900 font-medium\">' + data.title + '</a>'; }"
+          },
+          {
+            title: "Author",
+            field: "author_name",
+            width: 150
+          },
+          {
+            title: "Status",
+            field: "status",
+            width: 100,
+            formatter: "function(cell, formatterParams) { const value = cell.getValue(); const statusMap = { 'published': { class: 'bg-green-100 text-green-800', label: 'Published' }, 'draft': { class: 'bg-yellow-100 text-yellow-800', label: 'Draft' }, 'pending': { class: 'bg-blue-100 text-blue-800', label: 'Pending' }, 'trash': { class: 'bg-red-100 text-red-800', label: 'Trash' } }; const status = statusMap[value] || { class: 'bg-gray-100 text-gray-800', label: value }; return '<span class=\"px-2 py-1 text-xs font-medium rounded-full ' + status.class + '\">' + status.label + '</span>'; }"
+          },
+          {
+            title: "Template",
+            field: "template",
+            width: 120,
+            formatter: "function(cell, formatterParams) { const template = cell.getValue(); return template || '<span class=\"text-gray-400\">Default</span>'; }"
+          },
+          {
+            title: "Date",
+            field: "created_at",
+            width: 150,
+            formatter: "function(cell, formatterParams) { const date = new Date(cell.getValue()); return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }"
+          },
+          {
+            title: "Actions",
+            field: "actions",
+            width: 120,
+            headerSort: false,
+            formatter: "function(cell, formatterParams) { const data = cell.getRow().getData(); let actions = ''; if (data.edit_url) { actions += '<a href=\"' + data.edit_url + '\" class=\"text-indigo-600 hover:text-indigo-900 mr-2\" title=\"Edit\">✏️</a>'; } if (data.show_url) { actions += '<a href=\"' + data.show_url + '\" class=\"text-blue-600 hover:text-blue-900 mr-2\" title=\"View\">👁️</a>'; } if (data.delete_url) { actions += '<a href=\"' + data.delete_url + '\" class=\"text-red-600 hover:text-red-900\" title=\"Delete\" data-confirm=\"Are you sure?\">🗑️</a>'; } return actions; }"
+          }
+        ]
+      end
       format.json { render json: pages_json }
     end
   end
@@ -66,10 +129,16 @@ class Admin::PagesController < Admin::BaseController
 
   # DELETE /admin/pages/1 or /admin/pages/1.json
   def destroy
-    @page.destroy!
+    if @page.trashed?
+      @page.destroy_permanently! # Permanent delete
+      notice = "Page was permanently deleted."
+    else
+      @page.trash!(current_user) # Soft delete
+      notice = "Page was moved to trash."
+    end
 
     respond_to do |format|
-      format.html { redirect_to admin_pages_path, notice: "Page was successfully deleted." }
+      format.html { redirect_to admin_pages_path, notice: notice, status: :see_other }
       format.json { head :no_content }
     end
   end

@@ -428,6 +428,13 @@ class Admin::SettingsController < Admin::BaseController
     SiteSetting.set('command_palette_shortcut', shortcut)
     redirect_to admin_shortcuts_settings_path, notice: 'Shortcuts updated successfully!'
   end
+  
+  # JSON endpoint for JavaScript to get shortcut settings
+  def shortcuts_json
+    render json: {
+      command_palette_shortcut: SiteSetting.get('command_palette_shortcut', 'cmd+k')
+    }
+  end
 
   def ensure_admin
     redirect_to admin_root_path, alert: 'Access denied.' unless current_user&.administrator?

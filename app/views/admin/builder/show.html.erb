@@ -1,0 +1,75 @@
+<!-- This view is rendered within the builder layout -->
+
+<!-- Version History Modal -->
+<div id="versionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Version History</h3>
+      <div data-builder-target="versionList" class="space-y-2 max-h-96 overflow-y-auto">
+        <!-- Versions will be populated by JavaScript -->
+      </div>
+      <div class="mt-4 flex justify-end space-x-2">
+        <button onclick="closeVersionModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rollback Modal -->
+<div id="rollbackModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Rollback to Snapshot</h3>
+      <div data-builder-target="snapshotList" class="space-y-2 max-h-96 overflow-y-auto">
+        <!-- Snapshots will be populated by JavaScript -->
+      </div>
+      <div class="mt-4 flex justify-end space-x-2">
+        <button onclick="closeRollbackModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
+        <button data-action="click->builder#confirmRollback" class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">Rollback</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Section Modal -->
+<div id="addSectionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Add Section</h3>
+      <div data-builder-target="availableSections" class="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+        <!-- Available sections will be populated by JavaScript -->
+      </div>
+      <div class="mt-4 flex justify-end space-x-2">
+        <button onclick="closeAddSectionModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal functions
+  function closeVersionModal() {
+    document.getElementById('versionModal').classList.add('hidden');
+  }
+  
+  function closeRollbackModal() {
+    document.getElementById('rollbackModal').classList.add('hidden');
+  }
+  
+  function closeAddSectionModal() {
+    document.getElementById('addSectionModal').classList.add('hidden');
+  }
+  
+  // Show modals
+  function showVersionModal() {
+    document.getElementById('versionModal').classList.remove('hidden');
+  }
+  
+  function showRollbackModal() {
+    document.getElementById('rollbackModal').classList.remove('hidden');
+  }
+  
+  function showAddSectionModal() {
+    document.getElementById('addSectionModal').classList.remove('hidden');
+  }
+</script>

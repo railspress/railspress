@@ -1,0 +1,165 @@
+<div class="admin-container">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-white">Trash Settings</h1>
+        <p class="text-gray-400 mt-2">Configure automatic trash cleanup and management</p>
+      </div>
+      <div class="flex space-x-3">
+        <%= link_to admin_trash_index_path, class: "inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition" do %>
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          View Trash
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Settings Form -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Cleanup Settings</h2>
+      
+      <%= form_with model: [:admin, @trash_setting], local: true, class: "space-y-6" do |form| %>
+        <div>
+          <div class="flex items-center">
+            <%= form.check_box :auto_cleanup_enabled, class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 bg-gray-700 rounded" %>
+            <label for="trash_setting_auto_cleanup_enabled" class="ml-3 text-sm font-medium text-gray-300">
+              Enable automatic cleanup
+            </label>
+          </div>
+          <p class="mt-2 text-sm text-gray-400">
+            Automatically delete items from trash after the specified number of days
+          </p>
+        </div>
+        
+        <div>
+          <%= form.label :cleanup_after_days, "Cleanup after (days)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <%= form.number_field :cleanup_after_days, 
+                min: 1, max: 365, 
+                class: "w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" %>
+          <p class="mt-2 text-sm text-gray-400">
+            Items will be permanently deleted after this many days in trash (1-365 days)
+          </p>
+        </div>
+        
+        <div class="flex space-x-3">
+          <%= form.submit "Save Settings", class: "inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+          <%= link_to "Cancel", admin_trash_index_path, class: "inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition" %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Current Status -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Current Status</h2>
+      
+      <div class="space-y-4">
+        <div class="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+          <div>
+            <p class="text-sm font-medium text-gray-300">Automatic Cleanup</p>
+            <p class="text-xs text-gray-400">
+              <%= @trash_setting.auto_cleanup_enabled? ? "Enabled" : "Disabled" %>
+            </p>
+          </div>
+          <div class="flex items-center">
+            <% if @trash_setting.auto_cleanup_enabled? %>
+              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            <% else %>
+              <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+          <div>
+            <p class="text-sm font-medium text-gray-300">Cleanup Threshold</p>
+            <p class="text-xs text-gray-400">
+              <%= pluralize(@trash_setting.cleanup_after_days, 'day') %>
+            </p>
+          </div>
+          <div class="text-sm text-gray-400">
+            <%= @trash_setting.cleanup_threshold.strftime("%B %d, %Y") %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Actions -->
+  <div class="mt-8 bg-gray-800 rounded-lg p-6">
+    <h2 class="text-xl font-semibold text-white mb-6">Manual Actions</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-4 bg-gray-700 rounded-lg">
+        <h3 class="text-lg font-medium text-white mb-2">Test Cleanup</h3>
+        <p class="text-sm text-gray-400 mb-4">
+          See how many items would be deleted without actually deleting them
+        </p>
+        <%= link_to test_cleanup_admin_trash_settings_path, 
+            class: "inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition" do %>
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Test Cleanup
+        <% end %>
+      </div>
+      
+      <div class="p-4 bg-gray-700 rounded-lg">
+        <h3 class="text-lg font-medium text-white mb-2">Run Cleanup Now</h3>
+        <p class="text-sm text-gray-400 mb-4">
+          Immediately delete items that are past the cleanup threshold
+        </p>
+        <%= link_to run_cleanup_admin_trash_settings_path, 
+            method: :post,
+            class: "inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition",
+            data: { confirm: "Are you sure? This will permanently delete items past the cleanup threshold." } do %>
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Run Cleanup
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Results -->
+  <% if defined?(@test_results) %>
+    <div class="mt-8 bg-blue-900 bg-opacity-20 border border-blue-500 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-blue-400 mb-4">Test Results</h3>
+      <p class="text-sm text-gray-300 mb-4">
+        Items that would be permanently deleted (deleted before <%= @trash_setting.cleanup_threshold.strftime("%B %d, %Y") %>):
+      </p>
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="text-center">
+          <p class="text-2xl font-bold text-blue-400"><%= @test_results[:posts] %></p>
+          <p class="text-sm text-gray-400">Posts</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-blue-400"><%= @test_results[:pages] %></p>
+          <p class="text-sm text-gray-400">Pages</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-blue-400"><%= @test_results[:media] %></p>
+          <p class="text-sm text-gray-400">Media</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-blue-400"><%= @test_results[:comments] %></p>
+          <p class="text-sm text-gray-400">Comments</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-red-400"><%= @test_results[:total] %></p>
+          <p class="text-sm text-gray-400">Total</p>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+

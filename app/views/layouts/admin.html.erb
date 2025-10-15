@@ -6,17 +6,39 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     
+    <% if current_user&.api_key.present? %>
+      <meta name="api-key" content="<%= current_user.api_key %>">
+    <% end %>
+    
     <% if admin_favicon_url.present? %>
       <link rel="icon" type="image/x-icon" href="<%= admin_favicon_url %>">
     <% end %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "admin_toggle_switches", "data-turbo-track": "reload" %>
+    <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/css/tabulator.min.css" rel="stylesheet">
     <%= stylesheet_link_tag "tabulator_custom", "data-turbo-track": "reload" %>
     
     <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Luxon for Tabulator datetime formatter -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
     <style>
+      /* CSS Variables for Tabulator Theme */
+      :root {
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #1a1a1a;
+        --bg-tertiary: #2a2a2a;
+        --text-primary: #ffffff;
+        --text-secondary: #e5e5e5;
+        --text-muted: #9ca3af;
+        --border-color: #2a2a2a;
+        --color-primary: #6366f1;
+      }
+
       /* SweetAlert2 Dark Theme Customization */
       .swal2-popup {
         background: #1a1a1a !important;
@@ -408,6 +430,13 @@
           </svg>
           <span class="sidebar-text">Taxonomies</span>
         <% end %>
+        
+        <%= link_to admin_field_groups_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          <span class="sidebar-text">Custom Fields</span>
+        <% end %>
           </div>
         </div>
 
@@ -426,9 +455,16 @@
           </button>
           <div class="sidebar-section-content pl-3 space-y-1" id="appearance-section">
         
-        <%= link_to admin_template_customizer_path, data: { turbo: false }, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+        <%= link_to admin_themes_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343"/>
+          </svg>
+          <span class="sidebar-text">Themes</span>
+        <% end %>
+
+        <%= link_to admin_builder_index_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a1 1 0 01-1-1V9a1 1 0 011-1h1a2 2 0 100-4H4a1 1 0 01-1-1V4a1 1 0 011-1h3a1 1 0 011 1v1z"/>
           </svg>
           <span class="sidebar-text">Customize</span>
         <% end %>
@@ -437,7 +473,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
           </svg>
-          <span class="sidebar-text">Theme Editor</span>
+          <span class="sidebar-text">Theme Files Editor</span>
         <% end %>
         
         <%= link_to admin_page_templates_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
@@ -447,12 +483,9 @@
           <span class="sidebar-text">Templates</span>
         <% end %>
         
-        <%= link_to admin_themes_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343"/>
-          </svg>
-          <span class="sidebar-text">Themes</span>
-        <% end %>
+        
+        
+        
         
         <%= link_to admin_fonts_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -535,6 +568,20 @@
               </svg>
               <span class="sidebar-text">Agents</span>
             <% end %>
+            
+            <%= link_to usage_admin_ai_agents_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              <span class="sidebar-text">Usage</span>
+            <% end %>
+            
+            <%= link_to admin_ai_demo_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+              <span class="sidebar-text">Text Generator</span>
+            <% end %>
           </div>
         </div>
         
@@ -562,13 +609,6 @@
         <% end %>
         
         
-        <%= link_to admin_field_groups_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-          </svg>
-          <span class="sidebar-text">Custom Fields</span>
-        <% end %>
-        
         <%= link_to admin_integrations_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
@@ -590,13 +630,13 @@
           <span class="sidebar-text">API Tokens</span>
         <% end %>
         
-        <%= link_to admin_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+        <%= link_to admin_trash_index_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
           </svg>
-          <span class="sidebar-text">Settings</span>
+          <span class="sidebar-text">Trash</span>
         <% end %>
+        
           </div>
         </div>
 
@@ -657,6 +697,136 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
           <span class="sidebar-text">Shortcuts</span>
+        <% end %>
+
+        <%= link_to admin_redirects_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+          <span class="sidebar-text">Redirects</span>
+        <% end %>
+          </div>
+        </div>
+        
+        <!-- Settings Section -->
+        <div class="sidebar-section" data-section="settings">
+          <button onclick="toggleSection('settings')" class="sidebar-section-header w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white transition">
+            <div class="flex items-center space-x-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="sidebar-text text-sm font-semibold text-gray-400">Settings</span>
+            </div>
+            <svg class="w-4 h-4 section-arrow transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="sidebar-section-content pl-3 space-y-1" id="settings-section">
+        
+        <%= link_to admin_general_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_general_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+          </svg>
+          <span class="sidebar-text">General</span>
+        <% end %>
+        
+        <%= link_to admin_writing_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_writing_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          <span class="sidebar-text">Writing</span>
+        <% end %>
+        
+        <%= link_to admin_reading_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_reading_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+          <span class="sidebar-text">Reading</span>
+        <% end %>
+        
+        <%= link_to admin_media_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_media_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Media</span>
+        <% end %>
+        
+        <%= link_to admin_permalinks_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_permalinks_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+          <span class="sidebar-text">Permalinks</span>
+        <% end %>
+        
+        <%= link_to admin_pixels_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_pixels_path) || controller_name == 'pixels' ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span class="sidebar-text">Pixels</span>
+        <% end %>
+        
+        <%= link_to admin_privacy_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_privacy_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span class="sidebar-text">Privacy</span>
+        <% end %>
+        
+        <%= link_to admin_email_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_email_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Email</span>
+        <% end %>
+        
+        <%= link_to admin_post_by_email_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_post_by_email_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/>
+          </svg>
+          <span class="sidebar-text">Post by Email</span>
+        <% end %>
+        
+        <%= link_to admin_settings_white_label_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_settings_white_label_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+          <span class="sidebar-text">White Label</span>
+        <% end %>
+        
+        <%= link_to admin_settings_appearance_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_settings_appearance_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+          </svg>
+          <span class="sidebar-text">Admin Style</span>
+        <% end %>
+        
+        <%= link_to admin_shortcuts_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_shortcuts_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Shortcuts</span>
+        <% end %>
+        
+        <%= link_to admin_settings_upload_security_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_settings_upload_security_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span class="sidebar-text">Upload Security</span>
+        <% end %>
+        
+        <%= link_to admin_storage_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_storage_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+          <span class="sidebar-text">Storage</span>
+        <% end %>
+        
+        <%= link_to admin_trash_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_trash_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          <span class="sidebar-text">Trash</span>
         <% end %>
           </div>
         </div>
@@ -764,15 +934,6 @@
             </svg>
           </button>
           
-          <!-- Command Palette Trigger -->
-          <button onclick="document.querySelector('[data-controller=command-palette]').open()" 
-                  class="hidden md:flex items-center gap-2 px-4 py-2 bg-[#0a0a0a] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-gray-300 hover:text-white transition group">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <span class="text-sm">Search</span>
-            <kbd class="px-2 py-0.5 bg-[#2a2a2a] text-gray-500 text-xs rounded border border-[#3a3a3a] font-mono group-hover:text-gray-400">⌘K</kbd>
-          </button>
           
           <!-- User Dropdown -->
           <div class="relative" id="user-dropdown">
@@ -858,8 +1019,6 @@
       </div>
     </main>
     
-    <!-- Command Palette (CMD+I) -->
-    <%= render 'admin/shared/command_palette' %>
     
     <!-- SweetAlert2 Helper Functions -->
     <script>
@@ -1043,7 +1202,7 @@
         });
         
         // Then, collapse ALL sections first
-        const sections = ['content', 'outreach', 'organize', 'appearance', 'plugins', 'ai', 'system', 'tools', 'developer'];
+        const sections = ['content', 'outreach', 'organize', 'appearance', 'plugins', 'ai', 'system', 'settings', 'tools', 'developer'];
         sections.forEach(sectionName => {
           const content = document.getElementById(`${sectionName}-section`);
           const section = document.querySelector(`[data-section="${sectionName}"]`);
@@ -1060,27 +1219,35 @@
         let targetSection = null;
         
         if (currentPath.includes('/admin/posts') || currentPath.includes('/admin/pages') || 
-            currentPath.includes('/admin/media') || currentPath.includes('/admin/comments')) {
+            currentPath.includes('/admin/media') || currentPath.includes('/admin/comments') ||
+            currentPath.includes('/admin/trash')) {
           targetSection = 'content';
         } else if (currentPath.includes('/admin/analytics') || currentPath.includes('/admin/subscribers')) {
           targetSection = 'outreach';
         } else if (currentPath.includes('/admin/categories') || currentPath.includes('/admin/tags') || 
-                   currentPath.includes('/admin/taxonomies')) {
+                   currentPath.includes('/admin/taxonomies') || currentPath.includes('/admin/field_groups')) {
           targetSection = 'organize';
         } else if (currentPath.includes('/admin/template_customizer') || currentPath.includes('/admin/theme_editor') || 
-                   currentPath.includes('/admin/themes') || currentPath.includes('/admin/page_templates') ||
-                   currentPath.includes('/admin/fonts') || currentPath.includes('/admin/menus') || 
-                   currentPath.includes('/admin/widgets')) {
+                   currentPath.includes('/admin/themes') || currentPath.includes('/admin/builder') ||
+                   currentPath.includes('/admin/page_templates') || currentPath.includes('/admin/fonts') || 
+                   currentPath.includes('/admin/menus') || currentPath.includes('/admin/widgets')) {
           targetSection = 'appearance';
         } else if (currentPath.includes('/admin/plugins')) {
           targetSection = 'plugins';
+        } else if (currentPath.includes('/admin/ai_agents') || currentPath.includes('/admin/ai_providers')) {
+          targetSection = 'ai';
+        } else if (currentPath.includes('/admin/settings/') || 
+                   currentPath.includes('/admin/pixels') ||
+                   currentPath.includes('/admin/storage_providers') ||
+                   currentPath.includes('/admin/trash_settings')) {
+          targetSection = 'settings';
         } else if (currentPath.includes('/admin/users') || 
-                   currentPath.includes('/admin/field_groups') || currentPath.includes('/admin/integrations') || 
-                   currentPath.includes('/admin/settings')) {
+                   currentPath.includes('/admin/integrations') || 
+                   currentPath.includes('/admin/system/')) {
           targetSection = 'system';
         } else if (currentPath.includes('/admin/tools') || currentPath.includes('/admin/import') || 
                    currentPath.includes('/admin/export') || currentPath.includes('/admin/site_health') ||
-                   currentPath.includes('/admin/shortcuts')) {
+                   currentPath.includes('/admin/shortcuts') || currentPath.includes('/admin/redirects')) {
           targetSection = 'tools';
         } else if (currentPath.includes('/admin/logs') || currentPath.includes('/admin/shortcodes') || 
                    currentPath.includes('/api/v1/docs') || currentPath.includes('/graphiql') ||
@@ -1260,71 +1427,9 @@
       }
     </style>
     
-    <!-- Command Palette Dialog -->
-    <div data-controller="command-palette" data-shortcut="<%= SiteSetting.get('command_palette_shortcut', 'cmd+k') %>">
-      <div data-command-palette-target="dialog" class="fixed inset-0 z-50 hidden">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-action="click->command-palette#close"></div>
-        
-        <!-- Dialog -->
-        <div class="relative flex items-start justify-center min-h-screen pt-[20vh] px-4">
-          <div class="w-full max-w-2xl bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-2xl">
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-[#2a2a2a]">
-              <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-white">Global Command Palette</h3>
-                <button type="button" 
-                        data-action="click->command-palette#close"
-                        class="text-gray-400 hover:text-white transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
-              </div>
-              
-              <!-- Search Input -->
-              <div class="mt-4">
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                  </div>
-                  <input type="text" 
-                         data-command-palette-target="input"
-                         data-action="keydown->command-palette#handleKeyboard input->command-palette#search"
-                         placeholder="Type a command or search..."
-                         class="w-full pl-10 pr-4 py-3 bg-[#111111] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                </div>
-              </div>
-            </div>
-            
-            <!-- Results -->
-            <div class="max-h-96 overflow-y-auto">
-              <div data-command-palette-target="results" class="py-2">
-                <!-- Results will be populated here -->
-              </div>
-              
-              <div data-command-palette-target="empty" class="hidden">
-                <!-- Empty state will be shown here -->
-              </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="px-6 py-3 border-t border-[#2a2a2a] text-xs text-gray-400">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                  <span class="flex items-center gap-1">↑↓ Navigate</span>
-                  <span class="flex items-center gap-1">↩ Select</span>
-                  <span class="flex items-center gap-1">esc Close</span>
-                </div>
-                <span>Global Command Palette</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
+    <!-- Global Admin Controllers -->
+    <div data-controller="tabulator-manager"></div>
   </body>
 </html>
 

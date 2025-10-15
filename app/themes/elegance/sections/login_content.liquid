@@ -1,0 +1,1122 @@
+<section class="login-content section" data-section-type="login_content" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="login-content-wrapper">
+      <div class="login-form-container" style="max-width: {{ section.settings.form_width | default: 400 }}px; margin: 0 auto;">
+        
+        {% if section.settings.show_logo and section.settings.logo_url %}
+          <div class="login-logo">
+            <img src="{{ section.settings.logo_url }}" alt="{{ section.settings.company_name | default: 'Logo' }}" class="logo-image">
+          </div>
+        {% endif %}
+
+        <div class="login-header" style="text-align: {{ section.settings.text_alignment | default: 'center' }};">
+          {% if section.settings.login_title %}
+            <h1 class="login-title">{{ section.settings.login_title }}</h1>
+          {% endif %}
+          
+          {% if section.settings.login_subtitle %}
+            <p class="login-subtitle">{{ section.settings.login_subtitle }}</p>
+          {% endif %}
+        </div>
+
+        <div class="login-form-wrapper">
+          <form class="login-form" action="/users/sign_in" method="post">
+            {% if section.settings.show_email_field %}
+              <div class="form-group">
+                <label for="user_email" class="form-label">{{ section.settings.email_label | default: 'Email' }}</label>
+                <input type="email" id="user_email" name="user[email]" class="form-input" required>
+              </div>
+            {% endif %}
+
+            {% if section.settings.show_password_field %}
+              <div class="form-group">
+                <label for="user_password" class="form-label">{{ section.settings.password_label | default: 'Password' }}</label>
+                <input type="password" id="user_password" name="user[password]" class="form-input" required>
+              </div>
+            {% endif %}
+
+            {% if section.settings.show_remember_me %}
+              <div class="form-group remember-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="user[remember_me]" class="checkbox-input">
+                  <span class="checkbox-text">{{ section.settings.remember_me_text | default: 'Remember me' }}</span>
+                </label>
+              </div>
+            {% endif %}
+
+            <div class="form-group">
+              <button type="submit" class="login-button {{ section.settings.button_style }}">
+                {{ section.settings.login_button_text | default: 'Sign In' }}
+                {% if section.settings.login_button_icon %}
+                  <span class="btn-icon">{{ section.settings.login_button_icon }}</span>
+                {% endif %}
+              </button>
+            </div>
+
+            {% if section.settings.show_forgot_password %}
+              <div class="form-group forgot-password">
+                <a href="/users/password/new" class="forgot-link">
+                  {{ section.settings.forgot_password_text | default: 'Forgot your password?' }}
+                </a>
+              </div>
+            {% endif %}
+          </form>
+
+          {% if section.settings.show_social_login %}
+            <div class="social-login">
+              {% if section.settings.show_divider %}
+                <div class="social-divider">
+                  <span class="divider-text">{{ section.settings.divider_text | default: 'or' }}</span>
+                </div>
+              {% endif %}
+
+              <div class="social-buttons">
+                {% if section.settings.google_client_id %}
+                  <a href="/users/auth/google_oauth2" class="social-button google">
+                    <span class="social-icon">🔍</span>
+                    {{ section.settings.google_button_text | default: 'Continue with Google' }}
+                  </a>
+                {% endif %}
+
+                {% if section.settings.facebook_app_id %}
+                  <a href="/users/auth/facebook" class="social-button facebook">
+                    <span class="social-icon">📘</span>
+                    {{ section.settings.facebook_button_text | default: 'Continue with Facebook' }}
+                  </a>
+                {% endif %}
+
+                {% if section.settings.twitter_api_key %}
+                  <a href="/users/auth/twitter" class="social-button twitter">
+                    <span class="social-icon">🐦</span>
+                    {{ section.settings.twitter_button_text | default: 'Continue with Twitter' }}
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
+          {% if section.settings.show_signup_link %}
+            <div class="signup-link">
+              <p class="signup-text">
+                {{ section.settings.signup_text | default: "Don't have an account?" }}
+                <a href="/users/sign_up" class="signup-link-text">
+                  {{ section.settings.signup_link_text | default: 'Sign up' }}
+                </a>
+              </p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .login-content {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+    padding: {{ section.settings.section_padding_vertical | default: 4 }}rem 0;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .logo-image {
+    max-width: {{ section.settings.logo_width | default: 120 }}px;
+    max-height: {{ section.settings.logo_height | default: 60 }}px;
+    object-fit: contain;
+  }
+  
+  .login-title {
+    color: {{ section.settings.title_color | default: 'var(--h1-color)' }};
+    font-size: {{ section.settings.title_size | default: 32 }}px;
+    font-weight: {{ section.settings.title_weight | default: 700 }};
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+  
+  .login-subtitle {
+    color: {{ section.settings.subtitle_color | default: 'var(--p-color)' }};
+    font-size: {{ section.settings.subtitle_size | default: 16 }}px;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+  }
+  
+  .login-form-wrapper {
+    background-color: {{ section.settings.form_bg_color | default: 'white' }};
+    padding: {{ section.settings.form_padding | default: 2 }}rem;
+    border-radius: {{ section.settings.form_border_radius | default: 12 }}px;
+    {% if section.settings.form_shadow %}
+      box-shadow: var(--shadow-lg);
+    {% endif %}
+    {% if section.settings.form_border %}
+      border: 1px solid {{ section.settings.form_border_color | default: 'var(--color-border)' }};
+    {% endif %}
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-label {
+    display: block;
+    color: {{ section.settings.label_color | default: 'var(--color-text)' }};
+    font-size: {{ section.settings.label_size | default: 14 }}px;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-input {
+    width: 100%;
+    padding: {{ section.settings.input_padding_vertical | default: 12 }}px {{ section.settings.input_padding_horizontal | default: 16 }}px;
+    border: {{ section.settings.input_border_width | default: 1 }}px solid {{ section.settings.input_border_color | default: 'var(--color-border)' }};
+    border-radius: {{ section.settings.input_border_radius | default: 6 }}px;
+    font-size: {{ section.settings.input_size | default: 16 }}px;
+    color: {{ section.settings.input_text_color | default: 'var(--color-text)' }};
+    background-color: {{ section.settings.input_bg_color | default: 'white' }};
+    transition: all 0.2s ease;
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: {{ section.settings.input_focus_border_color | default: 'var(--color-primary)' }};
+    box-shadow: 0 0 0 3px {{ section.settings.input_focus_shadow_color | default: 'rgba(37, 99, 235, 0.1)' }};
+  }
+  
+  .form-input::placeholder {
+    color: {{ section.settings.input_placeholder_color | default: 'var(--text-light-color)' }};
+  }
+  
+  .remember-group {
+    margin-bottom: 1rem;
+  }
+  
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: {{ section.settings.checkbox_text_size | default: 14 }}px;
+    color: {{ section.settings.checkbox_text_color | default: 'var(--color-text)' }};
+  }
+  
+  .checkbox-input {
+    width: 16px;
+    height: 16px;
+    accent-color: {{ section.settings.checkbox_accent_color | default: 'var(--color-primary)' }};
+  }
+  
+  .checkbox-text {
+    user-select: none;
+  }
+  
+  .login-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: {{ section.settings.button_padding_vertical | default: 14 }}px {{ section.settings.button_padding_horizontal | default: 24 }}px;
+    border-radius: {{ section.settings.button_border_radius | default: 8 }}px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    font-size: {{ section.settings.button_size | default: 16 }}px;
+    cursor: pointer;
+  }
+  
+  .login-button.primary {
+    background-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.button_text_color | default: 'white' }};
+    border-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .login-button.primary:hover {
+    background-color: {{ section.settings.button_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    border-color: {{ section.settings.button_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .login-button.secondary {
+    background-color: transparent;
+    color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+    border-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .login-button.secondary:hover {
+    background-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .btn-icon {
+    font-size: 1rem;
+  }
+  
+  .forgot-password {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .forgot-link {
+    color: {{ section.settings.forgot_link_color | default: 'var(--color-primary)' }};
+    text-decoration: none;
+    font-size: {{ section.settings.forgot_link_size | default: 14 }}px;
+    transition: color 0.2s ease;
+  }
+  
+  .forgot-link:hover {
+    color: {{ section.settings.forgot_link_hover_color | default: 'var(--color-primary-dark)' }};
+    text-decoration: underline;
+  }
+  
+  .social-divider {
+    text-align: center;
+    margin: 2rem 0;
+    position: relative;
+  }
+  
+  .divider-text {
+    background-color: {{ section.settings.form_bg_color | default: 'white' }};
+    color: {{ section.settings.divider_text_color | default: 'var(--text-light-color)' }};
+    padding: 0 1rem;
+    font-size: {{ section.settings.divider_text_size | default: 14 }}px;
+    position: relative;
+  }
+  
+  .social-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: {{ section.settings.divider_line_color | default: 'var(--color-border)' }};
+    z-index: -1;
+  }
+  
+  .social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .social-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: {{ section.settings.social_button_padding_vertical | default: 12 }}px {{ section.settings.social_button_padding_horizontal | default: 16 }}px;
+    border-radius: {{ section.settings.social_button_border_radius | default: 6 }}px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid {{ section.settings.social_button_border_color | default: 'var(--color-border)' }};
+    font-size: {{ section.settings.social_button_size | default: 14 }}px;
+  }
+  
+  .social-button.google {
+    background-color: white;
+    color: {{ section.settings.google_text_color | default: '#333' }};
+    border-color: {{ section.settings.google_border_color | default: '#dadce0' }};
+  }
+  
+  .social-button.google:hover {
+    background-color: {{ section.settings.google_hover_bg_color | default: '#f8f9fa' }};
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .social-button.facebook {
+    background-color: {{ section.settings.facebook_bg_color | default: '#1877f2' }};
+    color: white;
+    border-color: {{ section.settings.facebook_bg_color | default: '#1877f2' }};
+  }
+  
+  .social-button.facebook:hover {
+    background-color: {{ section.settings.facebook_hover_bg_color | default: '#166fe5' }};
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .social-button.twitter {
+    background-color: {{ section.settings.twitter_bg_color | default: '#1da1f2' }};
+    color: white;
+    border-color: {{ section.settings.twitter_bg_color | default: '#1da1f2' }};
+  }
+  
+  .social-button.twitter:hover {
+    background-color: {{ section.settings.twitter_hover_bg_color | default: '#0d8bd9' }};
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .social-icon {
+    font-size: 1.25rem;
+  }
+  
+  .signup-link {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid {{ section.settings.signup_divider_color | default: 'var(--color-border)' }};
+  }
+  
+  .signup-text {
+    color: {{ section.settings.signup_text_color | default: 'var(--p-color)' }};
+    font-size: {{ section.settings.signup_text_size | default: 14 }}px;
+    margin: 0;
+  }
+  
+  .signup-link-text {
+    color: {{ section.settings.signup_link_color | default: 'var(--color-primary)' }};
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+  
+  .signup-link-text:hover {
+    color: {{ section.settings.signup_link_hover_color | default: 'var(--color-primary-dark)' }};
+    text-decoration: underline;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .login-content {
+      padding: 2rem 0;
+    }
+    
+    .login-title {
+      font-size: 28px;
+    }
+    
+    .login-subtitle {
+      font-size: 15px;
+    }
+    
+    .login-form-wrapper {
+      padding: 1.5rem;
+    }
+    
+    .form-input {
+      font-size: 16px; /* Prevent zoom on iOS */
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Login Content",
+  "tag": "section",
+  "class": "section-login-content",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_logo",
+      "label": "Show Logo",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_url",
+      "label": "Logo Image"
+    },
+    {
+      "type": "text",
+      "id": "company_name",
+      "label": "Company Name",
+      "default": "Your Company"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo Width",
+      "min": 80,
+      "max": 200,
+      "step": 20,
+      "default": 120,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo Height",
+      "min": 40,
+      "max": 100,
+      "step": 10,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "login_title",
+      "label": "Login Title",
+      "default": "Sign In"
+    },
+    {
+      "type": "text",
+      "id": "login_subtitle",
+      "label": "Login Subtitle",
+      "default": "Welcome back! Please sign in to your account."
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Form Fields"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_email_field",
+      "label": "Show Email Field",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Email Label",
+      "default": "Email"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_password_field",
+      "label": "Show Password Field",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "password_label",
+      "label": "Password Label",
+      "default": "Password"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_remember_me",
+      "label": "Show Remember Me",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "remember_me_text",
+      "label": "Remember Me Text",
+      "default": "Remember me"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "login_button_text",
+      "label": "Login Button Text",
+      "default": "Sign In"
+    },
+    {
+      "type": "text",
+      "id": "login_button_icon",
+      "label": "Login Button Icon (emoji)"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button Style",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_forgot_password",
+      "label": "Show Forgot Password Link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "forgot_password_text",
+      "label": "Forgot Password Text",
+      "default": "Forgot your password?"
+    },
+    {
+      "type": "header",
+      "content": "Social Login"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_login",
+      "label": "Show Social Login",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_divider",
+      "label": "Show Divider",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "divider_text",
+      "label": "Divider Text",
+      "default": "or"
+    },
+    {
+      "type": "text",
+      "id": "google_client_id",
+      "label": "Google Client ID",
+      "info": "Leave empty to hide Google login"
+    },
+    {
+      "type": "text",
+      "id": "google_button_text",
+      "label": "Google Button Text",
+      "default": "Continue with Google"
+    },
+    {
+      "type": "text",
+      "id": "facebook_app_id",
+      "label": "Facebook App ID",
+      "info": "Leave empty to hide Facebook login"
+    },
+    {
+      "type": "text",
+      "id": "facebook_button_text",
+      "label": "Facebook Button Text",
+      "default": "Continue with Facebook"
+    },
+    {
+      "type": "text",
+      "id": "twitter_api_key",
+      "label": "Twitter API Key",
+      "info": "Leave empty to hide Twitter login"
+    },
+    {
+      "type": "text",
+      "id": "twitter_button_text",
+      "label": "Twitter Button Text",
+      "default": "Continue with Twitter"
+    },
+    {
+      "type": "header",
+      "content": "Sign Up Link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_signup_link",
+      "label": "Show Sign Up Link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "signup_text",
+      "label": "Sign Up Text",
+      "default": "Don't have an account?"
+    },
+    {
+      "type": "text",
+      "id": "signup_link_text",
+      "label": "Sign Up Link Text",
+      "default": "Sign up"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "form_width",
+      "label": "Form Width",
+      "min": 300,
+      "max": 600,
+      "step": 50,
+      "default": 400,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_vertical",
+      "label": "Section Vertical Padding",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "rem"
+    },
+    {
+      "type": "range",
+      "id": "form_padding",
+      "label": "Form Padding",
+      "min": 1,
+      "max": 4,
+      "step": 0.5,
+      "default": 2,
+      "unit": "rem"
+    },
+    {
+      "type": "range",
+      "id": "form_border_radius",
+      "label": "Form Border Radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "form_shadow",
+      "label": "Form Shadow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "form_border",
+      "label": "Form Border",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "form_bg_color",
+      "label": "Form Background Color"
+    },
+    {
+      "type": "color",
+      "id": "form_border_color",
+      "label": "Form Border Color"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title Size",
+      "min": 24,
+      "max": 48,
+      "step": 4,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title Weight",
+      "options": [
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" },
+        { "value": "800", "label": "Extra Bold" }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color"
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size",
+      "label": "Subtitle Size",
+      "min": 14,
+      "max": 20,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle Color"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "label": "Label Size",
+      "min": 12,
+      "max": 16,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label Color"
+    },
+    {
+      "type": "header",
+      "content": "Form Inputs"
+    },
+    {
+      "type": "range",
+      "id": "input_size",
+      "label": "Input Size",
+      "min": 14,
+      "max": 18,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "input_padding_horizontal",
+      "label": "Input Horizontal Padding",
+      "min": 12,
+      "max": 20,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "input_padding_vertical",
+      "label": "Input Vertical Padding",
+      "min": 10,
+      "max": 16,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "input_border_radius",
+      "label": "Input Border Radius",
+      "min": 0,
+      "max": 12,
+      "step": 2,
+      "default": 6,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "input_border_width",
+      "label": "Input Border Width",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "input_bg_color",
+      "label": "Input Background Color"
+    },
+    {
+      "type": "color",
+      "id": "input_text_color",
+      "label": "Input Text Color"
+    },
+    {
+      "type": "color",
+      "id": "input_border_color",
+      "label": "Input Border Color"
+    },
+    {
+      "type": "color",
+      "id": "input_placeholder_color",
+      "label": "Input Placeholder Color"
+    },
+    {
+      "type": "color",
+      "id": "input_focus_border_color",
+      "label": "Input Focus Border Color"
+    },
+    {
+      "type": "color",
+      "id": "input_focus_shadow_color",
+      "label": "Input Focus Shadow Color",
+      "default": "rgba(37, 99, 235, 0.1)"
+    },
+    {
+      "type": "range",
+      "id": "checkbox_text_size",
+      "label": "Checkbox Text Size",
+      "min": 12,
+      "max": 16,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "checkbox_text_color",
+      "label": "Checkbox Text Color"
+    },
+    {
+      "type": "color",
+      "id": "checkbox_accent_color",
+      "label": "Checkbox Accent Color"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "range",
+      "id": "button_size",
+      "label": "Button Size",
+      "min": 14,
+      "max": 18,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_padding_horizontal",
+      "label": "Button Horizontal Padding",
+      "min": 16,
+      "max": 32,
+      "step": 4,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_padding_vertical",
+      "label": "Button Vertical Padding",
+      "min": 10,
+      "max": 18,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Button Border Radius",
+      "min": 0,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Button Background Color"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button Text Color"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_bg_color",
+      "label": "Button Hover Background Color"
+    },
+    {
+      "type": "range",
+      "id": "forgot_link_size",
+      "label": "Forgot Link Size",
+      "min": 12,
+      "max": 16,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "forgot_link_color",
+      "label": "Forgot Link Color"
+    },
+    {
+      "type": "color",
+      "id": "forgot_link_hover_color",
+      "label": "Forgot Link Hover Color"
+    },
+    {
+      "type": "header",
+      "content": "Social Buttons"
+    },
+    {
+      "type": "range",
+      "id": "social_button_size",
+      "label": "Social Button Size",
+      "min": 12,
+      "max": 16,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "social_button_padding_horizontal",
+      "label": "Social Button Horizontal Padding",
+      "min": 12,
+      "max": 20,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "social_button_padding_vertical",
+      "label": "Social Button Vertical Padding",
+      "min": 10,
+      "max": 16,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "social_button_border_radius",
+      "label": "Social Button Border Radius",
+      "min": 0,
+      "max": 12,
+      "step": 2,
+      "default": 6,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "social_button_border_color",
+      "label": "Social Button Border Color"
+    },
+    {
+      "type": "color",
+      "id": "google_text_color",
+      "label": "Google Text Color"
+    },
+    {
+      "type": "color",
+      "id": "google_border_color",
+      "label": "Google Border Color"
+    },
+    {
+      "type": "color",
+      "id": "google_hover_bg_color",
+      "label": "Google Hover Background Color"
+    },
+    {
+      "type": "color",
+      "id": "facebook_bg_color",
+      "label": "Facebook Background Color"
+    },
+    {
+      "type": "color",
+      "id": "facebook_hover_bg_color",
+      "label": "Facebook Hover Background Color"
+    },
+    {
+      "type": "color",
+      "id": "twitter_bg_color",
+      "label": "Twitter Background Color"
+    },
+    {
+      "type": "color",
+      "id": "twitter_hover_bg_color",
+      "label": "Twitter Hover Background Color"
+    },
+    {
+      "type": "range",
+      "id": "divider_text_size",
+      "label": "Divider Text Size",
+      "min": 12,
+      "max": 16,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "divider_text_color",
+      "label": "Divider Text Color"
+    },
+    {
+      "type": "color",
+      "id": "divider_line_color",
+      "label": "Divider Line Color"
+    },
+    {
+      "type": "header",
+      "content": "Sign Up Link"
+    },
+    {
+      "type": "range",
+      "id": "signup_text_size",
+      "label": "Sign Up Text Size",
+      "min": 12,
+      "max": 16,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "signup_text_color",
+      "label": "Sign Up Text Color"
+    },
+    {
+      "type": "color",
+      "id": "signup_link_color",
+      "label": "Sign Up Link Color"
+    },
+    {
+      "type": "color",
+      "id": "signup_link_hover_color",
+      "label": "Sign Up Link Hover Color"
+    },
+    {
+      "type": "color",
+      "id": "signup_divider_color",
+      "label": "Sign Up Divider Color"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Login Content",
+      "settings": {
+        "login_title": "Sign In",
+        "login_subtitle": "Welcome back! Please sign in to your account.",
+        "text_alignment": "center",
+        "show_email_field": true,
+        "show_password_field": true,
+        "show_remember_me": true,
+        "show_forgot_password": true,
+        "show_signup_link": true,
+        "form_shadow": true,
+        "button_style": "primary"
+      }
+    }
+  ]
+}
+{% endschema %}
+

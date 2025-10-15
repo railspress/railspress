@@ -50,8 +50,37 @@ Rails.application.routes.draw do
       post 'auth/register', to: 'auth#register'
       post 'auth/validate', to: 'auth#validate_token'
       
+      # OpenAI-compatible endpoints
+      post 'chat/completions', to: 'openai#chat_completions'
+      get 'models', to: 'openai#models'
+      get 'models/:id', to: 'openai#model'
+      
       # Content Types
       resources :content_types, only: [:index, :show], param: :id
+      resources :uploads, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post :approve
+          post :reject
+        end
+      end
+      resources :media, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post :approve
+          post :reject
+        end
+      end
+      
+      # Meta Fields API - Must be before other resources to avoid route conflicts
+      constraints metable_type: /(posts|pages|users|ai_agents)/ do
+        scope '/:metable_type/:metable_id' do
+          resources :meta_fields, param: :key, only: [:index, :show, :create, :update, :destroy] do
+            collection do
+              post :bulk_create, as: :bulk_create
+              patch :bulk_update, as: :bulk_update
+            end
+          end
+        end
+      end
       
       # Core Resources
       resources :posts do
@@ -151,6 +180,8 @@ Rails.application.routes.draw do
   end
   
   # Admin panel
+  get '/admin', to: 'admin/dashboard#index'
+  
   namespace :admin do
     get 'terms/index'
     get 'terms/new'
@@ -166,6 +197,9 @@ Rails.application.routes.draw do
     get 'taxonomies/destroy'
     root 'dashboard#index'
     get 'dashboard', to: 'dashboard#index'
+    
+    # AI Demo
+    get 'ai_demo', to: 'ai_demo#index'
     
     resources :posts do
       collection do
@@ -202,9 +236,16 @@ Rails.application.routes.draw do
         patch :approve
         patch :spam
       end
+      collection do
+        post :bulk_action
+      end
     end
     
-    resources :media, except: [:show]
+    resources :media, except: [:show] do
+      collection do
+        post :bulk_upload
+      end
+    end
     resources :menus do
       resources :menu_items
     end
@@ -216,9 +257,11 @@ Rails.application.routes.draw do
         post :bulk_action
         get :profile
         patch :update_profile
+        patch :update_monaco_theme
       end
       member do
         post :regenerate_token
+        post :regenerate_api_key
       end
     end
     
@@ -245,11 +288,36 @@ Rails.application.routes.draw do
     resources :themes do
       collection do
         get :preview
+        post :sync
       end
       member do
         patch :activate
       end
       resources :templates
+    end
+    
+    # Theme Builder
+    resources :builder, only: [:index, :show], path: 'builder' do
+      member do
+        post :create_version
+        patch :save_draft
+        post :publish
+        post :rollback
+        get :preview
+        get :render_preview
+        get 'sections/:template', action: :sections, as: :sections
+        get :versions
+        get :snapshots
+        get 'file/:file_path', action: :get_file, as: :file
+        patch 'file/:file_path', action: :update_file
+        get ':asset_name', action: :asset, as: :asset, constraints: { asset_name: /[^\/]+/ }
+        
+        # Section management
+        post :add_section
+        delete 'remove_section/:section_id', action: :remove_section, as: :remove_section
+        patch 'update_section/:section_id', action: :update_section, as: :update_section
+        patch :reorder_sections
+      end
     end
     resources :plugins do
       collection do
@@ -304,6 +372,7 @@ Rails.application.routes.draw do
     patch 'settings/post_by_email', to: 'settings#update_post_by_email'
     post 'settings/test_post_by_email', to: 'settings#test_post_by_email', as: 'test_post_by_email'
     get 'settings/shortcuts', to: 'settings#shortcuts', as: 'shortcuts_settings'
+    get 'settings/shortcuts.json', to: 'settings#shortcuts_json'
     patch 'settings/shortcuts', to: 'settings#update_shortcuts'
     
     get 'settings/white_label', to: 'settings#white_label'
@@ -311,6 +380,29 @@ Rails.application.routes.draw do
     
     get 'settings/appearance', to: 'settings#appearance'
     patch 'settings/appearance', to: 'settings#update_appearance'
+    
+    # Storage settings
+    get 'settings/storage', to: 'settings#storage', as: 'storage_settings'
+    patch 'settings/storage', to: 'settings#update_storage'
+    resources :storage_providers, path: 'settings/storage_providers'
+    
+    # Upload security settings
+    namespace :settings do
+      get 'upload_security', to: 'upload_security#show', as: 'upload_security'
+      patch 'upload_security', to: 'upload_security#update'
+    end
+    
+    # Trash management
+    get 'trash', to: 'trash#index', as: 'trash_index'
+    patch 'trash/restore/:type/:id', to: 'trash#restore', as: 'restore_trash'
+    delete 'trash/permanent/:type/:id', to: 'trash#destroy_permanently', as: 'destroy_permanently_trash'
+    delete 'trash/empty', to: 'trash#empty_trash', as: 'empty_trash'
+    
+    # Trash settings
+    get 'trash/settings', to: 'trash_settings#show', as: 'trash_settings'
+    patch 'trash/settings', to: 'trash_settings#update'
+    get 'trash/settings/test', to: 'trash_settings#test_cleanup', as: 'test_cleanup_trash'
+    post 'trash/settings/cleanup', to: 'trash_settings#run_cleanup', as: 'run_cleanup_trash'
     
     # Redirects
     resources :redirects do
@@ -400,6 +492,7 @@ Rails.application.routes.draw do
     get 'logs/stream', to: 'logs#stream'
     get 'logs/download', to: 'logs#download', as: 'download_logs'
     delete 'logs/clear', to: 'logs#clear', as: 'clear_logs'
+    delete 'logs/clear/:file', to: 'logs#clear', as: 'clear_logs_file'
     get 'logs/search', to: 'logs#search'
     
     # Email Logs
@@ -432,7 +525,7 @@ Rails.application.routes.draw do
     namespace :tools do
       get 'import', to: 'import#index', as: 'import'
       post 'import/upload', to: 'import#upload'
-      post 'import/process', to: 'import#process'
+      post 'import/process', to: 'import#process_import'
       
       get 'export', to: 'export#index', as: 'export'
       post 'export/generate', to: 'export#generate'
@@ -465,15 +558,20 @@ Rails.application.routes.draw do
     
     # Template Customizer with GrapesJS
     get 'template_customizer', to: 'template_customizer#index', as: 'template_customizer'
-    get 'template_customizer/:id/edit', to: 'template_customizer#edit', as: 'edit_template'
-    patch 'template_customizer/:id', to: 'template_customizer#update', as: 'update_template'
-    get 'template_customizer/:id/load', to: 'template_customizer#load_template', as: 'load_template'
+    get 'template_customizer/customize', to: 'template_customizer#customize', as: 'template_customizer_customize'
+    get 'template_customizer/test_data', to: 'template_customizer#test_data', as: 'template_customizer_test_data'
+    post 'template_customizer/save', to: 'template_customizer#save_customization', as: 'save_template_customization'
+    post 'template_customizer/publish', to: 'template_customizer#publish_customization', as: 'publish_template_customization'
+    get 'template_customizer/load_content', to: 'template_customizer#load_template_content', as: 'load_template_content'
+    get 'template_customizer/section_schema', to: 'template_customizer#load_section_schema', as: 'load_section_schema'
     
     # Theme File Editor with Monaco
     resources :theme_editor, only: [:index, :edit, :update, :create, :destroy] do
       collection do
         post :rename
         get :search
+        get :file, to: 'theme_editor#open_file'
+        get :test
       end
       member do
         get :download
@@ -494,6 +592,9 @@ Rails.application.routes.draw do
       member do
         patch :toggle
         post :test
+      end
+      collection do
+        get :usage
       end
     end
     
@@ -575,6 +676,10 @@ Rails.application.routes.draw do
   # Theme Preview & Switching
   get 'themes/preview', to: 'themes#preview', as: 'theme_preview'
   post 'themes/switch', to: 'themes#switch', as: 'theme_switch'
+  
+  # Frontend preview route
+  get 'preview/:template_name', to: 'preview#show', as: 'frontend_preview'
+  get 'preview', to: 'preview#show', defaults: { template_name: 'index' }
   
     # Comments (public)
     resources :comments, only: [:create]

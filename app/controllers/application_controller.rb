@@ -15,12 +15,31 @@ class ApplicationController < ActionController::Base
   private
   
   def set_current_tenant
-    # Find tenant by domain or subdomain
-    tenant = Tenant.find_by(domain: request.host) ||
-             Tenant.find_by(subdomain: request.subdomains.first)
+    tenant = nil
     
-    # Set current tenant (or nil for non-tenant requests)
-    ActsAsTenant.current_tenant = tenant
+    # Priority 1: Use logged-in user's tenant
+    if user_signed_in? && current_user.tenant
+      tenant = current_user.tenant
+    # Priority 2: Find tenant by domain or subdomain
+    elsif request.host != 'localhost'
+      tenant = Tenant.find_by(domain: request.host) ||
+               Tenant.find_by(subdomain: request.subdomains.first)
+    # Priority 3: Use default tenant for localhost/frontend
+    elsif !request.path.start_with?('/admin')
+      tenant = Tenant.first || Tenant.create!(
+        name: 'RailsPress Default',
+        domain: 'localhost',
+        theme: 'nordic',
+        storage_type: 'local'
+      )
+    end
+    
+    # Set current tenant - use tenant_id to avoid acts_as_tenant issues
+    if tenant
+      # Create a simple object that responds to tenant_id
+      tenant_wrapper = OpenStruct.new(tenant_id: tenant.id, id: tenant.id)
+      ActsAsTenant.current_tenant = tenant_wrapper
+    end
     
     # Store tenant in instance variable for views
     @current_tenant = tenant

@@ -1,6 +1,6 @@
 class Menu < ApplicationRecord
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   # Associations
   has_many :menu_items, dependent: :destroy

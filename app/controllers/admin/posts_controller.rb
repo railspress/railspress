@@ -13,11 +13,84 @@ class Admin::PostsController < Admin::BaseController
     
     # Show trashed if explicitly requested
     if params[:show_trash] == 'true'
-      @posts = Post.discarded.includes(:user, :terms).order(created_at: :desc)
+      @posts = Post.trashed.includes(:user, :terms).order(deleted_at: :desc)
     end
     
     respond_to do |format|
-      format.html { @posts_data = posts_json }
+      format.html do
+        @posts_data = posts_json
+        @stats = {
+          total: Post.kept.count,
+          published: Post.published.count,
+          draft: Post.where(status: 'draft').count,
+          trash: Post.trashed.count
+        }
+        @bulk_actions = [
+          { value: 'trash', label: 'Move to Trash' },
+          { value: 'untrash', label: 'Restore' },
+          { value: 'delete', label: 'Delete Permanently' }
+        ]
+        @status_options = [
+          { value: 'published', label: 'Published' },
+          { value: 'draft', label: 'Draft' },
+          { value: 'pending', label: 'Pending' }
+        ]
+        @columns = [
+          {
+            title: "",
+            formatter: "rowSelection",
+            titleFormatter: "rowSelection",
+            width: 40,
+            headerSort: false
+          },
+          {
+            title: "Title",
+            field: "title",
+            width: 300,
+            formatter: "html"
+          },
+          {
+            title: "Author",
+            field: "author_name",
+            width: 150
+          },
+          {
+            title: "Status",
+            field: "status",
+            width: 100,
+            formatter: "html"
+          },
+          {
+            title: "Categories",
+            field: "categories",
+            width: 150,
+            formatter: "html"
+          },
+          {
+            title: "Tags",
+            field: "tags",
+            width: 150,
+            formatter: "html"
+          },
+          {
+            title: "Date",
+            field: "created_at",
+            width: 150,
+            formatter: "datetime",
+            formatterParams: {
+              inputFormat: "YYYY-MM-DDTHH:mm:ss.SSSZ",
+              outputFormat: "DD/MM/YYYY HH:mm"
+            }
+          },
+          {
+            title: "Actions",
+            field: "actions",
+            width: 120,
+            headerSort: false,
+            formatter: "html"
+          }
+        ]
+      end
       format.json { render json: posts_json }
     end
   end
@@ -88,11 +161,11 @@ class Admin::PostsController < Admin::BaseController
 
   # DELETE /admin/posts/1 or /admin/posts/1.json
   def destroy
-    if @post.discarded?
-      @post.destroy! # Permanent delete
+    if @post.trashed?
+      @post.destroy_permanently! # Permanent delete
       notice = "Post was permanently deleted."
     else
-      @post.discard # Soft delete
+      @post.trash!(current_user) # Soft delete
       notice = "Post was moved to trash."
     end
 
@@ -116,14 +189,14 @@ class Admin::PostsController < Admin::BaseController
   
   # PATCH /admin/posts/1/restore
   def restore
-    @post.undiscard
+    @post.untrash!
     redirect_to admin_posts_path, notice: "Post was restored from trash."
   end
   
   # POST /admin/posts/bulk_action
   def bulk_action
     action_type = params[:action_type]
-    post_ids = params[:post_ids] || []
+    post_ids = params[:ids] || []
     
     posts = Post.where(id: post_ids)
     
@@ -134,9 +207,15 @@ class Admin::PostsController < Admin::BaseController
     when 'unpublish'
       posts.update_all(status: :draft)
       message = "#{posts.count} posts unpublished"
+    when 'trash'
+      posts.find_each { |post| post.trash!(current_user) }
+      message = "#{posts.count} posts moved to trash"
+    when 'untrash'
+      posts.find_each(&:untrash!)
+      message = "#{posts.count} posts restored from trash"
     when 'delete'
-      posts.destroy_all
-      message = "#{posts.count} posts deleted"
+      posts.find_each(&:destroy_permanently!)
+      message = "#{posts.count} posts permanently deleted"
     else
       message = "Invalid action"
     end
@@ -164,19 +243,65 @@ class Admin::PostsController < Admin::BaseController
     
     def posts_json
       @posts.map do |post|
+        categories = post.terms_for_taxonomy('category').pluck(:name)
+        tags = post.terms_for_taxonomy('post_tag').pluck(:name)
+        
         {
           id: post.id,
-          title: post.title,
+          title: "<a href=\"#{edit_admin_post_path(post)}\" class=\"text-indigo-600 hover:text-indigo-900 font-medium\">#{post.title}</a>",
           slug: post.slug,
-          status: post.status,
-          author: post.author_name,
-          categories: post.terms_for_taxonomy('category').pluck(:name).join(', '),
-          tags: post.terms_for_taxonomy('post_tag').pluck(:name).join(', '),
+          status: format_status_badge(post.status),
+          status_raw: post.status,  # Raw status for CSS classes
+          author_name: post.user&.name || 'Unknown',
+          categories: format_categories(categories),
+          tags: format_tags(tags),
           comments_count: post.comments.where(status: 'approved').count,
-          created_at: post.created_at.strftime("%Y-%m-%d %H:%M"),
-          published_at: post.published_at&.strftime("%Y-%m-%d %H:%M")
+          created_at: post.created_at.iso8601,
+          published_at: post.published_at&.iso8601,
+          actions: format_actions(post),
+          edit_url: edit_admin_post_path(post),
+          show_url: admin_post_path(post),
+          delete_url: admin_post_path(post)
         }
       end
+    end
+
+    private
+
+    def format_status_badge(status)
+      status_map = {
+        'published' => { class: 'bg-green-100 text-green-800', label: 'Published' },
+        'draft' => { class: 'bg-yellow-100 text-yellow-800', label: 'Draft' },
+        'pending' => { class: 'bg-blue-100 text-blue-800', label: 'Pending' },
+        'trash' => { class: 'bg-red-100 text-red-800', label: 'Trash' }
+      }
+      
+      status_info = status_map[status] || { class: 'bg-gray-100 text-gray-800', label: status }
+      "<span class=\"px-2 py-1 text-xs font-medium rounded-full #{status_info[:class]}\">#{status_info[:label]}</span>"
+    end
+
+    def format_categories(categories)
+      if categories.empty?
+        '<span class="text-gray-400">Uncategorized</span>'
+      else
+        categories.map { |cat| "<span class=\"px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded mr-1\">#{cat}</span>" }.join('')
+      end
+    end
+
+    def format_tags(tags)
+      if tags.empty?
+        ''
+      else
+        tags.map { |tag| "<span class=\"px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded mr-1\">#{tag}</span>" }.join('')
+      end
+    end
+
+    def format_actions(post)
+      actions = ''
+      actions += "<a href=\"#{edit_admin_post_path(post)}\" class=\"text-indigo-600 hover:text-indigo-900 mr-2\" title=\"Edit\">✏️</a>"
+      actions += "<a href=\"#{admin_post_path(post)}\" class=\"text-blue-600 hover:text-blue-900 mr-2\" title=\"View\">👁️</a>"
+      actions += "<a href=\"#{admin_post_path(post)}\" class=\"text-red-600 hover:text-red-900\" title=\"Delete\" data-confirm=\"Are you sure?\">🗑️</a>"
+      actions
     end
     
     def choose_layout

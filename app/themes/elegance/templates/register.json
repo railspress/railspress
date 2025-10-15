@@ -1,0 +1,47 @@
+{
+  "name": "Register",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": false,
+        "show_cart": false,
+        "show_account": false
+      }
+    },
+    "register_form": {
+      "type": "register_form",
+      "settings": {
+        "show_login_link": true,
+        "show_social_register": true,
+        "background_color": "#f8fafc",
+        "form_style": "centered",
+        "require_email_verification": true,
+        "show_terms_checkbox": true,
+        "show_captcha": false,
+        "password_requirements": true
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "register_form",
+    "footer"
+  ]
+}
+

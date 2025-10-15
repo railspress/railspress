@@ -1,11 +1,4 @@
-<div class="flex gap-6 max-w-7xl mx-auto">
-  <!-- Settings Navigation -->
-  <div class="w-64 flex-shrink-0">
-    <%= render 'settings_nav' %>
-  </div>
-
-  <!-- Settings Content -->
-  <div class="flex-1">
+<div class="max-w-4xl mx-auto" data-controller="appearance-preview">
     <div class="mb-6">
       <h1 class="text-3xl font-bold text-white mb-2">Appearance Settings</h1>
       <p class="text-gray-400">Customize the visual style of your admin panel</p>
@@ -97,19 +90,20 @@
             <p class="text-xs text-gray-500 mb-3">Used for buttons, links, active states</p>
             <div class="flex items-center gap-3">
               <%= color_field_tag 'settings[primary_color]', @settings[:primary_color], 
-                  class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+                  class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer',
+                  data: { appearance_preview_target: "primaryColorInput" } %>
               <%= text_field_tag 'settings[primary_color_text]', @settings[:primary_color], 
                   class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
-                  onchange: "document.querySelector('input[name=\"settings[primary_color]\"]').value = this.value" %>
+                  data: { appearance_preview_target: "primaryColorInput" } %>
             </div>
             
             <!-- Quick Presets -->
             <div class="mt-3 flex gap-2">
-              <button type="button" onclick="setPrimaryColor('#6366F1')" class="w-8 h-8 rounded-full bg-indigo-600 border-2 border-[#2a2a2a] hover:border-indigo-400" title="Indigo"></button>
-              <button type="button" onclick="setPrimaryColor('#3B82F6')" class="w-8 h-8 rounded-full bg-blue-600 border-2 border-[#2a2a2a] hover:border-blue-400" title="Blue"></button>
-              <button type="button" onclick="setPrimaryColor('#8B5CF6')" class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#2a2a2a] hover:border-purple-400" title="Purple"></button>
-              <button type="button" onclick="setPrimaryColor('#EC4899')" class="w-8 h-8 rounded-full bg-pink-600 border-2 border-[#2a2a2a] hover:border-pink-400" title="Pink"></button>
-              <button type="button" onclick="setPrimaryColor('#10B981')" class="w-8 h-8 rounded-full bg-green-600 border-2 border-[#2a2a2a] hover:border-green-400" title="Green"></button>
+              <button type="button" data-action="click->appearance-preview#setPrimaryColor" data-color="#6366F1" class="w-8 h-8 rounded-full bg-indigo-600 border-2 border-[#2a2a2a] hover:border-indigo-400" title="Indigo"></button>
+              <button type="button" data-action="click->appearance-preview#setPrimaryColor" data-color="#3B82F6" class="w-8 h-8 rounded-full bg-blue-600 border-2 border-[#2a2a2a] hover:border-blue-400" title="Blue"></button>
+              <button type="button" data-action="click->appearance-preview#setPrimaryColor" data-color="#8B5CF6" class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#2a2a2a] hover:border-purple-400" title="Purple"></button>
+              <button type="button" data-action="click->appearance-preview#setPrimaryColor" data-color="#EC4899" class="w-8 h-8 rounded-full bg-pink-600 border-2 border-[#2a2a2a] hover:border-pink-400" title="Pink"></button>
+              <button type="button" data-action="click->appearance-preview#setPrimaryColor" data-color="#10B981" class="w-8 h-8 rounded-full bg-green-600 border-2 border-[#2a2a2a] hover:border-green-400" title="Green"></button>
             </div>
           </div>
 
@@ -213,7 +207,7 @@
       <!-- Preview -->
       <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
         <h2 class="text-xl font-semibold text-white mb-4">Preview</h2>
-        <div id="preview-box" class="p-6 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a]">
+        <div id="preview-box" class="p-6 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a]" data-appearance-preview-target="previewBox">
           <h1 class="text-3xl font-bold mb-2" style="font-family: <%= @settings[:heading_font] %>; color: <%= @settings[:primary_color] %>;">
             Heading Example
           </h1>
@@ -256,47 +250,7 @@
         <%= f.submit 'Save Appearance Settings', class: 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
       </div>
     <% end %>
-  </div>
 </div>
 
-<script>
-  function setPrimaryColor(color) {
-    document.querySelector('input[name="settings[primary_color]"]').value = color;
-    document.querySelector('input[name="settings[primary_color_text]"]').value = color;
-  }
-  
-  function setSecondaryColor(color) {
-    document.querySelector('input[name="settings[secondary_color]"]').value = color;
-    document.querySelector('input[name="settings[secondary_color_text]"]').value = color;
-  }
-  
-  // Live preview updates
-  document.querySelectorAll('input[name="settings[primary_color]"], input[name="settings[primary_color_text]"]').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const color = e.target.value;
-      document.querySelector('#preview-box h1').style.color = color;
-      document.querySelector('#preview-box button:first-of-type').style.backgroundColor = color;
-    });
-  });
-  
-  document.querySelectorAll('input[name="settings[secondary_color]"], input[name="settings[secondary_color_text]"]').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const color = e.target.value;
-      document.querySelector('#preview-box button:last-of-type').style.backgroundColor = color;
-    });
-  });
-  
-  document.querySelector('select[name="settings[heading_font]"]').addEventListener('change', (e) => {
-    document.querySelector('#preview-box h1').style.fontFamily = e.target.value;
-  });
-  
-  document.querySelector('select[name="settings[paragraph_font]"]').addEventListener('change', (e) => {
-    document.querySelector('#preview-box p').style.fontFamily = e.target.value;
-  });
-  
-  document.querySelector('select[name="settings[body_font]"]').addEventListener('change', (e) => {
-    const font = e.target.value;
-    document.querySelectorAll('#preview-box button').forEach(btn => btn.style.fontFamily = font);
-  });
-</script>
+<!-- Appearance preview functionality is now handled by the Stimulus controller -->
 

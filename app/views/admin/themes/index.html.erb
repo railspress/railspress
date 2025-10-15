@@ -22,33 +22,6 @@
     </div>
   </div>
   
-  <!-- Current Status Bar -->
-  <% if @active_theme %>
-    <div class="mb-6 bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border border-emerald-500/30 rounded-xl p-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-sm text-gray-400">Currently Active on Frontend:</p>
-            <p class="text-lg font-semibold text-white"><%= @active_theme.name %></p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <%= link_to "Customize Theme", admin_template_customizer_path, class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm font-medium" %>
-          <%= link_to root_path, { target: "_blank", class: "px-4 py-2 border border-emerald-500/50 hover:bg-emerald-500/10 text-emerald-400 rounded-lg transition text-sm font-medium flex items-center gap-2" } do %>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-            </svg>
-            Open Frontend
-          <% end %>
-        </div>
-      </div>
-    </div>
-  <% end %>
 
   <!-- Active Theme -->
   <% if @active_theme %>
@@ -74,13 +47,11 @@
             <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-sm font-medium">
               ✓ Active
             </span>
-            <%= link_to "Customize", admin_template_customizer_path, class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
-            <%= link_to root_path, { target: "_blank", class: "px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition flex items-center gap-2" } do %>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-              Preview
+            <% active_builder_theme = BuilderTheme.current_for_theme(@active_theme.name.underscore) %>
+            <% if active_builder_theme %>
+              <%= link_to "Customize", admin_builder_path(active_builder_theme), class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+            <% else %>
+              <%= link_to "Customize", admin_builder_index_path(theme_name: @active_theme.name), class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
             <% end %>
           </div>
         </div>
@@ -95,11 +66,14 @@
     <% if @available_themes.any? %>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <% @available_themes.each do |theme| %>
-          <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-[#3a3a3a] transition group">
+          <% is_active = @active_theme && @active_theme.name.downcase == theme[:name].downcase %>
+          <% unless is_active %>
+            <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden hover:border-[#3a3a3a] transition group">
             <!-- Theme Screenshot/Preview -->
             <div class="aspect-video bg-gradient-to-br from-indigo-500/20 to-purple-500/20 relative overflow-hidden">
-              <% if theme[:screenshot] && File.exist?(Rails.root.join('app', 'themes', theme[:name], 'assets', 'images', theme[:screenshot])) %>
-                <%= image_tag "themes/#{theme[:name]}/#{theme[:screenshot]}", class: "w-full h-full object-cover" %>
+              <% screenshot_path = Rails.root.join('app', 'themes', theme.name, 'assets', 'images', 'screenshot.png') %>
+              <% if File.exist?(screenshot_path) %>
+                <%= image_tag "themes/#{theme.name}/screenshot.png", class: "w-full h-full object-cover" %>
               <% else %>
                 <div class="absolute inset-0 flex items-center justify-center">
                   <svg class="w-16 h-16 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +82,6 @@
                 </div>
               <% end %>
               
-              <% is_active = @active_theme && @active_theme.name.underscore == theme[:name] %>
               <% if is_active %>
                 <div class="absolute top-3 right-3">
                   <span class="px-3 py-1 bg-emerald-500 text-white rounded-full text-xs font-semibold">
@@ -130,37 +103,30 @@
               </div>
               
               <div class="flex items-center gap-2">
-                <% unless is_active %>
-                  <%= button_to activate_admin_theme_path(theme[:name]), 
-                      method: :patch,
-                      class: "flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-center font-medium",
-                      data: { 
-                        confirm: "Activate #{theme[:display_name]}? This will change your site's appearance immediately.",
-                        turbo_confirm: "Activate #{theme[:display_name]}?"
-                      },
-                      form: { data: { turbo: "false" } } do %>
-                    Activate
-                  <% end %>
-                <% else %>
-                  <div class="flex-1 px-4 py-2 bg-emerald-500/10 text-emerald-400 text-center font-medium rounded-lg border border-emerald-500/30">
-                    Current Theme
-                  </div>
+                <%= button_to activate_admin_theme_path(theme[:name]), 
+                    method: :patch,
+                    class: "flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-center font-medium",
+                    data: { 
+                      confirm: "Activate #{theme[:display_name]}? This will change your site's appearance immediately.",
+                      turbo_confirm: "Activate #{theme[:display_name]}?"
+                    },
+                    form: { data: { turbo: "false" } } do %>
+                  Activate
                 <% end %>
                 
-                <%= link_to theme_preview_path(theme: theme[:name]), {
-                    target: "_blank",
-                    class: "px-4 py-2 border border-[#2a2a2a] hover:border-[#3a3a3a] text-gray-300 hover:text-white rounded-lg transition flex items-center gap-1",
-                    title: "Preview on frontend"
-                  } do %>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                  Preview
+                <% theme_obj = Theme.find_by("LOWER(name) = ?", theme[:name].downcase) %>
+                <% if theme_obj %>
+                  <% builder_theme = BuilderTheme.current_for_theme(theme[:name]) %>
+                  <% if builder_theme %>
+                    <%= link_to "Customize", admin_builder_path(builder_theme), class: "px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+                  <% else %>
+                    <%= link_to "Customize", admin_builder_index_path(theme_name: theme[:name]), class: "px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" %>
+                  <% end %>
                 <% end %>
               </div>
             </div>
           </div>
+          <% end %>
         <% end %>
       </div>
     <% else %>

@@ -57,14 +57,27 @@ module Railspress
         end
       end
 
-      # Get theme configuration
+      # Get theme configuration from PublishedThemeVersion
       def theme_config
         return {} unless @current_theme
 
-        config_path = Rails.root.join('app', 'themes', @current_theme, 'config.yml')
+        # First try to get from PublishedThemeVersion
+        active_theme = Theme.active.first
+        if active_theme
+          published_version = PublishedThemeVersion.for_theme(active_theme.name).latest.first
+          if published_version
+            config_file = published_version.published_theme_files.find_by(file_path: 'config/theme.json')
+            if config_file
+              return JSON.parse(config_file.content)
+            end
+          end
+        end
+
+        # Fallback to filesystem
+        config_path = Rails.root.join('app', 'themes', @current_theme, 'config', 'theme.json')
         
         if File.exist?(config_path)
-          YAML.load_file(config_path)
+          JSON.parse(File.read(config_path))
         else
           {}
         end
@@ -76,10 +89,10 @@ module Railspress
 
         Dir.glob(@themes_path.join('*')).select { |f| File.directory?(f) }.map do |theme_dir|
           theme_name = File.basename(theme_dir)
-          config_path = File.join(theme_dir, 'config.yml')
+          config_path = File.join(theme_dir, 'config', 'theme.json')
           
           if File.exist?(config_path)
-            config = YAML.load_file(config_path)
+            config = JSON.parse(File.read(config_path))
             {
               name: theme_name,
               display_name: config['name'] || theme_name.titleize,
@@ -115,7 +128,8 @@ module Railspress
         # Update database
         Theme.where.not(name: theme_name.camelize).update_all(active: false)
         theme_record = Theme.find_or_create_by(name: theme_name.camelize) do |t|
-          config = load_theme_config(theme_name)
+          config_path = theme_path.join('config', 'theme.json')
+          config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
           t.description = config['description'] || 'No description'
           t.author = config['author'] || 'Unknown'
           t.version = config['version'] || '1.0.0'

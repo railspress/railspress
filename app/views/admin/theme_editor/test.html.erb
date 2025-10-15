@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Theme Editor Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+</head>
+<body>
+  <h1>Theme Editor Test</h1>
+  <div id="test-container" style="height: 400px; border: 1px solid #ccc;"></div>
+  
+  <script>
+    console.log('Starting Monaco Editor test...');
+    
+    // Test if Monaco is loaded
+    if (typeof monaco === 'undefined') {
+      console.error('Monaco Editor not loaded!');
+    } else {
+      console.log('Monaco Editor loaded successfully!');
+      
+      // Try to create an editor
+      try {
+        const editor = monaco.editor.create(document.getElementById('test-container'), {
+          value: '// Test code\nconsole.log("Hello World");',
+          language: 'javascript'
+        });
+        console.log('Monaco Editor created successfully!');
+      } catch (error) {
+        console.error('Error creating Monaco Editor:', error);
+      }
+    }
+  </script>
+</body>
+</html>

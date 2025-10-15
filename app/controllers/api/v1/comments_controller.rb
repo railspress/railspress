@@ -6,7 +6,7 @@ module Api
       
       # GET /api/v1/comments
       def index
-        comments = Comment.includes(:user, :commentable)
+        comments = Comment.kept.includes(:user, :commentable)
         
         # Filter by status
         comments = comments.where(status: params[:status]) if params[:status].present?
@@ -112,7 +112,8 @@ module Api
       
       def comment_params
         params.require(:comment).permit(
-          :content, :author_name, :author_email, :author_url,
+          :content, :author_name, :author_email, :author_url, :author_ip, :author_agent,
+          :comment_type, :comment_approved, :comment_parent_id,
           :commentable_type, :commentable_id, :parent_id
         )
       end
@@ -156,6 +157,8 @@ module Api
     end
   end
 end
+
+
 
 
 

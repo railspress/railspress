@@ -1,0 +1,46 @@
+{
+  "name": "Login",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": false,
+        "show_cart": false,
+        "show_account": false
+      }
+    },
+    "login_form": {
+      "type": "login_form",
+      "settings": {
+        "show_register_link": true,
+        "show_forgot_password": true,
+        "show_social_login": true,
+        "background_color": "#f8fafc",
+        "form_style": "centered",
+        "show_remember_me": true,
+        "show_captcha": false
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "login_form",
+    "footer"
+  ]
+}
+

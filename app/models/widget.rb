@@ -1,6 +1,6 @@
 class Widget < ApplicationRecord
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   # Serialization
   serialize :settings, coder: JSON, type: Hash

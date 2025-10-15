@@ -1,0 +1,16 @@
+<%# Shared admin table settings - passes Rails variables to JavaScript %>
+<script type="application/json" id="admin-table-settings" data-table-type="<%= table_type %>">
+{
+  "adminTable": {
+    "tableType": "<%= table_type %>",
+    "url": "<%= send("admin_#{table_type.pluralize}_path") %>",
+    "columns": <%= raw columns.to_json %>,
+    "data": <%= raw data.to_json %>,
+    "searchPlaceholder": "<%= search_placeholder || "Search #{table_type.pluralize}..." %>",
+    "bulkActions": <%= raw bulk_actions.to_json %>,
+    "statusOptions": <%= raw (defined?(status_options) ? status_options : []).to_json %>,
+    "csrfToken": "<%= form_authenticity_token %>"
+  }
+}
+</script>
+

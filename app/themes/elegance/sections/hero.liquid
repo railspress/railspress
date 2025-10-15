@@ -1,0 +1,385 @@
+<section class="hero section" data-section-type="hero" data-section-id="{{ section.id }}">
+  <div class="hero-container">
+    <div class="hero-content">
+      <div class="hero-text">
+        {% if section.settings.heading %}
+          <h1 class="hero-heading">{{ section.settings.heading }}</h1>
+        {% endif %}
+        
+        {% if section.settings.subheading %}
+          <h2 class="hero-subheading">{{ section.settings.subheading }}</h2>
+        {% endif %}
+        
+        {% if section.settings.description %}
+          <p class="hero-description">{{ section.settings.description }}</p>
+        {% endif %}
+        
+        {% if section.settings.primary_button_text and section.settings.primary_button_url %}
+          <a href="{{ section.settings.primary_button_url }}" class="btn btn-primary hero-primary-btn">
+            {{ section.settings.primary_button_text }}
+          </a>
+        {% endif %}
+        
+        {% if section.settings.secondary_button_text and section.settings.secondary_button_url %}
+          <a href="{{ section.settings.secondary_button_url }}" class="btn btn-secondary hero-secondary-btn">
+            {{ section.settings.secondary_button_text }}
+          </a>
+        {% endif %}
+      </div>
+      
+      {% if section.settings.image %}
+        <div class="hero-image">
+          <img 
+            src="{{ section.settings.image }}" 
+            alt="{{ section.settings.image_alt | default: section.settings.heading }}"
+            class="hero-img"
+            loading="eager"
+          >
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  {% if section.settings.background_image %}
+    <div class="hero-background">
+      <img 
+        src="{{ section.settings.background_image }}" 
+        alt="" 
+        class="hero-bg-img"
+        loading="eager"
+      >
+    </div>
+  {% endif %}
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: {{ section.settings.min_height | default: 600 }}px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    {% if section.settings.background_color %}
+      background-color: {{ section.settings.background_color }};
+    {% endif %}
+  }
+  
+  .hero-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+  }
+  
+  .hero-content {
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+    display: grid;
+    grid-template-columns: {% if section.settings.image %}1fr 1fr{% else %}1fr{% endif %};
+    gap: 4rem;
+    align-items: center;
+  }
+  
+  .hero-text {
+    {% if section.settings.text_alignment == 'center' %}
+      text-align: center;
+    {% elsif section.settings.text_alignment == 'right' %}
+      text-align: right;
+    {% else %}
+      text-align: left;
+    {% endif %}
+  }
+  
+  .hero-heading {
+    font-size: {{ section.settings.heading_size | default: 48 }}px;
+    font-weight: var(--weight-heading);
+    color: {{ section.settings.heading_color | default: 'var(--color-text)' }};
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+  }
+  
+  .hero-subheading {
+    font-size: {{ section.settings.subheading_size | default: 24 }}px;
+    font-weight: 500;
+    color: {{ section.settings.subheading_color | default: 'var(--color-primary)' }};
+    margin-bottom: 1rem;
+  }
+  
+  .hero-description {
+    font-size: {{ section.settings.description_size | default: 18 }}px;
+    color: {{ section.settings.description_color | default: 'var(--color-text-light)' }};
+    margin-bottom: 2rem;
+    max-width: 600px;
+  }
+  
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    {% if section.settings.text_alignment == 'center' %}
+      justify-content: center;
+    {% elsif section.settings.text_alignment == 'right' %}
+      justify-content: flex-end;
+    {% endif %}
+  }
+  
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border: 2px solid var(--color-primary);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+  }
+  
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--color-primary);
+    color: white;
+  }
+  
+  .hero-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .hero-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: {{ section.settings.image_border_radius | default: 12 }}px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+  
+  .hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+  }
+  
+  .hero-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: {{ section.settings.background_opacity | default: 0.3 }};
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      text-align: center;
+    }
+    
+    .hero-heading {
+      font-size: 32px;
+    }
+    
+    .hero-subheading {
+      font-size: 20px;
+    }
+    
+    .hero-description {
+      font-size: 16px;
+    }
+    
+    .hero-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Hero",
+  "tag": "section",
+  "class": "section-hero",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Welcome to Elegance"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Premium Design Theme"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Create stunning websites with our premium theme featuring modern design, flexible layouts, and powerful customization options."
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_text",
+      "label": "Primary Button Text",
+      "default": "Get Started"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_url",
+      "label": "Primary Button URL"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_text",
+      "label": "Secondary Button Text",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_url",
+      "label": "Secondary Button URL"
+    },
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Hero Image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image Alt Text"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Minimum Height",
+      "min": 400,
+      "max": 800,
+      "step": 50,
+      "default": 600,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    },
+    {
+      "type": "range",
+      "id": "background_opacity",
+      "label": "Background Image Opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "default": 0.3
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading Size",
+      "min": 24,
+      "max": 72,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "label": "Subheading Size",
+      "min": 16,
+      "max": 36,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description Color"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description Size",
+      "min": 14,
+      "max": 24,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image Border Radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero",
+      "settings": {
+        "heading": "Welcome to Elegance",
+        "subheading": "Premium Design Theme",
+        "description": "Create stunning websites with our premium theme featuring modern design, flexible layouts, and powerful customization options.",
+        "primary_button_text": "Get Started",
+        "secondary_button_text": "Learn More"
+      }
+    }
+  ]
+}
+{% endschema %}
+

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Customizer Data</title>
+</head>
+<body>
+    <script>
+        // Test the JSON generation
+        const testData = {
+            "hero": {
+                "type": "hero",
+                "name": "Hero",
+                "schema": {
+                    "name": "Hero",
+                    "settings": [
+                        {"id": "heading", "type": "text", "label": "Heading", "default": "Timeless, calm, considered."},
+                        {"id": "subheading", "type": "text", "label": "Subheading", "default": "A Scandinavian-minimal theme inspired by Twenty Twenty-Five."},
+                        {"id": "align", "type": "select", "label": "Alignment", "options": ["left", "center"], "default": "left"}
+                    ]
+                }
+            },
+            "rich-text": {
+                "type": "rich-text",
+                "name": "Rich text",
+                "schema": {
+                    "name": "Rich text",
+                    "settings": [
+                        {"id": "heading", "type": "text", "label": "Heading"},
+                        {"id": "body", "type": "richtext", "label": "Body"},
+                        {"id": "max_width", "type": "range", "min": 480, "max": 1200, "step": 20, "default": 800, "unit": "px"}
+                    ]
+                }
+            }
+        };
+        
+        window.themeCustomizerData = {
+            themeSections: testData,
+            themeSettings: [],
+            templateData: {}
+        };
+        
+        console.log('Test data loaded:', window.themeCustomizerData);
+    </script>
+    
+    <div data-controller="theme-customizer">
+        <h1>Test Theme Customizer</h1>
+        <div id="gjs"></div>
+    </div>
+</body>
+</html>
+

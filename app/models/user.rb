@@ -17,11 +17,19 @@ class User < ApplicationRecord
   # ActiveStorage for avatar
   has_one_attached :avatar
   
+  # Multi-tenancy - users belong to tenants (many-to-one)
+  belongs_to :tenant, optional: true
+  
   has_many :posts, dependent: :destroy
   has_many :pages, dependent: :destroy
   has_many :media, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :api_tokens, dependent: :destroy
+  has_many :ai_usages, dependent: :destroy
+  
+  # Meta fields for plugin extensibility
+  has_many :meta_fields, as: :metable, dependent: :destroy
+  include Metable
 
   # Editor preference
   EDITOR_OPTIONS = %w[blocknote trix ckeditor editorjs].freeze
@@ -29,6 +37,17 @@ class User < ApplicationRecord
   
   def preferred_editor
     editor_preference.presence || 'blocknote' # Default to BlockNote
+  end
+  
+  # Monaco Editor theme preference
+  MONACO_THEMES = %w[auto dark light blue].freeze
+  validates :monaco_theme, inclusion: { in: MONACO_THEMES }, allow_nil: true
+  
+  # API Key
+  validates :api_key, uniqueness: true, allow_nil: true
+  
+  def preferred_monaco_theme
+    monaco_theme.presence || 'auto' # Default to auto
   end
   
   # Validations
@@ -104,6 +123,23 @@ class User < ApplicationRecord
   def can_upload_media?
     ['administrator', 'editor', 'author'].include?(role)
   end
+  
+  def can_upload_files?
+    ['administrator', 'editor', 'author'].include?(role)
+  end
+  
+  # API Key methods
+  def generate_api_key
+    loop do
+      key = "sk-#{SecureRandom.hex(32)}"
+      break key unless User.exists?(api_key: key)
+    end
+  end
+  
+  def regenerate_api_key!
+    self.api_key = generate_api_key
+    save!
+  end
 
   private
 
@@ -113,6 +149,7 @@ class User < ApplicationRecord
   
   def generate_api_token
     self.api_token = generate_token
+    self.api_key = generate_api_key
     self.api_requests_count = 0
     self.api_requests_reset_at = 1.hour.from_now
   end
@@ -122,5 +159,32 @@ class User < ApplicationRecord
       token = SecureRandom.hex(32)
       break token unless User.exists?(api_token: token)
     end
+  end
+  
+  def create_user_tenant
+    # Create a tenant for this user if they don't have one
+    return if tenant_id.present?
+    
+    # Generate a unique subdomain based on email
+    base_subdomain = email.split('@').first.gsub(/[^a-z0-9]/, '')
+    subdomain = base_subdomain
+    counter = 1
+    
+    # Ensure subdomain is unique
+    while Tenant.exists?(subdomain: subdomain)
+      subdomain = "#{base_subdomain}#{counter}"
+      counter += 1
+    end
+    
+    # Create the tenant
+    user_tenant = Tenant.create!(
+      name: "#{email.split('@').first.humanize}'s Site",
+      subdomain: subdomain,
+      domain: nil, # Will be set later if needed
+      theme: 'nordic',
+      storage_type: 'local'
+    )
+    
+    self.tenant = user_tenant
   end
 end

@@ -1,0 +1,56 @@
+{
+  "name": "Page",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    },
+    "page_header": {
+      "type": "page_header",
+      "settings": {
+        "show_breadcrumbs": true,
+        "show_featured_image": true,
+        "show_meta": true,
+        "background_color": "#f8fafc",
+        "text_alignment": "center"
+      }
+    },
+    "page_content": {
+      "type": "page_content",
+      "settings": {
+        "show_sidebar": false,
+        "sidebar_position": "right",
+        "show_author_bio": true,
+        "show_related_posts": true,
+        "show_social_sharing": true,
+        "content_width": "standard"
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "page_header",
+    "page_content",
+    "footer"
+  ]
+}
+

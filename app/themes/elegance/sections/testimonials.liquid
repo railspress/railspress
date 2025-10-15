@@ -1,0 +1,506 @@
+<section class="testimonials section" data-section-type="testimonials" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="testimonials-content">
+      {% if section.settings.heading %}
+        <div class="testimonials-header">
+          <h2 class="testimonials-heading">{{ section.settings.heading }}</h2>
+          {% if section.settings.subheading %}
+            <p class="testimonials-subheading">{{ section.settings.subheading }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+      
+      <div class="testimonials-grid" style="grid-template-columns: repeat({{ section.settings.columns | default: 2 }}, 1fr);">
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'testimonial' %}
+              <div class="testimonial-item" {{ block.shopify_attributes }}>
+                <div class="testimonial-content">
+                  {% if section.settings.show_quotes %}
+                    <div class="testimonial-quote">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
+                      </svg>
+                    </div>
+                  {% endif %}
+                  
+                  {% if block.settings.content %}
+                    <blockquote class="testimonial-text">
+                      "{{ block.settings.content }}"
+                    </blockquote>
+                  {% endif %}
+                  
+                  <div class="testimonial-author">
+                    {% if block.settings.avatar and section.settings.show_avatars %}
+                      <div class="testimonial-avatar">
+                        <img src="{{ block.settings.avatar }}" alt="{{ block.settings.name | default: 'Customer' }}" class="avatar-img">
+                      </div>
+                    {% endif %}
+                    
+                    <div class="testimonial-author-info">
+                      {% if block.settings.name %}
+                        <div class="testimonial-name">{{ block.settings.name }}</div>
+                      {% endif %}
+                      
+                      {% if block.settings.title %}
+                        <div class="testimonial-title">{{ block.settings.title }}</div>
+                      {% endif %}
+                      
+                      {% if block.settings.company %}
+                        <div class="testimonial-company">{{ block.settings.company }}</div>
+                      {% endif %}
+                      
+                      {% if section.settings.show_ratings and block.settings.rating %}
+                        <div class="testimonial-rating">
+                          {% assign rating = block.settings.rating | times: 1 %}
+                          {% for i in (1..5) %}
+                            {% if i <= rating %}
+                              <span class="star filled">★</span>
+                            {% else %}
+                              <span class="star">☆</span>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+          {% endcase %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .testimonials {
+    background-color: {{ section.settings.background_color | default: 'var(--color-surface)' }};
+  }
+  
+  .testimonials-header {
+    text-align: {{ section.settings.text_alignment | default: 'center' }};
+    margin-bottom: 3rem;
+  }
+  
+  .testimonials-heading {
+    color: {{ section.settings.heading_color | default: 'var(--h2-color)' }};
+    margin-bottom: 1rem;
+  }
+  
+  .testimonials-subheading {
+    color: {{ section.settings.subheading_color | default: 'var(--p-color)' }};
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .testimonials-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: start;
+  }
+  
+  .testimonial-item {
+    background-color: {{ section.settings.card_background_color | default: 'var(--color-white)' }};
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    {% if section.settings.card_border %}
+      border: 1px solid var(--color-border);
+    {% endif %}
+    {% if section.settings.card_shadow %}
+      box-shadow: var(--shadow-md);
+    {% endif %}
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+  }
+  
+  .testimonial-item:hover {
+    {% if section.settings.card_hover_effect %}
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    {% endif %}
+  }
+  
+  .testimonial-quote {
+    color: {{ section.settings.quote_color | default: 'var(--color-primary)' }};
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+  
+  .testimonial-text {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: {{ section.settings.text_color | default: 'var(--p-color)' }};
+    margin-bottom: 2rem;
+    font-style: italic;
+    border: none;
+    padding: 0;
+  }
+  
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .testimonial-avatar {
+    flex-shrink: 0;
+  }
+  
+  .avatar-img {
+    width: {{ section.settings.avatar_size | default: 48 }}px;
+    height: {{ section.settings.avatar_size | default: 48 }}px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-border);
+  }
+  
+  .testimonial-author-info {
+    flex: 1;
+  }
+  
+  .testimonial-name {
+    font-weight: var(--font-semibold);
+    color: {{ section.settings.name_color | default: 'var(--h4-color)' }};
+    margin-bottom: 0.25rem;
+  }
+  
+  .testimonial-title {
+    font-size: 0.875rem;
+    color: {{ section.settings.title_color | default: 'var(--color-primary)' }};
+    margin-bottom: 0.25rem;
+  }
+  
+  .testimonial-company {
+    font-size: 0.875rem;
+    color: {{ section.settings.company_color | default: 'var(--color-text-light)' }};
+    margin-bottom: 0.5rem;
+  }
+  
+  .testimonial-rating {
+    display: flex;
+    gap: 0.125rem;
+  }
+  
+  .star {
+    font-size: 1rem;
+    color: var(--color-gray-300);
+  }
+  
+  .star.filled {
+    color: {{ section.settings.rating_color | default: '#fbbf24' }};
+  }
+  
+  /* Alternative Layout: Single Column with Carousel Effect */
+  {% if section.settings.layout == 'carousel' %}
+    .testimonials-grid {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 1.5rem;
+      padding-bottom: 1rem;
+    }
+    
+    .testimonial-item {
+      min-width: 300px;
+      scroll-snap-align: start;
+    }
+    
+    .testimonials-grid::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .testimonials-grid::-webkit-scrollbar-track {
+      background: var(--color-gray-200);
+      border-radius: 2px;
+    }
+    
+    .testimonials-grid::-webkit-scrollbar-thumb {
+      background: var(--color-primary);
+      border-radius: 2px;
+    }
+  {% endif %}
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .testimonials-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    .testimonial-item {
+      padding: 1.5rem;
+    }
+    
+    .testimonials-header {
+      margin-bottom: 2rem;
+    }
+    
+    .testimonial-author {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.75rem;
+    }
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .testimonials-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "tag": "section",
+  "class": "section-testimonials",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Settings"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "What Our Customers Say"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Trusted by thousands of satisfied customers"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Number of Columns",
+      "options": [
+        { "value": "1", "label": "1 Column" },
+        { "value": "2", "label": "2 Columns" },
+        { "value": "3", "label": "3 Columns" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout Style",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "carousel", "label": "Carousel" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color"
+    },
+    {
+      "type": "header",
+      "content": "Testimonial Cards"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card Background Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_border",
+      "label": "Card Border",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "card_shadow",
+      "label": "Card Shadow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "card_hover_effect",
+      "label": "Card Hover Effect",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Content Styling"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Testimonial Text Color"
+    },
+    {
+      "type": "color",
+      "id": "quote_color",
+      "label": "Quote Icon Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quotes",
+      "label": "Show Quote Icons",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Author Info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_avatars",
+      "label": "Show Avatars",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "avatar_size",
+      "label": "Avatar Size",
+      "min": 32,
+      "max": 80,
+      "step": 8,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "name_color",
+      "label": "Name Color"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color"
+    },
+    {
+      "type": "color",
+      "id": "company_color",
+      "label": "Company Color"
+    },
+    {
+      "type": "header",
+      "content": "Ratings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ratings",
+      "label": "Show Ratings",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "rating_color",
+      "label": "Rating Star Color",
+      "default": "#fbbf24"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": "Testimonial Text",
+          "default": "This is an amazing product! I highly recommend it to anyone looking for quality and reliability."
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Customer Name",
+          "default": "John Doe"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Customer Title",
+          "default": "CEO"
+        },
+        {
+          "type": "text",
+          "id": "company",
+          "label": "Company",
+          "default": "Example Corp"
+        },
+        {
+          "type": "image_picker",
+          "id": "avatar",
+          "label": "Customer Avatar"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 5
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonials",
+      "settings": {
+        "heading": "What Our Customers Say",
+        "subheading": "Trusted by thousands of satisfied customers",
+        "columns": "2"
+      },
+      "blocks": [
+        {
+          "type": "testimonial",
+          "settings": {
+            "content": "This is an amazing product! I highly recommend it to anyone looking for quality and reliability.",
+            "name": "John Doe",
+            "title": "CEO",
+            "company": "Example Corp",
+            "rating": 5
+          }
+        },
+        {
+          "type": "testimonial",
+          "settings": {
+            "content": "Excellent service and support. The team went above and beyond to help us achieve our goals.",
+            "name": "Jane Smith",
+            "title": "Marketing Director",
+            "company": "Tech Solutions",
+            "rating": 5
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+

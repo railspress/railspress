@@ -1,6 +1,13 @@
 <% content_for :page_title, "Analytics" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto" 
+     data-controller="analytics"
+     data-analytics-trend-data-value="<%= raw @stats[:daily_trend].to_json %>"
+     data-analytics-top-pages-data-value="<%= raw @stats[:top_pages].to_json %>"
+     data-analytics-referrers-data-value="<%= raw @stats[:referrers].to_json %>">
   <!-- Header -->
   <div class="flex items-center justify-between mb-8">
     <div>
@@ -100,47 +107,8 @@
   <!-- Daily Trend Chart -->
   <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
     <h2 class="text-lg font-semibold text-white mb-4">Pageviews Trend</h2>
-    <div class="h-64" id="trend-chart"></div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-      const trendData = <%= raw @stats[:daily_trend].to_json %>;
-      const ctx = document.getElementById('trend-chart');
-      
-      if (ctx) {
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: trendData.map(d => d.date),
-            datasets: [{
-              label: 'Pageviews',
-              data: trendData.map(d => d.count),
-              borderColor: 'rgb(99, 102, 241)',
-              backgroundColor: 'rgba(99, 102, 241, 0.1)',
-              tension: 0.4,
-              fill: true
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { color: '#9ca3af' },
-                grid: { color: '#2a2a2a' }
-              },
-              x: {
-                ticks: { color: '#9ca3af' },
-                grid: { color: '#2a2a2a' }
-              }
-            }
-          }
-        });
-      }
-    </script>
+    <div class="h-64" data-analytics-target="trendChart"></div>
+    <!-- Chart is now handled by the analytics controller -->
   </div>
 
   <!-- Two Column Layout -->

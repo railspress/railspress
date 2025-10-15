@@ -1,0 +1,634 @@
+<section class="cta section" data-section-type="cta" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="cta-content">
+      <div class="cta-wrapper" style="background-color: {{ section.settings.background_color | default: 'var(--color-primary)' }}; {% if section.settings.background_image %}background-image: url('{{ section.settings.background_image }}');{% endif %}">
+        <div class="cta-inner">
+          {% if section.settings.icon %}
+            <div class="cta-icon">
+              <img src="{{ section.settings.icon }}" alt="{{ section.settings.icon_alt | default: 'CTA Icon' }}">
+            </div>
+          {% endif %}
+          
+          <div class="cta-text">
+            {% if section.settings.heading %}
+              <h2 class="cta-heading">{{ section.settings.heading }}</h2>
+            {% endif %}
+            
+            {% if section.settings.description %}
+              <p class="cta-description">{{ section.settings.description }}</p>
+            {% endif %}
+            
+            {% if section.settings.benefits %}
+              <ul class="cta-benefits">
+                {% assign benefits_array = section.settings.benefits | split: ',' %}
+                {% for benefit in benefits_array %}
+                  <li class="cta-benefit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                    {{ benefit | strip }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+          
+          {% if section.settings.primary_button_text or section.settings.secondary_button_text %}
+            <div class="cta-buttons">
+              {% if section.settings.primary_button_text and section.settings.primary_button_url %}
+                <a href="{{ section.settings.primary_button_url }}" class="cta-button cta-primary">
+                  {{ section.settings.primary_button_text }}
+                  {% if section.settings.primary_button_icon %}
+                    <span class="button-icon">{{ section.settings.primary_button_icon }}</span>
+                  {% endif %}
+                </a>
+              {% endif %}
+              
+              {% if section.settings.secondary_button_text and section.settings.secondary_button_url %}
+                <a href="{{ section.settings.secondary_button_url }}" class="cta-button cta-secondary">
+                  {{ section.settings.secondary_button_text }}
+                  {% if section.settings.secondary_button_icon %}
+                    <span class="button-icon">{{ section.settings.secondary_button_icon }}</span>
+                  {% endif %}
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+          
+          {% if section.settings.show_trust_signals %}
+            <div class="cta-trust">
+              {% if section.settings.trust_text %}
+                <p class="trust-text">{{ section.settings.trust_text }}</p>
+              {% endif %}
+              
+              {% if section.settings.show_security_badges %}
+                <div class="security-badges">
+                  <span class="security-badge">🔒 Secure</span>
+                  <span class="security-badge">🛡️ Protected</span>
+                  <span class="security-badge">✅ Verified</span>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding: var(--section-spacing) 0;
+  }
+  
+  .cta-wrapper {
+    border-radius: var(--radius-xl);
+    padding: {{ section.settings.padding | default: 4 }}rem;
+    text-align: {{ section.settings.text_alignment | default: 'center' }};
+    position: relative;
+    overflow: hidden;
+    {% if section.settings.background_image %}
+      background-size: {{ section.settings.background_size | default: 'cover' }};
+      background-position: {{ section.settings.background_position | default: 'center center' }};
+      background-repeat: no-repeat;
+    {% endif %}
+  }
+  
+  .cta-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, {{ section.settings.overlay_opacity | default: 0.3 }});
+    z-index: 1;
+  }
+  
+  .cta-inner {
+    position: relative;
+    z-index: 2;
+    max-width: {{ section.settings.max_width | default: 800 }}px;
+    margin: 0 auto;
+  }
+  
+  .cta-icon {
+    margin-bottom: 1.5rem;
+  }
+  
+  .cta-icon img {
+    width: {{ section.settings.icon_size | default: 64 }}px;
+    height: {{ section.settings.icon_size | default: 64 }}px;
+    object-fit: contain;
+  }
+  
+  .cta-heading {
+    color: {{ section.settings.heading_color | default: 'white' }};
+    margin-bottom: 1rem;
+    font-size: {{ section.settings.heading_size | default: 36 }}px;
+  }
+  
+  .cta-description {
+    color: {{ section.settings.description_color | default: 'rgba(255, 255, 255, 0.9)' }};
+    font-size: {{ section.settings.description_size | default: 18 }}px;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .cta-benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: {{ section.settings.text_alignment | default: 'center' }};
+    gap: 1rem;
+  }
+  
+  .cta-benefit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: {{ section.settings.benefits_color | default: 'rgba(255, 255, 255, 0.9)' }};
+    font-weight: 500;
+  }
+  
+  .cta-benefit svg {
+    color: {{ section.settings.checkmark_color | default: '#10b981' }};
+    flex-shrink: 0;
+  }
+  
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: {{ section.settings.text_alignment | default: 'center' }};
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: {{ section.settings.button_padding_vertical | default: 16 }}px {{ section.settings.button_padding_horizontal | default: 32 }}px;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    min-width: {{ section.settings.button_min_width | default: 160 }}px;
+  }
+  
+  .cta-primary {
+    background-color: {{ section.settings.primary_button_bg | default: 'white' }};
+    color: {{ section.settings.primary_button_text_color | default: 'var(--color-primary)' }};
+    border-color: {{ section.settings.primary_button_bg | default: 'white' }};
+  }
+  
+  .cta-primary:hover {
+    background-color: {{ section.settings.primary_button_hover_bg | default: 'rgba(255, 255, 255, 0.9)' }};
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .cta-secondary {
+    background-color: transparent;
+    color: {{ section.settings.secondary_button_text_color | default: 'white' }};
+    border-color: {{ section.settings.secondary_button_border | default: 'white' }};
+  }
+  
+  .cta-secondary:hover {
+    background-color: {{ section.settings.secondary_button_hover_bg | default: 'rgba(255, 255, 255, 0.1)' }};
+    transform: translateY(-2px);
+  }
+  
+  .button-icon {
+    font-size: 1.25rem;
+  }
+  
+  .cta-trust {
+    margin-top: 2rem;
+  }
+  
+  .trust-text {
+    color: {{ section.settings.trust_text_color | default: 'rgba(255, 255, 255, 0.8)' }};
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  .security-badges {
+    display: flex;
+    gap: 1rem;
+    justify-content: {{ section.settings.text_alignment | default: 'center' }};
+    flex-wrap: wrap;
+  }
+  
+  .security-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .cta-wrapper {
+      padding: 2rem 1.5rem;
+    }
+    
+    .cta-heading {
+      font-size: 28px;
+    }
+    
+    .cta-description {
+      font-size: 16px;
+    }
+    
+    .cta-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .cta-button {
+      width: 100%;
+      max-width: 280px;
+    }
+    
+    .cta-benefits {
+      flex-direction: column;
+      align-items: {{ section.settings.text_alignment | default: 'center' }};
+    }
+    
+    .security-badges {
+      flex-direction: column;
+      align-items: {{ section.settings.text_alignment | default: 'center' }};
+    }
+  }
+  
+  /* Animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .cta-inner > * {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  .cta-inner > *:nth-child(2) { animation-delay: 0.1s; }
+  .cta-inner > *:nth-child(3) { animation-delay: 0.2s; }
+  .cta-inner > *:nth-child(4) { animation-delay: 0.3s; }
+  .cta-inner > *:nth-child(5) { animation-delay: 0.4s; }
+</style>
+
+{% schema %}
+{
+  "name": "Call to Action",
+  "tag": "section",
+  "class": "section-cta",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon",
+      "label": "Icon"
+    },
+    {
+      "type": "text",
+      "id": "icon_alt",
+      "label": "Icon Alt Text"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon Size",
+      "min": 32,
+      "max": 128,
+      "step": 8,
+      "default": 64,
+      "unit": "px"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Ready to Get Started?"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Join thousands of satisfied customers who trust our platform for their needs."
+    },
+    {
+      "type": "textarea",
+      "id": "benefits",
+      "label": "Benefits (comma-separated)",
+      "default": "Free trial available, No setup fees, 24/7 support"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_text",
+      "label": "Primary Button Text",
+      "default": "Get Started"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_url",
+      "label": "Primary Button URL"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_icon",
+      "label": "Primary Button Icon (emoji)",
+      "default": "🚀"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_text",
+      "label": "Secondary Button Text",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_url",
+      "label": "Secondary Button URL"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_icon",
+      "label": "Secondary Button Icon (emoji)",
+      "default": "📖"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width",
+      "min": 400,
+      "max": 1200,
+      "step": 100,
+      "default": 800,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Section Padding",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#2563eb"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image"
+    },
+    {
+      "type": "select",
+      "id": "background_size",
+      "label": "Background Size",
+      "options": [
+        { "value": "cover", "label": "Cover" },
+        { "value": "contain", "label": "Contain" },
+        { "value": "auto", "label": "Auto" }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "select",
+      "id": "background_position",
+      "label": "Background Position",
+      "options": [
+        { "value": "top left", "label": "Top Left" },
+        { "value": "top center", "label": "Top Center" },
+        { "value": "top right", "label": "Top Right" },
+        { "value": "center left", "label": "Center Left" },
+        { "value": "center center", "label": "Center Center" },
+        { "value": "center right", "label": "Center Right" },
+        { "value": "bottom left", "label": "Bottom Left" },
+        { "value": "bottom center", "label": "Bottom Center" },
+        { "value": "bottom right", "label": "Bottom Right" }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay Opacity",
+      "min": 0,
+      "max": 0.8,
+      "step": 0.1,
+      "default": 0.3
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading Size",
+      "min": 24,
+      "max": 48,
+      "step": 4,
+      "default": 36,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description Size",
+      "min": 14,
+      "max": 24,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description Color",
+      "default": "rgba(255, 255, 255, 0.9)"
+    },
+    {
+      "type": "color",
+      "id": "benefits_color",
+      "label": "Benefits Color",
+      "default": "rgba(255, 255, 255, 0.9)"
+    },
+    {
+      "type": "color",
+      "id": "checkmark_color",
+      "label": "Checkmark Color",
+      "default": "#10b981"
+    },
+    {
+      "type": "header",
+      "content": "Button Styling"
+    },
+    {
+      "type": "range",
+      "id": "button_padding_horizontal",
+      "label": "Button Horizontal Padding",
+      "min": 16,
+      "max": 48,
+      "step": 8,
+      "default": 32,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_padding_vertical",
+      "label": "Button Vertical Padding",
+      "min": 12,
+      "max": 24,
+      "step": 4,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_min_width",
+      "label": "Button Min Width",
+      "min": 120,
+      "max": 300,
+      "step": 20,
+      "default": 160,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_bg",
+      "label": "Primary Button Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_text_color",
+      "label": "Primary Button Text Color",
+      "default": "#2563eb"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_hover_bg",
+      "label": "Primary Button Hover Background",
+      "default": "rgba(255, 255, 255, 0.9)"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_text_color",
+      "label": "Secondary Button Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_border",
+      "label": "Secondary Button Border Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_hover_bg",
+      "label": "Secondary Button Hover Background",
+      "default": "rgba(255, 255, 255, 0.1)"
+    },
+    {
+      "type": "header",
+      "content": "Trust Signals"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_trust_signals",
+      "label": "Show Trust Signals",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "trust_text",
+      "label": "Trust Text",
+      "default": "Trusted by over 10,000 customers worldwide"
+    },
+    {
+      "type": "color",
+      "id": "trust_text_color",
+      "label": "Trust Text Color",
+      "default": "rgba(255, 255, 255, 0.8)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_security_badges",
+      "label": "Show Security Badges",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Call to Action",
+      "settings": {
+        "heading": "Ready to Get Started?",
+        "description": "Join thousands of satisfied customers who trust our platform for their needs.",
+        "benefits": "Free trial available, No setup fees, 24/7 support",
+        "primary_button_text": "Get Started",
+        "secondary_button_text": "Learn More",
+        "primary_button_icon": "🚀",
+        "secondary_button_icon": "📖"
+      }
+    }
+  ]
+}
+{% endschema %}
+

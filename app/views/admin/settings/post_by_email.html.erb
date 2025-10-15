@@ -1,6 +1,12 @@
 <% content_for :page_title, "Post by Email" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
 
-<div class="admin-container">
+<div class="admin-container" 
+     data-controller="post-by-email"
+     data-post-by-email-test-url-value="<%= admin_test_post_by_email_path %>"
+     data-post-by-email-settings-url-value="<%= admin_post_by_email_settings_path %>">
   <div class="flex items-center justify-between mb-8">
     <div>
       <h1 class="text-3xl font-bold text-white mb-2">Post by Email</h1>
@@ -8,14 +14,7 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <!-- Settings Navigation -->
-    <div class="lg:col-span-1">
-      <%= render 'settings_nav' %>
-    </div>
-
-    <!-- Main Content -->
-    <div class="lg:col-span-3 space-y-6">
+  <div class="max-w-4xl mx-auto space-y-6">
       
       <!-- Status Card -->
       <div class="admin-card">
@@ -37,7 +36,7 @@
           </div>
           
           <% if SiteSetting.get('post_by_email_enabled', false) %>
-            <%= form_with url: admin_test_post_by_email_settings_path, method: :post, local: false, class: "inline" do %>
+            <%= form_with url: admin_test_post_by_email_path, method: :post, local: false, class: "inline", data: { action: "submit->post-by-email#testConnection" } do %>
               <button type="submit" class="admin-btn-secondary">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -46,11 +45,14 @@
               </button>
             <% end %>
           <% end %>
+          
+          <!-- Test Result -->
+          <div data-post-by-email-target="testResult" class="hidden mt-3"></div>
         </div>
       </div>
 
       <!-- IMAP Settings Form -->
-      <%= form_with url: admin_post_by_email_settings_path, method: :patch, class: "space-y-6" do |f| %>
+      <%= form_with url: admin_post_by_email_settings_path, method: :patch, class: "space-y-6", data: { action: "submit->post-by-email#saveSettings" } do |f| %>
         
         <!-- Enable/Disable -->
         <div class="admin-card">
@@ -234,80 +236,10 @@
         </div>
       <% end %>
 
-    </div>
   </div>
 </div>
 
-<script>
-  document.addEventListener('turbo:load', () => {
-    // Handle test connection
-    const testForm = document.querySelector('form[action="<%= admin_test_post_by_email_settings_path %>"]');
-    if (testForm) {
-      testForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        showLoading('Checking mailbox...');
-        
-        try {
-          const response = await fetch(testForm.action, {
-            method: 'POST',
-            headers: {
-              'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content,
-              'Accept': 'application/json'
-            }
-          });
-          
-          const data = await response.json();
-          closeLoading();
-          
-          if (data.success) {
-            showSuccessToast(data.message || 'Mailbox checked successfully!');
-          } else {
-            showErrorAlert('Test Failed', data.error || 'Failed to check mailbox');
-          }
-        } catch (error) {
-          closeLoading();
-          showErrorAlert('Error', 'Failed to test connection');
-        }
-      });
-    }
-
-    // Handle form submission
-    const settingsForm = document.querySelector('form[action="<%= admin_post_by_email_settings_path %>"]');
-    if (settingsForm) {
-      settingsForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        showLoading('Saving settings...');
-        
-        try {
-          const formData = new FormData(settingsForm);
-          const response = await fetch(settingsForm.action, {
-            method: 'PATCH',
-            body: formData,
-            headers: {
-              'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content,
-              'Accept': 'application/json'
-            }
-          });
-          
-          const data = await response.json();
-          closeLoading();
-          
-          if (data.success) {
-            showSuccessToast('Settings saved successfully!');
-            setTimeout(() => window.location.reload(), 1000);
-          } else {
-            showErrorAlert('Save Failed', data.error || 'Failed to save settings');
-          }
-        } catch (error) {
-          closeLoading();
-          showErrorAlert('Error', 'Failed to save settings');
-        }
-      });
-    }
-  });
-</script>
+<!-- Post by email functionality is now handled by the Stimulus controller -->
 
 
 

@@ -1,0 +1,85 @@
+<div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-700">
+    <thead class="bg-gray-700">
+      <tr>
+        <% columns.each do |column| %>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            <%= column[:title] %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody class="bg-gray-800 divide-y divide-gray-700">
+      <% if items.any? %>
+        <% items.each do |item| %>
+          <tr class="hover:bg-gray-700">
+            <% columns.each do |column| %>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                <% case column[:field] %>
+                <% when 'title' %>
+                  <%= item.title.present? ? item.title : 'Untitled' %>
+                <% when 'author_name' %>
+                  <%= item.user&.name || item.user&.email || 'Unknown' %>
+                <% when 'post_type' %>
+                  <%= item.content_type&.label || 'Post' %>
+                <% when 'status' %>
+                  <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-600 text-gray-300">
+                    <%= item.status.humanize %>
+                  </span>
+                <% when 'filename' %>
+                  <%= item.filename %>
+                <% when 'file_type' %>
+                  <%= item.content_type %>
+                <% when 'file_size' %>
+                  <%= number_to_human_size(item.file_size) %>
+                <% when 'content' %>
+                  <%= truncate(item.content, length: 50) %>
+                <% when 'commentable_title' %>
+                  <%= item.commentable&.title || 'Unknown' %>
+                <% when 'deleted_at' %>
+                  <span class="text-gray-400">
+                    <%= time_ago_in_words(item.deleted_at) %> ago
+                  </span>
+                <% when 'actions' %>
+                  <div class="flex space-x-2">
+                    <%= link_to restore_admin_trash_index_path(type: item.class.name, id: item.id), 
+                        method: :patch,
+                        class: "inline-flex items-center px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition",
+                        data: { confirm: "Restore this #{item.class.name.downcase}?" } do %>
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                      </svg>
+                      Restore
+                    <% end %>
+                    <%= link_to destroy_permanently_admin_trash_index_path(type: item.class.name, id: item.id), 
+                        method: :delete,
+                        class: "inline-flex items-center px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition",
+                        data: { confirm: "Permanently delete this #{item.class.name.downcase}? This cannot be undone." } do %>
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      Delete
+                    <% end %>
+                  </div>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      <% else %>
+        <tr>
+          <td colspan="<%= columns.count %>" class="px-6 py-12 text-center text-gray-400">
+            <div class="flex flex-col items-center">
+              <svg class="w-12 h-12 mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <p class="text-lg font-medium mb-2">No <%= type.downcase.pluralize %> in trash</p>
+              <p class="text-sm">Deleted <%= type.downcase.pluralize %> will appear here</p>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+

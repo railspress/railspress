@@ -1,16 +1,16 @@
 class Admin::ThemeEditorController < Admin::BaseController
   layout :resolve_layout
-  before_action :set_theme_manager
+  before_action :set_themes_manager
+  before_action :set_active_theme
   before_action :set_current_file, only: [:edit, :update, :destroy, :download, :versions, :restore]
   
   def index
-    @active_theme = SiteSetting.get('active_theme', 'default')
-    @file_tree = @manager.file_tree
+    @file_tree = @themes_manager.file_tree(@active_theme.name)
     @current_file_path = params[:file]
     
     if @current_file_path
-      @file_content = @manager.read_file(@current_file_path)
-      @file_versions = @manager.file_versions(@current_file_path)
+      @file_content = @themes_manager.get_file(@current_file_path)
+      @file_versions = get_file_versions(@current_file_path)
     end
     
     render layout: 'editor'
@@ -30,7 +30,12 @@ class Admin::ThemeEditorController < Admin::BaseController
   end
   
   def update
-    if @manager.write_file(@current_file_path, file_params[:content])
+    # Get the theme file and create new version
+    theme_file = ThemeFile.find_by(theme_name: @active_theme.name, file_path: @current_file_path)
+    
+    if theme_file
+      version = @themes_manager.create_file_version(theme_file, file_params[:content], current_user)
+      
       respond_to do |format|
         format.turbo_stream do
           render turbo_stream: [
@@ -38,7 +43,7 @@ class Admin::ThemeEditorController < Admin::BaseController
               notice: 'File saved successfully!' 
             }),
             turbo_stream.replace('file-versions', partial: 'admin/theme_editor/versions', locals: { 
-              versions: @manager.file_versions(@current_file_path) 
+              versions: get_file_versions(@current_file_path) 
             })
           ]
         end
@@ -62,18 +67,18 @@ class Admin::ThemeEditorController < Admin::BaseController
     file_path = params[:file_path]
     content = params[:content] || ''
     
-    if @manager.create_file(file_path, content)
+    if @themes_manager.create_file(file_path, content)
       render json: { success: true, message: 'File created successfully!', file_path: file_path }
     else
-      render json: { success: false, errors: @manager.errors }, status: :unprocessable_entity
+      render json: { success: false, errors: @themes_manager.errors }, status: :unprocessable_entity
     end
   end
   
   def destroy
-    if @manager.delete_file(@current_file_path)
+    if @themes_manager.delete_file(@current_file_path)
       redirect_to admin_theme_editor_index_path, notice: 'File deleted successfully!'
     else
-      redirect_to admin_theme_editor_index_path(file: @current_file_path), alert: @manager.errors.join(', ')
+      redirect_to admin_theme_editor_index_path(file: @current_file_path), alert: @themes_manager.errors.join(', ')
     end
   end
   
@@ -81,15 +86,15 @@ class Admin::ThemeEditorController < Admin::BaseController
     old_path = params[:old_path]
     new_path = params[:new_path]
     
-    if @manager.rename_file(old_path, new_path)
+    if @themes_manager.rename_file(old_path, new_path)
       render json: { success: true, message: 'File renamed successfully!', new_path: new_path }
     else
-      render json: { success: false, errors: @manager.errors }, status: :unprocessable_entity
+      render json: { success: false, errors: @themes_manager.errors }, status: :unprocessable_entity
     end
   end
   
   def download
-    full_path = @manager.instance_variable_get(:@theme_path).join(@current_file_path)
+    full_path = File.join(@themes_manager.themes_path, @active_theme.name, @current_file_path)
     
     if File.exist?(full_path)
       send_file full_path, filename: File.basename(@current_file_path)
@@ -100,13 +105,13 @@ class Admin::ThemeEditorController < Admin::BaseController
   
   def search
     query = params[:query]
-    results = @manager.search(query)
+    results = @themes_manager.search(query)
     
     render json: { results: results, count: results.size }
   end
   
   def versions
-    @versions = @manager.file_versions(@current_file_path)
+    @versions = @themes_manager.file_versions(@current_file_path)
     
     respond_to do |format|
       format.html
@@ -117,10 +122,10 @@ class Admin::ThemeEditorController < Admin::BaseController
   def restore
     version_id = params[:version_id]
     
-    if @manager.restore_version(version_id)
+    if @themes_manager.restore_version(version_id)
       redirect_to admin_theme_editor_index_path(file: @current_file_path), notice: 'Version restored successfully!'
     else
-      redirect_to admin_theme_editor_index_path(file: @current_file_path), alert: @manager.errors.join(', ')
+      redirect_to admin_theme_editor_index_path(file: @current_file_path), alert: @themes_manager.errors.join(', ')
     end
   end
   
@@ -129,23 +134,66 @@ class Admin::ThemeEditorController < Admin::BaseController
     render layout: false
   end
   
+  def open_file
+    file_path = params[:file]
+    
+    if file_path.present?
+      @current_file_path = file_path
+      @file_content = @themes_manager.read_file(@current_file_path)
+      @file_versions = @themes_manager.file_versions(@current_file_path)
+      
+      if @file_content.nil?
+        redirect_to admin_theme_editor_index_path, alert: @themes_manager.errors.join(', ')
+        return
+      end
+      
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace('file-editor', partial: 'admin/theme_editor/editor', locals: { 
+              file_path: @current_file_path, 
+              content: @file_content, 
+              versions: @file_versions 
+            })
+          ]
+        end
+        format.html { redirect_to admin_theme_editor_index_path(file: @current_file_path) }
+      end
+    else
+      redirect_to admin_theme_editor_index_path, alert: 'No file specified'
+    end
+  end
+  
+  def test
+    render layout: false
+  end
+  
   private
   
-  def set_theme_manager
-    theme_name = params[:theme] || SiteSetting.get('active_theme', 'default')
-    @manager = ThemeFileManager.new(theme_name)
-  rescue ArgumentError => e
-    redirect_to admin_root_path, alert: e.message
+  def set_themes_manager
+    @themes_manager = ThemesManager.new
+  end
+  
+  def set_active_theme
+    @active_theme = Theme.active.first
+    redirect_to admin_themes_path, alert: 'No active theme found. Please activate a theme first.' unless @active_theme
   end
   
   def set_current_file
     @current_file_path = params[:file] || params[:id]
-    @file_content = @manager.read_file(@current_file_path)
-    @file_versions = @manager.file_versions(@current_file_path)
+    @file_content = @themes_manager.get_file(@current_file_path)
+    @file_versions = get_file_versions(@current_file_path)
     
     if @file_content.nil?
-      redirect_to admin_theme_editor_index_path, alert: @manager.errors.join(', ')
+      redirect_to admin_theme_editor_index_path, alert: 'File not found or could not be read.'
     end
+  end
+  
+  def get_file_versions(file_path)
+    theme_file = ThemeFile.find_by(theme_name: @active_theme.name, file_path: file_path)
+    return [] unless theme_file
+    
+    theme_file.theme_file_versions.order(version_number: :desc)
   end
   
   def file_params
@@ -153,7 +201,7 @@ class Admin::ThemeEditorController < Admin::BaseController
   end
   
   def resolve_layout
-    action_name == 'index' ? 'editor_fullscreen' : 'admin'
+    action_name == 'index' ? 'editor' : 'admin'
   end
 end
 

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theme Customizer - <%= @current_theme.titleize %></title>
+  
+  <!-- GrapesJS CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.21.8/dist/css/grapes.min.css">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.js"></script>
+  
+  <style>
+    /* Admin Onyx Theme Colors */
+    :root {
+      --admin-bg-primary: #000000;
+      --admin-bg-secondary: #0a0a0a;
+      --admin-bg-tertiary: #111111;
+      --admin-border: #1a1a1a;
+      --admin-accent: #6366f1;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--admin-bg-primary);
+      color: #ffffff;
+    }
+    
+    /* Editor Top Bar */
+    .editor-topbar {
+      height: 60px;
+      background: var(--admin-bg-primary);
+      border-bottom: 1px solid var(--admin-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    
+    .editor-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    
+    .btn-back {
+      background: var(--admin-bg-secondary);
+      border: 1px solid var(--admin-border);
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .btn-back:hover {
+      background: var(--admin-bg-tertiary);
+      border-color: var(--admin-accent);
+    }
+    
+    .template-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .template-selector label {
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .template-selector select {
+      background: var(--admin-bg-secondary);
+      border: 1px solid var(--admin-border);
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .template-selector select:focus {
+      outline: none;
+      border-color: var(--admin-accent);
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    
+    .btn-secondary {
+      background: var(--admin-bg-secondary);
+      border: 1px solid var(--admin-border);
+      color: #ffffff;
+    }
+    
+    .btn-secondary:hover {
+      background: var(--admin-bg-tertiary);
+      border-color: var(--admin-accent);
+    }
+    
+    .btn-primary {
+      background: var(--admin-accent);
+      color: #ffffff;
+    }
+    
+    .btn-primary:hover {
+      background: #4f46e5;
+    }
+    
+    .btn-success {
+      background: #10b981;
+      color: #ffffff;
+    }
+    
+    .btn-success:hover {
+      background: #059669;
+    }
+    
+    /* Main Editor Container */
+    .editor-container {
+      margin-top: 60px;
+      height: calc(100vh - 60px);
+    }
+    
+    /* GrapesJS Overrides for Admin Theme */
+    .gjs-one-bg {
+      background: var(--admin-bg-primary) !important;
+    }
+    
+    .gjs-two-color {
+      color: #ffffff !important;
+    }
+    
+    .gjs-three-bg {
+      background: var(--admin-bg-secondary) !important;
+    }
+    
+    .gjs-four-color {
+      color: #ffffff !important;
+    }
+    
+    .gjs-pn-panel {
+      background: var(--admin-bg-primary) !important;
+      border-color: var(--admin-border) !important;
+    }
+    
+    .gjs-pn-btn {
+      color: #ffffff !important;
+    }
+    
+    .gjs-pn-btn:hover {
+      background: var(--admin-bg-tertiary) !important;
+    }
+    
+    .gjs-pn-btn.gjs-pn-active {
+      background: var(--admin-accent) !important;
+      color: #ffffff !important;
+    }
+    
+    .gjs-blocks-c {
+      background: var(--admin-bg-primary) !important;
+    }
+    
+    .gjs-block {
+      background: var(--admin-bg-secondary) !important;
+      border: 1px solid var(--admin-border) !important;
+      color: #ffffff !important;
+    }
+    
+    .gjs-block:hover {
+      background: var(--admin-bg-tertiary) !important;
+      border-color: var(--admin-accent) !important;
+    }
+    
+    .gjs-sm-sectors {
+      background: var(--admin-bg-primary) !important;
+    }
+    
+    .gjs-sm-sector {
+      background: var(--admin-bg-secondary) !important;
+      border-color: var(--admin-border) !important;
+    }
+    
+    .gjs-sm-title {
+      color: #ffffff !important;
+    }
+    
+    .gjs-field {
+      background: var(--admin-bg-tertiary) !important;
+      border: 1px solid var(--admin-border) !important;
+      color: #ffffff !important;
+    }
+    
+    .gjs-field:focus {
+      border-color: var(--admin-accent) !important;
+    }
+  </style>
+</head>
+<body>
+  <div data-controller="theme-customizer" 
+       data-theme-customizer-theme-sections-value="<%= raw @theme_sections.to_json %>"
+       data-theme-customizer-theme-settings-value="<%= raw @theme_settings.to_json %>"
+       data-theme-customizer-template-data-value="<%= raw @template_data.to_json %>">
+    
+    <!-- Top Bar -->
+    <div class="editor-topbar">
+      <div class="editor-title">
+        <button class="btn-back" data-action="click->theme-customizer#goBackToAdmin" title="Back to Admin">
+          <svg style="width:20px;height:20px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        </button>
+        <svg style="width:20px;height:20px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+        </svg>
+        Theme Customizer - <%= @current_theme.titleize %>
+      </div>
+      
+      <div class="template-selector">
+        <label for="template-select">Page:</label>
+        <select data-theme-customizer-target="templateSelect" data-action="change->theme-customizer#templateChanged" id="template-select">
+          <% @available_templates.each do |template| %>
+            <option value="<%= template %>" <%= 'selected' if template == @template_type %>>
+              <%= template.humanize %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+      
+      <div class="editor-actions">
+        <button class="btn btn-secondary" data-action="click->theme-customizer#previewTemplate">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          Preview
+        </button>
+        <button class="btn btn-primary" data-action="click->theme-customizer#saveCustomization">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+          </svg>
+          Save Preview
+        </button>
+        <button class="btn btn-success" data-action="click->theme-customizer#publishCustomization">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          Publish
+        </button>
+      </div>
+    </div>
+    
+    <!-- Main Editor Container -->
+    <div class="editor-container" data-theme-customizer-target="gjsContainer">
+      <div id="gjs"></div>
+    </div>
+  </div>
+  
+  <!-- GrapesJS JavaScript -->
+  <script src="https://unpkg.com/grapesjs@0.21.8/dist/grapes.min.js"></script>
+</body>
+</html>
+

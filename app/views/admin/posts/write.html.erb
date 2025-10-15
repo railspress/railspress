@@ -1,6 +1,6 @@
 <% content_for :title, @post.persisted? ? "Edit - #{@post.title}" : "New Post" %>
 
-<div class="h-screen flex bg-[#0a0a0a]">
+<div class="h-screen flex bg-[#0a0a0a]" data-controller="keyboard-shortcuts">
   
   <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex" do |f| %>
     <!-- Left: Main Editor Area -->
@@ -230,11 +230,11 @@
 </div>
 
 <!-- Keyboard shortcuts help (toggle with ?) -->
-<div id="shortcuts-help" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-action="click->shortcuts#close">
+<div id="shortcuts-help" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-keyboard-shortcuts-target="helpPanel" data-action="click->keyboard-shortcuts#hideHelp">
   <div class="bg-white dark:bg-gray-900 rounded-xl p-8 max-w-2xl w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between mb-6">
       <h3 class="text-xl font-bold text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
-      <button onclick="document.getElementById('shortcuts-help').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+      <button data-action="click->keyboard-shortcuts#hideHelp" class="text-gray-400 hover:text-gray-600">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -291,17 +291,5 @@
   </div>
 </div>
 
-<script>
-  // Show shortcuts help with ?
-  document.addEventListener('keydown', (e) => {
-    if (e.key === '?' && !e.target.matches('input, textarea')) {
-      e.preventDefault()
-      document.getElementById('shortcuts-help').classList.toggle('hidden')
-    }
-    
-    if (e.key === 'Escape') {
-      document.getElementById('shortcuts-help').classList.add('hidden')
-    }
-  })
-</script>
+<!-- Keyboard shortcuts are now handled by the Stimulus controller -->
 

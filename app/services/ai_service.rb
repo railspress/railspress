@@ -41,7 +41,7 @@ class AiService
     require 'net/http'
     require 'json'
     
-    uri = URI(@provider.api_url || 'https://api.cohere.ai/v1/chat')
+    uri = URI('https://api.cohere.ai/v1/chat')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
     
@@ -52,8 +52,8 @@ class AiService
     body = {
       model: @provider.model_identifier,
       message: prompt,
-      max_tokens: @provider.max_tokens,
-      temperature: @provider.temperature,
+      max_tokens: @provider.max_tokens.to_i,
+      temperature: @provider.temperature.to_f,
       stream: false
     }
     
@@ -136,6 +136,8 @@ class AiService
     { error: e.message }
   end
 end
+
+
 
 
 

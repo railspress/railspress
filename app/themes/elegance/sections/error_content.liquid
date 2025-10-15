@@ -1,0 +1,686 @@
+<section class="error-content section" data-section-type="error_content" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="error-content-wrapper" style="text-align: {{ section.settings.text_alignment | default: 'center' }}; max-width: {{ section.settings.max_width | default: 600 }}px; margin: 0 auto;">
+      
+      {% if section.settings.error_icon %}
+        <div class="error-icon">
+          <span class="icon-text">{{ section.settings.error_icon }}</span>
+        </div>
+      {% endif %}
+
+      {% if section.settings.error_title %}
+        <h1 class="error-title">{{ section.settings.error_title }}</h1>
+      {% endif %}
+
+      {% if section.settings.error_message %}
+        <div class="error-message">
+          {{ section.settings.error_message }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.error_code %}
+        <div class="error-code">
+          Error {{ section.settings.error_code }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.show_search %}
+        <div class="error-search">
+          <form class="search-form" action="/search" method="get">
+            <div class="search-input-group">
+              <input type="text" name="q" placeholder="{{ section.settings.search_placeholder | default: 'Search...' }}" class="search-input">
+              <button type="submit" class="search-button">
+                <span class="search-icon">🔍</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+
+      {% if section.settings.show_navigation %}
+        <div class="error-navigation">
+          <a href="/" class="home-button {{ section.settings.button_style }}">
+            {{ section.settings.home_button_text | default: 'Go Home' }}
+            {% if section.settings.home_button_icon %}
+              <span class="btn-icon">{{ section.settings.home_button_icon }}</span>
+            {% endif %}
+          </a>
+          
+          {% if section.settings.show_back_button %}
+            <button onclick="history.back()" class="back-button {{ section.settings.button_style }}">
+              {{ section.settings.back_button_text | default: 'Go Back' }}
+              {% if section.settings.back_button_icon %}
+                <span class="btn-icon">{{ section.settings.back_button_icon }}</span>
+              {% endif %}
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if section.settings.show_help_links %}
+        <div class="help-links">
+          <h3 class="help-title">{{ section.settings.help_title | default: 'Need Help?' }}</h3>
+          <ul class="help-list">
+            {% if section.settings.help_link_1_url %}
+              <li><a href="{{ section.settings.help_link_1_url }}">{{ section.settings.help_link_1_text }}</a></li>
+            {% endif %}
+            {% if section.settings.help_link_2_url %}
+              <li><a href="{{ section.settings.help_link_2_url }}">{{ section.settings.help_link_2_text }}</a></li>
+            {% endif %}
+            {% if section.settings.help_link_3_url %}
+              <li><a href="{{ section.settings.help_link_3_url }}">{{ section.settings.help_link_3_text }}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .error-content {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+    padding: {{ section.settings.section_padding_vertical | default: 4 }}rem 0;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+  }
+  
+  .error-icon {
+    margin-bottom: 2rem;
+  }
+  
+  .icon-text {
+    font-size: {{ section.settings.error_icon_size | default: 80 }}px;
+    color: {{ section.settings.error_icon_color | default: 'var(--color-primary)' }};
+    display: inline-block;
+  }
+  
+  .error-title {
+    color: {{ section.settings.title_color | default: 'var(--h1-color)' }};
+    font-size: {{ section.settings.title_size | default: 48 }}px;
+    font-weight: {{ section.settings.title_weight | default: 700 }};
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  
+  .error-message {
+    color: {{ section.settings.message_color | default: 'var(--p-color)' }};
+    font-size: {{ section.settings.message_size | default: 18 }}px;
+    line-height: {{ section.settings.message_line_height | default: 1.6 }};
+    margin-bottom: 2rem;
+  }
+  
+  .error-code {
+    color: {{ section.settings.code_color | default: 'var(--text-light-color)' }};
+    font-size: {{ section.settings.code_size | default: 14 }}px;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    padding: 8px 16px;
+    background-color: {{ section.settings.code_bg_color | default: 'var(--color-surface)' }};
+    border-radius: var(--radius-md);
+    display: inline-block;
+  }
+  
+  .error-search {
+    margin-bottom: 2rem;
+  }
+  
+  .search-input-group {
+    display: flex;
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  
+  .search-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+  }
+  
+  .search-button {
+    padding: 12px 16px;
+    background-color: {{ section.settings.search_button_bg_color | default: 'var(--color-primary)' }};
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .search-button:hover {
+    background-color: {{ section.settings.search_button_hover_bg_color | default: 'var(--color-primary-dark)' }};
+  }
+  
+  .error-navigation {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+  
+  .home-button,
+  .back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: {{ section.settings.button_padding_vertical | default: 12 }}px {{ section.settings.button_padding_horizontal | default: 24 }}px;
+    border-radius: {{ section.settings.button_border_radius | default: 8 }}px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    font-size: {{ section.settings.button_size | default: 16 }}px;
+    cursor: pointer;
+  }
+  
+  .home-button.primary,
+  .back-button.primary {
+    background-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.button_text_color | default: 'white' }};
+    border-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .home-button.primary:hover,
+  .back-button.primary:hover {
+    background-color: {{ section.settings.button_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    border-color: {{ section.settings.button_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .home-button.secondary,
+  .back-button.secondary {
+    background-color: transparent;
+    color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+    border-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .home-button.secondary:hover,
+  .back-button.secondary:hover {
+    background-color: {{ section.settings.button_bg_color | default: 'var(--color-primary)' }};
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .btn-icon {
+    font-size: 1rem;
+  }
+  
+  .help-links {
+    text-align: center;
+  }
+  
+  .help-title {
+    color: {{ section.settings.help_title_color | default: 'var(--h3-color)' }};
+    font-size: {{ section.settings.help_title_size | default: 20 }}px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  
+  .help-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .help-list li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .help-list a {
+    color: {{ section.settings.help_link_color | default: 'var(--color-primary)' }};
+    text-decoration: none;
+    font-size: {{ section.settings.help_link_size | default: 16 }}px;
+    transition: color 0.2s ease;
+  }
+  
+  .help-list a:hover {
+    color: {{ section.settings.help_link_hover_color | default: 'var(--color-primary-dark)' }};
+    text-decoration: underline;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .error-title {
+      font-size: 36px;
+    }
+    
+    .error-message {
+      font-size: 16px;
+    }
+    
+    .icon-text {
+      font-size: 60px;
+    }
+    
+    .error-content {
+      padding: 2rem 0;
+    }
+    
+    .error-navigation {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .home-button,
+    .back-button {
+      width: 100%;
+      max-width: 250px;
+      justify-content: center;
+    }
+    
+    .search-input-group {
+      max-width: 300px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Error Content",
+  "tag": "section",
+  "class": "section-error-content",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "error_icon",
+      "label": "Error Icon (emoji)",
+      "default": "😕"
+    },
+    {
+      "type": "text",
+      "id": "error_title",
+      "label": "Error Title",
+      "default": "Page Not Found"
+    },
+    {
+      "type": "richtext",
+      "id": "error_message",
+      "label": "Error Message",
+      "default": "<p>The page you're looking for doesn't exist.</p>"
+    },
+    {
+      "type": "text",
+      "id": "error_code",
+      "label": "Error Code",
+      "default": "404"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width",
+      "min": 400,
+      "max": 800,
+      "step": 50,
+      "default": 600,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_vertical",
+      "label": "Section Vertical Padding",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Search"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show Search",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search Placeholder",
+      "default": "Search..."
+    },
+    {
+      "type": "color",
+      "id": "search_button_bg_color",
+      "label": "Search Button Background Color"
+    },
+    {
+      "type": "color",
+      "id": "search_button_hover_bg_color",
+      "label": "Search Button Hover Background Color"
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "Show Navigation Buttons",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_back_button",
+      "label": "Show Back Button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "home_button_text",
+      "label": "Home Button Text",
+      "default": "Go Home"
+    },
+    {
+      "type": "text",
+      "id": "home_button_icon",
+      "label": "Home Button Icon (emoji)"
+    },
+    {
+      "type": "text",
+      "id": "back_button_text",
+      "label": "Back Button Text",
+      "default": "Go Back"
+    },
+    {
+      "type": "text",
+      "id": "back_button_icon",
+      "label": "Back Button Icon (emoji)"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button Style",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "range",
+      "id": "button_size",
+      "label": "Button Size",
+      "min": 14,
+      "max": 20,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_padding_horizontal",
+      "label": "Button Horizontal Padding",
+      "min": 16,
+      "max": 32,
+      "step": 4,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_padding_vertical",
+      "label": "Button Vertical Padding",
+      "min": 8,
+      "max": 16,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Button Border Radius",
+      "min": 0,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Button Background Color"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button Text Color"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_bg_color",
+      "label": "Button Hover Background Color"
+    },
+    {
+      "type": "header",
+      "content": "Help Links"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_help_links",
+      "label": "Show Help Links",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "help_title",
+      "label": "Help Title",
+      "default": "Need Help?"
+    },
+    {
+      "type": "text",
+      "id": "help_link_1_text",
+      "label": "Help Link 1 Text",
+      "default": "Contact Support"
+    },
+    {
+      "type": "url",
+      "id": "help_link_1_url",
+      "label": "Help Link 1 URL"
+    },
+    {
+      "type": "text",
+      "id": "help_link_2_text",
+      "label": "Help Link 2 Text",
+      "default": "FAQ"
+    },
+    {
+      "type": "url",
+      "id": "help_link_2_url",
+      "label": "Help Link 2 URL"
+    },
+    {
+      "type": "text",
+      "id": "help_link_3_text",
+      "label": "Help Link 3 Text",
+      "default": "Documentation"
+    },
+    {
+      "type": "url",
+      "id": "help_link_3_url",
+      "label": "Help Link 3 URL"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "error_icon_size",
+      "label": "Error Icon Size",
+      "min": 40,
+      "max": 120,
+      "step": 10,
+      "default": 80,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "error_icon_color",
+      "label": "Error Icon Color"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title Size",
+      "min": 32,
+      "max": 64,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title Weight",
+      "options": [
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" },
+        { "value": "800", "label": "Extra Bold" }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color"
+    },
+    {
+      "type": "range",
+      "id": "message_size",
+      "label": "Message Size",
+      "min": 14,
+      "max": 24,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "message_line_height",
+      "label": "Message Line Height",
+      "min": 1.2,
+      "max": 2,
+      "step": 0.1,
+      "default": 1.6,
+      "unit": ""
+    },
+    {
+      "type": "color",
+      "id": "message_color",
+      "label": "Message Color"
+    },
+    {
+      "type": "range",
+      "id": "code_size",
+      "label": "Error Code Size",
+      "min": 12,
+      "max": 18,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "code_color",
+      "label": "Error Code Color"
+    },
+    {
+      "type": "color",
+      "id": "code_bg_color",
+      "label": "Error Code Background Color"
+    },
+    {
+      "type": "range",
+      "id": "help_title_size",
+      "label": "Help Title Size",
+      "min": 16,
+      "max": 24,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "help_title_color",
+      "label": "Help Title Color"
+    },
+    {
+      "type": "range",
+      "id": "help_link_size",
+      "label": "Help Link Size",
+      "min": 14,
+      "max": 18,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "help_link_color",
+      "label": "Help Link Color"
+    },
+    {
+      "type": "color",
+      "id": "help_link_hover_color",
+      "label": "Help Link Hover Color"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Error Content",
+      "settings": {
+        "error_icon": "😕",
+        "error_title": "Page Not Found",
+        "error_message": "<p>The page you're looking for doesn't exist.</p>",
+        "error_code": "404",
+        "text_alignment": "center",
+        "show_search": true,
+        "show_navigation": true,
+        "show_back_button": true
+      }
+    }
+  ]
+}
+{% endschema %}
+

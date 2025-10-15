@@ -5,7 +5,31 @@ puts "🌱 Seeding RailsPress..."
 puts ""
 
 # ============================================
-# 1. USERS
+# 1. TENANT
+# ============================================
+puts "🏢 Creating default tenant..."
+
+default_tenant = Tenant.find_or_create_by!(name: 'RailsPress Default') do |tenant|
+  tenant.domain = 'localhost'
+  tenant.subdomain = nil
+  tenant.theme = 'nordic'
+  tenant.locales = 'en'
+  tenant.active = true
+  tenant.storage_type = 'local'
+  tenant.settings = {
+    'site_title' => 'RailsPress',
+    'site_tagline' => 'A modern Rails CMS',
+    'posts_per_page' => 10,
+    'default_post_status' => 'draft',
+    'comments_enabled' => true
+  }
+end
+
+puts "  ✅ Default tenant created: #{default_tenant.name}"
+puts ""
+
+# ============================================
+# 2. USERS
 # ============================================
 puts "👤 Creating default user..."
 
@@ -14,13 +38,17 @@ admin = User.find_or_create_by!(email: 'admin@example.com') do |user|
   user.password_confirmation = 'password'
   user.role = 'administrator'
   user.name = 'admin'
+  user.tenant = default_tenant
 end
+
+# Update existing admin user to have tenant if it doesn't
+admin.update!(tenant: default_tenant) if admin.tenant.nil?
 
 puts "  ✅ Admin user created (email: admin@example.com, password: password)"
 puts ""
 
 # ============================================
-# 2. TAXONOMIES
+# 3. TAXONOMIES
 # ============================================
 puts "🗂️  Creating default taxonomies..."
 
@@ -38,6 +66,7 @@ category_taxonomy = Taxonomy.find_or_create_by!(slug: 'category') do |t|
     'show_ui' => true,
     'public' => true
   }
+  t.tenant = default_tenant
 end
 
 # Create default "Uncategorized" term
@@ -47,6 +76,7 @@ uncategorized = Term.find_or_create_by!(
 ) do |term|
   term.name = 'Uncategorized'
   term.description = 'Posts without a specific category'
+  term.tenant = default_tenant
 end
 
 puts "  ✅ Category taxonomy (hierarchical) - Default: Uncategorized"
@@ -65,6 +95,7 @@ tag_taxonomy = Taxonomy.find_or_create_by!(slug: 'tag') do |t|
     'show_ui' => true,
     'public' => true
   }
+  t.tenant = default_tenant
 end
 
 puts "  ✅ Tag taxonomy (flat) - Empty until used"
@@ -83,13 +114,14 @@ format_taxonomy = Taxonomy.find_or_create_by!(slug: 'post_format') do |t|
     'show_ui' => true,
     'public' => false
   }
+  t.tenant = default_tenant
 end
 
 puts "  ✅ Post Format taxonomy (flat) - Available but empty"
 puts ""
 
 # ============================================
-# 3. POSTS
+# 4. POSTS
 # ============================================
 puts "📝 Creating default post..."
 
@@ -100,6 +132,7 @@ hello_post = Post.find_or_create_by!(slug: 'hello-world') do |post|
   post.status = 'published'
   post.user = admin
   post.published_at = Time.current
+  post.tenant = default_tenant
 end
 
 # Assign to Uncategorized category
@@ -117,14 +150,19 @@ comment = Comment.find_or_create_by!(
 ) do |c|
   c.content = 'Hi, this is a comment. To get started with moderating, editing, and deleting comments, please visit the Comments screen in the dashboard. Commenter avatars come from Gravatar.'
   c.status = 'approved'
+  c.comment_type = 'comment'
+  c.comment_approved = '1'
+  c.author_ip = '127.0.0.1'
+  c.author_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
   c.user = admin
+  c.tenant = default_tenant
 end
 
 puts "  ✅ Default comment created"
 puts ""
 
 # ============================================
-# 4. PAGES
+# 5. PAGES
 # ============================================
 puts "📄 Creating default page..."
 
@@ -144,6 +182,7 @@ sample_page = Page.find_or_create_by!(slug: 'sample-page') do |page|
   page.status = 'published'
   page.user = admin
   page.published_at = Time.current
+  page.tenant = default_tenant
 end
 
 puts "  ✅ 'Sample Page' created"
@@ -156,6 +195,7 @@ puts "🧭 Creating default navigation..."
 
 primary_menu = Menu.find_or_create_by!(location: 'primary') do |menu|
   menu.name = 'Primary Menu'
+  menu.tenant = default_tenant
 end
 
 # Clear existing items
@@ -163,15 +203,15 @@ primary_menu.menu_items.destroy_all
 
 # Add default menu items
 primary_menu.menu_items.create!([
-  { label: 'Home', url: '/', position: 1 },
-  { label: 'Sample Page', url: '/page/sample-page', position: 2 }
+  { label: 'Home', url: '/', position: 1, tenant: default_tenant },
+  { label: 'Sample Page', url: '/page/sample-page', position: 2, tenant: default_tenant }
 ])
 
 puts "  ✅ Primary navigation menu created (Home, Sample Page)"
 puts ""
 
 # ============================================
-# 6. SITE SETTINGS
+# 7. SITE SETTINGS
 # ============================================
 puts "⚙️  Configuring site settings..."
 
@@ -190,6 +230,7 @@ default_settings.each do |key, value|
   SiteSetting.find_or_create_by!(key: key) do |setting|
     setting.value = value.to_s
     setting.setting_type = value.is_a?(TrueClass) || value.is_a?(FalseClass) ? 'boolean' : 'string'
+    setting.tenant = default_tenant
   end
 end
 
@@ -197,9 +238,111 @@ puts "  ✅ Site settings configured"
 puts ""
 
 # ============================================
-# 7. AI PROVIDERS
+# 8. AI PROVIDERS
 # ============================================
 load Rails.root.join('db', 'seeds', 'ai_providers.rb')
+
+# ============================================
+# 9. STORAGE PROVIDERS
+# ============================================
+load Rails.root.join('db', 'seeds', 'storage_providers.rb')
+
+# ============================================
+# 10. UPLOAD SECURITY
+# ============================================
+load Rails.root.join('db', 'seeds', 'upload_security.rb')
+
+# ============================================
+# 11. TRASH SETTINGS
+# ============================================
+load Rails.root.join('db', 'seeds', 'trash_settings.rb')
+
+# ============================================
+# 12. AI AGENTS
+# ============================================
+puts "🤖 Creating default AI agents..."
+
+# Get the first AI provider (should be created in ai_providers seeds)
+default_provider = AiProvider.first
+
+if default_provider
+  default_agents = [
+    {
+      name: "Content Summarizer",
+      description: "Summarizes long content into concise, readable summaries",
+      agent_type: "content_summarizer",
+      prompt: "You are a content summarizer. Your task is to create clear, concise summaries of the provided content while maintaining the key points and context. Focus on the main ideas and important details.",
+      content: "Create summaries that are:\n- 20-30% of original length\n- Easy to read and understand\n- Include all key points\n- Maintain original tone when appropriate",
+      guidelines: "Always maintain factual accuracy and preserve the original meaning.",
+      rules: "Never add information not present in the source material.",
+      tasks: "Summarize the provided content effectively.",
+      master_prompt: "You are an expert content summarizer with years of experience in creating clear, concise summaries.",
+      active: true,
+      position: 1
+    },
+    {
+      name: "Post Writer",
+      description: "Helps create engaging blog posts and articles",
+      agent_type: "post_writer",
+      prompt: "You are a professional blog post writer. Your task is to create engaging, well-structured blog posts based on the provided topic or outline. Write in a conversational yet professional tone.",
+      content: "Create blog posts that are:\n- Well-structured with clear headings\n- Engaging and easy to read\n- SEO-friendly\n- Include relevant examples\n- Have a strong conclusion",
+      guidelines: "Write in a conversational tone that connects with readers. Use active voice and short paragraphs.",
+      rules: "Always fact-check information and cite sources when possible.",
+      tasks: "Write compelling blog posts that inform and engage readers.",
+      master_prompt: "You are an expert content writer with extensive experience in creating viral blog posts and articles.",
+      active: true,
+      position: 2
+    },
+    {
+      name: "Comments Analyzer",
+      description: "Analyzes comment sentiment and provides insights",
+      agent_type: "comments_analyzer",
+      prompt: "You are a comments analyzer. Your task is to analyze the sentiment and content of comments to provide insights about audience engagement and feedback.",
+      content: "Analyze comments for:\n- Overall sentiment (positive, negative, neutral)\n- Key themes and topics\n- Engagement patterns\n- Suggestions for improvement",
+      guidelines: "Be objective and provide constructive insights based on the data.",
+      rules: "Respect privacy and avoid sharing personal information from comments.",
+      tasks: "Provide actionable insights based on comment analysis.",
+      master_prompt: "You are an expert in social media and community management with deep understanding of audience engagement.",
+      active: true,
+      position: 3
+    },
+    {
+      name: "SEO Analyzer",
+      description: "Analyzes content for SEO optimization opportunities",
+      agent_type: "seo_analyzer",
+      prompt: "You are an SEO specialist. Your task is to analyze content and provide specific recommendations for improving search engine optimization.",
+      content: "Analyze and provide recommendations for:\n- Keyword optimization\n- Meta descriptions\n- Heading structure\n- Content length and quality\n- Internal linking opportunities",
+      guidelines: "Focus on white-hat SEO techniques that provide long-term value.",
+      rules: "Never recommend keyword stuffing or other black-hat techniques.",
+      tasks: "Provide actionable SEO recommendations that improve search rankings.",
+      master_prompt: "You are a certified SEO expert with proven track record of improving search rankings for various websites.",
+      active: true,
+      position: 4
+    }
+  ]
+
+  default_agents.each do |agent_attrs|
+    agent = AiAgent.find_or_create_by!(name: agent_attrs[:name]) do |a|
+      a.description = agent_attrs[:description]
+      a.agent_type = agent_attrs[:agent_type]
+      a.prompt = agent_attrs[:prompt]
+      a.content = agent_attrs[:content]
+      a.guidelines = agent_attrs[:guidelines]
+      a.rules = agent_attrs[:rules]
+      a.tasks = agent_attrs[:tasks]
+      a.master_prompt = agent_attrs[:master_prompt]
+      a.active = agent_attrs[:active]
+      a.position = agent_attrs[:position]
+      a.ai_provider = default_provider
+    end
+    
+    puts "  ✅ AI Agent created: #{agent.name}"
+  end
+else
+  puts "  ⚠️  No AI provider found. Please run AI providers seeds first."
+end
+
+puts ""
 
 # ============================================
 # SUMMARY

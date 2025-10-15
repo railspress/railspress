@@ -23,7 +23,7 @@ class Tenant < ApplicationRecord
   has_many :widgets, dependent: :destroy
   has_many :themes, dependent: :destroy
   has_many :site_settings, dependent: :destroy
-  has_many :users
+  has_many :users, dependent: :nullify
   has_many :email_logs
   
   # Scopes
@@ -140,7 +140,8 @@ class Tenant < ApplicationRecord
     
     default_settings.each do |key, value|
       site_settings.find_or_create_by!(key: key) do |setting|
-        setting.value = value
+        setting.value = value.to_s
+        setting.setting_type = value.is_a?(TrueClass) || value.is_a?(FalseClass) ? 'boolean' : 'string'
       end
     end
   end

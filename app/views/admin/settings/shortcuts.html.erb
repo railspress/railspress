@@ -24,55 +24,17 @@
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-3">Keyboard Shortcut</label>
-          <div class="grid grid-cols-2 gap-4">
-            <%= f.radio_button :command_palette_shortcut, 'cmd+k', 
-                checked: @command_palette_shortcut == 'cmd+k',
-                class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
-            <label class="flex items-center gap-3 text-gray-300 cursor-pointer">
-              <kbd class="px-3 py-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-sm font-mono">⌘K</kbd>
-              <span>Command + K (Mac)</span>
-            </label>
-
-            <%= f.radio_button :command_palette_shortcut, 'ctrl+k', 
-                checked: @command_palette_shortcut == 'ctrl+k',
-                class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
-            <label class="flex items-center gap-3 text-gray-300 cursor-pointer">
-              <kbd class="px-3 py-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-sm font-mono">Ctrl+K</kbd>
-              <span>Control + K (Windows/Linux)</span>
-            </label>
-
-            <%= f.radio_button :command_palette_shortcut, 'cmd+shift+p', 
-                checked: @command_palette_shortcut == 'cmd+shift+p',
-                class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
-            <label class="flex items-center gap-3 text-gray-300 cursor-pointer">
-              <kbd class="px-3 py-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-sm font-mono">⌘⇧P</kbd>
-              <span>Command + Shift + P (Mac)</span>
-            </label>
-
-            <%= f.radio_button :command_palette_shortcut, 'ctrl+shift+p', 
-                checked: @command_palette_shortcut == 'ctrl+shift+p',
-                class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
-            <label class="flex items-center gap-3 text-gray-300 cursor-pointer">
-              <kbd class="px-3 py-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-sm font-mono">Ctrl+Shift+P</kbd>
-              <span>Control + Shift + P (Windows/Linux)</span>
-            </label>
-
-            <%= f.radio_button :command_palette_shortcut, 'cmd+i', 
-                checked: @command_palette_shortcut == 'cmd+i',
-                class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
-            <label class="flex items-center gap-3 text-gray-300 cursor-pointer">
-              <kbd class="px-3 py-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-sm font-mono">⌘I</kbd>
-              <span>Command + I (Mac)</span>
-            </label>
-
-            <%= f.radio_button :command_palette_shortcut, 'ctrl+i', 
-                checked: @command_palette_shortcut == 'ctrl+i',
-                class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
-            <label class="flex items-center gap-3 text-gray-300 cursor-pointer">
-              <kbd class="px-3 py-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-sm font-mono">Ctrl+I</kbd>
-              <span>Control + I (Windows/Linux)</span>
-            </label>
-          </div>
+          <%= f.select :command_palette_shortcut, 
+              options_for_select([
+                ['⌘K - Command + K (Mac)', 'cmd+k'],
+                ['Ctrl+K - Control + K (Windows/Linux)', 'ctrl+k'],
+                ['⌘⇧P - Command + Shift + P (Mac)', 'cmd+shift+p'],
+                ['Ctrl+Shift+P - Control + Shift + P (Windows/Linux)', 'ctrl+shift+p'],
+                ['⌘I - Command + I (Mac)', 'cmd+i'],
+                ['Ctrl+I - Control + I (Windows/Linux)', 'ctrl+i']
+              ], @command_palette_shortcut),
+              {},
+              class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
         </div>
 
         <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
@@ -109,6 +71,8 @@
     </div>
   <% end %>
 </div>
+
+
 
 
 

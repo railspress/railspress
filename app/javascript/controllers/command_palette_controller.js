@@ -1,4 +1,4 @@
-// Command Palette Controller (CMD+I)
+// Global Command Palette Controller
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -8,11 +8,17 @@ export default class extends Controller {
     this.commands = []
     this.filteredCommands = []
     this.selectedIndex = 0
+    this.isEnabled = true
+    
+    // Check if command palette should be disabled on this page
+    if (this.element.dataset.disabled === 'true') {
+      this.isEnabled = false
+    }
     
     // Load commands
     this.loadCommands()
     
-    // Global keyboard listener
+    // Global keyboard listener (only if enabled)
     document.addEventListener('keydown', this.handleGlobalKeyboard.bind(this))
   }
   
@@ -21,21 +27,54 @@ export default class extends Controller {
   }
   
   // Handle keyboard shortcut based on settings
-  handleGlobalKeyboard(event) {
+  async handleGlobalKeyboard(event) {
+    // Don't interfere if disabled
+    if (!this.isEnabled) return
+    
+    // Don't interfere if user is typing in an input field
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.contentEditable === 'true') {
+      return
+    }
+    
+    // Don't interfere if Monaco Editor is focused
+    if (event.target.closest('.monaco-editor') || event.target.closest('[data-controller*="theme-editor"]')) {
+      return
+    }
+    
+    // Don't interfere if command palette is already open
+    const dialog = document.querySelector('[data-command-palette-target="dialog"]')
+    if (dialog && !dialog.classList.contains('hidden')) {
+      return
+    }
+    
     // Get the configured shortcut (default to cmd+k)
-    const shortcut = this.getShortcut()
+    const shortcut = await this.getShortcut()
     
     if (this.matchesShortcut(event, shortcut)) {
       event.preventDefault()
+      event.stopPropagation()
       this.open()
     }
   }
   
   // Get the configured shortcut from the page
-  getShortcut() {
+  async getShortcut() {
     // Check if there's a data attribute with the shortcut
     const shortcut = document.querySelector('[data-command-palette]')?.dataset.shortcut
-    return shortcut || 'cmd+k'
+    if (shortcut) return shortcut
+    
+    // Try to get from settings via meta tag or API
+    try {
+      const response = await fetch('/admin/settings/shortcuts.json')
+      if (response.ok) {
+        const data = await response.json()
+        return data.command_palette_shortcut || 'cmd+k'
+      }
+    } catch (error) {
+      console.warn('Could not load shortcut settings:', error)
+    }
+    
+    return 'cmd+k'
   }
   
   // Check if the event matches the configured shortcut
@@ -177,56 +216,6 @@ export default class extends Controller {
     }
   }
   
-  // Render results
-  render() {
-    const results = document.querySelector('[data-command-palette-target="results"]')
-    const empty = document.querySelector('[data-command-palette-target="empty"]')
-    
-    if (!results || !empty) return
-    
-    if (this.filteredCommands.length === 0) {
-      results.classList.add('hidden')
-      empty.classList.remove('hidden')
-      return
-    }
-    
-    results.classList.remove('hidden')
-    empty.classList.add('hidden')
-    
-    // Group by category
-    const grouped = this.groupByCategory(this.filteredCommands)
-    
-    let html = ''
-    Object.keys(grouped).forEach(category => {
-      html += `<div class="command-category">`
-      html += `<div class="category-title">${category}</div>`
-      
-      grouped[category].forEach((cmd, i) => {
-        const globalIndex = this.filteredCommands.indexOf(cmd)
-        const isSelected = globalIndex === this.selectedIndex
-        
-        html += `
-          <div class="command-item ${isSelected ? 'command-item-selected' : ''}" 
-               data-index="${globalIndex}"
-               data-action="click->command-palette#selectCommand">
-            <div class="flex items-center flex-1">
-              <div class="command-icon">+</div>
-              <div class="flex-1">
-                <div class="command-title">${cmd.title}</div>
-                <div class="command-description">${cmd.description}</div>
-              </div>
-              <div class="command-action">Navigation</div>
-            </div>
-          </div>
-        `
-      })
-      
-      html += `</div>`
-    })
-    
-    results.innerHTML = html
-  }
-  
   // Group commands by category
   groupByCategory(commands) {
     return commands.reduce((acc, cmd) => {
@@ -302,6 +291,15 @@ export default class extends Controller {
         action: 'navigate',
         url: '/admin/projects',
         keywords: ['projects', 'work', 'tasks']
+      },
+      {
+        category: 'NAVIGATION',
+        icon: '+',
+        title: 'Go to Users',
+        description: 'View all users and contacts',
+        action: 'navigate',
+        url: '/admin/users',
+        keywords: ['users', 'contacts', 'people']
       },
       {
         category: 'NAVIGATION',
@@ -509,10 +507,15 @@ export default class extends Controller {
   
   // Render filtered results
   render() {
+    const results = document.querySelector('[data-command-palette-target="results"]')
+    const empty = document.querySelector('[data-command-palette-target="empty"]')
+    
+    if (!results || !empty) return
+    
     if (this.filteredCommands.length === 0) {
-      this.resultsTarget.classList.add('hidden')
-      this.emptyTarget.classList.remove('hidden')
-      this.emptyTarget.innerHTML = `
+      results.classList.add('hidden')
+      empty.classList.remove('hidden')
+      empty.innerHTML = `
         <div class="text-center py-8">
           <div class="text-4xl mb-3">🔍</div>
           <div class="text-gray-400 text-sm">No commands found</div>
@@ -522,8 +525,8 @@ export default class extends Controller {
       return
     }
     
-    this.resultsTarget.classList.remove('hidden')
-    this.emptyTarget.classList.add('hidden')
+    results.classList.remove('hidden')
+    empty.classList.add('hidden')
     
     const grouped = this.groupByCategory(this.filteredCommands)
     
@@ -571,5 +574,19 @@ export default class extends Controller {
     const regex = new RegExp(`(${query})`, 'gi')
     return text.replace(regex, '<mark class="bg-yellow-400/30 text-white">$1</mark>')
   }
+  
+  // Disable command palette (useful for specific pages)
+  disable() {
+    this.isEnabled = false
+  }
+  
+  // Enable command palette
+  enable() {
+    this.isEnabled = true
+  }
+  
+  // Toggle command palette enabled state
+  toggle() {
+    this.isEnabled = !this.isEnabled
+  }
 }
-

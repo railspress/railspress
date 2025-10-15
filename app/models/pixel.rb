@@ -1,6 +1,6 @@
 class Pixel < ApplicationRecord
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   # Versioning
   has_paper_trail

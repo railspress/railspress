@@ -1,0 +1,27 @@
+{
+  "name": "Dark Theme",
+  "description": "Dark theme configuration",
+  "settings": {
+    "primary_color": "#3b82f6",
+    "secondary_color": "#8b5cf6",
+    "accent_color": "#f59e0b",
+    "background_color": "#111827",
+    "text_color": "#f9fafb",
+    "text_light_color": "#d1d5db",
+    "border_color": "#374151",
+    "surface_color": "#1f2937",
+    "heading_font": "Inter, sans-serif",
+    "body_font": "Inter, sans-serif",
+    "button_font": "Inter, sans-serif",
+    "code_font": "Fira Code, monospace",
+    "container_max_width": 1280,
+    "container_padding": 32,
+    "section_spacing": 64,
+    "element_spacing": 16,
+    "border_radius_sm": 4,
+    "border_radius_md": 8,
+    "border_radius_lg": 12,
+    "border_radius_xl": 16
+  }
+}
+

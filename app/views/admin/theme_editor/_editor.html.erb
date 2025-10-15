@@ -1,21 +1,119 @@
-<div class="h-full flex">
-  <!-- Monaco Editor -->
-  <div id="monaco-container" class="flex-1"></div>
+<!-- Editor Toolbar -->
+<div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-2">
+      <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <span class="text-sm font-mono font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+        <%= file_path %>
+      </span>
+    </div>
+    <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded font-medium">
+      <%= File.extname(file_path).upcase.delete('.') %>
+    </span>
+  </div>
   
-  <!-- Versions Sidebar (Hidden by default) -->
-  <div id="versions-panel" class="hidden w-80 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto">
-    <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-        Version History
-      </h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-        <%= versions.count %> versions saved
-      </p>
+  <div class="flex items-center space-x-2">
+    <!-- Format Button -->
+    <button data-action="click->theme-editor#formatCode" class="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition font-medium flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      Format
+    </button>
+    
+    <!-- Find/Replace -->
+    <button data-action="click->theme-editor#openFindReplace" class="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition font-medium flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      Find
+    </button>
+    
+    <!-- Versions -->
+    <button onclick="openVersions()" class="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition font-medium flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      Versions (<%= versions.count %>)
+    </button>
+    
+    <!-- Actions Dropdown -->
+    <div class="relative group">
+      <button class="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+        </svg>
+        Actions
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      <div class="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg hidden group-hover:block z-10">
+        <button onclick="renameFile('<%= j file_path %>')" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Rename
+        </button>
+        <a href="/admin/theme_editor/<%= ERB::Util.url_encode(file_path) %>/download" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Download
+        </a>
+        <button onclick="deleteFile('<%= j file_path %>')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Delete
+        </button>
+      </div>
     </div>
     
-    <div id="file-versions" class="p-4">
-      <%= render 'versions', versions: versions, file_path: file_path %>
+    <!-- Preview -->
+    <button onclick="openPreview()" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+      </svg>
+      Preview
+    </button>
+    
+    <!-- Monaco Theme Selector -->
+    <div class="flex items-center gap-2">
+      <label class="text-sm text-gray-600 dark:text-gray-400 font-medium">Editor Theme:</label>
+      <select data-action="change->theme-editor#changeTheme" 
+              class="px-3 py-1.5 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <option value="auto">Auto (Follow Admin)</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="blue">Blue</option>
+      </select>
     </div>
+    
+    <!-- Save Button -->
+    <button data-action="click->theme-editor#saveFile" class="px-6 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+      </svg>
+      Save File
+    </button>
+  </div>
+</div>
+
+<!-- Monaco Editor Container -->
+<div id="file-editor" class="theme-editor-panel editor-with-tabs" 
+     data-controller="theme-editor"
+     data-theme-editor-current-file-value="<%= j file_path %>"
+     data-theme-editor-current-content-value="<%= j content %>"
+     data-theme-editor-current-theme-value="<%= current_user&.monaco_theme || 'auto' %>"
+     data-theme-editor-file-extension-value="<%= j File.extname(file_path) %>">
+  
+  <div id="monaco-container" class="theme-editor-monaco-container">
+    <!-- Monaco Editor will be initialized here -->
   </div>
 </div>
 

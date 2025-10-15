@@ -1,0 +1,21 @@
+one:
+  content: "This is a test comment"
+  author_name: "John Doe"
+  author_email: "john@example.com"
+  author_url: "https://example.com"
+  status: approved
+  commentable: one
+  commentable_type: "Post"
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+two:
+  content: "This is another test comment"
+  author_name: "Jane Smith"
+  author_email: "jane@example.com"
+  status: pending
+  commentable: one
+  commentable_type: "Post"
+  created_at: <%= 2.hours.ago %>
+  updated_at: <%= 2.hours.ago %>
+

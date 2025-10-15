@@ -1,0 +1,201 @@
+<% content_for :title, "AI Agents Usage" %>
+
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white">AI Agents Usage</h1>
+      <p class="text-gray-400">Monitor usage statistics and performance metrics</p>
+    </div>
+    <div class="flex items-center space-x-3">
+      <%= link_to admin_ai_agents_path, class: "inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Back to Agents
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Overall Usage Stats -->
+  <div class="bg-gray-800 rounded-lg p-6">
+    <h2 class="text-lg font-semibold text-white mb-4">Overall Usage Statistics</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-400">Total Requests</p>
+            <p class="text-2xl font-bold text-white"><%= @total_usage[:total_requests] %></p>
+          </div>
+          <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-400">Total Tokens</p>
+            <p class="text-2xl font-bold text-white"><%= number_with_delimiter(@total_usage[:total_tokens]) %></p>
+          </div>
+          <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-400">Total Cost</p>
+            <p class="text-2xl font-bold text-white">$<%= @total_usage[:total_cost] %></p>
+          </div>
+          <div class="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-400">Today's Requests</p>
+            <p class="text-2xl font-bold text-white"><%= @total_usage[:requests_today] %></p>
+          </div>
+          <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-400">This Month</p>
+            <p class="text-2xl font-bold text-white"><%= @total_usage[:requests_this_month] %></p>
+          </div>
+          <div class="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-400">Avg Response Time</p>
+            <p class="text-2xl font-bold text-white"><%= @total_usage[:average_response_time] %>s</p>
+          </div>
+          <div class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Individual Agent Usage -->
+  <div class="bg-gray-800 rounded-lg p-6">
+    <h2 class="text-lg font-semibold text-white mb-4">Agent Usage Breakdown</h2>
+    
+    <% if @agent_usage.any? %>
+      <div class="space-y-4">
+        <% @agent_usage.each do |agent_data| %>
+          <% agent = agent_data[:agent] %>
+          <% stats = agent_data[:usage_stats] %>
+          <div class="bg-gray-700 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-medium text-white"><%= agent.name %></h3>
+                  <p class="text-sm text-gray-400"><%= agent.description %></p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= agent.active? ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+                  <%= agent.active? ? 'Active' : 'Inactive' %>
+                </span>
+                <span class="text-sm text-gray-400">via <%= agent.ai_provider.name %></span>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div class="text-center">
+                <p class="text-sm text-gray-400">Total Requests</p>
+                <p class="text-lg font-semibold text-white"><%= stats[:total_requests] %></p>
+              </div>
+              <div class="text-center">
+                <p class="text-sm text-gray-400">Tokens Used</p>
+                <p class="text-lg font-semibold text-white"><%= number_with_delimiter(stats[:total_tokens]) %></p>
+              </div>
+              <div class="text-center">
+                <p class="text-sm text-gray-400">Cost</p>
+                <p class="text-lg font-semibold text-white">$<%= stats[:total_cost] %></p>
+              </div>
+              <div class="text-center">
+                <p class="text-sm text-gray-400">Today</p>
+                <p class="text-lg font-semibold text-white"><%= stats[:requests_today] %></p>
+              </div>
+              <div class="text-center">
+                <p class="text-sm text-gray-400">This Month</p>
+                <p class="text-lg font-semibold text-white"><%= stats[:requests_this_month] %></p>
+              </div>
+              <div class="text-center">
+                <p class="text-sm text-gray-400">Success Rate</p>
+                <p class="text-lg font-semibold text-white"><%= stats[:success_rate] %>%</p>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-600">
+              <div class="flex items-center justify-between text-sm text-gray-400">
+                <div>
+                  <span>Average Response Time: </span>
+                  <span class="text-white font-medium"><%= stats[:average_response_time] %>s</span>
+                </div>
+                <div>
+                  <span>Last Used: </span>
+                  <span class="text-white font-medium"><%= time_ago_in_words(stats[:last_used]) %> ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-white">No AI Agents</h3>
+        <p class="mt-1 text-sm text-gray-400">Get started by creating your first AI agent.</p>
+        <div class="mt-6">
+          <%= link_to new_admin_ai_agent_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" do %>
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Create AI Agent
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+

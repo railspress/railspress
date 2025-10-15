@@ -1,6 +1,6 @@
 class PageTemplate < ApplicationRecord
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   # Associations
   has_many :pages, dependent: :nullify
@@ -169,6 +169,8 @@ class PageTemplate < ApplicationRecord
     CSS
   end
 end
+
+
 
 
 

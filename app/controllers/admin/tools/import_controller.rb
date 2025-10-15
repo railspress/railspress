@@ -57,7 +57,7 @@ class Admin::Tools::ImportController < Admin::BaseController
   end
   
   # POST /admin/tools/import/process
-  def process
+  def process_import
     import_job = ImportJob.find(params[:id])
     
     if import_job.status == 'completed'
@@ -70,6 +70,7 @@ class Admin::Tools::ImportController < Admin::BaseController
     redirect_to admin_import_path, notice: 'Import restarted'
   end
 end
+
 
 
 

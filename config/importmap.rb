@@ -27,4 +27,7 @@ pin "@editorjs/inline-code", to: "https://cdn.jsdelivr.net/npm/@editorjs/inline-
 pin "@editorjs/underline", to: "https://cdn.jsdelivr.net/npm/@editorjs/underline@1.2.1/dist/underline.umd.min.js"
 pin "@editorjs/nested-list", to: "https://cdn.jsdelivr.net/npm/@editorjs/nested-list@1.4.2/dist/nested-list.umd.min.js"
 pin "@editorjs/raw", to: "https://cdn.jsdelivr.net/npm/@editorjs/raw@2.5.0/dist/raw.umd.min.js"
-pin "@editorjs/attaches", to: "https://cdn.jsdelivr.net/npm/@editorjs/attaches@1.3.1/dist/attaches.umd.min.js"
+pin "@editorjs/attaches", to: "https://cdn.jsdelivr.net/npm/@editorjs/attaches@1.3.1/dist/bundle.js"
+
+# Admin table configurations
+pin "admin_table_columns", to: "admin_table_columns.js"

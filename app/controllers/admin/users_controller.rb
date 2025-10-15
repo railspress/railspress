@@ -69,9 +69,26 @@ class Admin::UsersController < Admin::BaseController
       redirect_to admin_users_path, alert: 'Cannot delete user with existing content. Reassign content first.'
       return
     end
-
+    
     @user.destroy
     redirect_to admin_users_path, notice: 'User was successfully deleted.'
+  end
+
+  # PATCH /admin/users/update_monaco_theme
+  def update_monaco_theme
+    if current_user.update(monaco_theme: params[:monaco_theme])
+      render json: { success: true, theme: current_user.monaco_theme }
+    else
+      render json: { success: false, errors: current_user.errors.full_messages }
+    end
+  end
+
+  # POST /admin/users/regenerate_api_key
+  def regenerate_api_key
+    @user = User.find(params[:id])
+    @user.regenerate_api_token!
+    
+    redirect_to admin_users_path, notice: "API key regenerated successfully for #{@user.name}"
   end
 
   # POST /admin/users/bulk_action
@@ -230,6 +247,8 @@ class Admin::UsersController < Admin::BaseController
     end
   end
 end
+
+
 
 
 

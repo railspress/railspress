@@ -1,19 +1,12 @@
 <% content_for :page_title, "Reading Settings" %>
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-4xl mx-auto">
   <div class="mb-6">
-    <h1 class="text-2xl font-bold text-white mb-2">Settings</h1>
+    <h1 class="text-2xl font-bold text-white mb-2">Reading Settings</h1>
     <p class="text-gray-400">Configure your RailsPress site</p>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <aside class="lg:col-span-1">
-      <%= render 'settings_nav' %>
-    </aside>
-
-    <main class="lg:col-span-3">
-      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
-        <h2 class="text-xl font-bold text-white mb-6">Reading Settings</h2>
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
         
         <%= form_with url: admin_settings_reading_path, method: :patch, class: "space-y-6" do |f| %>
           <!-- Homepage Display -->
@@ -88,8 +81,6 @@
             <%= f.submit "Save Changes", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer font-medium" %>
           </div>
         <% end %>
-      </div>
-    </main>
   </div>
 </div>
 

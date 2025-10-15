@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Builder - RailsPress</title>
+  
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  
+  <!-- Tailwind CSS -->
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  
+  <!-- External Libraries -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr@1.8.2/dist/themes/classic.min.css">
+  
+  <!-- Stimulus -->
+  <%= javascript_importmap_tags %>
+</head>
+<body class="h-full bg-gray-100">
+  <div class="h-full flex flex-col" data-controller="builder" data-builder-target="data" data-theme-id="<%= @builder_theme&.id %>" data-sections='<%= @sections&.to_json || '{}' %>' data-settings='<%= @settings&.to_json || '{}' %>' data-templates='<%= @available_templates&.to_json || '[]' %>' data-theme-schema='<%= @theme_schema&.to_json || '[]' %>'>
+    <!-- Shopify-style Top Bar -->
+    <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <!-- Left Section: Back button + Theme name + Menu -->
+      <div class="flex items-center space-x-3">
+        <!-- Back button -->
+        <button onclick="history.back()" class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 21 20" class="w-5 h-5 text-gray-600" focusable="false">
+            <path fill="#4A4A4A" fill-rule="evenodd" d="M10.177 3H14.83c.535 0 .98 0 1.345.03.38.03.736.098 1.073.27a2.75 2.75 0 0 1 1.202 1.202c.172.337.24.693.27 1.073.03.365.03.81.03 1.345v5.91c0 .535 0 .98-.03 1.345-.03.38-.098.736-.27 1.073a2.75 2.75 0 0 1-1.201 1.202c-.338.172-.694.24-1.074.27-.365.03-.81.03-1.345.03H9.963c-.196 0-.347 0-.483-.013a2.75 2.75 0 0 1-2.467-2.467C7 14.134 7 13.983 7 13.787v-.037a.75.75 0 0 1 1.5 0c0 .25 0 .32.006.373a1.25 1.25 0 0 0 1.121 1.121c.052.005.123.006.373.006h4.8c.572 0 .957 0 1.252-.025.288-.023.425-.065.515-.111a1.25 1.25 0 0 0 .547-.546c.046-.091.088-.228.111-.515.024-.296.025-.68.025-1.253V6.95c0-.572 0-.957-.025-1.252-.023-.288-.065-.425-.111-.515a1.25 1.25 0 0 0-.547-.547l.339-.663-.338.663c-.091-.046-.228-.088-.516-.111-.295-.024-.68-.025-1.252-.025h-4.55c-.5 0-.641.004-.744.024a1.25 1.25 0 0 0-.982.982c-.02.103-.024.243-.024.744a.75.75 0 0 1-1.5 0v-.073c0-.393 0-.696.053-.963a2.75 2.75 0 0 1 2.16-2.161C9.482 3 9.784 3 10.178 3ZM4.56 10.5l.97.97a.75.75 0 0 1-1.061 1.06l-2.25-2.25a.75.75 0 0 1 0-1.06l2.25-2.25a.75.75 0 1 1 1.06 1.06L4.56 9h6.69a.75.75 0 0 1 0 1.5H4.56Z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+        
+        <!-- Theme name with active indicator -->
+        <div class="flex items-center space-x-2">
+          <h1 class="text-lg font-semibold text-gray-900"><%= @builder_theme&.theme_name || 'Unknown Theme' %></h1>
+          <% if @builder_theme&.is_theme_active? %>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <div class="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
+              Active
+            </span>
+          <% end %>
+        </div>
+        
+        <!-- Three dots menu -->
+        <div class="relative" data-controller="dropdown">
+          <button data-action="click->dropdown#toggle" class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 transition-colors">
+            <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+            </svg>
+          </button>
+          <div data-dropdown-target="menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+            <div class="py-1">
+              <%= link_to admin_theme_editor_index_path, class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+                Edit code
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Center Section: Page selector dropdown -->
+      <div class="flex-1 flex justify-center">
+        <div class="relative">
+          <select data-builder-target="templateSelector" class="appearance-none bg-transparent border-0 text-center text-lg font-medium text-gray-900 cursor-pointer focus:outline-none" data-action="change->builder#changeTemplate">
+            <% @available_templates.each do |template| %>
+              <option value="<%= template['template'] %>" <%= 'selected' if template['template'] == @current_template_name %>>
+                <%= template['name'] %>
+              </option>
+            <% end %>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Section: Layout controls -->
+      <div class="flex items-center space-x-2">
+        <!-- Device preview controls -->
+        <div class="flex items-center bg-gray-100 rounded-lg p-1">
+          <button data-action="click->builder#setDevice" data-device="desktop" class="flex items-center justify-center w-8 h-8 rounded bg-blue-100 text-blue-600 transition-colors" title="Desktop">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </button>
+          <button data-action="click->builder#setDevice" data-device="tablet" class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-200 transition-colors" title="Tablet">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+          </button>
+          <button data-action="click->builder#setDevice" data-device="mobile" class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-200 transition-colors" title="Mobile">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Fullscreen toggle -->
+        <button data-action="click->builder#toggleFullscreen" class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 transition-colors" title="Toggle fullscreen">
+          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+          </svg>
+        </button>
+        
+        <!-- Undo/Redo -->
+        <div class="flex items-center space-x-1">
+          <button data-action="click->builder#undo" class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 transition-colors" title="Undo">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+            </svg>
+          </button>
+          <button data-action="click->builder#redo" class="flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 transition-colors" title="Redo">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Save button -->
+        <button data-action="click->builder#saveDraft" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+          Save
+        </button>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="flex-1 flex overflow-hidden" data-split-container="true">
+      <!-- Left Panel - Current Page -->
+      <div class="w-80 bg-white border-r border-gray-200 flex flex-col" data-split-panel="left">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-900">Current Page</h2>
+          <p class="text-sm text-gray-600">Drag to reorder sections</p>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4">
+          <div data-builder-target="sectionsList" data-controller="sortable">
+            <% if @current_page_sections&.any? && @section_order&.any? %>
+              <% @section_order.each do |section_id| %>
+                <% section_config = @current_page_sections[section_id] %>
+                <% if section_config %>
+                  <div class="section-item bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2 cursor-move" 
+                       data-section-id="<%= section_id %>" 
+                       data-section-type="<%= section_config['type'] %>"
+                       data-settings="<%= section_config['settings'].to_json %>"
+                       data-action="click->builder#selectSection"
+                       data-section-id-param="<%= section_id %>">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h4 class="font-medium text-gray-900"><%= section_config['type'].humanize %></h4>
+                        <p class="text-sm text-gray-600"><%= section_id %></p>
+                      </div>
+                      <button class="text-red-500 hover:text-red-700" data-action="click->builder#removeSection" data-section-id="<%= section_id %>">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
+            <% else %>
+              <div class="text-center text-gray-500 py-8">
+                <p>No sections added yet</p>
+                <p class="text-sm">Click "Add Section" to get started</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200">
+          <button data-action="click->builder#addSection" class="w-full text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Section
+          </button>
+        </div>
+      </div>
+      
+      <!-- Middle Panel - Preview -->
+      <div class="flex-1 flex flex-col" data-split-panel="middle">
+        <div class="flex-1 bg-gray-100 p-4">
+          <div class="h-full bg-white rounded-lg shadow-sm overflow-hidden">
+            <iframe 
+              data-builder-target="previewFrame" 
+              src="<%= preview_admin_builder_path(@builder_theme, template: @current_template_name) %>"
+              class="w-full h-full border-0"
+              data-controller="preview-frame">
+            </iframe>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right Panel - Settings -->
+      <div class="w-96 bg-white border-l border-gray-200 flex flex-col" data-split-panel="right">
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-200">
+          <button data-builder-target="sectionTab" data-action="click->builder#showSectionSettings" class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border-b-2 border-blue-500">
+            Section
+          </button>
+          <button data-builder-target="themeTab" data-action="click->builder#showThemeSettings" class="flex-1 px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+            Theme
+          </button>
+        </div>
+        
+        <!-- Section Settings Panel -->
+        <div data-builder-target="sectionSettingsPanel" class="flex-1 overflow-y-auto p-4">
+          <div class="text-center text-gray-500 py-8">
+            <p>Select a section to edit its settings</p>
+          </div>
+        </div>
+        
+        <!-- Theme Settings Panel -->
+        <div data-builder-target="themeSettingsPanel" class="flex-1 overflow-y-auto p-4 hidden">
+          <div class="text-center text-gray-500 py-8">
+            <p>Theme settings will appear here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- External JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr@1.8.2/dist/pickr.min.js"></script>
+  
+  <!-- Initialize Split.js -->
+  <script>
+    function initializeSplitPanels() {
+      // Check if Split.js is available
+      if (typeof Split === 'undefined') {
+        console.warn('Split.js not loaded, using fallback layout');
+        return;
+      }
+      
+      const leftPanel = document.querySelector('[data-split-panel="left"]');
+      const middlePanel = document.querySelector('[data-split-panel="middle"]');
+      const rightPanel = document.querySelector('[data-split-panel="right"]');
+      
+      console.log('Split.js panels found:', {
+        left: !!leftPanel,
+        middle: !!middlePanel,
+        right: !!rightPanel
+      });
+      
+      // Ensure all panels exist and are in the DOM
+      if (leftPanel && middlePanel && rightPanel) {
+        // Verify panels are properly connected to the DOM
+        const leftParent = leftPanel.parentNode;
+        const middleParent = middlePanel.parentNode;
+        const rightParent = rightPanel.parentNode;
+        
+        if (leftParent && middleParent && rightParent && 
+            leftParent === middleParent && middleParent === rightParent) {
+          try {
+            // Initialize split panes
+            const splitInstance = Split([leftPanel, middlePanel, rightPanel], {
+              sizes: [25, 50, 25],
+              minSize: [200, 300, 250],
+              gutterSize: 8,
+              cursor: 'col-resize',
+              onDrag: function() {
+                // Handle resize events
+                console.log('Panels resized');
+              },
+              onDragEnd: function() {
+                // Save panel sizes to localStorage
+                const sizes = splitInstance.getSizes();
+                localStorage.setItem('builder-panel-sizes', JSON.stringify(sizes));
+              }
+            });
+            
+            // Restore saved panel sizes
+            const savedSizes = localStorage.getItem('builder-panel-sizes');
+            if (savedSizes) {
+              try {
+                const sizes = JSON.parse(savedSizes);
+                splitInstance.setSizes(sizes);
+              } catch (e) {
+                console.warn('Could not restore panel sizes:', e);
+              }
+            }
+            
+            console.log('Split.js initialized successfully');
+            return splitInstance;
+          } catch (error) {
+            console.error('Split.js initialization failed:', error);
+            // Fallback: ensure panels are still functional without split
+            console.log('Falling back to static panel layout');
+          }
+        } else {
+          console.error('Panels are not properly connected to the same parent');
+        }
+      } else {
+        console.error('Could not find all required panels for Split.js');
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait for Stimulus to initialize and DOM to be fully rendered
+      setTimeout(function() {
+        initializeSplitPanels();
+      }, 300); // Increased timeout to ensure DOM is fully ready
+    });
+    
+    // Also try to initialize when the page is fully loaded
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        if (!document.querySelector('.gutter')) {
+          console.log('Split.js not initialized, trying again...');
+          initializeSplitPanels();
+        }
+      }, 100);
+    });
+  </script>
+  
+  <!-- Fallback CSS for panels without Split.js -->
+  <style>
+    [data-split-container="true"] {
+      display: flex;
+      height: 100%;
+    }
+    
+    [data-split-panel="left"] {
+      width: 320px;
+      min-width: 200px;
+      flex-shrink: 0;
+    }
+    
+    [data-split-panel="middle"] {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 2rem;
+    }
+    
+    [data-split-panel="right"] {
+      width: 384px;
+      min-width: 250px;
+      flex-shrink: 0;
+    }
+    
+    /* Device preview styles - handled entirely by JavaScript */
+    
+    /* Ensure panels are properly sized on mobile */
+    @media (max-width: 768px) {
+      [data-split-container="true"] {
+        flex-direction: column;
+      }
+      
+      [data-split-panel="left"],
+      [data-split-panel="middle"],
+      [data-split-panel="right"] {
+        width: 100% !important;
+        min-width: unset !important;
+        height: 33.333vh;
+      }
+      
+      [data-split-panel="middle"] {
+        padding-top: 1rem;
+      }
+    }
+  </style>
+</body>
+</html>

@@ -1,5 +1,4 @@
 class SubscribersController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:create, :unsubscribe, :confirm]
   
   # POST /subscribe
   def create
@@ -68,6 +67,8 @@ class SubscribersController < ApplicationController
     params.require(:subscriber).permit(:email, :name)
   end
 end
+
+
 
 
 

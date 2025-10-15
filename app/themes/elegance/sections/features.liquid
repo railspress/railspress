@@ -1,0 +1,434 @@
+<section class="features section" data-section-type="features" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="features-content">
+      {% if section.settings.heading %}
+        <div class="features-header">
+          <h2 class="features-heading">{{ section.settings.heading }}</h2>
+          {% if section.settings.subheading %}
+            <p class="features-subheading">{{ section.settings.subheading }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+      
+      <div class="features-grid" style="grid-template-columns: repeat({{ section.settings.columns | default: 3 }}, 1fr);">
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'feature' %}
+              <div class="feature-item" {{ block.shopify_attributes }}>
+                {% if block.settings.icon and section.settings.show_icons %}
+                  <div class="feature-icon">
+                    {% if block.settings.icon_type == 'image' and block.settings.icon_image %}
+                      <img src="{{ block.settings.icon_image }}" alt="{{ block.settings.icon_alt | default: block.settings.title }}">
+                    {% elsif block.settings.icon_type == 'emoji' and block.settings.icon_emoji %}
+                      <span class="feature-emoji">{{ block.settings.icon_emoji }}</span>
+                    {% else %}
+                      <div class="feature-icon-default">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+                
+                <div class="feature-content">
+                  {% if block.settings.title %}
+                    <h3 class="feature-title">{{ block.settings.title }}</h3>
+                  {% endif %}
+                  
+                  {% if block.settings.description %}
+                    <p class="feature-description">{{ block.settings.description }}</p>
+                  {% endif %}
+                  
+                  {% if block.settings.button_text and block.settings.button_url %}
+                    <a href="{{ block.settings.button_url }}" class="feature-button btn">
+                      {{ block.settings.button_text }}
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+          {% endcase %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .features {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+  }
+  
+  .features-header {
+    text-align: {{ section.settings.text_alignment | default: 'center' }};
+    margin-bottom: 3rem;
+  }
+  
+  .features-heading {
+    color: {{ section.settings.heading_color | default: 'var(--h2-color)' }};
+    margin-bottom: 1rem;
+  }
+  
+  .features-subheading {
+    color: {{ section.settings.subheading_color | default: 'var(--p-color)' }};
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .features-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: start;
+  }
+  
+  .feature-item {
+    text-align: {{ section.settings.feature_alignment | default: 'center' }};
+    padding: 2rem;
+    background-color: {{ section.settings.card_background_color | default: 'transparent' }};
+    border-radius: var(--radius-lg);
+    {% if section.settings.card_border %}
+      border: 1px solid var(--color-border);
+    {% endif %}
+    {% if section.settings.card_shadow %}
+      box-shadow: var(--shadow-md);
+    {% endif %}
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .feature-item:hover {
+    {% if section.settings.card_hover_effect %}
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    {% endif %}
+  }
+  
+  .feature-icon {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .feature-icon img {
+    width: {{ section.settings.icon_size | default: 48 }}px;
+    height: {{ section.settings.icon_size | default: 48 }}px;
+    object-fit: contain;
+  }
+  
+  .feature-emoji {
+    font-size: {{ section.settings.icon_size | default: 48 }}px;
+    line-height: 1;
+  }
+  
+  .feature-icon-default {
+    width: {{ section.settings.icon_size | default: 48 }}px;
+    height: {{ section.settings.icon_size | default: 48 }}px;
+    color: var(--color-primary);
+  }
+  
+  .feature-title {
+    color: {{ section.settings.feature_title_color | default: 'var(--h3-color)' }};
+    margin-bottom: 1rem;
+  }
+  
+  .feature-description {
+    color: {{ section.settings.feature_description_color | default: 'var(--p-color)' }};
+    margin-bottom: 1.5rem;
+  }
+  
+  .feature-button {
+    {% if section.settings.button_style == 'outline' %}
+      background-color: transparent;
+      color: var(--color-primary);
+      border: 2px solid var(--color-primary);
+    {% elsif section.settings.button_style == 'ghost' %}
+      background-color: transparent;
+      color: var(--color-primary);
+      border: none;
+    {% endif %}
+  }
+  
+  .feature-button:hover {
+    {% if section.settings.button_style == 'outline' %}
+      background-color: var(--color-primary);
+      color: white;
+    {% elsif section.settings.button_style == 'ghost' %}
+      background-color: var(--color-surface);
+    {% endif %}
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .features-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    .feature-item {
+      padding: 1.5rem;
+    }
+    
+    .features-header {
+      margin-bottom: 2rem;
+    }
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .features-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Features",
+  "tag": "section",
+  "class": "section-features",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Settings"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Why Choose Us?"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Discover what makes us different"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Number of Columns",
+      "options": [
+        { "value": "1", "label": "1 Column" },
+        { "value": "2", "label": "2 Columns" },
+        { "value": "3", "label": "3 Columns" },
+        { "value": "4", "label": "4 Columns" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color"
+    },
+    {
+      "type": "header",
+      "content": "Feature Cards"
+    },
+    {
+      "type": "select",
+      "id": "feature_alignment",
+      "label": "Feature Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card Background Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_border",
+      "label": "Card Border",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "card_shadow",
+      "label": "Card Shadow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "card_hover_effect",
+      "label": "Card Hover Effect",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Icons"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icons",
+      "label": "Show Icons",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon Size",
+      "min": 24,
+      "max": 96,
+      "step": 8,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "feature_title_color",
+      "label": "Feature Title Color"
+    },
+    {
+      "type": "color",
+      "id": "feature_description_color",
+      "label": "Feature Description Color"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button Style",
+      "options": [
+        { "value": "filled", "label": "Filled" },
+        { "value": "outline", "label": "Outline" },
+        { "value": "ghost", "label": "Ghost" }
+      ],
+      "default": "filled"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Feature Title"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "Feature description goes here."
+        },
+        {
+          "type": "header",
+          "content": "Icon"
+        },
+        {
+          "type": "select",
+          "id": "icon_type",
+          "label": "Icon Type",
+          "options": [
+            { "value": "image", "label": "Image" },
+            { "value": "emoji", "label": "Emoji" },
+            { "value": "default", "label": "Default" }
+          ],
+          "default": "default"
+        },
+        {
+          "type": "image_picker",
+          "id": "icon_image",
+          "label": "Icon Image"
+        },
+        {
+          "type": "text",
+          "id": "icon_alt",
+          "label": "Icon Alt Text"
+        },
+        {
+          "type": "text",
+          "id": "icon_emoji",
+          "label": "Icon Emoji",
+          "default": "✨"
+        },
+        {
+          "type": "header",
+          "content": "Button"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Text"
+        },
+        {
+          "type": "url",
+          "id": "button_url",
+          "label": "Button URL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Features",
+      "settings": {
+        "heading": "Why Choose Us?",
+        "subheading": "Discover what makes us different",
+        "columns": "3"
+      },
+      "blocks": [
+        {
+          "type": "feature",
+          "settings": {
+            "title": "Premium Quality",
+            "description": "We deliver the highest quality products and services.",
+            "icon_emoji": "⭐"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "title": "Expert Support",
+            "description": "Our team is here to help you every step of the way.",
+            "icon_emoji": "🤝"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "title": "Fast Delivery",
+            "description": "Get your orders delivered quickly and safely.",
+            "icon_emoji": "🚀"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+

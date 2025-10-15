@@ -1,0 +1,72 @@
+{
+  "name": "Search",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    },
+    "search_header": {
+      "type": "search_header",
+      "settings": {
+        "show_breadcrumbs": true,
+        "show_search_form": true,
+        "show_search_suggestions": true,
+        "background_color": "#f8fafc",
+        "text_alignment": "center"
+      }
+    },
+    "search_results": {
+      "type": "search_results",
+      "settings": {
+        "show_sidebar": true,
+        "sidebar_position": "right",
+        "layout": "list",
+        "show_featured_images": true,
+        "show_excerpts": true,
+        "show_meta": true,
+        "show_highlighted_text": true,
+        "results_per_page": 10,
+        "show_pagination": true,
+        "show_result_count": true,
+        "show_no_results_message": true
+      }
+    },
+    "search_suggestions": {
+      "type": "search_suggestions",
+      "settings": {
+        "show_popular_searches": true,
+        "show_recent_searches": true,
+        "show_categories": true,
+        "show_tags": true,
+        "suggestions_count": 8
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "search_header",
+    "search_results",
+    "search_suggestions",
+    "footer"
+  ]
+}
+

@@ -1,0 +1,158 @@
+<%# 
+  AI Text Generator Button Partial
+  
+  Usage:
+  <%= render 'shared/ai_text_generator', 
+      agent_id: 'content_summarizer',
+      target_selector: '#post_content',
+      button_text: 'Generate with AI',
+      placeholder: 'What would you like to generate?' %>
+  
+  Parameters:
+  - agent_id: The AI agent to use (required)
+  - target_selector: CSS selector for target element (required)
+  - button_text: Text for the button (optional, default: 'AI')
+  - placeholder: Placeholder for textarea (optional)
+  - button_class: Additional CSS classes for button (optional)
+%>
+
+<% 
+  agent_id ||= 'content_summarizer'
+  target_selector ||= '#content'
+  button_text ||= 'AI'
+  placeholder ||= 'Describe what you want to generate...'
+  button_class ||= ''
+  
+  # Generate unique IDs for this instance
+  popup_id = "ai_popup_#{SecureRandom.hex(4)}"
+  textarea_id = "ai_textarea_#{SecureRandom.hex(4)}"
+  tone_id = "ai_tone_#{SecureRandom.hex(4)}"
+%>
+
+<!-- AI Text Generator Button -->
+<div class="ai-text-generator" data-controller="ai-text-generator" 
+     data-ai-text-generator-agent-id-value="<%= agent_id %>"
+     data-ai-text-generator-target-selector-value="<%= target_selector %>"
+     data-ai-text-generator-popup-id-value="<%= popup_id %>">
+
+  <button type="button" 
+          class="ai-generator-btn inline-flex items-center justify-center w-8 h-8 rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 <%= button_class %>"
+          data-action="click->ai-text-generator#openPopup"
+          title="Generate with AI">
+    
+    <!-- Magic Wand Icon -->
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+    </svg>
+    
+    <span class="sr-only"><%= button_text %></span>
+  </button>
+
+  <!-- Popup Modal -->
+  <div id="<%= popup_id %>" 
+       class="ai-popup fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center"
+       data-ai-text-generator-target="popup">
+    
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 transform transition-all">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+          </svg>
+          AI Text Generator
+        </h3>
+        <button type="button" 
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+                data-action="click->ai-text-generator#closePopup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form data-action="submit->ai-text-generator#generateText">
+        
+        <!-- Text Input -->
+        <div class="mb-4">
+          <label for="<%= textarea_id %>" class="block text-sm font-medium text-gray-700 mb-2">
+            What would you like to generate?
+          </label>
+          <textarea id="<%= textarea_id %>"
+                    name="prompt"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 resize-none"
+                    placeholder="<%= placeholder %>"
+                    data-ai-text-generator-target="prompt"
+                    required></textarea>
+        </div>
+
+        <!-- Tone Dropdown -->
+        <div class="mb-6">
+          <label for="<%= tone_id %>" class="block text-sm font-medium text-gray-700 mb-2">
+            Tone
+          </label>
+          <select id="<%= tone_id %>"
+                  name="tone"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  data-ai-text-generator-target="tone">
+            <option value="">Balanced</option>
+            <option value="professional">Professional</option>
+            <option value="casual">Casual</option>
+            <option value="friendly">Friendly</option>
+            <option value="formal">Formal</option>
+            <option value="creative">Creative</option>
+            <option value="concise">Concise</option>
+            <option value="detailed">Detailed</option>
+          </select>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end space-x-3">
+          <button type="button" 
+                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+                  data-action="click->ai-text-generator#closePopup">
+            Cancel
+          </button>
+          <button type="submit" 
+                  class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  data-ai-text-generator-target="submitBtn">
+            <span data-ai-text-generator-target="submitText">Generate</span>
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" 
+                 data-ai-text-generator-target="loadingSpinner" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast -->
+<div class="ai-success-toast fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 hidden transform transition-all"
+     data-ai-text-generator-target="successToast">
+  <div class="flex items-center">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+    </svg>
+    Text generated successfully!
+  </div>
+</div>
+
+<!-- Error Toast -->
+<div class="ai-error-toast fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50 hidden transform transition-all"
+     data-ai-text-generator-target="errorToast">
+  <div class="flex items-center">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+    <span data-ai-text-generator-target="errorMessage">Failed to generate text</span>
+  </div>
+</div>
+

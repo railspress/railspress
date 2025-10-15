@@ -52,6 +52,18 @@ module Types
       description "Estimated reading time in minutes"
     end
     
+    # Meta Fields
+    field :meta_fields, [Types::MetaFieldType], null: true, description: "Custom meta fields for this post" do
+      argument :key, String, required: false, description: "Filter by specific meta field key"
+      argument :immutable, Boolean, required: false, description: "Filter by immutable status"
+    end
+    
+    field :meta_field, Types::MetaFieldType, null: true, description: "Get a specific meta field by key" do
+      argument :key, String, required: true, description: "The key of the meta field to retrieve"
+    end
+    
+    field :all_meta, GraphQL::Types::JSON, null: true, description: "All meta fields as a key-value hash"
+    
     def content_html
       object.content.to_s if object.content.present?
     end
@@ -106,6 +118,22 @@ module Types
       
       words = object.content.to_plain_text.split.size
       (words / 200.0).ceil
+    end
+    
+    def meta_fields(key: nil, immutable: nil)
+      meta_fields = object.meta_fields
+      meta_fields = meta_fields.by_key(key) if key.present?
+      meta_fields = meta_fields.immutable if immutable == true
+      meta_fields = meta_fields.mutable if immutable == false
+      meta_fields
+    end
+    
+    def meta_field(key:)
+      object.meta_fields.find_by(key: key)
+    end
+    
+    def all_meta
+      object.all_meta
     end
   end
 end

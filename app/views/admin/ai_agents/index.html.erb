@@ -1,6 +1,6 @@
 <% content_for :title, "AI Agents" %>
 
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto" data-controller="ai-agents">
   <!-- Header -->
   <div class="flex items-center justify-between mb-8">
     <div>
@@ -109,7 +109,7 @@
               </div>
 
               <div class="flex items-center space-x-2">
-                <button onclick="testAgent(<%= agent.id %>)" class="p-2 text-gray-400 hover:text-blue-400 hover:bg-[#2a2a2a] rounded-lg transition" title="Test Agent">
+                <button data-action="click->ai-agents#testAgent" data-agent-id="<%= agent.id %>" class="p-2 text-gray-400 hover:text-blue-400 hover:bg-[#2a2a2a] rounded-lg transition" title="Test Agent">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
@@ -153,8 +153,8 @@
 </div>
 
 <!-- Test Agent Modal -->
-<div id="testAgentModal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeTestModal()"></div>
+<div id="testAgentModal" class="fixed inset-0 z-50 hidden" data-ai-agents-target="modal">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" data-action="click->ai-agents#closeTestModal"></div>
   <div class="relative flex items-start justify-center min-h-screen pt-[10vh] px-4">
     <div class="w-full max-w-2xl bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-2xl">
       <div class="px-6 py-4 border-b border-[#2a2a2a]">
@@ -171,15 +171,15 @@
       <div class="p-6">
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-300 mb-2">Test Input</label>
-          <textarea id="testInput" rows="4" placeholder="Enter test input..." class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"></textarea>
+          <textarea id="testInput" rows="4" placeholder="Enter test input..." class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" data-ai-agents-target="testInput"></textarea>
         </div>
         
-        <div id="testResult" class="hidden mb-4">
+        <div id="testResult" class="hidden mb-4" data-ai-agents-target="testResult">
           <label class="block text-sm font-medium text-gray-300 mb-2">Result</label>
           <div class="p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white whitespace-pre-wrap"></div>
         </div>
         
-        <div id="testError" class="hidden mb-4">
+        <div id="testError" class="hidden mb-4" data-ai-agents-target="testError">
           <label class="block text-sm font-medium text-red-400 mb-2">Error</label>
           <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400"></div>
         </div>
@@ -189,7 +189,7 @@
         <button onclick="closeTestModal()" class="px-4 py-2 bg-[#0a0a0a] hover:bg-[#111111] border border-[#2a2a2a] text-gray-300 hover:text-white rounded-lg transition">
           Close
         </button>
-        <button onclick="runTest()" id="testButton" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+        <button data-action="click->ai-agents#runTest" id="testButton" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" data-ai-agents-target="testButton">
           Test Agent
         </button>
       </div>
@@ -197,67 +197,4 @@
   </div>
 </div>
 
-<script>
-let currentAgentId = null;
-
-function testAgent(agentId) {
-  currentAgentId = agentId;
-  document.getElementById('testAgentModal').classList.remove('hidden');
-  document.getElementById('testInput').value = '';
-  document.getElementById('testResult').classList.add('hidden');
-  document.getElementById('testError').classList.add('hidden');
-}
-
-function closeTestModal() {
-  document.getElementById('testAgentModal').classList.add('hidden');
-  currentAgentId = null;
-}
-
-async function runTest() {
-  const input = document.getElementById('testInput').value;
-  const testButton = document.getElementById('testButton');
-  const resultDiv = document.getElementById('testResult');
-  const errorDiv = document.getElementById('testError');
-  
-  if (!input.trim()) {
-    alert('Please enter test input');
-    return;
-  }
-  
-  testButton.disabled = true;
-  testButton.textContent = 'Testing...';
-  
-  try {
-    const response = await fetch(`/admin/ai_agents/${currentAgentId}/test`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-      },
-      body: JSON.stringify({
-        user_input: input,
-        context: {}
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      resultDiv.querySelector('div').textContent = data.result;
-      resultDiv.classList.remove('hidden');
-      errorDiv.classList.add('hidden');
-    } else {
-      errorDiv.querySelector('div').textContent = data.error;
-      errorDiv.classList.remove('hidden');
-      resultDiv.classList.add('hidden');
-    }
-  } catch (error) {
-    errorDiv.querySelector('div').textContent = 'Network error: ' + error.message;
-    errorDiv.classList.remove('hidden');
-    resultDiv.classList.add('hidden');
-  } finally {
-    testButton.disabled = false;
-    testButton.textContent = 'Test Agent';
-  }
-}
-</script>
+<!-- AI agents functionality is now handled by the Stimulus controller -->

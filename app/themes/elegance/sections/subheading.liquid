@@ -1,0 +1,750 @@
+<section class="subheading section" data-section-type="subheading" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="subheading-content">
+      <div class="subheading-wrapper" style="text-align: {{ section.settings.text_alignment | default: 'center' }}; max-width: {{ section.settings.max_width | default: 800 }}px; margin: 0 auto;">
+        
+        {% if section.settings.show_badge and section.settings.badge_text %}
+          <div class="subheading-badge">
+            <span class="badge-text">{{ section.settings.badge_text }}</span>
+          </div>
+        {% endif %}
+
+        {% if section.settings.subheading %}
+          <h{{ section.settings.heading_level | default: 3 }} class="section-subheading {{ section.settings.subheading_style }}">
+            {{ section.settings.subheading }}
+          </h{{ section.settings.heading_level | default: 3 }}>
+        {% endif %}
+
+        {% if section.settings.description %}
+          <div class="section-description">
+            {{ section.settings.description }}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_divider %}
+          <div class="subheading-divider {{ section.settings.divider_style }}">
+            {% if section.settings.divider_style == 'line' %}
+              <hr class="divider-line">
+            {% elsif section.settings.divider_style == 'dots' %}
+              <div class="divider-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            {% elsif section.settings.divider_style == 'icon' and section.settings.divider_icon %}
+              <div class="divider-icon">
+                <span>{{ section.settings.divider_icon }}</span>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_cta and section.settings.cta_text %}
+          <div class="subheading-cta">
+            <a href="{{ section.settings.cta_url | default: '#' }}" class="cta-button {{ section.settings.cta_style }}">
+              {{ section.settings.cta_text }}
+              {% if section.settings.cta_icon %}
+                <span class="cta-icon">{{ section.settings.cta_icon }}</span>
+              {% endif %}
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .subheading {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+    padding: {{ section.settings.section_padding_vertical | default: 3 }}rem 0;
+  }
+  
+  .subheading-wrapper {
+    position: relative;
+  }
+  
+  .subheading-badge {
+    margin-bottom: 1rem;
+  }
+  
+  .badge-text {
+    display: inline-block;
+    background-color: {{ section.settings.badge_background_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.badge_text_color | default: 'white' }};
+    padding: {{ section.settings.badge_padding_vertical | default: 6 }}px {{ section.settings.badge_padding_horizontal | default: 12 }}px;
+    border-radius: var(--radius-full);
+    font-size: {{ section.settings.badge_size | default: 12 }}px;
+    font-weight: {{ section.settings.badge_weight | default: 600 }};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    {% if section.settings.badge_border %}
+      border: 2px solid {{ section.settings.badge_border_color | default: 'var(--color-primary)' }};
+    {% endif %}
+  }
+  
+  .section-subheading {
+    color: {{ section.settings.subheading_color | default: 'var(--color-primary)' }};
+    font-size: {{ section.settings.subheading_size | default: 20 }}px;
+    font-weight: {{ section.settings.subheading_weight | default: 600 }};
+    line-height: {{ section.settings.subheading_line_height | default: 1.4 }};
+    margin-bottom: {{ section.settings.subheading_margin_bottom | default: 1 }}rem;
+    letter-spacing: {{ section.settings.subheading_letter_spacing | default: 0 }}px;
+  }
+  
+  .section-subheading.gradient {
+    background: linear-gradient(135deg, {{ section.settings.gradient_start_color | default: 'var(--color-primary)' }}, {{ section.settings.gradient_end_color | default: 'var(--color-secondary)' }});
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .section-subheading.underline {
+    border-bottom: {{ section.settings.underline_thickness | default: 2 }}px solid {{ section.settings.underline_color | default: 'var(--color-primary)' }};
+    padding-bottom: {{ section.settings.underline_padding | default: 8 }}px;
+    display: inline-block;
+  }
+  
+  .section-subheading.highlight {
+    background-color: {{ section.settings.highlight_color | default: 'var(--color-accent)' }};
+    color: {{ section.settings.highlight_text_color | default: 'white' }};
+    padding: {{ section.settings.highlight_padding_vertical | default: 4 }}px {{ section.settings.highlight_padding_horizontal | default: 8 }}px;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+  }
+  
+  .section-description {
+    color: {{ section.settings.description_color | default: 'var(--p-color)' }};
+    font-size: {{ section.settings.description_size | default: 16 }}px;
+    line-height: {{ section.settings.description_line_height | default: 1.6 }};
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+    {% if section.settings.text_alignment == 'center' %}
+      margin-left: auto;
+      margin-right: auto;
+    {% endif %}
+  }
+  
+  .subheading-divider {
+    margin: {{ section.settings.divider_margin | default: 1.5 }}rem 0;
+  }
+  
+  .divider-line {
+    width: {{ section.settings.divider_width | default: 60 }}px;
+    height: {{ section.settings.divider_thickness | default: 2 }}px;
+    background-color: {{ section.settings.divider_color | default: 'var(--color-primary)' }};
+    border: none;
+    border-radius: var(--radius-full);
+    margin: 0 auto;
+  }
+  
+  .divider-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .divider-dots span {
+    width: {{ section.settings.divider_dot_size | default: 6 }}px;
+    height: {{ section.settings.divider_dot_size | default: 6 }}px;
+    background-color: {{ section.settings.divider_color | default: 'var(--color-primary)' }};
+    border-radius: 50%;
+  }
+  
+  .divider-icon {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .divider-icon span {
+    font-size: {{ section.settings.divider_icon_size | default: 16 }}px;
+    color: {{ section.settings.divider_color | default: 'var(--color-primary)' }};
+  }
+  
+  .subheading-cta {
+    margin-top: 1.5rem;
+  }
+  
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: {{ section.settings.cta_padding_vertical | default: 10 }}px {{ section.settings.cta_padding_horizontal | default: 20 }}px;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    font-size: {{ section.settings.cta_size | default: 14 }}px;
+  }
+  
+  .cta-button.primary {
+    background-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.cta_text_color | default: 'white' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-button.primary:hover {
+    background-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    border-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .cta-button.secondary {
+    background-color: transparent;
+    color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-button.secondary:hover {
+    background-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .cta-button.outline {
+    background-color: transparent;
+    color: {{ section.settings.cta_text_color | default: 'var(--color-text)' }};
+    border-color: {{ section.settings.cta_border_color | default: 'var(--color-border)' }};
+  }
+  
+  .cta-button.outline:hover {
+    background-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-surface)' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-icon {
+    font-size: 1rem;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .section-subheading {
+      font-size: 18px;
+    }
+    
+    .section-description {
+      font-size: 15px;
+    }
+    
+    .subheading {
+      padding: 2rem 0;
+    }
+    
+    .badge-text {
+      font-size: 11px;
+      padding: 4px 10px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Subheading",
+  "tag": "section",
+  "class": "section-subheading",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Your Subheading Here"
+    },
+    {
+      "type": "select",
+      "id": "heading_level",
+      "label": "Heading Level",
+      "options": [
+        { "value": "2", "label": "H2" },
+        { "value": "3", "label": "H3" },
+        { "value": "4", "label": "H4" },
+        { "value": "5", "label": "H5" },
+        { "value": "6", "label": "H6" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width",
+      "min": 400,
+      "max": 1200,
+      "step": 100,
+      "default": 800,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_vertical",
+      "label": "Section Vertical Padding",
+      "min": 1,
+      "max": 6,
+      "step": 0.5,
+      "default": 3,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Badge"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show Badge",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge Text",
+      "default": "New"
+    },
+    {
+      "type": "range",
+      "id": "badge_size",
+      "label": "Badge Size",
+      "min": 10,
+      "max": 16,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "badge_weight",
+      "label": "Badge Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "range",
+      "id": "badge_padding_horizontal",
+      "label": "Badge Horizontal Padding",
+      "min": 6,
+      "max": 20,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "badge_padding_vertical",
+      "label": "Badge Vertical Padding",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 6,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "badge_background_color",
+      "label": "Badge Background Color"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge Text Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "badge_border",
+      "label": "Badge Border",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "badge_border_color",
+      "label": "Badge Border Color"
+    },
+    {
+      "type": "header",
+      "content": "Subheading Typography"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "label": "Subheading Size",
+      "min": 16,
+      "max": 32,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "subheading_weight",
+      "label": "Subheading Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "range",
+      "id": "subheading_line_height",
+      "label": "Subheading Line Height",
+      "min": 1.2,
+      "max": 1.8,
+      "step": 0.1,
+      "default": 1.4,
+      "unit": ""
+    },
+    {
+      "type": "range",
+      "id": "subheading_letter_spacing",
+      "label": "Subheading Letter Spacing",
+      "min": -1,
+      "max": 3,
+      "step": 0.5,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "subheading_margin_bottom",
+      "label": "Subheading Margin Bottom",
+      "min": 0.5,
+      "max": 2,
+      "step": 0.25,
+      "default": 1,
+      "unit": "rem"
+    },
+    {
+      "type": "select",
+      "id": "subheading_style",
+      "label": "Subheading Style",
+      "options": [
+        { "value": "default", "label": "Default" },
+        { "value": "gradient", "label": "Gradient" },
+        { "value": "underline", "label": "Underline" },
+        { "value": "highlight", "label": "Highlight" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color"
+    },
+    {
+      "type": "color",
+      "id": "gradient_start_color",
+      "label": "Gradient Start Color"
+    },
+    {
+      "type": "color",
+      "id": "gradient_end_color",
+      "label": "Gradient End Color"
+    },
+    {
+      "type": "range",
+      "id": "underline_thickness",
+      "label": "Underline Thickness",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "underline_color",
+      "label": "Underline Color"
+    },
+    {
+      "type": "range",
+      "id": "underline_padding",
+      "label": "Underline Padding",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "highlight_color",
+      "label": "Highlight Background Color"
+    },
+    {
+      "type": "color",
+      "id": "highlight_text_color",
+      "label": "Highlight Text Color"
+    },
+    {
+      "type": "range",
+      "id": "highlight_padding_horizontal",
+      "label": "Highlight Horizontal Padding",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "highlight_padding_vertical",
+      "label": "Highlight Vertical Padding",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Description Typography"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description Size",
+      "min": 12,
+      "max": 20,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "description_line_height",
+      "label": "Description Line Height",
+      "min": 1.2,
+      "max": 2,
+      "step": 0.1,
+      "default": 1.6,
+      "unit": ""
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description Color"
+    },
+    {
+      "type": "header",
+      "content": "Divider"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_divider",
+      "label": "Show Divider",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "divider_style",
+      "label": "Divider Style",
+      "options": [
+        { "value": "line", "label": "Line" },
+        { "value": "dots", "label": "Dots" },
+        { "value": "icon", "label": "Icon" }
+      ],
+      "default": "line"
+    },
+    {
+      "type": "text",
+      "id": "divider_icon",
+      "label": "Divider Icon (emoji)"
+    },
+    {
+      "type": "range",
+      "id": "divider_width",
+      "label": "Divider Width",
+      "min": 30,
+      "max": 150,
+      "step": 10,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_thickness",
+      "label": "Divider Thickness",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_dot_size",
+      "label": "Divider Dot Size",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 6,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_icon_size",
+      "label": "Divider Icon Size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Divider Color"
+    },
+    {
+      "type": "range",
+      "id": "divider_margin",
+      "label": "Divider Margin",
+      "min": 0.5,
+      "max": 3,
+      "step": 0.25,
+      "default": 1.5,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Call to Action"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta",
+      "label": "Show Call to Action",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA Text"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "CTA URL"
+    },
+    {
+      "type": "select",
+      "id": "cta_style",
+      "label": "CTA Style",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "text",
+      "id": "cta_icon",
+      "label": "CTA Icon (emoji)"
+    },
+    {
+      "type": "range",
+      "id": "cta_size",
+      "label": "CTA Size",
+      "min": 12,
+      "max": 16,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "cta_bg_color",
+      "label": "CTA Background Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_text_color",
+      "label": "CTA Text Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_hover_bg_color",
+      "label": "CTA Hover Background Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_border_color",
+      "label": "CTA Border Color"
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_horizontal",
+      "label": "CTA Horizontal Padding",
+      "min": 12,
+      "max": 32,
+      "step": 4,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_vertical",
+      "label": "CTA Vertical Padding",
+      "min": 6,
+      "max": 16,
+      "step": 2,
+      "default": 10,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Subheading",
+      "settings": {
+        "subheading": "Your Subheading Here",
+        "description": "<p>Add a description to provide more context about your subheading.</p>",
+        "text_alignment": "center",
+        "subheading_style": "default"
+      }
+    }
+  ]
+}
+{% endschema %}
+

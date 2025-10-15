@@ -1,0 +1,681 @@
+<section class="posts section" data-section-type="posts" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="posts-content">
+      {% if section.settings.heading %}
+        <div class="posts-header">
+          <h2 class="posts-heading">{{ section.settings.heading }}</h2>
+          {% if section.settings.subheading %}
+            <p class="posts-subheading">{{ section.settings.subheading }}</p>
+          {% endif %}
+          {% if section.settings.show_view_all and section.settings.view_all_url %}
+            <a href="{{ section.settings.view_all_url }}" class="view-all-link">
+              {{ section.settings.view_all_text | default: 'View All' }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12,5 19,12 12,19"></polyline>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="posts-grid" style="grid-template-columns: repeat({{ section.settings.columns | default: 3 }}, 1fr);">
+        {% for post in posts limit: section.settings.posts_count %}
+          <article class="post-card {{ section.settings.card_style }}">
+            {% if section.settings.show_featured_images and post.featured_image %}
+              <div class="post-image">
+                <a href="{{ post.url }}" class="post-image-link">
+                  <img 
+                    src="{{ post.featured_image }}" 
+                    alt="{{ post.title }}"
+                    class="featured-image"
+                    loading="lazy"
+                  >
+                  {% if section.settings.show_overlay %}
+                    <div class="post-overlay">
+                      <div class="overlay-content">
+                        {% if section.settings.show_read_more_overlay %}
+                          <span class="read-more-overlay">Read More</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                </a>
+                {% if section.settings.show_categories and post.categories.size > 0 %}
+                  <div class="post-category">
+                    <a href="{{ post.categories.first.url }}" class="category-link">
+                      {{ post.categories.first.name }}
+                    </a>
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="post-content">
+              {% if section.settings.show_meta %}
+                <div class="post-meta">
+                  {% if post.author %}
+                    <span class="meta-author">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      {{ post.author.name }}
+                    </span>
+                  {% endif %}
+                  
+                  {% if post.published_at %}
+                    <span class="meta-date">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12,6 12,12 16,14"></polyline>
+                      </svg>
+                      {{ post.published_at | date: "%b %d, %Y" }}
+                    </span>
+                  {% endif %}
+                  
+                  {% if post.reading_time %}
+                    <span class="meta-reading">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                      </svg>
+                      {{ post.reading_time }} min
+                    </span>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <h3 class="post-title">
+                <a href="{{ post.url }}" class="title-link">{{ post.title }}</a>
+              </h3>
+
+              {% if section.settings.show_excerpts and post.excerpt %}
+                <div class="post-excerpt">
+                  <p>{{ post.excerpt | truncate: section.settings.excerpt_length }}</p>
+                </div>
+              {% endif %}
+
+              {% if section.settings.show_tags and post.tags.size > 0 %}
+                <div class="post-tags">
+                  {% for tag in post.tags limit: 3 %}
+                    <a href="{{ tag.url }}" class="tag-link">#{{ tag.name }}</a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              {% if section.settings.show_read_more %}
+                <div class="post-footer">
+                  <a href="{{ post.url }}" class="read-more-btn">
+                    {{ section.settings.read_more_text | default: 'Read More' }}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12,5 19,12 12,19"></polyline>
+                    </svg>
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .posts {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+  }
+  
+  .posts-header {
+    text-align: {{ section.settings.text_alignment | default: 'center' }};
+    margin-bottom: 3rem;
+  }
+  
+  .posts-heading {
+    color: {{ section.settings.heading_color | default: 'var(--h2-color)' }};
+    margin-bottom: 1rem;
+  }
+  
+  .posts-subheading {
+    color: {{ section.settings.subheading_color | default: 'var(--p-color)' }};
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+  }
+  
+  .view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .view-all-link:hover {
+    color: var(--color-primary-dark);
+    transform: translateX(4px);
+  }
+  
+  .posts-grid {
+    display: grid;
+    gap: {{ section.settings.grid_gap | default: 2 }}rem;
+  }
+  
+  .post-card {
+    background-color: {{ section.settings.card_background_color | default: 'var(--color-white)' }};
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    {% if section.settings.card_border %}
+      border: 1px solid var(--color-border);
+    {% endif %}
+    {% if section.settings.card_shadow %}
+      box-shadow: var(--shadow-md);
+    {% endif %}
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .post-card:hover {
+    {% if section.settings.card_hover_effect %}
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    {% endif %}
+  }
+  
+  .post-card.minimal {
+    border: 1px solid var(--color-border);
+    box-shadow: none;
+  }
+  
+  .post-card.minimal:hover {
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .post-card.modern {
+    border-radius: var(--radius-xl);
+  }
+  
+  .post-card.classic {
+    border-radius: 0;
+  }
+  
+  .post-image {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .post-image-link {
+    display: block;
+    aspect-ratio: {{ section.settings.image_aspect_ratio | default: '16/9' }};
+    overflow: hidden;
+  }
+  
+  .featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .post-image-link:hover .featured-image {
+    transform: scale(1.05);
+  }
+  
+  .post-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .post-image-link:hover .post-overlay {
+    opacity: 1;
+  }
+  
+  .overlay-content {
+    padding: 1.5rem;
+    color: white;
+  }
+  
+  .read-more-overlay {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .post-category {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+  }
+  
+  .category-link {
+    background-color: {{ section.settings.category_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.category_text_color | default: 'white' }};
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .post-content {
+    padding: {{ section.settings.content_padding | default: 1.5 }}rem;
+  }
+  
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+  
+  .meta-author,
+  .meta-date,
+  .meta-reading {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: {{ section.settings.meta_color | default: 'var(--color-text-light)' }};
+    font-size: 0.875rem;
+  }
+  
+  .meta-author svg,
+  .meta-date svg,
+  .meta-reading svg {
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+  
+  .post-title {
+    margin-bottom: 1rem;
+  }
+  
+  .title-link {
+    color: {{ section.settings.title_color | default: 'var(--h3-color)' }};
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .title-link:hover {
+    color: var(--color-primary);
+  }
+  
+  .post-excerpt {
+    color: {{ section.settings.excerpt_color | default: 'var(--p-color)' }};
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .tag-link {
+    color: {{ section.settings.tag_color | default: 'var(--color-text-light)' }};
+    text-decoration: none;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background-color: {{ section.settings.tag_bg_color | default: 'var(--color-surface)' }};
+    transition: all 0.2s ease;
+  }
+  
+  .tag-link:hover {
+    color: var(--color-primary);
+    background-color: {{ section.settings.tag_hover_bg_color | default: 'var(--color-gray-100)' }};
+  }
+  
+  .read-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .read-more-btn:hover {
+    color: var(--color-primary-dark);
+    transform: translateX(4px);
+  }
+  
+  .read-more-btn svg {
+    transition: transform 0.2s ease;
+  }
+  
+  .read-more-btn:hover svg {
+    transform: translateX(2px);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .posts-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    
+    .posts-header {
+      margin-bottom: 2rem;
+    }
+  }
+  
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .posts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Posts",
+  "tag": "section",
+  "class": "section-posts",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Settings"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Latest Posts"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Stay updated with our latest content"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All Link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_text",
+      "label": "View All Text",
+      "default": "View All Posts"
+    },
+    {
+      "type": "url",
+      "id": "view_all_url",
+      "label": "View All URL"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Number of Columns",
+      "options": [
+        { "value": "1", "label": "1 Column" },
+        { "value": "2", "label": "2 Columns" },
+        { "value": "3", "label": "3 Columns" },
+        { "value": "4", "label": "4 Columns" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Grid Gap",
+      "min": 1,
+      "max": 4,
+      "step": 0.5,
+      "default": 2,
+      "unit": "rem"
+    },
+    {
+      "type": "select",
+      "id": "card_style",
+      "label": "Card Style",
+      "options": [
+        { "value": "default", "label": "Default" },
+        { "value": "minimal", "label": "Minimal" },
+        { "value": "modern", "label": "Modern" },
+        { "value": "classic", "label": "Classic" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "range",
+      "id": "posts_count",
+      "label": "Number of Posts",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "Post Display"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_featured_images",
+      "label": "Show Featured Images",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "image_aspect_ratio",
+      "label": "Image Aspect Ratio",
+      "options": [
+        { "value": "16/9", "label": "16:9" },
+        { "value": "4/3", "label": "4:3" },
+        { "value": "1/1", "label": "1:1" },
+        { "value": "3/4", "label": "3:4" }
+      ],
+      "default": "16/9"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_overlay",
+      "label": "Show Image Overlay",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_read_more_overlay",
+      "label": "Show Read More in Overlay",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpts",
+      "label": "Show Excerpts",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "excerpt_length",
+      "label": "Excerpt Length",
+      "min": 50,
+      "max": 300,
+      "step": 25,
+      "default": 150,
+      "unit": "characters"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_meta",
+      "label": "Show Meta Information",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_read_more",
+      "label": "Show Read More Button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "read_more_text",
+      "label": "Read More Text",
+      "default": "Read More"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_categories",
+      "label": "Show Categories",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Show Tags",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color"
+    },
+    {
+      "type": "header",
+      "content": "Card Styling"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card Background Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_border",
+      "label": "Card Border",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "card_shadow",
+      "label": "Card Shadow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "card_hover_effect",
+      "label": "Card Hover Effect",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "content_padding",
+      "label": "Content Padding",
+      "min": 1,
+      "max": 3,
+      "step": 0.5,
+      "default": 1.5,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Content Colors"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Post Title Color"
+    },
+    {
+      "type": "color",
+      "id": "excerpt_color",
+      "label": "Excerpt Color"
+    },
+    {
+      "type": "color",
+      "id": "meta_color",
+      "label": "Meta Color"
+    },
+    {
+      "type": "color",
+      "id": "category_bg_color",
+      "label": "Category Background Color"
+    },
+    {
+      "type": "color",
+      "id": "category_text_color",
+      "label": "Category Text Color"
+    },
+    {
+      "type": "color",
+      "id": "tag_color",
+      "label": "Tag Color"
+    },
+    {
+      "type": "color",
+      "id": "tag_bg_color",
+      "label": "Tag Background Color"
+    },
+    {
+      "type": "color",
+      "id": "tag_hover_bg_color",
+      "label": "Tag Hover Background Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Posts",
+      "settings": {
+        "heading": "Latest Posts",
+        "subheading": "Stay updated with our latest content",
+        "columns": "3",
+        "posts_count": 6,
+        "show_featured_images": true,
+        "show_excerpts": true,
+        "show_meta": true,
+        "show_read_more": true
+      }
+    }
+  ]
+}
+{% endschema %}
+

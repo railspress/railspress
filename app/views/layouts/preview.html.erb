@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Preview</title>
+  
+  <!-- Theme CSS -->
+  <style>
+    <%= @assets[:css] %>
+  </style>
+  
+  <!-- Base styles for preview -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    .preview-container {
+      min-height: 100vh;
+    }
+    
+    /* Preview indicator */
+    .preview-indicator {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(59, 130, 246, 0.9);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 1000;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-indicator">PREVIEW MODE</div>
+  <div class="preview-container">
+    <%= @preview_html.html_safe %>
+  </div>
+  
+  <!-- Theme JS -->
+  <script>
+    <%= @assets[:js] %>
+  </script>
+  
+  <!-- Preview functionality -->
+  <script>
+    // Handle resize events for responsive preview
+    window.addEventListener('resize', function() {
+      // Notify parent window of size change
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'preview_resize',
+          height: document.body.scrollHeight
+        }, '*');
+      }
+    });
+    
+    // Notify parent when preview is ready
+    window.addEventListener('load', function() {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'preview_ready',
+          height: document.body.scrollHeight
+        }, '*');
+      }
+    });
+    
+    // Handle live updates from builder
+    if (window.parent !== window) {
+      // Listen for updates from parent window
+      window.addEventListener('message', function(event) {
+        if (event.data.type === 'update_preview') {
+          // Reload the preview with new data
+          window.location.reload();
+        }
+      });
+    }
+  </script>
+</body>
+</html>

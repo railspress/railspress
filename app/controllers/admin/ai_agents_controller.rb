@@ -6,6 +6,22 @@ class Admin::AiAgentsController < Admin::BaseController
     @ai_agents = AiAgent.includes(:ai_provider).ordered
   end
   
+  # GET /admin/ai_agents/usage
+  def usage
+    @ai_agents = AiAgent.includes(:ai_provider).ordered
+    
+    # Calculate usage statistics for all agents
+    @total_usage = calculate_total_usage
+    
+    # Calculate usage statistics for each agent
+    @agent_usage = @ai_agents.map do |agent|
+      {
+        agent: agent,
+        usage_stats: calculate_agent_usage(agent)
+      }
+    end
+  end
+  
   # GET /admin/ai_agents/:id
   def show
   end
@@ -62,10 +78,20 @@ class Admin::AiAgentsController < Admin::BaseController
     context = params[:context] || {}
     
     begin
-      result = @ai_agent.execute(user_input, context)
-      render json: { success: true, result: result }
+      result = @ai_agent.execute(user_input, context, current_user)
+      
+      respond_to do |format|
+        format.json { render json: { success: true, result: result } }
+        format.html { redirect_to admin_ai_agent_path(@ai_agent), notice: "Test completed successfully." }
+      end
     rescue => e
-      render json: { success: false, error: e.message }
+      Rails.logger.error "AI Agent test failed: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      
+      respond_to do |format|
+        format.json { render json: { success: false, error: e.message }, status: :unprocessable_entity }
+        format.html { redirect_to admin_ai_agent_path(@ai_agent), alert: "Test failed: #{e.message}" }
+      end
     end
   end
   
@@ -80,5 +106,31 @@ class Admin::AiAgentsController < Admin::BaseController
       :name, :description, :agent_type, :prompt, :content, :guidelines,
       :rules, :tasks, :master_prompt, :ai_provider_id, :active, :position
     )
+  end
+  
+  def calculate_total_usage
+    # Calculate total usage across all agents from real data
+    {
+      total_requests: AiUsage.count,
+      total_tokens: AiUsage.sum(:tokens_used),
+      total_cost: AiUsage.sum(:cost),
+      requests_today: AiUsage.today.count,
+      requests_this_month: AiUsage.this_month.count,
+      average_response_time: AiUsage.average(:response_time)&.round(2) || 0
+    }
+  end
+  
+  def calculate_agent_usage(agent)
+    # Calculate usage statistics for a specific agent from real data
+    {
+      total_requests: agent.total_requests,
+      total_tokens: agent.total_tokens,
+      total_cost: agent.total_cost,
+      requests_today: agent.requests_today,
+      requests_this_month: agent.requests_this_month,
+      average_response_time: agent.average_response_time,
+      last_used: agent.last_used,
+      success_rate: agent.success_rate
+    }
   end
 end

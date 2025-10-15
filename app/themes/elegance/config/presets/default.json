@@ -1,0 +1,27 @@
+{
+  "name": "Default Preset",
+  "description": "Default theme configuration",
+  "settings": {
+    "primary_color": "#2563eb",
+    "secondary_color": "#7c3aed",
+    "accent_color": "#f59e0b",
+    "background_color": "#ffffff",
+    "text_color": "#1f2937",
+    "text_light_color": "#6b7280",
+    "border_color": "#e5e7eb",
+    "surface_color": "#f9fafb",
+    "heading_font": "Inter, sans-serif",
+    "body_font": "Inter, sans-serif",
+    "button_font": "Inter, sans-serif",
+    "code_font": "Fira Code, monospace",
+    "container_max_width": 1280,
+    "container_padding": 32,
+    "section_spacing": 64,
+    "element_spacing": 16,
+    "border_radius_sm": 4,
+    "border_radius_md": 8,
+    "border_radius_lg": 12,
+    "border_radius_xl": 16
+  }
+}
+

@@ -1,0 +1,64 @@
+content_summarizer:
+  name: "Content Summarizer"
+  description: "Summarizes long content into concise, readable summaries"
+  agent_type: "content_summarizer"
+  prompt: "You are a content summarizer. Your task is to create clear, concise summaries of the provided content while maintaining the key points and context."
+  content: "Create summaries that are:\n- 20-30% of original length\n- Easy to read and understand\n- Include all key points\n- Maintain original tone when appropriate"
+  guidelines: "Always maintain factual accuracy and preserve the original meaning."
+  rules: "Never add information not present in the source material."
+  tasks: "Summarize the provided content effectively."
+  master_prompt: "You are an expert content summarizer with years of experience in creating clear, concise summaries."
+  active: true
+  position: 1
+  ai_provider: cohere
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.day.ago %>
+
+post_writer:
+  name: "Post Writer"
+  description: "Helps create engaging blog posts and articles"
+  agent_type: "post_writer"
+  prompt: "You are a professional blog post writer. Your task is to create engaging, well-structured blog posts based on the provided topic or outline."
+  content: "Create blog posts that are:\n- Well-structured with clear headings\n- Engaging and easy to read\n- SEO-friendly\n- Include relevant examples\n- Have a strong conclusion"
+  guidelines: "Write in a conversational tone that connects with readers. Use active voice and short paragraphs."
+  rules: "Always fact-check information and cite sources when possible."
+  tasks: "Write compelling blog posts that inform and engage readers."
+  master_prompt: "You are an expert content writer with extensive experience in creating viral blog posts and articles."
+  active: true
+  position: 2
+  ai_provider: cohere
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.day.ago %>
+
+comments_analyzer:
+  name: "Comments Analyzer"
+  description: "Analyzes comment sentiment and provides insights"
+  agent_type: "comments_analyzer"
+  prompt: "You are a comments analyzer. Your task is to analyze the sentiment and content of comments to provide insights about audience engagement and feedback."
+  content: "Analyze comments for:\n- Overall sentiment (positive, negative, neutral)\n- Key themes and topics\n- Engagement patterns\n- Suggestions for improvement"
+  guidelines: "Be objective and provide constructive insights based on the data."
+  rules: "Respect privacy and avoid sharing personal information from comments."
+  tasks: "Provide actionable insights based on comment analysis."
+  master_prompt: "You are an expert in social media and community management with deep understanding of audience engagement."
+  active: true
+  position: 3
+  ai_provider: cohere
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.day.ago %>
+
+seo_analyzer:
+  name: "SEO Analyzer"
+  description: "Analyzes content for SEO optimization opportunities"
+  agent_type: "seo_analyzer"
+  prompt: "You are an SEO specialist. Your task is to analyze content and provide specific recommendations for improving search engine optimization."
+  content: "Analyze and provide recommendations for:\n- Keyword optimization\n- Meta descriptions\n- Heading structure\n- Content length and quality\n- Internal linking opportunities"
+  guidelines: "Focus on white-hat SEO techniques that provide long-term value."
+  rules: "Never recommend keyword stuffing or other black-hat techniques."
+  tasks: "Provide actionable SEO recommendations that improve search rankings."
+  master_prompt: "You are a certified SEO expert with proven track record of improving search rankings for various websites."
+  active: true
+  position: 4
+  ai_provider: cohere
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.day.ago %>
+

@@ -1,81 +1,21 @@
-one:
-  name: "OpenAI GPT-4"
-  provider_type: openai
-  api_key: "sk-test-key-123456789"
-  api_url: "https://api.openai.com/v1/chat/completions"
-  model_identifier: "gpt-4"
-  max_tokens: 4000
+cohere:
+  name: "Cohere"
+  provider_type: "cohere"
+  model_identifier: "command-a-03-2025"
+  api_key: "test-api-key"
   temperature: 0.7
+  max_tokens: 2048
   active: true
-  position: 1
-  created_at: <%= 1.month.ago %>
-  updated_at: <%= 1.month.ago %>
-
-two:
-  name: "Cohere Command"
-  provider_type: cohere
-  api_key: "cohere-test-key-123456789"
-  api_url: "https://api.cohere.ai/v1/generate"
-  model_identifier: "command"
-  max_tokens: 4000
-  temperature: 0.7
-  active: true
-  position: 2
-  created_at: <%= 3.weeks.ago %>
-  updated_at: <%= 3.weeks.ago %>
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.day.ago %>
 
 openai:
-  name: "OpenAI Provider"
-  provider_type: openai
-  api_key: "sk-openai-key-123456789"
-  api_url: "https://api.openai.com/v1/chat/completions"
+  name: "OpenAI"
+  provider_type: "openai"
   model_identifier: "gpt-3.5-turbo"
-  max_tokens: 4000
+  api_key: "test-openai-key"
   temperature: 0.7
+  max_tokens: 2048
   active: true
-  position: 1
-  created_at: <%= 2.weeks.ago %>
-  updated_at: <%= 2.weeks.ago %>
-
-cohere:
-  name: "Cohere Provider"
-  provider_type: cohere
-  api_key: "cohere-key-123456789"
-  api_url: "https://api.cohere.ai/v1/generate"
-  model_identifier: "command"
-  max_tokens: 4000
-  temperature: 0.7
-  active: true
-  position: 2
   created_at: <%= 1.week.ago %>
-  updated_at: <%= 1.week.ago %>
-
-active:
-  name: "Active Provider"
-  provider_type: openai
-  api_key: "sk-active-key-123456789"
-  api_url: "https://api.openai.com/v1/chat/completions"
-  model_identifier: "gpt-4"
-  max_tokens: 4000
-  temperature: 0.7
-  active: true
-  position: 1
-  created_at: <%= 1.month.ago %>
-  updated_at: <%= 1.month.ago %>
-
-inactive:
-  name: "Inactive Provider"
-  provider_type: openai
-  api_key: "sk-inactive-key-123456789"
-  api_url: "https://api.openai.com/v1/chat/completions"
-  model_identifier: "gpt-3.5-turbo"
-  max_tokens: 4000
-  temperature: 0.7
-  active: false
-  position: 2
-  created_at: <%= 1.month.ago %>
-  updated_at: <%= 1.month.ago %>
-
-
-
-
+  updated_at: <%= 1.day.ago %>

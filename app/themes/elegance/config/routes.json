@@ -1,0 +1,246 @@
+{
+  "routes": [
+    {
+      "name": "Home",
+      "pattern": "/",
+      "template": "index"
+    },
+    {
+      "name": "Blog",
+      "pattern": "/blog",
+      "template": "blog"
+    },
+    {
+      "name": "Post",
+      "pattern": "/post/:slug",
+      "template": "post"
+    },
+    {
+      "name": "Page",
+      "pattern": "/page/:slug",
+      "template": "page"
+    },
+    {
+      "name": "Category",
+      "pattern": "/category/:slug",
+      "template": "category"
+    },
+    {
+      "name": "Tag",
+      "pattern": "/tag/:slug",
+      "template": "tag"
+    },
+    {
+      "name": "Author",
+      "pattern": "/author/:slug",
+      "template": "author"
+    },
+    {
+      "name": "Search",
+      "pattern": "/search",
+      "template": "search"
+    },
+    {
+      "name": "Archive",
+      "pattern": "/archive",
+      "template": "archive"
+    },
+    {
+      "name": "Login",
+      "pattern": "/login",
+      "template": "login"
+    },
+    {
+      "name": "Register",
+      "pattern": "/register",
+      "template": "register"
+    },
+    {
+      "name": "Contact",
+      "pattern": "/contact",
+      "template": "contact"
+    },
+    {
+      "name": "404 Error",
+      "pattern": "/404",
+      "template": "404"
+    },
+    {
+      "name": "Error",
+      "pattern": "/error",
+      "template": "error"
+    },
+    {
+      "name": "Maintenance",
+      "pattern": "/maintenance",
+      "template": "maintenance"
+    }
+  ],
+  "features": [
+    "customizable",
+    "business",
+    "portfolio",
+    "blog"
+  ],
+  "features": [
+    "Responsive Design",
+    "Customizable Colors",
+    "Typography Controls",
+    "Multiple Layouts",
+    "Rich Content Sections",
+    "Blog Support",
+    "SEO Optimized",
+    "Fast Loading",
+    "Mobile First",
+    "Accessibility Ready"
+  ],
+  "compatibility": {
+    "rails": ">= 7.0",
+    "ruby": ">= 3.0"
+  },
+  "templates": {
+    "index": {
+      "name": "Homepage",
+      "description": "Main landing page with hero, features, and call-to-action sections"
+    },
+    "page": {
+      "name": "Page",
+      "description": "Generic page template for static content"
+    },
+    "blog": {
+      "name": "Blog",
+      "description": "Blog listing page with posts grid and sidebar"
+    },
+    "post": {
+      "name": "Post",
+      "description": "Individual blog post template with comments and related posts"
+    },
+    "category": {
+      "name": "Category",
+      "description": "Category listing page for blog posts"
+    },
+    "tag": {
+      "name": "Tag",
+      "description": "Tag listing page for blog posts"
+    },
+    "author": {
+      "name": "Author",
+      "description": "Author profile page with their posts"
+    },
+    "search": {
+      "name": "Search",
+      "description": "Search results page with filters"
+    },
+    "archive": {
+      "name": "Archive",
+      "description": "Date-based archive page"
+    },
+    "404": {
+      "name": "404",
+      "description": "Error page with suggested content"
+    },
+    "login": {
+      "name": "Login",
+      "description": "User login page"
+    },
+    "register": {
+      "name": "Register",
+      "description": "User registration page"
+    },
+    "contact": {
+      "name": "Contact",
+      "description": "Contact form page with information"
+    }
+  },
+  "sections": {
+    "header": {
+      "name": "Header",
+      "description": "Site header with logo, navigation, and actions"
+    },
+    "hero": {
+      "name": "Hero",
+      "description": "Hero section with heading, description, and call-to-action buttons"
+    },
+    "features": {
+      "name": "Features",
+      "description": "Features grid with icons, titles, and descriptions"
+    },
+    "testimonials": {
+      "name": "Testimonials",
+      "description": "Customer testimonials with ratings and avatars"
+    },
+    "cta": {
+      "name": "Call to Action",
+      "description": "Call-to-action section with background and buttons"
+    },
+    "footer": {
+      "name": "Footer",
+      "description": "Site footer with links, social media, and newsletter signup"
+    },
+    "page_header": {
+      "name": "Page Header",
+      "description": "Page header with breadcrumbs, title, and meta information"
+    },
+    "blog_content": {
+      "name": "Blog Content",
+      "description": "Blog posts grid with sidebar and pagination"
+    },
+    "posts": {
+      "name": "Posts",
+      "description": "Posts grid with customizable layouts and styling"
+    },
+    "rich_text": {
+      "name": "Rich Text",
+      "description": "Rich text content section with formatting options"
+    },
+    "image_with_text": {
+      "name": "Image with Text",
+      "description": "Image and text combination with multiple layouts"
+    }
+  },
+  "settings": {
+    "colors": {
+      "primary": "#2563eb",
+      "secondary": "#7c3aed",
+      "accent": "#f59e0b",
+      "background": "#ffffff",
+      "text": "#1f2937",
+      "text_light": "#6b7280",
+      "border": "#e5e7eb",
+      "surface": "#f9fafb"
+    },
+    "typography": {
+      "heading_font": "Inter, sans-serif",
+      "body_font": "Inter, sans-serif",
+      "button_font": "Inter, sans-serif",
+      "code_font": "Fira Code, monospace"
+    },
+    "layout": {
+      "container_max_width": "1280px",
+      "container_padding": "32px",
+      "section_spacing": "64px",
+      "element_spacing": "16px"
+    }
+  },
+  "assets": {
+    "css": [
+      "theme.css"
+    ],
+    "js": [
+      "theme.js"
+    ],
+    "images": [
+      "logo.png",
+      "placeholder.jpg"
+    ]
+  },
+  "customization": {
+    "sections_per_page": true,
+    "color_schemes": true,
+    "typography": true,
+    "layouts": true,
+    "responsive": true,
+    "animations": true
+  }
+}
+

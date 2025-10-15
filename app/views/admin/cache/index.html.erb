@@ -1,6 +1,11 @@
 <% content_for :page_title, "Cache Settings" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
 
-<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto" 
+     data-controller="cache"
+     data-cache-stats-url-value="<%= admin_cache_stats_path %>">
   <div class="mb-8">
     <h1 class="text-2xl font-bold text-white mb-2">Cache Management</h1>
     <p class="text-gray-400">Configure and manage Redis caching for better performance</p>
@@ -58,39 +63,12 @@ redis-server</pre>
   <% if @redis_configured %>
     <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
       <h2 class="text-lg font-semibold text-white mb-4">Redis Statistics</h2>
-      <div id="redis-stats" class="space-y-3">
+      <div data-cache-target="redisStats" class="space-y-3">
         <p class="text-gray-400">Loading statistics...</p>
       </div>
     </div>
 
-    <script>
-      fetch('<%= admin_cache_stats_path %>')
-        .then(r => r.json())
-        .then(data => {
-          if (data.connected) {
-            document.getElementById('redis-stats').innerHTML = `
-              <div class="grid grid-cols-2 gap-4">
-                <div class="bg-[#0a0a0a] rounded-lg p-4">
-                  <p class="text-gray-400 text-sm mb-1">Redis Version</p>
-                  <p class="text-white font-semibold">${data.version}</p>
-                </div>
-                <div class="bg-[#0a0a0a] rounded-lg p-4">
-                  <p class="text-gray-400 text-sm mb-1">Memory Used</p>
-                  <p class="text-white font-semibold">${data.used_memory}</p>
-                </div>
-                <div class="bg-[#0a0a0a] rounded-lg p-4">
-                  <p class="text-gray-400 text-sm mb-1">Connected Clients</p>
-                  <p class="text-white font-semibold">${data.connected_clients}</p>
-                </div>
-                <div class="bg-[#0a0a0a] rounded-lg p-4">
-                  <p class="text-gray-400 text-sm mb-1">Total Commands</p>
-                  <p class="text-white font-semibold">${data.total_commands}</p>
-                </div>
-              </div>
-            `;
-          }
-        });
-    </script>
+    <!-- Redis stats are now handled by the cache controller -->
   <% end %>
 
   <!-- Cache Information -->
@@ -116,6 +94,8 @@ redis-server</pre>
     </div>
   </div>
 </div>
+
+
 
 
 

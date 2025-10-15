@@ -371,6 +371,56 @@ module Types
       Subscriber.stats
     end
     
+    # Media resolvers
+    def media(type: nil, user_id: nil, quarantined: nil, search: nil, limit: 20)
+      media = Medium.with_file_info
+      media = media.by_type(type) if type
+      media = media.where(user_id: user_id) if user_id
+      media = quarantined ? media.quarantined : media.approved if !quarantined.nil?
+      media = media.where("media.title ILIKE ? OR media.description ILIKE ?", "%#{search}%", "%#{search}%") if search
+      media.limit(limit).order(created_at: :desc)
+    end
+    
+    def medium(id:)
+      Medium.with_file_info.find(id)
+    end
+    
+    def media_stats
+      {
+        total: Medium.count,
+        images: Medium.images.count,
+        videos: Medium.videos.count,
+        documents: Medium.documents.count,
+        quarantined: Medium.quarantined.count,
+        approved: Medium.approved.count
+      }
+    end
+    
+    # Upload resolvers
+    def uploads(type: nil, user_id: nil, quarantined: nil, search: nil, limit: 20)
+      uploads = Upload.includes(:storage_provider, :user)
+      uploads = uploads.by_type(type) if type
+      uploads = uploads.where(user_id: user_id) if user_id
+      uploads = quarantined ? uploads.quarantined : uploads.approved if !quarantined.nil?
+      uploads = uploads.where("title ILIKE ? OR description ILIKE ?", "%#{search}%", "%#{search}%") if search
+      uploads.limit(limit).order(created_at: :desc)
+    end
+    
+    def upload(id:)
+      Upload.includes(:storage_provider, :user, :media).find(id)
+    end
+    
+    # Storage provider resolvers
+    def storage_providers(active_only: false)
+      providers = StorageProvider.ordered
+      providers = providers.active if active_only
+      providers
+    end
+    
+    def storage_provider(id:)
+      StorageProvider.find(id)
+    end
+    
     # Search
     def search(query:, limit: 20)
       posts = Post.search_full_text(query).published.limit(limit)

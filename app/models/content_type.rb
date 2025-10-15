@@ -1,6 +1,6 @@
 class ContentType < ApplicationRecord
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   # Associations
   has_many :posts, dependent: :nullify

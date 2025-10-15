@@ -99,15 +99,8 @@
           <p class="text-gray-500 text-sm mt-1">Order in the list (lower numbers appear first)</p>
         </div>
 
-        <div class="flex items-center">
-          <div class="flex items-center h-5">
-            <%= f.check_box :active, class: "w-4 h-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded text-indigo-600 focus:ring-indigo-500" %>
-          </div>
-          <div class="ml-3">
-            <label class="text-sm font-medium text-gray-300">Active</label>
-            <p class="text-gray-500 text-sm">Enable this provider for use</p>
-          </div>
-        </div>
+        <%= toggle_switch(f, :active, 'Active', 
+            description: 'Enable this provider for use') %>
       </div>
     </div>
 

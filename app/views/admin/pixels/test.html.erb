@@ -2,57 +2,12 @@
 <html>
 <head>
   <title>Pixel Code Preview - <%= @pixel.name %></title>
-  <style>
-    body {
-      font-family: 'Monaco', 'Courier New', monospace;
-      background: #0a0a0a;
-      color: #e5e5e5;
-      padding: 20px;
-      margin: 0;
-    }
-    .header {
-      border-bottom: 2px solid #2a2a2a;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      margin: 0 0 5px 0;
-      font-size: 18px;
-      color: #fff;
-    }
-    .meta {
-      color: #888;
-      font-size: 12px;
-    }
-    .code-block {
-      background: #111;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      padding: 20px;
-      overflow-x: auto;
-    }
-    pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .warning {
-      background: #422006;
-      border: 1px solid #78350f;
-      color: #fbbf24;
-      padding: 12px;
-      border-radius: 6px;
-      margin: 15px 0;
-      font-size: 13px;
-    }
-  </style>
+  <%= stylesheet_link_tag "admin/pixel_preview", "data-turbo-track": "reload" %>
 </head>
-<body>
-  <div class="header">
-    <h1><%= @pixel.name %></h1>
-    <div class="meta">
+<body class="pixel-preview-body">
+  <div class="pixel-preview-header">
+    <h1 class="pixel-preview-title"><%= @pixel.name %></h1>
+    <div class="pixel-preview-meta">
       Type: <%= @pixel.pixel_type.titleize %> | 
       Position: <%= @pixel.position.titleize %> | 
       Status: <%= @pixel.active? ? 'Active' : 'Inactive' %>
@@ -60,16 +15,18 @@
   </div>
   
   <% unless @pixel.custom? %>
-    <div class="warning">
+    <div class="pixel-preview-warning">
       ⚠️ This code is automatically generated based on the pixel ID: <strong><%= @pixel.pixel_id %></strong>
     </div>
   <% end %>
   
-  <div class="code-block">
-    <pre><%= @pixel_code %></pre>
+  <div class="pixel-preview-code-block">
+    <pre class="pixel-preview-code"><%= @pixel_code %></pre>
   </div>
 </body>
 </html>
+
+
 
 
 

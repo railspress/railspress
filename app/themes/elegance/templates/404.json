@@ -1,0 +1,59 @@
+{
+  "name": "404",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    },
+    "error_404": {
+      "type": "error_404",
+      "settings": {
+        "heading": "404 - Page Not Found",
+        "description": "Sorry, the page you are looking for doesn't exist or has been moved.",
+        "show_search": true,
+        "show_popular_posts": true,
+        "show_categories": true,
+        "background_color": "#f8fafc",
+        "text_alignment": "center",
+        "show_illustration": true
+      }
+    },
+    "suggested_content": {
+      "type": "suggested_content",
+      "settings": {
+        "heading": "You might be looking for:",
+        "show_recent_posts": true,
+        "show_categories": true,
+        "show_pages": true,
+        "posts_count": 6,
+        "layout": "grid"
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "error_404",
+    "suggested_content",
+    "footer"
+  ]
+}
+

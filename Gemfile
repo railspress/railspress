@@ -100,6 +100,9 @@ gem "rack-cors"
 gem "graphql", "~> 2.1"
 gem "graphiql-rails", group: :development
 
+# AI Services
+gem "openai"
+
 # Security / hardening
 gem "rack-attack"
 gem "secure_headers"

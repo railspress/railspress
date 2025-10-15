@@ -1,5 +1,5 @@
 class ExportJob < ApplicationRecord
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   belongs_to :user
   

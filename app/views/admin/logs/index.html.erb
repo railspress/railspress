@@ -1,4 +1,7 @@
 <% content_for :page_title, "Application Logs" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
 
 <div class="max-w-7xl mx-auto">
   <!-- Header -->
@@ -110,7 +113,7 @@
           
           <!-- Actions Dropdown -->
           <div class="relative">
-            <%= link_to clear_logs_path(file: @current_log), 
+            <%= link_to clear_logs_file_path(@current_log), 
                 data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to clear this log file? This cannot be undone." },
                 class: "px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition" do %>
               Clear File

@@ -1,0 +1,669 @@
+<section class="divider section" data-section-type="divider" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="divider-content">
+      <div class="divider-wrapper" style="text-align: {{ section.settings.alignment | default: 'center' }};">
+        
+        {% case section.settings.style %}
+          {% when 'line' %}
+            <div class="divider-line-wrapper">
+              {% if section.settings.show_text and section.settings.text %}
+                <div class="divider-with-text">
+                  <hr class="divider-line divider-line-left">
+                  <span class="divider-text">{{ section.settings.text }}</span>
+                  <hr class="divider-line divider-line-right">
+                </div>
+              {% else %}
+                <hr class="divider-line divider-line-simple">
+              {% endif %}
+            </div>
+            
+          {% when 'dots' %}
+            <div class="divider-dots">
+              {% for i in (1..section.settings.dot_count) %}
+                <span class="dot"></span>
+              {% endfor %}
+            </div>
+            
+          {% when 'icon' %}
+            <div class="divider-icon">
+              {% if section.settings.icon_type == 'emoji' and section.settings.emoji %}
+                <span class="icon-emoji">{{ section.settings.emoji }}</span>
+              {% elsif section.settings.icon_type == 'custom' and section.settings.custom_icon %}
+                <span class="icon-custom">{{ section.settings.custom_icon }}</span>
+              {% else %}
+                <span class="icon-default">◆</span>
+              {% endif %}
+            </div>
+            
+          {% when 'pattern' %}
+            <div class="divider-pattern">
+              <div class="pattern-container">
+                {% if section.settings.pattern_type == 'zigzag' %}
+                  <svg class="pattern-svg" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <path d="M0,10 L20,0 L40,20 L60,0 L80,20 L100,10" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                {% elsif section.settings.pattern_type == 'wave' %}
+                  <svg class="pattern-svg" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <path d="M0,10 Q25,0 50,10 T100,10" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                {% elsif section.settings.pattern_type == 'sawtooth' %}
+                  <svg class="pattern-svg" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <path d="M0,10 L10,0 L20,10 L30,0 L40,10 L50,0 L60,10 L70,0 L80,10 L90,0 L100,10" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                {% elsif section.settings.pattern_type == 'stars' %}
+                  <div class="stars-pattern">
+                    {% for i in (1..section.settings.star_count) %}
+                      <span class="star">★</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            
+          {% when 'spacer' %}
+            <div class="divider-spacer"></div>
+            
+        {% endcase %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .divider {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+    padding: {{ section.settings.section_padding_vertical | default: 2 }}rem 0;
+  }
+  
+  .divider-wrapper {
+    max-width: {{ section.settings.max_width | default: 800 }}px;
+    margin: 0 auto;
+  }
+  
+  /* Line Style */
+  .divider-line-wrapper {
+    width: 100%;
+  }
+  
+  .divider-line {
+    border: none;
+    height: {{ section.settings.line_thickness | default: 2 }}px;
+    background-color: {{ section.settings.line_color | default: 'var(--color-border)' }};
+    border-radius: var(--radius-full);
+  }
+  
+  .divider-line-simple {
+    width: {{ section.settings.line_width | default: 80 }}px;
+    margin: 0 auto;
+  }
+  
+  .divider-with-text {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .divider-line-left,
+  .divider-line-right {
+    flex: 1;
+    margin: 0;
+  }
+  
+  .divider-text {
+    color: {{ section.settings.text_color | default: 'var(--text-light-color)' }};
+    font-size: {{ section.settings.text_size | default: 14 }}px;
+    font-weight: {{ section.settings.text_weight | default: 500 }};
+    text-transform: {{ section.settings.text_transform | default: 'uppercase' }};
+    letter-spacing: {{ section.settings.text_letter_spacing | default: 1 }}px;
+    white-space: nowrap;
+    {% if section.settings.text_background %}
+      background-color: {{ section.settings.text_bg_color | default: 'var(--color-background)' }};
+      padding: {{ section.settings.text_padding_vertical | default: 8 }}px {{ section.settings.text_padding_horizontal | default: 16 }}px;
+      border-radius: var(--radius-md);
+    {% endif %}
+  }
+  
+  /* Dots Style */
+  .divider-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: {{ section.settings.dot_spacing | default: 12 }}px;
+  }
+  
+  .dot {
+    width: {{ section.settings.dot_size | default: 8 }}px;
+    height: {{ section.settings.dot_size | default: 8 }}px;
+    background-color: {{ section.settings.dot_color | default: 'var(--color-border)' }};
+    border-radius: 50%;
+    display: block;
+  }
+  
+  /* Icon Style */
+  .divider-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .icon-emoji,
+  .icon-custom,
+  .icon-default {
+    font-size: {{ section.settings.icon_size | default: 24 }}px;
+    color: {{ section.settings.icon_color | default: 'var(--color-primary)' }};
+    {% if section.settings.icon_background %}
+      background-color: {{ section.settings.icon_bg_color | default: 'white' }};
+      padding: {{ section.settings.icon_padding | default: 12 }}px;
+      border-radius: 50%;
+      box-shadow: var(--shadow-sm);
+    {% endif %}
+  }
+  
+  /* Pattern Style */
+  .divider-pattern {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .pattern-container {
+    width: {{ section.settings.pattern_width | default: 200 }}px;
+    height: {{ section.settings.pattern_height | default: 20 }}px;
+    color: {{ section.settings.pattern_color | default: 'var(--color-border)' }};
+  }
+  
+  .pattern-svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .stars-pattern {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: {{ section.settings.star_spacing | default: 16 }}px;
+  }
+  
+  .star {
+    font-size: {{ section.settings.star_size | default: 16 }}px;
+    color: {{ section.settings.star_color | default: 'var(--color-primary)' }};
+    opacity: {{ section.settings.star_opacity | default: 0.7 }};
+  }
+  
+  /* Spacer Style */
+  .divider-spacer {
+    height: {{ section.settings.spacer_height | default: 2 }}rem;
+    background-color: transparent;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .divider {
+      padding: 1rem 0;
+    }
+    
+    .divider-with-text {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .divider-line-left,
+    .divider-line-right {
+      width: 100%;
+    }
+    
+    .divider-text {
+      font-size: 12px;
+    }
+    
+    .dot {
+      width: 6px;
+      height: 6px;
+    }
+    
+    .icon-emoji,
+    .icon-custom,
+    .icon-default {
+      font-size: 20px;
+    }
+    
+    .pattern-container {
+      width: 150px;
+      height: 16px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Divider",
+  "tag": "section",
+  "class": "section-divider",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "select",
+      "id": "style",
+      "label": "Divider Style",
+      "options": [
+        { "value": "line", "label": "Line" },
+        { "value": "dots", "label": "Dots" },
+        { "value": "icon", "label": "Icon" },
+        { "value": "pattern", "label": "Pattern" },
+        { "value": "spacer", "label": "Spacer" }
+      ],
+      "default": "line"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width",
+      "min": 200,
+      "max": 1200,
+      "step": 100,
+      "default": 800,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_vertical",
+      "label": "Section Vertical Padding",
+      "min": 0.5,
+      "max": 4,
+      "step": 0.5,
+      "default": 2,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Line Settings"
+    },
+    {
+      "type": "range",
+      "id": "line_width",
+      "label": "Line Width",
+      "min": 40,
+      "max": 400,
+      "step": 20,
+      "default": 80,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "line_thickness",
+      "label": "Line Thickness",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 2,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "line_color",
+      "label": "Line Color"
+    },
+    {
+      "type": "header",
+      "content": "Text Settings (Line Style)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_text",
+      "label": "Show Text",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "OR"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text Size",
+      "min": 10,
+      "max": 20,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "text_weight",
+      "label": "Text Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color"
+    },
+    {
+      "type": "select",
+      "id": "text_transform",
+      "label": "Text Transform",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "uppercase", "label": "Uppercase" },
+        { "value": "lowercase", "label": "Lowercase" },
+        { "value": "capitalize", "label": "Capitalize" }
+      ],
+      "default": "uppercase"
+    },
+    {
+      "type": "range",
+      "id": "text_letter_spacing",
+      "label": "Text Letter Spacing",
+      "min": 0,
+      "max": 4,
+      "step": 0.5,
+      "default": 1,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "text_background",
+      "label": "Text Background",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "text_bg_color",
+      "label": "Text Background Color"
+    },
+    {
+      "type": "range",
+      "id": "text_padding_horizontal",
+      "label": "Text Horizontal Padding",
+      "min": 8,
+      "max": 32,
+      "step": 4,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "text_padding_vertical",
+      "label": "Text Vertical Padding",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Dots Settings"
+    },
+    {
+      "type": "range",
+      "id": "dot_count",
+      "label": "Number of Dots",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "dot_size",
+      "label": "Dot Size",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "dot_spacing",
+      "label": "Dot Spacing",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "dot_color",
+      "label": "Dot Color"
+    },
+    {
+      "type": "header",
+      "content": "Icon Settings"
+    },
+    {
+      "type": "select",
+      "id": "icon_type",
+      "label": "Icon Type",
+      "options": [
+        { "value": "emoji", "label": "Emoji" },
+        { "value": "custom", "label": "Custom" }
+      ],
+      "default": "emoji"
+    },
+    {
+      "type": "text",
+      "id": "emoji",
+      "label": "Emoji",
+      "default": "◆"
+    },
+    {
+      "type": "text",
+      "id": "custom_icon",
+      "label": "Custom Icon (HTML entity)"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon Size",
+      "min": 16,
+      "max": 48,
+      "step": 4,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "icon_background",
+      "label": "Icon Background",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "icon_bg_color",
+      "label": "Icon Background Color"
+    },
+    {
+      "type": "range",
+      "id": "icon_padding",
+      "label": "Icon Padding",
+      "min": 8,
+      "max": 24,
+      "step": 4,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Pattern Settings"
+    },
+    {
+      "type": "select",
+      "id": "pattern_type",
+      "label": "Pattern Type",
+      "options": [
+        { "value": "zigzag", "label": "Zigzag" },
+        { "value": "wave", "label": "Wave" },
+        { "value": "sawtooth", "label": "Sawtooth" },
+        { "value": "stars", "label": "Stars" }
+      ],
+      "default": "zigzag"
+    },
+    {
+      "type": "range",
+      "id": "pattern_width",
+      "label": "Pattern Width",
+      "min": 100,
+      "max": 400,
+      "step": 50,
+      "default": 200,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "pattern_height",
+      "label": "Pattern Height",
+      "min": 10,
+      "max": 40,
+      "step": 5,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "pattern_color",
+      "label": "Pattern Color"
+    },
+    {
+      "type": "range",
+      "id": "star_count",
+      "label": "Star Count",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "star_size",
+      "label": "Star Size",
+      "min": 12,
+      "max": 24,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "star_spacing",
+      "label": "Star Spacing",
+      "min": 8,
+      "max": 32,
+      "step": 4,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star Color"
+    },
+    {
+      "type": "range",
+      "id": "star_opacity",
+      "label": "Star Opacity",
+      "min": 0.3,
+      "max": 1,
+      "step": 0.1,
+      "default": 0.7,
+      "unit": ""
+    },
+    {
+      "type": "header",
+      "content": "Spacer Settings"
+    },
+    {
+      "type": "range",
+      "id": "spacer_height",
+      "label": "Spacer Height",
+      "min": 0.5,
+      "max": 8,
+      "step": 0.5,
+      "default": 2,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Divider",
+      "settings": {
+        "style": "line",
+        "line_width": 80,
+        "line_thickness": 2,
+        "alignment": "center"
+      }
+    },
+    {
+      "name": "Divider with Text",
+      "settings": {
+        "style": "line",
+        "show_text": true,
+        "text": "OR",
+        "line_width": 80,
+        "line_thickness": 2,
+        "alignment": "center"
+      }
+    },
+    {
+      "name": "Dots Divider",
+      "settings": {
+        "style": "dots",
+        "dot_count": 7,
+        "dot_size": 8,
+        "dot_spacing": 12,
+        "alignment": "center"
+      }
+    },
+    {
+      "name": "Icon Divider",
+      "settings": {
+        "style": "icon",
+        "icon_type": "emoji",
+        "emoji": "◆",
+        "icon_size": 24,
+        "alignment": "center"
+      }
+    }
+  ]
+}
+{% endschema %}
+

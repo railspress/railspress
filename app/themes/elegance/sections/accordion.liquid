@@ -1,0 +1,514 @@
+<section class="accordion section" data-section-type="accordion" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="accordion-content">
+      {% if section.settings.heading %}
+        <div class="accordion-header">
+          <h2 class="accordion-heading">{{ section.settings.heading }}</h2>
+          {% if section.settings.subheading %}
+            <p class="accordion-subheading">{{ section.settings.subheading }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="accordion-wrapper {{ section.settings.style }}">
+        {% for block in section.blocks %}
+          {% case block.type %}
+            {% when 'accordion_item' %}
+              <div class="accordion-item" {{ block.shopify_attributes }}>
+                <button 
+                  class="accordion-trigger" 
+                  aria-expanded="false" 
+                  aria-controls="accordion-content-{{ block.id }}"
+                  data-accordion-trigger
+                >
+                  <span class="accordion-title">{{ block.settings.title }}</span>
+                  <span class="accordion-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6,9 12,15 18,9"></polyline>
+                    </svg>
+                  </span>
+                </button>
+                <div 
+                  class="accordion-content" 
+                  id="accordion-content-{{ block.id }}"
+                  aria-hidden="true"
+                >
+                  <div class="accordion-body">
+                    {{ block.settings.content }}
+                  </div>
+                </div>
+              </div>
+          {% endcase %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .accordion {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+  }
+  
+  .accordion-header {
+    text-align: {{ section.settings.text_alignment | default: 'center' }};
+    margin-bottom: 3rem;
+  }
+  
+  .accordion-heading {
+    color: {{ section.settings.heading_color | default: 'var(--h2-color)' }};
+    margin-bottom: 1rem;
+  }
+  
+  .accordion-subheading {
+    color: {{ section.settings.subheading_color | default: 'var(--p-color)' }};
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .accordion-wrapper {
+    max-width: {{ section.settings.max_width | default: 800 }}px;
+    margin: 0 auto;
+  }
+  
+  .accordion-item {
+    border-bottom: 1px solid {{ section.settings.border_color | default: 'var(--color-border)' }};
+  }
+  
+  .accordion-item:last-child {
+    border-bottom: none;
+  }
+  
+  .accordion-trigger {
+    width: 100%;
+    padding: {{ section.settings.item_padding_vertical | default: 20 }}px {{ section.settings.item_padding_horizontal | default: 24 }}px;
+    background-color: {{ section.settings.item_background_color | default: 'transparent' }};
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  
+  .accordion-trigger:hover {
+    background-color: {{ section.settings.item_hover_background_color | default: 'var(--color-surface)' }};
+  }
+  
+  .accordion-trigger[aria-expanded="true"] {
+    background-color: {{ section.settings.item_active_background_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.item_active_text_color | default: 'white' }};
+  }
+  
+  .accordion-trigger[aria-expanded="true"] .accordion-icon {
+    transform: rotate(180deg);
+  }
+  
+  .accordion-title {
+    font-size: {{ section.settings.title_size | default: 18 }}px;
+    font-weight: {{ section.settings.title_weight | default: 600 }};
+    color: {{ section.settings.title_color | default: 'var(--h3-color)' }};
+  }
+  
+  .accordion-trigger[aria-expanded="true"] .accordion-title {
+    color: {{ section.settings.item_active_text_color | default: 'white' }};
+  }
+  
+  .accordion-icon {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    color: {{ section.settings.icon_color | default: 'var(--color-primary)' }};
+  }
+  
+  .accordion-trigger[aria-expanded="true"] .accordion-icon {
+    color: {{ section.settings.item_active_text_color | default: 'white' }};
+  }
+  
+  .accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  
+  .accordion-content[aria-hidden="false"] {
+    max-height: 1000px;
+  }
+  
+  .accordion-body {
+    padding: 0 {{ section.settings.item_padding_horizontal | default: 24 }}px {{ section.settings.item_padding_vertical | default: 20 }}px;
+    color: {{ section.settings.content_color | default: 'var(--p-color)' }};
+    font-size: {{ section.settings.content_size | default: 16 }}px;
+    line-height: {{ section.settings.content_line_height | default: 1.6 }};
+  }
+  
+  /* Style Variations */
+  .accordion-wrapper.default .accordion-item {
+    border-radius: 0;
+  }
+  
+  .accordion-wrapper.rounded .accordion-item {
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    border: 1px solid {{ section.settings.border_color | default: 'var(--color-border)' }};
+    border-bottom: 1px solid {{ section.settings.border_color | default: 'var(--color-border)' }};
+    overflow: hidden;
+  }
+  
+  .accordion-wrapper.rounded .accordion-item:last-child {
+    border-bottom: 1px solid {{ section.settings.border_color | default: 'var(--color-border)' }};
+  }
+  
+  .accordion-wrapper.card .accordion-item {
+    background-color: {{ section.settings.card_background_color | default: 'var(--color-white)' }};
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    border: 1px solid {{ section.settings.border_color | default: 'var(--color-border)' }};
+    overflow: hidden;
+    {% if section.settings.card_shadow %}
+      box-shadow: var(--shadow-md);
+    {% endif %}
+  }
+  
+  .accordion-wrapper.card .accordion-item:hover {
+    {% if section.settings.card_hover_effect %}
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    {% endif %}
+  }
+  
+  .accordion-wrapper.minimal .accordion-item {
+    border: none;
+    border-bottom: 1px solid {{ section.settings.border_color | default: 'var(--color-border)' }};
+  }
+  
+  .accordion-wrapper.minimal .accordion-trigger {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  
+  .accordion-wrapper.minimal .accordion-body {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .accordion-trigger {
+      padding: 16px 20px;
+    }
+    
+    .accordion-body {
+      padding: 0 20px 16px;
+    }
+    
+    .accordion-title {
+      font-size: 16px;
+    }
+    
+    .accordion-header {
+      margin-bottom: 2rem;
+    }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const accordionTriggers = document.querySelectorAll('[data-accordion-trigger]');
+  
+  accordionTriggers.forEach(trigger => {
+    trigger.addEventListener('click', function() {
+      const isExpanded = this.getAttribute('aria-expanded') === 'true';
+      const content = document.getElementById(this.getAttribute('aria-controls'));
+      
+      // Close all other accordion items if only one should be open
+      {% if section.settings.allow_multiple == false %}
+        accordionTriggers.forEach(otherTrigger => {
+          if (otherTrigger !== this) {
+            otherTrigger.setAttribute('aria-expanded', 'false');
+            const otherContent = document.getElementById(otherTrigger.getAttribute('aria-controls'));
+            otherContent.setAttribute('aria-hidden', 'true');
+          }
+        });
+      {% endif %}
+      
+      // Toggle current item
+      this.setAttribute('aria-expanded', !isExpanded);
+      content.setAttribute('aria-hidden', isExpanded);
+    });
+  });
+});
+</script>
+
+{% schema %}
+{
+  "name": "Accordion",
+  "tag": "section",
+  "class": "section-accordion",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Settings"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width",
+      "min": 400,
+      "max": 1200,
+      "step": 100,
+      "default": 800,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_multiple",
+      "label": "Allow Multiple Items Open",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "style",
+      "label": "Accordion Style",
+      "options": [
+        { "value": "default", "label": "Default" },
+        { "value": "rounded", "label": "Rounded" },
+        { "value": "card", "label": "Card" },
+        { "value": "minimal", "label": "Minimal" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border Color"
+    },
+    {
+      "type": "header",
+      "content": "Item Styling"
+    },
+    {
+      "type": "color",
+      "id": "item_background_color",
+      "label": "Item Background Color"
+    },
+    {
+      "type": "color",
+      "id": "item_hover_background_color",
+      "label": "Item Hover Background Color"
+    },
+    {
+      "type": "color",
+      "id": "item_active_background_color",
+      "label": "Item Active Background Color"
+    },
+    {
+      "type": "color",
+      "id": "item_active_text_color",
+      "label": "Item Active Text Color"
+    },
+    {
+      "type": "range",
+      "id": "item_padding_horizontal",
+      "label": "Item Horizontal Padding",
+      "min": 12,
+      "max": 48,
+      "step": 4,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "item_padding_vertical",
+      "label": "Item Vertical Padding",
+      "min": 12,
+      "max": 32,
+      "step": 4,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title Size",
+      "min": 14,
+      "max": 24,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon Color"
+    },
+    {
+      "type": "range",
+      "id": "content_size",
+      "label": "Content Size",
+      "min": 14,
+      "max": 20,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "content_line_height",
+      "label": "Content Line Height",
+      "min": 1.2,
+      "max": 2,
+      "step": 0.1,
+      "default": 1.6,
+      "unit": ""
+    },
+    {
+      "type": "color",
+      "id": "content_color",
+      "label": "Content Color"
+    },
+    {
+      "type": "header",
+      "content": "Card Style Options"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card Background Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "card_shadow",
+      "label": "Card Shadow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "card_hover_effect",
+      "label": "Card Hover Effect",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "accordion_item",
+      "name": "Accordion Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Accordion Item"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Add your accordion content here.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Accordion",
+      "settings": {
+        "heading": "Frequently Asked Questions",
+        "subheading": "Find answers to common questions",
+        "style": "card"
+      },
+      "blocks": [
+        {
+          "type": "accordion_item",
+          "settings": {
+            "title": "What is your return policy?",
+            "content": "<p>We offer a 30-day return policy for all items in original condition.</p>"
+          }
+        },
+        {
+          "type": "accordion_item",
+          "settings": {
+            "title": "How long does shipping take?",
+            "content": "<p>Standard shipping takes 3-5 business days, while express shipping takes 1-2 business days.</p>"
+          }
+        },
+        {
+          "type": "accordion_item",
+          "settings": {
+            "title": "Do you offer international shipping?",
+            "content": "<p>Yes, we ship to most countries worldwide. International shipping typically takes 7-14 business days.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Preview</title>
+  
+  <!-- Theme CSS -->
+  <style>
+    /* Base styles for preview */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Loading indicator */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f9fafb;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="preview-container">
+    <!-- Theme content will be inserted here -->
+  </div>
+  
+  <!-- ActionCable for live updates -->
+  <script>
+    // Connect to ActionCable (if available)
+    let cable = null;
+    if (typeof ActionCable !== 'undefined') {
+      cable = ActionCable.createConsumer();
+    }
+    
+    // Subscribe to builder preview channel (if ActionCable is available)
+    let subscription = null;
+    if (cable) {
+      subscription = cable.subscriptions.create(
+        { channel: "BuilderPreviewChannel", theme_id: "<%= @builder_theme.id %>" },
+        {
+          connected() {
+            console.log('Connected to builder preview channel');
+            // Request initial update
+            this.perform('receive', { type: 'request_update' });
+          },
+          
+          disconnected() {
+            console.log('Disconnected from builder preview channel');
+          },
+          
+          received(data) {
+            console.log('Received preview update:', data);
+            
+            if (data.type === 'theme_update') {
+              updatePreview(data);
+            } else if (data.type === 'preview_update') {
+              // Trigger a refresh
+              location.reload();
+            }
+          }
+        }
+      );
+    }
+    
+    // Update preview with new theme data
+    function updatePreview(data) {
+      const container = document.getElementById('preview-container');
+      
+      // For now, we'll just reload the page
+      // In a more sophisticated implementation, we could update the DOM directly
+      location.reload();
+    }
+    
+    // Handle resize events for responsive preview
+    window.addEventListener('resize', function() {
+      // Notify parent window of size change
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'preview_resize',
+          height: document.body.scrollHeight
+        }, '*');
+      }
+    });
+    
+    // Notify parent when preview is ready
+    window.addEventListener('load', function() {
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'preview_ready',
+          height: document.body.scrollHeight
+        }, '*');
+      }
+    });
+  </script>
+  
+  <!-- Render the actual theme content -->
+  <div id="theme-preview-content">
+    <% if @preview_html.present? %>
+      <%= @preview_html.html_safe %>
+    <% else %>
+      <div style="padding: 20px; text-align: center; color: #666;">
+        <h2>Preview Not Available</h2>
+        <p>Template: <%= params[:template] || 'index' %></p>
+        <p>Theme: <%= @builder_theme&.theme_name %></p>
+        <p>Error: No preview HTML generated</p>
+      </div>
+    <% end %>
+  </div>
+</body>
+</html>

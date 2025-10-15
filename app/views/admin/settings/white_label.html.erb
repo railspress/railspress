@@ -1,11 +1,4 @@
-<div class="flex gap-6 max-w-7xl mx-auto">
-  <!-- Settings Navigation -->
-  <div class="w-64 flex-shrink-0">
-    <%= render 'settings_nav' %>
-  </div>
-
-  <!-- Settings Content -->
-  <div class="flex-1">
+<div class="max-w-4xl mx-auto">
     <div class="mb-6">
       <h1 class="text-3xl font-bold text-white mb-2">White Label Settings</h1>
       <p class="text-gray-400">Customize the branding and identity of your admin panel</p>
@@ -116,18 +109,10 @@
         
         <div class="space-y-4">
           <!-- Hide Branding -->
-          <div class="flex items-start">
-            <div class="flex items-center h-5">
-              <%= check_box_tag 'settings[hide_branding]', '1', @settings[:hide_branding] == true || @settings[:hide_branding] == '1', 
-                  class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500' %>
-            </div>
-            <div class="ml-3">
-              <label class="text-sm font-medium text-gray-300">
-                Hide RailsPress Branding
-              </label>
-              <p class="text-sm text-gray-500">Remove "Powered by RailsPress" from the admin panel</p>
-            </div>
-          </div>
+          <%= toggle_switch_tag('settings[hide_branding]', '1', 
+              @settings[:hide_branding] == true || @settings[:hide_branding] == '1', 
+              'Hide RailsPress Branding',
+              description: 'Remove "Powered by RailsPress" from the admin panel') %>
         </div>
       </div>
 
@@ -156,6 +141,5 @@
         <%= f.submit 'Save White Label Settings', class: 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer' %>
       </div>
     <% end %>
-  </div>
 </div>
 

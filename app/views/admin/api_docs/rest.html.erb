@@ -1,4 +1,8 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/api_docs", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 api-docs-smooth-scroll">
   <!-- Header -->
   <div class="mb-8">
     <%= link_to admin_api_docs_path, class: "inline-flex items-center text-sm text-gray-400 hover:text-white mb-4" do %>
@@ -153,18 +157,9 @@
   </div>
 </div>
 
-<style>
-  /* Smooth scroll */
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  /* Code block styling */
-  pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-</style>
+<!-- API docs styles are now in admin/api_docs.css -->
+
+
 
 
 

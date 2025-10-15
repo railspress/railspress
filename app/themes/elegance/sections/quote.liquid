@@ -1,0 +1,704 @@
+<section class="quote section" data-section-type="quote" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="quote-content">
+      <div class="quote-wrapper" style="text-align: {{ section.settings.text_alignment | default: 'center' }}; max-width: {{ section.settings.max_width | default: 800 }}px; margin: 0 auto;">
+        
+        {% if section.settings.show_quote_icon %}
+          <div class="quote-icon">
+            <span class="icon-text">{{ section.settings.quote_icon | default: '"' }}</span>
+          </div>
+        {% endif %}
+
+        {% if section.settings.quote_text %}
+          <blockquote class="quote-text {{ section.settings.quote_style }}">
+            {{ section.settings.quote_text }}
+          </blockquote>
+        {% endif %}
+
+        {% if section.settings.author_name or section.settings.author_title %}
+          <div class="quote-author">
+            {% if section.settings.author_name %}
+              <div class="author-name">{{ section.settings.author_name }}</div>
+            {% endif %}
+            {% if section.settings.author_title %}
+              <div class="author-title">{{ section.settings.author_title }}</div>
+            {% endif %}
+            {% if section.settings.author_company %}
+              <div class="author-company">{{ section.settings.author_company }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_divider %}
+          <div class="quote-divider {{ section.settings.divider_style }}">
+            {% if section.settings.divider_style == 'line' %}
+              <hr class="divider-line">
+            {% elsif section.settings.divider_style == 'dots' %}
+              <div class="divider-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            {% elsif section.settings.divider_style == 'icon' and section.settings.divider_icon %}
+              <div class="divider-icon">
+                <span>{{ section.settings.divider_icon }}</span>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_cta and section.settings.cta_text %}
+          <div class="quote-cta">
+            <a href="{{ section.settings.cta_url | default: '#' }}" class="cta-button {{ section.settings.cta_style }}">
+              {{ section.settings.cta_text }}
+              {% if section.settings.cta_icon %}
+                <span class="cta-icon">{{ section.settings.cta_icon }}</span>
+              {% endif %}
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .quote {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+    padding: {{ section.settings.section_padding_vertical | default: 4 }}rem 0;
+  }
+  
+  .quote-wrapper {
+    position: relative;
+  }
+  
+  .quote-icon {
+    margin-bottom: 2rem;
+  }
+  
+  .icon-text {
+    font-size: {{ section.settings.quote_icon_size | default: 72 }}px;
+    color: {{ section.settings.quote_icon_color | default: 'var(--color-primary)' }};
+    font-family: serif;
+    font-weight: bold;
+    line-height: 1;
+  }
+  
+  .quote-text {
+    font-size: {{ section.settings.quote_size | default: 24 }}px;
+    font-weight: {{ section.settings.quote_weight | default: 400 }};
+    line-height: {{ section.settings.quote_line_height | default: 1.5 }};
+    color: {{ section.settings.quote_color | default: 'var(--p-color)' }};
+    margin-bottom: 2rem;
+    font-style: {{ section.settings.quote_style == 'italic' ? 'italic' : 'normal' }};
+    border: none;
+    padding: 0;
+    {% if section.settings.quote_style == 'border' %}
+      border-left: 4px solid {{ section.settings.quote_border_color | default: 'var(--color-primary)' }};
+      padding-left: 2rem;
+      margin-left: 0;
+    {% endif %}
+    {% if section.settings.quote_style == 'background' %}
+      background-color: {{ section.settings.quote_bg_color | default: 'var(--color-surface)' }};
+      padding: 2rem;
+      border-radius: var(--radius-lg);
+    {% endif %}
+    {% if section.settings.quote_style == 'shadow' %}
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+      border-radius: var(--radius-lg);
+      background-color: {{ section.settings.quote_bg_color | default: 'white' }};
+    {% endif %}
+  }
+  
+  .quote-author {
+    margin-bottom: 2rem;
+  }
+  
+  .author-name {
+    font-size: {{ section.settings.author_name_size | default: 18 }}px;
+    font-weight: {{ section.settings.author_name_weight | default: 600 }};
+    color: {{ section.settings.author_name_color | default: 'var(--h3-color)' }};
+    margin-bottom: 0.5rem;
+  }
+  
+  .author-title {
+    font-size: {{ section.settings.author_title_size | default: 16 }}px;
+    font-weight: {{ section.settings.author_title_weight | default: 500 }};
+    color: {{ section.settings.author_title_color | default: 'var(--color-primary)' }};
+    margin-bottom: 0.25rem;
+  }
+  
+  .author-company {
+    font-size: {{ section.settings.author_company_size | default: 14 }}px;
+    font-weight: {{ section.settings.author_company_weight | default: 400 }};
+    color: {{ section.settings.author_company_color | default: 'var(--text-light-color)' }};
+  }
+  
+  .quote-divider {
+    margin: {{ section.settings.divider_margin | default: 2 }}rem 0;
+  }
+  
+  .divider-line {
+    width: {{ section.settings.divider_width | default: 80 }}px;
+    height: {{ section.settings.divider_thickness | default: 2 }}px;
+    background-color: {{ section.settings.divider_color | default: 'var(--color-border)' }};
+    border: none;
+    border-radius: var(--radius-full);
+    margin: 0 auto;
+  }
+  
+  .divider-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .divider-dots span {
+    width: {{ section.settings.divider_dot_size | default: 6 }}px;
+    height: {{ section.settings.divider_dot_size | default: 6 }}px;
+    background-color: {{ section.settings.divider_color | default: 'var(--color-border)' }};
+    border-radius: 50%;
+  }
+  
+  .divider-icon {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .divider-icon span {
+    font-size: {{ section.settings.divider_icon_size | default: 20 }}px;
+    color: {{ section.settings.divider_color | default: 'var(--color-border)' }};
+  }
+  
+  .quote-cta {
+    margin-top: 2rem;
+  }
+  
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: {{ section.settings.cta_padding_vertical | default: 12 }}px {{ section.settings.cta_padding_horizontal | default: 24 }}px;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+  
+  .cta-button.primary {
+    background-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.cta_text_color | default: 'white' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-button.primary:hover {
+    background-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    border-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .cta-button.secondary {
+    background-color: transparent;
+    color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-button.secondary:hover {
+    background-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .cta-button.outline {
+    background-color: transparent;
+    color: {{ section.settings.cta_text_color | default: 'var(--color-text)' }};
+    border-color: {{ section.settings.cta_border_color | default: 'var(--color-border)' }};
+  }
+  
+  .cta-button.outline:hover {
+    background-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-surface)' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-icon {
+    font-size: 1.25rem;
+  }
+  
+  /* Style Variations */
+  .quote-wrapper.large .quote-text {
+    font-size: 32px;
+  }
+  
+  .quote-wrapper.small .quote-text {
+    font-size: 18px;
+  }
+  
+  .quote-wrapper.centered {
+    text-align: center;
+  }
+  
+  .quote-wrapper.left-aligned {
+    text-align: left;
+  }
+  
+  .quote-wrapper.right-aligned {
+    text-align: right;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .quote-text {
+      font-size: 20px;
+    }
+    
+    .icon-text {
+      font-size: 48px;
+    }
+    
+    .quote {
+      padding: 2rem 0;
+    }
+    
+    .quote-text.border {
+      padding-left: 1rem;
+      border-left-width: 3px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Quote",
+  "tag": "section",
+  "class": "section-quote",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "textarea",
+      "id": "quote_text",
+      "label": "Quote Text",
+      "default": "Your quote text goes here. This is a powerful statement that resonates with your audience."
+    },
+    {
+      "type": "text",
+      "id": "author_name",
+      "label": "Author Name"
+    },
+    {
+      "type": "text",
+      "id": "author_title",
+      "label": "Author Title"
+    },
+    {
+      "type": "text",
+      "id": "author_company",
+      "label": "Author Company"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width",
+      "min": 400,
+      "max": 1200,
+      "step": 100,
+      "default": 800,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_vertical",
+      "label": "Section Vertical Padding",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Quote Icon"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quote_icon",
+      "label": "Show Quote Icon",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "quote_icon",
+      "label": "Quote Icon",
+      "default": "&quot;",
+      "info": "Use HTML entities or emojis"
+    },
+    {
+      "type": "range",
+      "id": "quote_icon_size",
+      "label": "Quote Icon Size",
+      "min": 32,
+      "max": 120,
+      "step": 8,
+      "default": 72,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "quote_icon_color",
+      "label": "Quote Icon Color"
+    },
+    {
+      "type": "header",
+      "content": "Quote Typography"
+    },
+    {
+      "type": "select",
+      "id": "quote_style",
+      "label": "Quote Style",
+      "options": [
+        { "value": "default", "label": "Default" },
+        { "value": "italic", "label": "Italic" },
+        { "value": "border", "label": "With Border" },
+        { "value": "background", "label": "With Background" },
+        { "value": "shadow", "label": "With Shadow" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "range",
+      "id": "quote_size",
+      "label": "Quote Size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "quote_weight",
+      "label": "Quote Weight",
+      "options": [
+        { "value": "300", "label": "Light" },
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "range",
+      "id": "quote_line_height",
+      "label": "Quote Line Height",
+      "min": 1.2,
+      "max": 2,
+      "step": 0.1,
+      "default": 1.5,
+      "unit": ""
+    },
+    {
+      "type": "color",
+      "id": "quote_color",
+      "label": "Quote Color"
+    },
+    {
+      "type": "color",
+      "id": "quote_bg_color",
+      "label": "Quote Background Color"
+    },
+    {
+      "type": "color",
+      "id": "quote_border_color",
+      "label": "Quote Border Color"
+    },
+    {
+      "type": "header",
+      "content": "Author Typography"
+    },
+    {
+      "type": "range",
+      "id": "author_name_size",
+      "label": "Author Name Size",
+      "min": 14,
+      "max": 24,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "author_name_weight",
+      "label": "Author Name Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "author_name_color",
+      "label": "Author Name Color"
+    },
+    {
+      "type": "range",
+      "id": "author_title_size",
+      "label": "Author Title Size",
+      "min": 12,
+      "max": 20,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "author_title_weight",
+      "label": "Author Title Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "color",
+      "id": "author_title_color",
+      "label": "Author Title Color"
+    },
+    {
+      "type": "range",
+      "id": "author_company_size",
+      "label": "Author Company Size",
+      "min": 12,
+      "max": 18,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "author_company_weight",
+      "label": "Author Company Weight",
+      "options": [
+        { "value": "300", "label": "Light" },
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "color",
+      "id": "author_company_color",
+      "label": "Author Company Color"
+    },
+    {
+      "type": "header",
+      "content": "Divider"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_divider",
+      "label": "Show Divider",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "divider_style",
+      "label": "Divider Style",
+      "options": [
+        { "value": "line", "label": "Line" },
+        { "value": "dots", "label": "Dots" },
+        { "value": "icon", "label": "Icon" }
+      ],
+      "default": "line"
+    },
+    {
+      "type": "text",
+      "id": "divider_icon",
+      "label": "Divider Icon (emoji)"
+    },
+    {
+      "type": "range",
+      "id": "divider_width",
+      "label": "Divider Width",
+      "min": 40,
+      "max": 200,
+      "step": 20,
+      "default": 80,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_thickness",
+      "label": "Divider Thickness",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_dot_size",
+      "label": "Divider Dot Size",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 6,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_icon_size",
+      "label": "Divider Icon Size",
+      "min": 16,
+      "max": 48,
+      "step": 4,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Divider Color"
+    },
+    {
+      "type": "range",
+      "id": "divider_margin",
+      "label": "Divider Margin",
+      "min": 1,
+      "max": 4,
+      "step": 0.5,
+      "default": 2,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Call to Action"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta",
+      "label": "Show Call to Action",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA Text"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "CTA URL"
+    },
+    {
+      "type": "select",
+      "id": "cta_style",
+      "label": "CTA Style",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "text",
+      "id": "cta_icon",
+      "label": "CTA Icon (emoji)"
+    },
+    {
+      "type": "color",
+      "id": "cta_bg_color",
+      "label": "CTA Background Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_text_color",
+      "label": "CTA Text Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_hover_bg_color",
+      "label": "CTA Hover Background Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_border_color",
+      "label": "CTA Border Color"
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_horizontal",
+      "label": "CTA Horizontal Padding",
+      "min": 16,
+      "max": 48,
+      "step": 8,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_vertical",
+      "label": "CTA Vertical Padding",
+      "min": 8,
+      "max": 24,
+      "step": 4,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Quote",
+      "settings": {
+        "quote_text": "Your quote text goes here. This is a powerful statement that resonates with your audience.",
+        "author_name": "John Doe",
+        "author_title": "CEO",
+        "author_company": "Company Name",
+        "text_alignment": "center",
+        "show_quote_icon": true,
+        "quote_style": "border"
+      }
+    }
+  ]
+}
+{% endschema %}
+

@@ -1,0 +1,78 @@
+{
+  "name": "Home",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    },
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "heading": "Welcome to Elegance",
+        "subheading": "Premium Design Theme",
+        "description": "Create stunning websites with our premium theme featuring modern design, flexible layouts, and powerful customization options.",
+        "primary_button_text": "Get Started",
+        "primary_button_url": "/get-started",
+        "secondary_button_text": "Learn More",
+        "secondary_button_url": "/about",
+        "text_alignment": "center",
+        "min_height": 600
+      }
+    },
+    "features": {
+      "type": "features",
+      "settings": {
+        "heading": "Why Choose Elegance?",
+        "subheading": "Powerful Features",
+        "columns": 3,
+        "show_icons": true
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "settings": {
+        "heading": "What Our Customers Say",
+        "subheading": "Trusted by thousands",
+        "columns": 2,
+        "show_avatars": true
+      }
+    },
+    "cta": {
+      "type": "cta",
+      "settings": {
+        "heading": "Ready to Get Started?",
+        "description": "Join thousands of satisfied customers who trust Elegance for their websites.",
+        "primary_button_text": "Start Building",
+        "primary_button_url": "/start",
+        "background_color": "#f8fafc"
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "hero",
+    "features",
+    "testimonials",
+    "cta",
+    "footer"
+  ]
+}

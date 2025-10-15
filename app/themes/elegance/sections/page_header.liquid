@@ -1,0 +1,343 @@
+<section class="page-header section" data-section-type="page_header" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="page-header-content">
+      {% if section.settings.show_breadcrumbs %}
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+              <a href="/" class="breadcrumb-link">Home</a>
+            </li>
+            {% if page.parent %}
+              <li class="breadcrumb-item">
+                <a href="{{ page.parent.url }}" class="breadcrumb-link">{{ page.parent.title }}</a>
+              </li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">
+              {{ page.title }}
+            </li>
+          </ol>
+        </nav>
+      {% endif %}
+
+      <div class="page-header-main">
+        {% if section.settings.show_featured_image and page.featured_image %}
+          <div class="page-featured-image">
+            <img 
+              src="{{ page.featured_image }}" 
+              alt="{{ page.title }}"
+              class="featured-img"
+              loading="eager"
+            >
+          </div>
+        {% endif %}
+
+        <div class="page-header-text">
+          <h1 class="page-title">{{ page.title }}</h1>
+          
+          {% if section.settings.show_meta %}
+            <div class="page-meta">
+              {% if page.author %}
+                <span class="meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  By {{ page.author.name }}
+                </span>
+              {% endif %}
+              
+              {% if page.published_at %}
+                <span class="meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12,6 12,12 16,14"></polyline>
+                  </svg>
+                  {{ page.published_at | date: "%B %d, %Y" }}
+                </span>
+              {% endif %}
+              
+              {% if page.reading_time %}
+                <span class="meta-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                  {{ page.reading_time }} min read
+                </span>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          {% if page.excerpt %}
+            <div class="page-excerpt">
+              <p>{{ page.excerpt }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .page-header {
+    background-color: {{ section.settings.background_color | default: 'var(--color-surface)' }};
+    padding: {{ section.settings.padding_vertical | default: 4 }}rem 0;
+  }
+  
+  .page-header-content {
+    text-align: {{ section.settings.text_alignment | default: 'left' }};
+  }
+  
+  .breadcrumbs {
+    margin-bottom: 2rem;
+  }
+  
+  .breadcrumb-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0.5rem;
+  }
+  
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+  }
+  
+  .breadcrumb-item:not(:last-child)::after {
+    content: '/';
+    margin-left: 0.5rem;
+    color: var(--color-border);
+  }
+  
+  .breadcrumb-link {
+    color: var(--color-text-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .breadcrumb-link:hover {
+    color: var(--color-primary);
+  }
+  
+  .breadcrumb-item.active {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+  
+  .page-header-main {
+    display: grid;
+    grid-template-columns: {% if section.settings.show_featured_image and page.featured_image %}1fr 2fr{% else %}1fr{% endif %};
+    gap: 3rem;
+    align-items: center;
+  }
+  
+  .page-featured-image {
+    order: {{ section.settings.image_position | default: '1' }};
+  }
+  
+  .featured-img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .page-title {
+    font-size: {{ section.settings.title_size | default: 48 }}px;
+    font-weight: {{ section.settings.title_weight | default: 700 }};
+    color: {{ section.settings.title_color | default: 'var(--h1-color)' }};
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+  }
+  
+  .page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: {{ section.settings.meta_color | default: 'var(--color-text-light)' }};
+    font-size: 0.875rem;
+  }
+  
+  .meta-item svg {
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+  
+  .page-excerpt {
+    font-size: {{ section.settings.excerpt_size | default: 18 }}px;
+    color: {{ section.settings.excerpt_color | default: 'var(--p-color)' }};
+    line-height: 1.6;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .page-header-main {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      text-align: center;
+    }
+    
+    .page-title {
+      font-size: 32px;
+    }
+    
+    .page-meta {
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .breadcrumb-list {
+      justify-content: center;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Page Header",
+  "tag": "section",
+  "class": "section-page-header",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show Breadcrumbs",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_featured_image",
+      "label": "Show Featured Image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_meta",
+      "label": "Show Meta Information",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image Position",
+      "options": [
+        { "value": "1", "label": "Left" },
+        { "value": "2", "label": "Right" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "header",
+      "content": "Styling"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical",
+      "label": "Vertical Padding",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title Size",
+      "min": 24,
+      "max": 72,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" },
+        { "value": "800", "label": "Extra Bold" }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color"
+    },
+    {
+      "type": "color",
+      "id": "meta_color",
+      "label": "Meta Color"
+    },
+    {
+      "type": "range",
+      "id": "excerpt_size",
+      "label": "Excerpt Size",
+      "min": 14,
+      "max": 24,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "excerpt_color",
+      "label": "Excerpt Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page Header",
+      "settings": {
+        "show_breadcrumbs": true,
+        "show_featured_image": true,
+        "show_meta": true
+      }
+    }
+  ]
+}
+{% endschema %}
+

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_15_003712) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -91,6 +91,23 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "ai_usages", force: :cascade do |t|
+    t.integer "ai_agent_id", null: false
+    t.integer "user_id", null: false
+    t.text "prompt"
+    t.text "response"
+    t.integer "tokens_used"
+    t.decimal "cost"
+    t.decimal "response_time"
+    t.boolean "success"
+    t.text "error_message"
+    t.json "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_agent_id"], name: "index_ai_usages_on_ai_agent_id"
+    t.index ["user_id"], name: "index_ai_usages_on_user_id"
+  end
+
   create_table "api_tokens", force: :cascade do |t|
     t.string "name", null: false
     t.string "token", null: false
@@ -109,22 +126,144 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.index ["user_id"], name: "index_api_tokens_on_user_id"
   end
 
+  create_table "builder_file_settings", force: :cascade do |t|
+    t.integer "builder_file_id", null: false
+    t.integer "tenant_id", null: false
+    t.json "meta", default: "{}", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["builder_file_id", "tenant_id"], name: "index_builder_file_settings_on_builder_file_id_and_tenant_id", unique: true
+    t.index ["builder_file_id"], name: "index_builder_file_settings_on_builder_file_id"
+    t.index ["tenant_id"], name: "index_builder_file_settings_on_tenant_id"
+  end
+
+  create_table "builder_page_sections", force: :cascade do |t|
+    t.integer "builder_page_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "section_id", null: false
+    t.string "section_type", null: false
+    t.text "settings", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["builder_page_id", "position"], name: "index_builder_page_sections_on_builder_page_id_and_position"
+    t.index ["builder_page_id", "section_id"], name: "index_builder_page_sections_on_builder_page_id_and_section_id", unique: true
+    t.index ["builder_page_id"], name: "index_builder_page_sections_on_builder_page_id"
+    t.index ["tenant_id"], name: "index_builder_page_sections_on_tenant_id"
+  end
+
+  create_table "builder_pages", force: :cascade do |t|
+    t.integer "builder_theme_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "template_name", null: false
+    t.string "page_title", null: false
+    t.text "settings"
+    t.text "sections"
+    t.integer "position", default: 0, null: false
+    t.boolean "published", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["builder_theme_id", "position"], name: "index_builder_pages_on_builder_theme_id_and_position"
+    t.index ["builder_theme_id", "published"], name: "index_builder_pages_on_builder_theme_id_and_published"
+    t.index ["builder_theme_id", "template_name"], name: "index_builder_pages_on_builder_theme_id_and_template_name", unique: true
+    t.index ["builder_theme_id"], name: "index_builder_pages_on_builder_theme_id"
+    t.index ["tenant_id"], name: "index_builder_pages_on_tenant_id"
+  end
+
+  create_table "builder_theme_files", force: :cascade do |t|
+    t.integer "builder_theme_id", null: false
+    t.string "path", null: false
+    t.text "content", null: false
+    t.string "checksum", null: false
+    t.integer "file_size"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "tenant_id", null: false
+    t.index ["builder_theme_id", "path"], name: "index_builder_theme_files_on_builder_theme_id_and_path", unique: true
+    t.index ["builder_theme_id"], name: "index_builder_theme_files_on_builder_theme_id"
+    t.index ["checksum"], name: "index_builder_theme_files_on_checksum"
+    t.index ["tenant_id"], name: "index_builder_theme_files_on_tenant_id"
+  end
+
+  create_table "builder_theme_sections", force: :cascade do |t|
+    t.integer "builder_theme_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "section_id", null: false
+    t.string "section_type", null: false
+    t.text "settings", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["builder_theme_id", "position"], name: "index_builder_theme_sections_on_builder_theme_id_and_position"
+    t.index ["builder_theme_id", "section_id"], name: "idx_on_builder_theme_id_section_id_2761c3cdc8", unique: true
+    t.index ["builder_theme_id"], name: "index_builder_theme_sections_on_builder_theme_id"
+    t.index ["tenant_id"], name: "index_builder_theme_sections_on_tenant_id"
+  end
+
+  create_table "builder_theme_snapshots", force: :cascade do |t|
+    t.string "theme_name", null: false
+    t.integer "builder_theme_id", null: false
+    t.text "settings_data", null: false
+    t.text "sections_data", null: false
+    t.string "checksum", null: false
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "tenant_id", null: false
+    t.index ["builder_theme_id"], name: "index_builder_theme_snapshots_on_builder_theme_id"
+    t.index ["checksum"], name: "index_builder_theme_snapshots_on_checksum", unique: true
+    t.index ["tenant_id"], name: "index_builder_theme_snapshots_on_tenant_id"
+    t.index ["theme_name", "created_at"], name: "index_builder_theme_snapshots_on_theme_name_and_created_at"
+    t.index ["user_id"], name: "index_builder_theme_snapshots_on_user_id"
+  end
+
+  create_table "builder_themes", force: :cascade do |t|
+    t.string "theme_name", null: false
+    t.string "label", null: false
+    t.integer "parent_version_id"
+    t.string "checksum", null: false
+    t.boolean "published", default: false, null: false
+    t.integer "user_id", null: false
+    t.text "summary"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "tenant_id", null: false
+    t.index ["checksum"], name: "index_builder_themes_on_checksum", unique: true
+    t.index ["parent_version_id"], name: "index_builder_themes_on_parent_version_id"
+    t.index ["tenant_id"], name: "index_builder_themes_on_tenant_id"
+    t.index ["theme_name", "published"], name: "index_builder_themes_on_theme_name_and_published"
+    t.index ["user_id"], name: "index_builder_themes_on_user_id"
+  end
+
   create_table "comments", force: :cascade do |t|
     t.text "content"
     t.string "author_name"
     t.string "author_email"
     t.string "author_url"
     t.integer "status"
-    t.integer "user_id", null: false
+    t.integer "user_id"
     t.string "commentable_type", null: false
     t.integer "commentable_id", null: false
     t.integer "parent_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tenant_id"
+    t.datetime "deleted_at"
+    t.integer "trashed_by_id"
+    t.string "author_ip"
+    t.string "comment_approved", limit: 20
+    t.text "author_agent"
+    t.string "comment_type"
+    t.integer "comment_parent_id"
+    t.index ["author_ip"], name: "index_comments_on_author_ip"
+    t.index ["comment_approved"], name: "index_comments_on_comment_approved"
+    t.index ["comment_parent_id"], name: "index_comments_on_comment_parent_id"
+    t.index ["comment_type"], name: "index_comments_on_comment_type"
     t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable"
+    t.index ["deleted_at"], name: "index_comments_on_deleted_at"
     t.index ["parent_id"], name: "index_comments_on_parent_id"
     t.index ["tenant_id"], name: "index_comments_on_tenant_id"
+    t.index ["trashed_by_id"], name: "index_comments_on_trashed_by_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
@@ -315,7 +454,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tenant_id"
+    t.integer "upload_id", null: false
+    t.datetime "deleted_at"
+    t.integer "trashed_by_id"
+    t.index ["deleted_at"], name: "index_media_on_deleted_at"
     t.index ["tenant_id"], name: "index_media_on_tenant_id"
+    t.index ["trashed_by_id"], name: "index_media_on_trashed_by_id"
+    t.index ["upload_id"], name: "index_media_on_upload_id"
     t.index ["user_id"], name: "index_media_on_user_id"
   end
 
@@ -342,6 +487,20 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.datetime "updated_at", null: false
     t.integer "tenant_id"
     t.index ["tenant_id"], name: "index_menus_on_tenant_id"
+  end
+
+  create_table "meta_fields", force: :cascade do |t|
+    t.string "metable_type", null: false
+    t.integer "metable_id", null: false
+    t.string "key", null: false
+    t.text "value"
+    t.boolean "immutable", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["immutable"], name: "index_meta_fields_on_immutable"
+    t.index ["key"], name: "index_meta_fields_on_key"
+    t.index ["metable_type", "metable_id", "key"], name: "index_meta_fields_on_metable_and_key", unique: true
+    t.index ["metable_type", "metable_id"], name: "index_meta_fields_on_metable"
   end
 
   create_table "mobility_string_translations", force: :cascade do |t|
@@ -416,12 +575,14 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.string "password_hint"
     t.integer "page_template_id"
     t.datetime "deleted_at"
+    t.integer "trashed_by_id"
     t.index ["deleted_at"], name: "index_pages_on_deleted_at"
     t.index ["focus_keyphrase"], name: "index_pages_on_focus_keyphrase"
     t.index ["page_template_id"], name: "index_pages_on_page_template_id"
     t.index ["parent_id"], name: "index_pages_on_parent_id"
     t.index ["password"], name: "index_pages_on_password"
     t.index ["tenant_id"], name: "index_pages_on_tenant_id"
+    t.index ["trashed_by_id"], name: "index_pages_on_trashed_by_id"
     t.index ["user_id"], name: "index_pages_on_user_id"
   end
 
@@ -568,12 +729,39 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.string "password_hint"
     t.datetime "deleted_at"
     t.integer "content_type_id"
+    t.integer "trashed_by_id"
     t.index ["content_type_id"], name: "index_posts_on_content_type_id"
     t.index ["deleted_at"], name: "index_posts_on_deleted_at"
     t.index ["focus_keyphrase"], name: "index_posts_on_focus_keyphrase"
     t.index ["password"], name: "index_posts_on_password"
     t.index ["tenant_id"], name: "index_posts_on_tenant_id"
+    t.index ["trashed_by_id"], name: "index_posts_on_trashed_by_id"
     t.index ["user_id"], name: "index_posts_on_user_id"
+  end
+
+  create_table "published_theme_files", force: :cascade do |t|
+    t.integer "published_theme_version_id", null: false
+    t.string "file_path"
+    t.string "file_type"
+    t.text "content"
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["published_theme_version_id"], name: "index_published_theme_files_on_published_theme_version_id"
+  end
+
+  create_table "published_theme_versions", force: :cascade do |t|
+    t.integer "version_number"
+    t.datetime "published_at"
+    t.string "published_by_type", null: false
+    t.integer "published_by_id", null: false
+    t.integer "tenant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "theme_id", null: false
+    t.index ["published_by_type", "published_by_id"], name: "index_published_theme_versions_on_published_by"
+    t.index ["tenant_id"], name: "index_published_theme_versions_on_tenant_id"
+    t.index ["theme_id"], name: "index_published_theme_versions_on_theme_id"
   end
 
   create_table "redirects", force: :cascade do |t|
@@ -647,6 +835,18 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.index ["active"], name: "index_slick_forms_on_active"
     t.index ["name"], name: "index_slick_forms_on_name"
     t.index ["tenant_id"], name: "index_slick_forms_on_tenant_id"
+  end
+
+  create_table "storage_providers", force: :cascade do |t|
+    t.string "name"
+    t.string "provider_type"
+    t.text "config"
+    t.boolean "active"
+    t.integer "position"
+    t.integer "tenant_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tenant_id"], name: "index_storage_providers_on_tenant_id"
   end
 
   create_table "subscribers", force: :cascade do |t|
@@ -753,17 +953,57 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
   end
 
   create_table "theme_file_versions", force: :cascade do |t|
-    t.string "theme_name", null: false
-    t.string "file_path", null: false
     t.text "content"
     t.integer "file_size"
     t.integer "user_id"
     t.string "change_summary"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "is_live"
+    t.integer "version_number"
+    t.integer "theme_version_id"
+    t.integer "theme_file_id"
+    t.string "file_checksum"
     t.index ["created_at"], name: "index_theme_file_versions_on_created_at"
-    t.index ["theme_name", "file_path"], name: "index_theme_file_versions_on_theme_name_and_file_path"
+    t.index ["theme_file_id"], name: "index_theme_file_versions_on_theme_file_id"
+    t.index ["theme_version_id"], name: "index_theme_file_versions_on_theme_version_id"
     t.index ["user_id"], name: "index_theme_file_versions_on_user_id"
+  end
+
+  create_table "theme_files", force: :cascade do |t|
+    t.string "theme_name"
+    t.string "file_path"
+    t.string "file_type"
+    t.integer "current_version"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "theme_version_id"
+    t.string "current_checksum"
+    t.index ["theme_version_id"], name: "index_theme_files_on_theme_version_id"
+  end
+
+  create_table "theme_version_files", force: :cascade do |t|
+    t.integer "theme_version_id", null: false
+    t.string "file_path"
+    t.string "file_type"
+    t.text "content"
+    t.integer "file_size"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["theme_version_id"], name: "index_theme_version_files_on_theme_version_id"
+  end
+
+  create_table "theme_versions", force: :cascade do |t|
+    t.string "theme_name"
+    t.string "version"
+    t.boolean "is_live"
+    t.boolean "is_preview"
+    t.integer "user_id", null: false
+    t.text "change_summary"
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_theme_versions_on_user_id"
   end
 
   create_table "themes", force: :cascade do |t|
@@ -776,7 +1016,49 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tenant_id"
+    t.string "slug"
+    t.index ["slug"], name: "index_themes_on_slug", unique: true
     t.index ["tenant_id"], name: "index_themes_on_tenant_id"
+  end
+
+  create_table "trash_settings", force: :cascade do |t|
+    t.boolean "auto_cleanup_enabled"
+    t.integer "cleanup_after_days"
+    t.integer "tenant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tenant_id"], name: "index_trash_settings_on_tenant_id"
+  end
+
+  create_table "upload_securities", force: :cascade do |t|
+    t.integer "max_file_size"
+    t.text "allowed_extensions"
+    t.text "blocked_extensions"
+    t.text "allowed_mime_types"
+    t.text "blocked_mime_types"
+    t.boolean "scan_for_viruses"
+    t.boolean "quarantine_suspicious"
+    t.boolean "auto_approve_trusted"
+    t.integer "tenant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tenant_id"], name: "index_upload_securities_on_tenant_id"
+  end
+
+  create_table "uploads", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "title"
+    t.text "description"
+    t.string "alt_text"
+    t.integer "tenant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "storage_provider_id", null: false
+    t.boolean "quarantined"
+    t.text "quarantine_reason"
+    t.index ["storage_provider_id"], name: "index_uploads_on_storage_provider_id"
+    t.index ["tenant_id"], name: "index_uploads_on_tenant_id"
+    t.index ["user_id"], name: "index_uploads_on_user_id"
   end
 
   create_table "user_notifications", force: :cascade do |t|
@@ -818,6 +1100,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.string "linkedin"
     t.string "name"
     t.string "editor_preference", default: "blocknote"
+    t.string "monaco_theme"
+    t.string "api_key"
+    t.index ["api_key"], name: "index_users_on_api_key", unique: true
     t.index ["api_token"], name: "index_users_on_api_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -869,7 +1154,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
     t.integer "failed_deliveries", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "tenant_id"
     t.index ["active"], name: "index_webhooks_on_active"
+    t.index ["tenant_id"], name: "index_webhooks_on_tenant_id"
     t.index ["url"], name: "index_webhooks_on_url"
   end
 
@@ -890,9 +1177,28 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "ai_agents", "ai_providers"
+  add_foreign_key "ai_usages", "ai_agents"
+  add_foreign_key "ai_usages", "users"
   add_foreign_key "api_tokens", "users"
+  add_foreign_key "builder_file_settings", "builder_files"
+  add_foreign_key "builder_file_settings", "tenants"
+  add_foreign_key "builder_page_sections", "builder_pages"
+  add_foreign_key "builder_page_sections", "tenants"
+  add_foreign_key "builder_pages", "builder_themes"
+  add_foreign_key "builder_pages", "tenants"
+  add_foreign_key "builder_theme_files", "builder_themes"
+  add_foreign_key "builder_theme_files", "tenants"
+  add_foreign_key "builder_theme_sections", "builder_themes"
+  add_foreign_key "builder_theme_sections", "tenants"
+  add_foreign_key "builder_theme_snapshots", "builder_themes"
+  add_foreign_key "builder_theme_snapshots", "tenants"
+  add_foreign_key "builder_theme_snapshots", "users"
+  add_foreign_key "builder_themes", "tenants"
+  add_foreign_key "builder_themes", "users"
+  add_foreign_key "comments", "comments", column: "comment_parent_id"
   add_foreign_key "comments", "tenants"
   add_foreign_key "comments", "users"
+  add_foreign_key "comments", "users", column: "trashed_by_id"
   add_foreign_key "content_types", "tenants"
   add_foreign_key "custom_field_values", "custom_fields"
   add_foreign_key "custom_field_values", "pages"
@@ -907,7 +1213,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
   add_foreign_key "import_jobs", "tenants"
   add_foreign_key "import_jobs", "users"
   add_foreign_key "media", "tenants"
+  add_foreign_key "media", "uploads"
   add_foreign_key "media", "users"
+  add_foreign_key "media", "users", column: "trashed_by_id"
   add_foreign_key "menu_items", "menus"
   add_foreign_key "menu_items", "tenants"
   add_foreign_key "menus", "tenants"
@@ -915,6 +1223,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
   add_foreign_key "pages", "page_templates"
   add_foreign_key "pages", "tenants"
   add_foreign_key "pages", "users"
+  add_foreign_key "pages", "users", column: "trashed_by_id"
   add_foreign_key "pageviews", "pages"
   add_foreign_key "pageviews", "posts"
   add_foreign_key "pageviews", "tenants"
@@ -927,10 +1236,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
   add_foreign_key "posts", "content_types"
   add_foreign_key "posts", "tenants"
   add_foreign_key "posts", "users"
+  add_foreign_key "posts", "users", column: "trashed_by_id"
+  add_foreign_key "published_theme_files", "published_theme_versions"
+  add_foreign_key "published_theme_versions", "tenants"
+  add_foreign_key "published_theme_versions", "themes"
   add_foreign_key "redirects", "tenants"
   add_foreign_key "shortcuts", "tenants"
   add_foreign_key "site_settings", "tenants"
   add_foreign_key "slick_form_submissions", "slick_forms"
+  add_foreign_key "storage_providers", "tenants"
   add_foreign_key "subscribers", "tenants"
   add_foreign_key "taxonomies", "tenants"
   add_foreign_key "templates", "tenants"
@@ -938,10 +1252,21 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_13_035846) do
   add_foreign_key "term_relationships", "terms"
   add_foreign_key "terms", "taxonomies"
   add_foreign_key "terms", "tenants"
+  add_foreign_key "theme_file_versions", "theme_files"
+  add_foreign_key "theme_file_versions", "theme_versions"
   add_foreign_key "theme_file_versions", "users"
+  add_foreign_key "theme_files", "theme_versions"
+  add_foreign_key "theme_version_files", "theme_versions"
+  add_foreign_key "theme_versions", "users"
   add_foreign_key "themes", "tenants"
+  add_foreign_key "trash_settings", "tenants"
+  add_foreign_key "upload_securities", "tenants"
+  add_foreign_key "uploads", "storage_providers"
+  add_foreign_key "uploads", "tenants"
+  add_foreign_key "uploads", "users"
   add_foreign_key "user_notifications", "users"
   add_foreign_key "users", "tenants"
   add_foreign_key "webhook_deliveries", "webhooks"
+  add_foreign_key "webhooks", "tenants"
   add_foreign_key "widgets", "tenants"
 end

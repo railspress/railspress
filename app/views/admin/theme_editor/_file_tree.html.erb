@@ -18,29 +18,31 @@
     </div>
   <% else %>
     <!-- File -->
-    <%= link_to admin_theme_editor_index_path(file: file[:path]), 
-        data: { turbo_frame: 'file-editor' },
-        class: "file-tree-item flex items-center text-sm text-gray-700 dark:text-gray-300 #{@current_file_path && @current_file_path == file[:path] ? 'active' : ''}" do %>
-      
-      <% if file[:editable] %>
+    <% if file[:editable] %>
+      <%= link_to admin_theme_editor_file_path(file: file[:path]), 
+          class: "file-tree-item flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded" do %>
+        
         <!-- Editable file icon -->
         <svg class="file-icon text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-      <% else %>
+        
+        <span class="truncate"><%= file[:name] %></span>
+      <% end %>
+    <% else %>
+      <!-- Non-editable file - show as disabled -->
+      <div class="file-tree-item flex items-center text-sm text-gray-500 dark:text-gray-500 px-2 py-1 rounded">
         <!-- Binary file icon -->
         <svg class="file-icon text-gray-400" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
         </svg>
-      <% end %>
-      
-      <span class="truncate"><%= file[:name] %></span>
-      
-      <% unless file[:editable] %>
+        
+        <span class="truncate"><%= file[:name] %></span>
+        
         <svg class="w-3 h-3 ml-auto text-gray-400" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
         </svg>
-      <% end %>
+      </div>
     <% end %>
   <% end %>
 <% end %>

@@ -1,7 +1,7 @@
 class ThemeFileManager
   # Allowed file extensions for editing
   EDITABLE_EXTENSIONS = %w[
-    .erb .html .htm .haml .slim
+    .erb .html .htm .haml .slim .liquid .php
     .css .scss .sass
     .js .coffee
     .json .yml .yaml
@@ -296,12 +296,14 @@ class ThemeFileManager
       file_path: file_path,
       content: content,
       file_size: content.bytesize,
-      user_id: Current.user&.id
+      user_id: nil # TODO: Pass user from controller
     )
   rescue => e
     Rails.logger.error "Failed to create version record: #{e.message}"
   end
 end
+
+
 
 
 

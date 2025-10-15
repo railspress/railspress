@@ -1,0 +1,70 @@
+{
+  "name": "Contact",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    },
+    "contact_header": {
+      "type": "contact_header",
+      "settings": {
+        "show_breadcrumbs": true,
+        "heading": "Contact Us",
+        "description": "Get in touch with us. We'd love to hear from you.",
+        "background_color": "#f8fafc",
+        "text_alignment": "center"
+      }
+    },
+    "contact_form": {
+      "type": "contact_form",
+      "settings": {
+        "show_contact_info": true,
+        "show_map": true,
+        "form_style": "modern",
+        "show_recaptcha": false,
+        "send_copy_to_user": true,
+        "auto_responder": true,
+        "required_fields": ["name", "email", "message"]
+      }
+    },
+    "contact_info": {
+      "type": "contact_info",
+      "settings": {
+        "show_address": true,
+        "show_phone": true,
+        "show_email": true,
+        "show_hours": true,
+        "show_social_links": true,
+        "layout": "grid",
+        "columns": 2
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "contact_header",
+    "contact_form",
+    "contact_info",
+    "footer"
+  ]
+}
+

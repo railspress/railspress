@@ -1,0 +1,133 @@
+<%# 
+  Example usage of the AI Text Generator partial
+  
+  This demonstrates how to integrate the AI text generator into admin forms
+%>
+
+<div class="bg-gray-800 rounded-lg p-6 mb-6">
+  <h3 class="text-lg font-semibold text-white mb-4">AI Text Generator Examples</h3>
+  
+  <!-- Example 1: Simple textarea with AI button -->
+  <div class="mb-6">
+    <label class="block text-sm font-medium text-gray-300 mb-2">
+      Post Content
+    </label>
+    <div class="relative">
+      <textarea id="post_content" 
+                rows="6"
+                class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                placeholder="Start writing your post content..."></textarea>
+      
+      <!-- AI Generator Button -->
+      <%= render 'shared/ai_text_generator', 
+          agent_id: 'content_summarizer',
+          target_selector: '#post_content',
+          button_text: 'AI',
+          placeholder: 'Describe the content you want to generate...',
+          button_class: 'absolute top-3 right-3' %>
+    </div>
+  </div>
+
+  <!-- Example 2: Multiple fields with different agents -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    
+    <!-- Title field -->
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Post Title
+      </label>
+      <div class="relative">
+        <input type="text" 
+               id="post_title"
+               class="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-10"
+               placeholder="Enter post title...">
+        
+        <%= render 'shared/ai_text_generator', 
+            agent_id: 'content_summarizer',
+            target_selector: '#post_title',
+            button_text: 'AI',
+            placeholder: 'Describe the title you want...',
+            button_class: 'absolute top-2 right-2' %>
+      </div>
+    </div>
+
+    <!-- Excerpt field -->
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Post Excerpt
+      </label>
+      <div class="relative">
+        <textarea id="post_excerpt" 
+                  rows="3"
+                  class="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-10"
+                  placeholder="Brief summary..."></textarea>
+        
+        <%= render 'shared/ai_text_generator', 
+            agent_id: 'content_summarizer',
+            target_selector: '#post_excerpt',
+            button_text: 'AI',
+            placeholder: 'Describe the excerpt you want...',
+            button_class: 'absolute top-2 right-2' %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example 3: Different agents for different purposes -->
+  <div class="space-y-4">
+    <h4 class="text-md font-medium text-gray-300">Different AI Agents for Different Tasks:</h4>
+    
+    <!-- Creative Writing Agent -->
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Creative Story (using Creative Writer agent)
+      </label>
+      <div class="relative">
+        <textarea id="creative_story" 
+                  rows="4"
+                  class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                  placeholder="Start your creative story..."></textarea>
+        
+        <%= render 'shared/ai_text_generator', 
+            agent_id: 'creative_writer',
+            target_selector: '#creative_story',
+            button_text: 'AI',
+            placeholder: 'Describe the story you want to create...',
+            button_class: 'absolute top-3 right-3' %>
+      </div>
+    </div>
+
+    <!-- Technical Writing Agent -->
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Technical Documentation (using Technical Writer agent)
+      </label>
+      <div class="relative">
+        <textarea id="tech_docs" 
+                  rows="4"
+                  class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                  placeholder="Write technical documentation..."></textarea>
+        
+        <%= render 'shared/ai_text_generator', 
+            agent_id: 'technical_writer',
+            target_selector: '#tech_docs',
+            button_text: 'AI',
+            placeholder: 'Describe the technical content you need...',
+            button_class: 'absolute top-3 right-3' %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Instructions -->
+  <div class="mt-6 p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+    <h4 class="text-sm font-medium text-blue-300 mb-2">Usage Instructions:</h4>
+    <ul class="text-xs text-blue-200 space-y-1">
+      <li>• Click the AI button (magic wand icon) next to any text field</li>
+      <li>• Enter a prompt describing what you want to generate</li>
+      <li>• Select a tone from the dropdown (optional)</li>
+      <li>• Click "Generate" to create content with AI</li>
+      <li>• The generated text will be inserted at your cursor position</li>
+      <li>• Different agents are specialized for different types of content</li>
+    </ul>
+  </div>
+</div>
+

@@ -8,7 +8,7 @@ module LiquidRenderable
   private
 
   def setup_liquid_renderer
-    @liquid_renderer = LiquidTemplateRenderer.new(current_theme_name)
+    # No longer needed - we'll use ThemeVersionLoader directly
   end
 
   def current_theme_name
@@ -22,10 +22,12 @@ module LiquidRenderable
       current_user: current_user,
       request_path: request.path,
       flash: flash.to_hash,
-      params: params.to_unsafe_h
+      params: params.to_unsafe_h,
+      assets: FrontendThemeRenderer.load_assets
     )
 
-    html = @liquid_renderer.render(template, assigns_with_context, layout)
+    # Use FrontendThemeRenderer to render from PublishedThemeVersion
+    html = FrontendThemeRenderer.render_template(template, assigns_with_context)
     
     # Inject admin bar for logged-in users
     if user_signed_in? && html.include?('<body')

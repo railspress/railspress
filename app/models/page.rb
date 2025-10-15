@@ -2,6 +2,9 @@ class Page < ApplicationRecord
   # Multi-tenancy
   acts_as_tenant(:tenant, optional: true)
   
+  # Trash functionality
+  include Trashable
+  
   # Soft deletes
   include Discard::Model
   self.discard_column = :deleted_at
@@ -23,6 +26,10 @@ class Page < ApplicationRecord
   
   # Custom Taxonomies
   include HasTaxonomies
+  
+  # Meta fields for plugin extensibility
+  has_many :meta_fields, as: :metable, dependent: :destroy
+  include Metable
   
   # SEO
   include SeoOptimizable

@@ -265,3 +265,20 @@
   flex-shrink: 0;
 }
 
+/* Status-specific row styling */
+.tabulator .tabulator-row.status-published {
+  border-left: 3px solid #10b981;
+}
+
+.tabulator .tabulator-row.status-draft {
+  border-left: 3px solid #f59e0b;
+}
+
+.tabulator .tabulator-row.status-trash {
+  border-left: 3px solid #ef4444;
+}
+
+.tabulator .tabulator-row.trashed {
+  opacity: 0.6;
+}
+

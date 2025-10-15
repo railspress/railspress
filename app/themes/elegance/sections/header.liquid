@@ -1,0 +1,261 @@
+<header class="header" data-section-type="header" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="header-content">
+      <!-- Logo -->
+      <div class="logo">
+        {% if section.settings.logo_image %}
+          <img src="{{ section.settings.logo_image }}" alt="{{ section.settings.logo_alt | default: site.title }}" class="logo-image">
+        {% else %}
+          <a href="/" class="logo-text">{{ section.settings.logo_text | default: site.title }}</a>
+        {% endif %}
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="nav" role="navigation">
+        <ul class="nav-list">
+          {% for item in section.settings.menu_items %}
+            <li class="nav-item">
+              <a href="{{ item.url }}" class="nav-link">{{ item.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+      
+      <!-- Header Actions -->
+      <div class="header-actions">
+        {% if section.settings.show_search %}
+          <button class="header-search-btn" aria-label="Search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+        {% endif %}
+        
+        {% if section.settings.show_cart %}
+          <button class="header-cart-btn" aria-label="Cart">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span class="cart-count">{{ section.settings.cart_count | default: 0 }}</span>
+          </button>
+        {% endif %}
+        
+        {% if section.settings.show_account %}
+          <a href="/account" class="header-account-btn" aria-label="Account">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  .header {
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+  }
+  
+  .logo-image {
+    height: {{ section.settings.logo_height | default: 40 }}px;
+    width: auto;
+  }
+  
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: var(--weight-heading);
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  
+  .nav-list {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .nav-link {
+    color: var(--header-text);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    position: relative;
+  }
+  
+  .nav-link:hover {
+    color: var(--color-primary);
+  }
+  
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--color-primary);
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .header-search-btn,
+  .header-cart-btn,
+  .header-account-btn {
+    background: none;
+    border: none;
+    color: var(--header-text);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .header-search-btn:hover,
+  .header-cart-btn:hover,
+  .header-account-btn:hover {
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+  }
+  
+  .cart-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.375rem;
+    border-radius: 9999px;
+    min-width: 1.25rem;
+    text-align: center;
+  }
+  
+  /* Mobile Navigation */
+  @media (max-width: 768px) {
+    .nav {
+      display: none;
+    }
+    
+    .header-actions {
+      gap: 0.5rem;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Header",
+  "tag": "header",
+  "class": "section-header",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo Settings"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_image",
+      "label": "Logo Image"
+    },
+    {
+      "type": "text",
+      "id": "logo_text",
+      "label": "Logo Text",
+      "default": "Elegance"
+    },
+    {
+      "type": "text",
+      "id": "logo_alt",
+      "label": "Logo Alt Text",
+      "default": "Elegance Logo"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Logo Height",
+      "min": 20,
+      "max": 80,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "text",
+      "id": "menu_items",
+      "label": "Menu Items (JSON)",
+      "info": "JSON array of menu items with title and url properties"
+    },
+    {
+      "type": "header",
+      "content": "Header Actions"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show Search",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart",
+      "label": "Show Cart",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Show Account",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "cart_count",
+      "label": "Cart Count",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    }
+  ]
+}
+{% endschema %}
+

@@ -32,7 +32,14 @@ class Admin::AiProvidersController < Admin::BaseController
   
   # PATCH/PUT /admin/ai_providers/:id
   def update
-    if @ai_provider.update(ai_provider_params)
+    update_params = ai_provider_params
+    
+    # Don't update API key if it's the placeholder
+    if update_params[:api_key] == "••••••••••••••••"
+      update_params.delete(:api_key)
+    end
+    
+    if @ai_provider.update(update_params)
       redirect_to admin_ai_providers_path, notice: 'AI Provider updated successfully.'
     else
       render :edit, status: :unprocessable_entity

@@ -1,11 +1,15 @@
 class Admin::ThemesController < Admin::BaseController
-  before_action :ensure_admin, only: [:activate, :destroy]
+  before_action :ensure_admin, only: [:activate, :destroy, :sync]
+  before_action :set_themes_manager
 
   # GET /admin/themes
   def index
+    # Sync themes from filesystem to database
+    @themes_manager.sync_themes
+    
     @active_theme = Theme.active.first
-    @available_themes = Railspress::ThemeLoader.available_themes
-    @installed_themes = Theme.all
+    @installed_themes = Theme.all.order(:name)
+    @available_themes = @installed_themes
   end
 
   # GET /admin/themes/1
@@ -67,16 +71,40 @@ class Admin::ThemesController < Admin::BaseController
 
   # PATCH /admin/themes/1/activate
   def activate
-    theme_name = params[:theme_name] || params[:id]
-    theme_display_name = theme_name.titleize
-    
-    if Railspress::ThemeLoader.activate_theme(theme_name)
-      flash[:notice] = "✓ Theme '#{theme_display_name}' activated successfully! View your frontend to see the changes."
-      redirect_to admin_themes_path
+    # Handle both ID and theme name/slug
+    if params[:id].match?(/\A\d+\z/)
+      @theme = Theme.find(params[:id])
     else
-      flash[:alert] = "✗ Failed to activate theme '#{theme_display_name}'. Please check the theme files."
-      redirect_to admin_themes_path
+      # Try to find by slug first, then by name
+      @theme = Theme.find_by(slug: params[:id]) || Theme.find_by(name: params[:id])
     end
+    
+    unless @theme
+      flash[:alert] = "✗ Theme not found."
+      redirect_to admin_themes_path
+      return
+    end
+    
+    if @theme.activate!
+      flash[:notice] = "✓ Theme '#{@theme.name}' activated successfully! View your frontend to see the changes."
+    else
+      flash[:alert] = "✗ Failed to activate theme '#{@theme.name}'. Please check the theme files."
+    end
+    
+    redirect_to admin_themes_path
+  end
+  
+  # POST /admin/themes/sync
+  def sync
+    synced_count = @themes_manager.sync_themes
+    
+    if synced_count > 0
+      flash[:notice] = "✓ Synced #{synced_count} themes from filesystem to database."
+    else
+      flash[:info] = "All themes are already up to date."
+    end
+    
+    redirect_to admin_themes_path
   end
 
   # GET /admin/themes/preview?theme=theme_name
@@ -89,8 +117,12 @@ class Admin::ThemesController < Admin::BaseController
 
   private
 
+  def set_themes_manager
+    @themes_manager = ThemesManager.new
+  end
+
   def theme_params
-    params.require(:theme).permit(:name, :description, :author, :version, :active, :settings)
+    params.require(:theme).permit(:name, :description, :version, :active, :config)
   end
 
   def load_theme_config(theme_name)

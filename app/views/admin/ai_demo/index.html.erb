@@ -1,0 +1,282 @@
+<%# AI Text Generator Demo Page %>
+
+<div class="max-w-4xl mx-auto p-6">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white mb-2">AI Text Generator Demo</h1>
+    <p class="text-gray-400">Test the AI text generation functionality with different agents and tones.</p>
+  </div>
+
+  <!-- Demo Form -->
+  <%= form_with url: '#', class: "space-y-8" do |form| %>
+    
+    <!-- Basic Examples -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Basic Examples</h2>
+      
+      <!-- Title Field -->
+      <%= ai_text_field(form, :title, 'Post Title', 
+          agent: 'content_summarizer',
+          placeholder: 'Enter your post title...',
+          ai_placeholder: 'Generate a catchy title about...') %>
+      
+      <!-- Content Field -->
+      <%= ai_text_area(form, :content, 'Post Content', 
+          agent: 'content_summarizer',
+          rows: 8,
+          placeholder: 'Start writing your post content...',
+          ai_placeholder: 'Write a blog post about...') %>
+      
+      <!-- Excerpt Field -->
+      <%= ai_text_area(form, :excerpt, 'Post Excerpt', 
+          agent: 'content_summarizer',
+          rows: 3,
+          placeholder: 'Brief summary of the post...',
+          ai_placeholder: 'Create a compelling excerpt about...') %>
+    </div>
+
+    <!-- Different Agents -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Different AI Agents</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Creative Writing -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Creative Story (Creative Writer Agent)
+          </label>
+          <div class="relative">
+            <textarea id="creative_story" 
+                      rows="6"
+                      class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                      placeholder="Start your creative story..."></textarea>
+            
+            <%= ai_text_generator_button(
+                agent_id: 'creative_writer',
+                target_selector: '#creative_story',
+                placeholder: 'Create a story about...',
+                button_class: 'absolute top-3 right-3') %>
+          </div>
+        </div>
+
+        <!-- Technical Writing -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Technical Docs (Technical Writer Agent)
+          </label>
+          <div class="relative">
+            <textarea id="tech_docs" 
+                      rows="6"
+                      class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                      placeholder="Write technical documentation..."></textarea>
+            
+            <%= ai_text_generator_button(
+                agent_id: 'technical_writer',
+                target_selector: '#tech_docs',
+                placeholder: 'Write technical documentation about...',
+                button_class: 'absolute top-3 right-3') %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tone Examples -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Tone Examples</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Professional Tone
+          </label>
+          <div class="relative">
+            <textarea id="professional_text" 
+                      rows="4"
+                      class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                      placeholder="Professional content..."></textarea>
+            
+            <%= ai_text_generator_button(
+                agent_id: 'content_summarizer',
+                target_selector: '#professional_text',
+                placeholder: 'Write professional content about...',
+                button_class: 'absolute top-3 right-3') %>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Casual Tone
+          </label>
+          <div class="relative">
+            <textarea id="casual_text" 
+                      rows="4"
+                      class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12"
+                      placeholder="Casual content..."></textarea>
+            
+            <%= ai_text_generator_button(
+                agent_id: 'content_summarizer',
+                target_selector: '#casual_text',
+                placeholder: 'Write casual content about...',
+                button_class: 'absolute top-3 right-3') %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Integration Examples -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-xl font-semibold text-white mb-6">Integration Examples</h2>
+      
+      <!-- Using with_ai_generator helper -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">
+          Using with_ai_generator Helper
+        </label>
+        <%= with_ai_generator(
+              form.text_area(:custom_field, 
+                rows: 4,
+                class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:border-indigo-500 focus:outline-none pr-12",
+                placeholder: "Custom field with AI..."),
+              agent_id: 'content_summarizer',
+              target_selector: '#form_custom_field',
+              placeholder: 'Generate custom content...',
+              button_class: 'absolute top-3 right-3') %>
+      </div>
+    </div>
+
+  <% end %>
+
+  <!-- Instructions -->
+  <div class="mt-8 bg-blue-900/20 border border-blue-700/30 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-blue-300 mb-4">How to Use</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h4 class="font-medium text-blue-200 mb-2">Basic Usage:</h4>
+        <ul class="text-sm text-blue-100 space-y-1">
+          <li>• Click the AI button (magic wand) next to any text field</li>
+          <li>• Enter a prompt describing what you want to generate</li>
+          <li>• Select a tone from the dropdown (optional)</li>
+          <li>• Click "Generate" to create content</li>
+          <li>• Text is inserted at your cursor position</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-medium text-blue-200 mb-2">Integration:</h4>
+        <ul class="text-sm text-blue-100 space-y-1">
+          <li>• Use <code>ai_text_field</code> helper for input fields</li>
+          <li>• Use <code>ai_text_area</code> helper for textareas</li>
+          <li>• Use <code>with_ai_generator</code> for existing fields</li>
+          <li>• Specify different agents for different content types</li>
+          <li>• Customize button position and styling</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle Switch Examples -->
+  <div class="mt-8 bg-gray-800 rounded-lg p-6">
+    <h2 class="text-xl font-semibold text-white mb-6">Toggle Switch Examples</h2>
+    
+    <div class="space-y-6">
+      
+      <!-- Basic Toggle Switches -->
+      <div>
+        <h3 class="text-lg font-medium text-gray-300 mb-4">Basic Toggle Switches</h3>
+        
+        <%= toggle_switch_group do %>
+          <%= toggle_switch_tag('example', '1', false, 'Enable Feature') %>
+          <%= toggle_switch_tag('example', '2', true, 'Auto Save', description: 'Automatically save changes as you type') %>
+          <%= toggle_switch_tag('example', '3', false, 'Dark Mode', description: 'Switch to dark theme for better visibility') %>
+        <% end %>
+      </div>
+
+      <!-- Different Sizes -->
+      <div>
+        <h3 class="text-lg font-medium text-gray-300 mb-4">Different Sizes</h3>
+        
+        <%= toggle_switch_group do %>
+          <%= small_toggle_switch_tag('size', 'small', false, 'Small Toggle') %>
+          <%= toggle_switch_tag('size', 'default', true, 'Default Size') %>
+          <%= large_toggle_switch_tag('size', 'large', false, 'Large Toggle') %>
+        <% end %>
+      </div>
+
+      <!-- Different Colors -->
+      <div>
+        <h3 class="text-lg font-medium text-gray-300 mb-4">Different Colors</h3>
+        
+        <%= toggle_switch_group do %>
+          <%= toggle_switch_tag('color', 'default', true, 'Default Color') %>
+          <%= toggle_switch_tag('color', 'success', true, 'Success Color', color: 'success') %>
+          <%= toggle_switch_tag('color', 'warning', true, 'Warning Color', color: 'warning') %>
+          <%= toggle_switch_tag('color', 'danger', true, 'Danger Color', color: 'danger') %>
+        <% end %>
+      </div>
+
+      <!-- Form Integration -->
+      <div>
+        <h3 class="text-lg font-medium text-gray-300 mb-4">Form Integration</h3>
+        
+        <%= form_with url: '#', class: 'space-y-4' do |form| %>
+          <%= toggle_switch(form, :notifications, 'Email Notifications', 
+              description: 'Receive email notifications for important updates') %>
+          
+          <%= toggle_switch(form, :analytics, 'Analytics Tracking', 
+              description: 'Allow analytics tracking to improve the service') %>
+          
+          <%= success_toggle_switch(form, :featured, 'Featured Content', 
+              description: 'Mark this content as featured') %>
+        <% end %>
+      </div>
+
+      <!-- Special States -->
+      <div>
+        <h3 class="text-lg font-medium text-gray-300 mb-4">Special States</h3>
+        
+        <%= toggle_switch_group do %>
+          <%= toggle_switch_tag('loading', '1', false, 'Loading State', wrapper_class: 'toggle-loading') %>
+          <%= toggle_switch_tag('error', '1', false, 'Error State', wrapper_class: 'toggle-error') %>
+          <%= toggle_switch_tag('success', '1', true, 'Success State', wrapper_class: 'toggle-success') %>
+          <%= toggle_switch_tag('disabled', '1', false, 'Disabled State', disabled: true) %>
+        <% end %>
+      </div>
+
+      <!-- Horizontal Group -->
+      <div>
+        <h3 class="text-lg font-medium text-gray-300 mb-4">Horizontal Group</h3>
+        
+        <%= toggle_switch_group(direction: 'horizontal') do %>
+          <%= toggle_switch_tag('horizontal', '1', true, 'Option 1') %>
+          <%= toggle_switch_tag('horizontal', '2', false, 'Option 2') %>
+          <%= toggle_switch_tag('horizontal', '3', true, 'Option 3') %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Examples -->
+  <div class="mt-8 bg-gray-800 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-white mb-4">Code Examples</h3>
+    
+    <div class="space-y-4">
+      <div>
+        <h4 class="font-medium text-gray-300 mb-2">Basic Helper Usage:</h4>
+        <pre class="bg-black/50 rounded p-3 text-sm text-gray-300 overflow-x-auto"><code>&lt;%= ai_text_field(form, :title, 'Post Title', 
+    agent: 'content_summarizer',
+    placeholder: 'Enter title...',
+    ai_placeholder: 'Generate a title about...') %&gt;</code></pre>
+      </div>
+      
+      <div>
+        <h4 class="font-medium text-gray-300 mb-2">Manual Integration:</h4>
+        <pre class="bg-black/50 rounded p-3 text-sm text-gray-300 overflow-x-auto"><code>&lt;div class="relative"&gt;
+  &lt;textarea id="content"&gt;&lt;/textarea&gt;
+  &lt;%= render 'shared/ai_text_generator', 
+      agent_id: 'content_summarizer',
+      target_selector: '#content',
+      button_class: 'absolute top-3 right-3' %&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+    </div>
+  </div>
+</div>

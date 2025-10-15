@@ -1,0 +1,63 @@
+{
+  "name": "Blog",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_text": "Elegance",
+        "show_search": true,
+        "show_cart": true,
+        "show_account": true
+      }
+    },
+    "blog_header": {
+      "type": "blog_header",
+      "settings": {
+        "show_breadcrumbs": true,
+        "show_search": true,
+        "show_categories": true,
+        "show_tags": true,
+        "background_color": "#f8fafc",
+        "text_alignment": "center"
+      }
+    },
+    "blog_content": {
+      "type": "blog_content",
+      "settings": {
+        "layout": "grid",
+        "columns": 3,
+        "show_sidebar": true,
+        "sidebar_position": "right",
+        "show_featured_images": true,
+        "show_excerpts": true,
+        "show_meta": true,
+        "show_read_more": true,
+        "posts_per_page": 9,
+        "show_pagination": true,
+        "show_author_bio": true,
+        "show_social_sharing": true
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "settings": {
+        "logo_text": "Elegance",
+        "description": "Creating beautiful, functional websites with premium design and user experience.",
+        "columns": 4,
+        "heading_1": "Quick Links",
+        "heading_2": "Support",
+        "heading_3": "Company",
+        "show_social_links": true,
+        "show_newsletter": true,
+        "copyright_text": "Elegance"
+      }
+    }
+  },
+  "order": [
+    "header",
+    "blog_header",
+    "blog_content",
+    "footer"
+  ]
+}
+

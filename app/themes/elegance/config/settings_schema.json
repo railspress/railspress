@@ -1,0 +1,991 @@
+[
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Brand Colors"
+      },
+      {
+        "type": "color",
+        "id": "primary_color",
+        "label": "Primary Color",
+        "default": "#2563eb"
+      },
+      {
+        "type": "color",
+        "id": "secondary_color",
+        "label": "Secondary Color",
+        "default": "#7c3aed"
+      },
+      {
+        "type": "color",
+        "id": "accent_color",
+        "label": "Accent Color",
+        "default": "#f59e0b"
+      },
+      {
+        "type": "header",
+        "content": "Neutral Colors"
+      },
+      {
+        "type": "color",
+        "id": "background_color",
+        "label": "Background Color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "text_color",
+        "label": "Text Color",
+        "default": "#1f2937"
+      },
+      {
+        "type": "color",
+        "id": "text_light_color",
+        "label": "Light Text Color",
+        "default": "#6b7280"
+      },
+      {
+        "type": "color",
+        "id": "border_color",
+        "label": "Border Color",
+        "default": "#e5e7eb"
+      },
+      {
+        "type": "color",
+        "id": "surface_color",
+        "label": "Surface Color",
+        "default": "#f9fafb"
+      }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Font Families"
+      },
+      {
+        "type": "font_picker",
+        "id": "heading_font",
+        "label": "Heading Font",
+        "default": "Inter, sans-serif"
+      },
+      {
+        "type": "font_picker",
+        "id": "body_font",
+        "label": "Body Font",
+        "default": "Inter, sans-serif"
+      },
+      {
+        "type": "font_picker",
+        "id": "button_font",
+        "label": "Button Font",
+        "default": "Inter, sans-serif"
+      },
+      {
+        "type": "font_picker",
+        "id": "code_font",
+        "label": "Code Font",
+        "default": "Fira Code, monospace"
+      },
+      {
+        "type": "header",
+        "content": "H1 Settings"
+      },
+      {
+        "type": "range",
+        "id": "h1_size",
+        "label": "H1 Size",
+        "min": 24,
+        "max": 72,
+        "step": 2,
+        "default": 48,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h1_weight",
+        "label": "H1 Weight",
+        "options": [
+          { "value": "300", "label": "Light" },
+          { "value": "400", "label": "Normal" },
+          { "value": "500", "label": "Medium" },
+          { "value": "600", "label": "Semi Bold" },
+          { "value": "700", "label": "Bold" },
+          { "value": "800", "label": "Extra Bold" }
+        ],
+        "default": "700"
+      },
+      {
+        "type": "color",
+        "id": "h1_color",
+        "label": "H1 Color",
+        "default": "#1f2937"
+      },
+      {
+        "type": "range",
+        "id": "h1_line_height",
+        "label": "H1 Line Height",
+        "min": 1,
+        "max": 2,
+        "step": 0.1,
+        "default": 1.1,
+        "unit": ""
+      },
+      {
+        "type": "range",
+        "id": "h1_letter_spacing",
+        "label": "H1 Letter Spacing",
+        "min": -2,
+        "max": 4,
+        "step": 0.5,
+        "default": 0,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h1_margin_bottom",
+        "label": "H1 Margin Bottom",
+        "min": 8,
+        "max": 48,
+        "step": 4,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "H2 Settings"
+      },
+      {
+        "type": "range",
+        "id": "h2_size",
+        "label": "H2 Size",
+        "min": 20,
+        "max": 48,
+        "step": 2,
+        "default": 36,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h2_weight",
+        "label": "H2 Weight",
+        "options": [
+          { "value": "300", "label": "Light" },
+          { "value": "400", "label": "Normal" },
+          { "value": "500", "label": "Medium" },
+          { "value": "600", "label": "Semi Bold" },
+          { "value": "700", "label": "Bold" },
+          { "value": "800", "label": "Extra Bold" }
+        ],
+        "default": "600"
+      },
+      {
+        "type": "color",
+        "id": "h2_color",
+        "label": "H2 Color",
+        "default": "#1f2937"
+      },
+      {
+        "type": "range",
+        "id": "h2_line_height",
+        "label": "H2 Line Height",
+        "min": 1,
+        "max": 2,
+        "step": 0.1,
+        "default": 1.2,
+        "unit": ""
+      },
+      {
+        "type": "range",
+        "id": "h2_letter_spacing",
+        "label": "H2 Letter Spacing",
+        "min": -2,
+        "max": 4,
+        "step": 0.5,
+        "default": 0,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h2_margin_bottom",
+        "label": "H2 Margin Bottom",
+        "min": 8,
+        "max": 40,
+        "step": 4,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "H3 Settings"
+      },
+      {
+        "type": "range",
+        "id": "h3_size",
+        "label": "H3 Size",
+        "min": 18,
+        "max": 36,
+        "step": 2,
+        "default": 28,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h3_weight",
+        "label": "H3 Weight",
+        "options": [
+          { "value": "300", "label": "Light" },
+          { "value": "400", "label": "Normal" },
+          { "value": "500", "label": "Medium" },
+          { "value": "600", "label": "Semi Bold" },
+          { "value": "700", "label": "Bold" },
+          { "value": "800", "label": "Extra Bold" }
+        ],
+        "default": "600"
+      },
+      {
+        "type": "color",
+        "id": "h3_color",
+        "label": "H3 Color",
+        "default": "#1f2937"
+      },
+      {
+        "type": "range",
+        "id": "h3_line_height",
+        "label": "H3 Line Height",
+        "min": 1,
+        "max": 2,
+        "step": 0.1,
+        "default": 1.3,
+        "unit": ""
+      },
+      {
+        "type": "range",
+        "id": "h3_letter_spacing",
+        "label": "H3 Letter Spacing",
+        "min": -2,
+        "max": 4,
+        "step": 0.5,
+        "default": 0,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "h3_margin_bottom",
+        "label": "H3 Margin Bottom",
+        "min": 8,
+        "max": 32,
+        "step": 4,
+        "default": 12,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "H4 Settings"
+      },
+      {
+        "type": "range",
+        "id": "h4_size",
+        "label": "H4 Size",
+        "min": 16,
+        "max": 28,
+        "step": 2,
+        "default": 22,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h4_weight",
+        "label": "H4 Weight",
+        "options": [
+          { "value": "300", "label": "Light" },
+          { "value": "400", "label": "Normal" },
+          { "value": "500", "label": "Medium" },
+          { "value": "600", "label": "Semi Bold" },
+          { "value": "700", "label": "Bold" },
+          { "value": "800", "label": "Extra Bold" }
+        ],
+        "default": "600"
+      },
+      {
+        "type": "color",
+        "id": "h4_color",
+        "label": "H4 Color",
+        "default": "#1f2937"
+      },
+      {
+        "type": "range",
+        "id": "h4_line_height",
+        "label": "H4 Line Height",
+        "min": 1,
+        "max": 2,
+        "step": 0.1,
+        "default": 1.3,
+        "unit": ""
+      },
+      {
+        "type": "range",
+        "id": "h4_margin_bottom",
+        "label": "H4 Margin Bottom",
+        "min": 8,
+        "max": 24,
+        "step": 4,
+        "default": 12,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "H5 Settings"
+      },
+      {
+        "type": "range",
+        "id": "h5_size",
+        "label": "H5 Size",
+        "min": 14,
+        "max": 24,
+        "step": 2,
+        "default": 18,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h5_weight",
+        "label": "H5 Weight",
+        "options": [
+          { "value": "300", "label": "Light" },
+          { "value": "400", "label": "Normal" },
+          { "value": "500", "label": "Medium" },
+          { "value": "600", "label": "Semi Bold" },
+          { "value": "700", "label": "Bold" },
+          { "value": "800", "label": "Extra Bold" }
+        ],
+        "default": "600"
+      },
+      {
+        "type": "color",
+        "id": "h5_color",
+        "label": "H5 Color",
+        "default": "#1f2937"
+      },
+      {
+        "type": "range",
+        "id": "h5_line_height",
+        "label": "H5 Line Height",
+        "min": 1,
+        "max": 2,
+        "step": 0.1,
+        "default": 1.4,
+        "unit": ""
+      },
+      {
+        "type": "range",
+        "id": "h5_margin_bottom",
+        "label": "H5 Margin Bottom",
+        "min": 8,
+        "max": 20,
+        "step": 4,
+        "default": 8,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "H6 Settings"
+      },
+      {
+        "type": "range",
+        "id": "h6_size",
+        "label": "H6 Size",
+        "min": 12,
+        "max": 20,
+        "step": 2,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "h6_weight",
+        "label": "H6 Weight",
+        "options": [
+          { "value": "300", "label": "Light" },
+          { "value": "400", "label": "Normal" },
+          { "value": "500", "label": "Medium" },
+          { "value": "600", "label": "Semi Bold" },
+          { "value": "700", "label": "Bold" },
+          { "value": "800", "label": "Extra Bold" }
+        ],
+        "default": "600"
+      },
+      {
+        "type": "color",
+        "id": "h6_color",
+        "label": "H6 Color",
+        "default": "#6b7280"
+      },
+      {
+        "type": "range",
+        "id": "h6_line_height",
+        "label": "H6 Line Height",
+        "min": 1,
+        "max": 2,
+        "step": 0.1,
+        "default": 1.4,
+        "unit": ""
+      },
+      {
+        "type": "range",
+        "id": "h6_margin_bottom",
+        "label": "H6 Margin Bottom",
+        "min": 8,
+        "max": 16,
+        "step": 4,
+        "default": 8,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Paragraph Settings"
+      },
+      {
+        "type": "range",
+        "id": "p_size",
+        "label": "Paragraph Size",
+        "min": 14,
+        "max": 20,
+        "step": 1,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "p_weight",
+        "label": "Paragraph Weight",
+        "options": [
+          { "value": "300", "label": "Light" },
+          { "value": "400", "label": "Normal" },
+          { "value": "500", "label": "Medium" },
+          { "value": "600", "label": "Semi Bold" }
+        ],
+        "default": "400"
+      },
+      {
+        "type": "color",
+        "id": "p_color",
+        "label": "Paragraph Color",
+        "default": "#4b5563"
+      },
+      {
+        "type": "range",
+        "id": "p_line_height",
+        "label": "Paragraph Line Height",
+        "min": 1.2,
+        "max": 2,
+        "step": 0.1,
+        "default": 1.6,
+        "unit": ""
+      },
+      {
+        "type": "range",
+        "id": "p_margin_bottom",
+        "label": "Paragraph Margin Bottom",
+        "min": 8,
+        "max": 32,
+        "step": 4,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Link Settings"
+      },
+      {
+        "type": "color",
+        "id": "link_color",
+        "label": "Link Color",
+        "default": "#2563eb"
+      },
+      {
+        "type": "color",
+        "id": "link_hover_color",
+        "label": "Link Hover Color",
+        "default": "#1d4ed8"
+      },
+      {
+        "type": "select",
+        "id": "link_decoration",
+        "label": "Link Decoration",
+        "options": [
+          { "value": "none", "label": "None" },
+          { "value": "underline", "label": "Underline" },
+          { "value": "overline", "label": "Overline" },
+          { "value": "line-through", "label": "Line Through" }
+        ],
+        "default": "none"
+      },
+      {
+        "type": "select",
+        "id": "link_hover_decoration",
+        "label": "Link Hover Decoration",
+        "options": [
+          { "value": "none", "label": "None" },
+          { "value": "underline", "label": "Underline" },
+          { "value": "overline", "label": "Overline" },
+          { "value": "line-through", "label": "Line Through" }
+        ],
+        "default": "underline"
+      },
+      {
+        "type": "header",
+        "content": "List Settings"
+      },
+      {
+        "type": "range",
+        "id": "list_margin_bottom",
+        "label": "List Margin Bottom",
+        "min": 8,
+        "max": 32,
+        "step": 4,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "list_item_margin_bottom",
+        "label": "List Item Margin Bottom",
+        "min": 4,
+        "max": 16,
+        "step": 2,
+        "default": 8,
+        "unit": "px"
+      },
+      {
+        "type": "color",
+        "id": "list_marker_color",
+        "label": "List Marker Color",
+        "default": "#2563eb"
+      },
+      {
+        "type": "header",
+        "content": "Code Settings"
+      },
+      {
+        "type": "range",
+        "id": "code_size",
+        "label": "Code Size",
+        "min": 12,
+        "max": 18,
+        "step": 1,
+        "default": 14,
+        "unit": "px"
+      },
+      {
+        "type": "color",
+        "id": "code_color",
+        "label": "Code Color",
+        "default": "#e11d48"
+      },
+      {
+        "type": "color",
+        "id": "code_background",
+        "label": "Code Background",
+        "default": "#f1f5f9"
+      },
+      {
+        "type": "color",
+        "id": "pre_background",
+        "label": "Code Block Background",
+        "default": "#1e293b"
+      },
+      {
+        "type": "color",
+        "id": "pre_color",
+        "label": "Code Block Text Color",
+        "default": "#e2e8f0"
+      }
+    ]
+  },
+  {
+    "name": "Buttons",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Button Styles"
+      },
+      {
+        "type": "select",
+        "id": "button_style",
+        "label": "Button Style",
+        "options": [
+          { "value": "filled", "label": "Filled" },
+          { "value": "outline", "label": "Outline" },
+          { "value": "text", "label": "Text" }
+        ],
+        "default": "filled"
+      },
+      {
+        "type": "range",
+        "id": "button_padding_horizontal",
+        "label": "Horizontal Padding",
+        "min": 8,
+        "max": 48,
+        "step": 4,
+        "default": 24,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "button_padding_vertical",
+        "label": "Vertical Padding",
+        "min": 8,
+        "max": 24,
+        "step": 2,
+        "default": 12,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "button_border_radius",
+        "label": "Border Radius",
+        "min": 0,
+        "max": 24,
+        "step": 2,
+        "default": 8,
+        "unit": "px"
+      },
+      {
+        "type": "color",
+        "id": "button_bg_color",
+        "label": "Button Background",
+        "default": "#2563eb"
+      },
+      {
+        "type": "color",
+        "id": "button_text_color",
+        "label": "Button Text",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "button_hover_bg_color",
+        "label": "Button Hover Background",
+        "default": "#1d4ed8"
+      }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Container Settings"
+      },
+      {
+        "type": "range",
+        "id": "container_max_width",
+        "label": "Container Max Width",
+        "min": 768,
+        "max": 1920,
+        "step": 64,
+        "default": 1280,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "container_padding",
+        "label": "Container Padding",
+        "min": 16,
+        "max": 64,
+        "step": 8,
+        "default": 32,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Global Spacing"
+      },
+      {
+        "type": "range",
+        "id": "section_spacing",
+        "label": "Section Spacing",
+        "min": 32,
+        "max": 128,
+        "step": 8,
+        "default": 64,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "element_spacing",
+        "label": "Element Spacing",
+        "min": 8,
+        "max": 32,
+        "step": 4,
+        "default": 16,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "grid_gap",
+        "label": "Grid Gap",
+        "min": 16,
+        "max": 48,
+        "step": 8,
+        "default": 24,
+        "unit": "px"
+      },
+      {
+        "type": "header",
+        "content": "Border Radius"
+      },
+      {
+        "type": "range",
+        "id": "border_radius_sm",
+        "label": "Small Border Radius",
+        "min": 0,
+        "max": 12,
+        "step": 2,
+        "default": 4,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "border_radius_md",
+        "label": "Medium Border Radius",
+        "min": 0,
+        "max": 16,
+        "step": 2,
+        "default": 8,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "border_radius_lg",
+        "label": "Large Border Radius",
+        "min": 0,
+        "max": 24,
+        "step": 2,
+        "default": 12,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "border_radius_xl",
+        "label": "Extra Large Border Radius",
+        "min": 0,
+        "max": 32,
+        "step": 4,
+        "default": 16,
+        "unit": "px"
+      }
+    ]
+  },
+  {
+    "name": "Backgrounds",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Body Background"
+      },
+      {
+        "type": "color",
+        "id": "body_background_color",
+        "label": "Body Background Color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "image_picker",
+        "id": "body_background_image",
+        "label": "Body Background Image"
+      },
+      {
+        "type": "select",
+        "id": "body_background_size",
+        "label": "Background Size",
+        "options": [
+          { "value": "auto", "label": "Auto" },
+          { "value": "cover", "label": "Cover" },
+          { "value": "contain", "label": "Contain" },
+          { "value": "100% 100%", "label": "Stretch" }
+        ],
+        "default": "cover"
+      },
+      {
+        "type": "select",
+        "id": "body_background_position",
+        "label": "Background Position",
+        "options": [
+          { "value": "top left", "label": "Top Left" },
+          { "value": "top center", "label": "Top Center" },
+          { "value": "top right", "label": "Top Right" },
+          { "value": "center left", "label": "Center Left" },
+          { "value": "center center", "label": "Center Center" },
+          { "value": "center right", "label": "Center Right" },
+          { "value": "bottom left", "label": "Bottom Left" },
+          { "value": "bottom center", "label": "Bottom Center" },
+          { "value": "bottom right", "label": "Bottom Right" }
+        ],
+        "default": "center center"
+      },
+      {
+        "type": "select",
+        "id": "body_background_repeat",
+        "label": "Background Repeat",
+        "options": [
+          { "value": "no-repeat", "label": "No Repeat" },
+          { "value": "repeat", "label": "Repeat" },
+          { "value": "repeat-x", "label": "Repeat X" },
+          { "value": "repeat-y", "label": "Repeat Y" }
+        ],
+        "default": "no-repeat"
+      },
+      {
+        "type": "checkbox",
+        "id": "body_background_fixed",
+        "label": "Fixed Background",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "body_background_opacity",
+        "label": "Background Opacity",
+        "min": 0,
+        "max": 1,
+        "step": 0.1,
+        "default": 1
+      },
+      {
+        "type": "header",
+        "content": "Content Background"
+      },
+      {
+        "type": "color",
+        "id": "content_background_color",
+        "label": "Content Background Color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "content_border_radius",
+        "label": "Content Border Radius",
+        "min": 0,
+        "max": 24,
+        "step": 2,
+        "default": 8,
+        "unit": "px"
+      },
+      {
+        "type": "range",
+        "id": "content_padding",
+        "label": "Content Padding",
+        "min": 16,
+        "max": 64,
+        "step": 8,
+        "default": 32,
+        "unit": "px"
+      },
+      {
+        "type": "select",
+        "id": "content_shadow",
+        "label": "Content Shadow",
+        "options": [
+          { "value": "none", "label": "None" },
+          { "value": "sm", "label": "Small" },
+          { "value": "md", "label": "Medium" },
+          { "value": "lg", "label": "Large" },
+          { "value": "xl", "label": "Extra Large" }
+        ],
+        "default": "sm"
+      }
+    ]
+  },
+  {
+    "name": "Header",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Header Layout"
+      },
+      {
+        "type": "select",
+        "id": "header_style",
+        "label": "Header Style",
+        "options": [
+          { "value": "minimal", "label": "Minimal" },
+          { "value": "centered", "label": "Centered" },
+          { "value": "split", "label": "Split" }
+        ],
+        "default": "centered"
+      },
+      {
+        "type": "checkbox",
+        "id": "header_sticky",
+        "label": "Sticky Header",
+        "default": true
+      },
+      {
+        "type": "color",
+        "id": "header_bg_color",
+        "label": "Header Background",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "header_text_color",
+        "label": "Header Text",
+        "default": "#1f2937"
+      },
+      {
+        "type": "range",
+        "id": "header_height",
+        "label": "Header Height",
+        "min": 60,
+        "max": 120,
+        "step": 8,
+        "default": 80,
+        "unit": "px"
+      }
+    ]
+  },
+  {
+    "name": "Footer",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Footer Layout"
+      },
+      {
+        "type": "select",
+        "id": "footer_columns",
+        "label": "Footer Columns",
+        "options": [
+          { "value": "1", "label": "1 Column" },
+          { "value": "2", "label": "2 Columns" },
+          { "value": "3", "label": "3 Columns" },
+          { "value": "4", "label": "4 Columns" }
+        ],
+        "default": "4"
+      },
+      {
+        "type": "color",
+        "id": "footer_bg_color",
+        "label": "Footer Background",
+        "default": "#1f2937"
+      },
+      {
+        "type": "color",
+        "id": "footer_text_color",
+        "label": "Footer Text",
+        "default": "#9ca3af"
+      },
+      {
+        "type": "color",
+        "id": "footer_heading_color",
+        "label": "Footer Headings",
+        "default": "#ffffff"
+      }
+    ]
+  }
+]

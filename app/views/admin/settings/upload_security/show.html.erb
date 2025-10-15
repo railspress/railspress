@@ -1,0 +1,175 @@
+<% content_for :title, "Upload Security Settings" %>
+
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Upload Security Settings</h1>
+      <p class="text-gray-400">Configure file upload security and validation rules</p>
+    </div>
+  </div>
+
+  <!-- Settings Form -->
+  <div class="bg-gray-800 rounded-lg shadow">
+    <%= form_with model: [:admin, :settings, @upload_security], local: true, class: "p-6 space-y-6" do |form| %>
+      <% if @upload_security.errors.any? %>
+        <div class="bg-red-900 border border-red-700 text-red-100 px-4 py-3 rounded">
+          <h4 class="font-medium">Please fix the following errors:</h4>
+          <ul class="mt-2 list-disc list-inside text-sm">
+            <% @upload_security.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- File Size Limits -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-white">File Size Limits</h3>
+        
+        <div>
+          <%= form.label :max_file_size_human, "Maximum file size", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <%= form.text_field :max_file_size_human, 
+              value: @upload_security.max_file_size_human,
+              placeholder: "10 MB",
+              class: "w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <p class="mt-1 text-sm text-gray-400">Examples: 10 MB, 1 GB, 500 KB</p>
+        </div>
+      </div>
+
+      <!-- File Extensions -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-white">File Extensions</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <%= form.label :allowed_extensions_list, "Allowed extensions", class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.text_area :allowed_extensions_list,
+                value: @upload_security.allowed_extensions_list,
+                placeholder: "jpg, jpeg, png, gif, webp, pdf, doc, docx, txt, csv",
+                rows: 4,
+                class: "w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="mt-1 text-sm text-gray-400">Comma-separated list of allowed file extensions (without dots)</p>
+          </div>
+          
+          <div>
+            <%= form.label :blocked_extensions_list, "Blocked extensions", class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.text_area :blocked_extensions_list,
+                value: @upload_security.blocked_extensions_list,
+                placeholder: "exe, bat, cmd, sh, php, js, html, htm, asp, aspx, jsp",
+                rows: 4,
+                class: "w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="mt-1 text-sm text-gray-400">Comma-separated list of blocked file extensions (without dots)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MIME Types -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-white">MIME Types</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <%= form.label :allowed_mime_types_list, "Allowed MIME types", class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.text_area :allowed_mime_types_list,
+                value: @upload_security.allowed_mime_types_list,
+                placeholder: "image/jpeg, image/png, image/gif, image/webp, application/pdf",
+                rows: 6,
+                class: "w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="mt-1 text-sm text-gray-400">Comma-separated list of allowed MIME types</p>
+          </div>
+          
+          <div>
+            <%= form.label :blocked_mime_types_list, "Blocked MIME types", class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.text_area :blocked_mime_types_list,
+                value: @upload_security.blocked_mime_types_list,
+                placeholder: "application/x-executable, application/x-msdownload, text/html",
+                rows: 6,
+                class: "w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="mt-1 text-sm text-gray-400">Comma-separated list of blocked MIME types</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Options -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-white">Security Options</h3>
+        
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+            <div>
+              <h4 class="font-medium text-white">Quarantine Suspicious Files</h4>
+              <p class="text-sm text-gray-400">Automatically quarantine files with suspicious patterns (double extensions, etc.)</p>
+            </div>
+            <%= form.check_box :quarantine_suspicious, 
+                class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-700" %>
+          </div>
+          
+          <div class="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+            <div>
+              <h4 class="font-medium text-white">Auto-approve Trusted Files</h4>
+              <p class="text-sm text-gray-400">Automatically approve files from trusted sources</p>
+            </div>
+            <%= form.check_box :auto_approve_trusted, 
+                class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-700" %>
+          </div>
+          
+          <div class="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
+            <div>
+              <h4 class="font-medium text-white">Scan for Viruses</h4>
+              <p class="text-sm text-gray-400">Enable virus scanning (requires antivirus software)</p>
+            </div>
+            <%= form.check_box :scan_for_viruses, 
+                class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-700" %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Settings Summary -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-white">Current Settings Summary</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="p-4 bg-gray-700 rounded-lg">
+            <h4 class="font-medium text-white mb-2">File Size Limit</h4>
+            <p class="text-2xl font-bold text-indigo-400"><%= @upload_security.max_file_size_human %></p>
+          </div>
+          
+          <div class="p-4 bg-gray-700 rounded-lg">
+            <h4 class="font-medium text-white mb-2">Allowed Extensions</h4>
+            <p class="text-sm text-gray-300"><%= @upload_security.allowed_extensions_list %></p>
+          </div>
+          
+          <div class="p-4 bg-gray-700 rounded-lg">
+            <h4 class="font-medium text-white mb-2">Blocked Extensions</h4>
+            <p class="text-sm text-gray-300"><%= @upload_security.blocked_extensions_list %></p>
+          </div>
+          
+          <div class="p-4 bg-gray-700 rounded-lg">
+            <h4 class="font-medium text-white mb-2">Security Features</h4>
+            <div class="space-y-1 text-sm">
+              <p class="text-gray-300">
+                <%= @upload_security.quarantine_suspicious? ? "✅" : "❌" %> Quarantine Suspicious
+              </p>
+              <p class="text-gray-300">
+                <%= @upload_security.auto_approve_trusted? ? "✅" : "❌" %> Auto-approve Trusted
+              </p>
+              <p class="text-gray-300">
+                <%= @upload_security.scan_for_viruses? ? "✅" : "❌" %> Virus Scanning
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-700">
+        <%= link_to admin_settings_path, class: "px-4 py-2 text-gray-400 hover:text-white transition" do %>
+          Cancel
+        <% end %>
+        <%= form.submit "Save Settings", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+

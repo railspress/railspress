@@ -1,15 +1,18 @@
 class Theme < ApplicationRecord
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  acts_as_tenant(:tenant)
   
   # Associations
   has_many :templates, dependent: :destroy
+  has_many :theme_versions, foreign_key: :theme_name, primary_key: :name, dependent: :destroy
+  has_many :theme_files, foreign_key: :theme_name, primary_key: :name, dependent: :destroy
   
   # Serialization
-  serialize :settings, coder: JSON, type: Hash
+  serialize :config, coder: JSON, type: Hash
   
   # Validations
   validates :name, presence: true, uniqueness: true
+  validates :slug, presence: true, uniqueness: true
   validates :version, presence: true
   
   # Scopes
@@ -18,7 +21,7 @@ class Theme < ApplicationRecord
   # Callbacks
   after_initialize :set_defaults, if: :new_record?
   before_save :deactivate_others, if: :active?
-  after_create :create_default_templates
+  before_save :set_slug_from_name
   
   # Methods
   def self.current
@@ -28,30 +31,102 @@ class Theme < ApplicationRecord
   def activate!
     Theme.where.not(id: id).update_all(active: false)
     update(active: true)
+    
+    # Create PublishedThemeVersion if it doesn't exist
+    ensure_published_version_exists!
+  end
+  
+  def get_file(file_path)
+    live_version = theme_versions.live.first
+    live_version&.file_content(file_path)
+  end
+  
+  def get_parsed_file(file_path)
+    content = get_file(file_path)
+    return nil unless content
+    
+    if file_path.end_with?('.json')
+      JSON.parse(content)
+    else
+      content
+    end
+  rescue JSON::ParserError
+    nil
+  end
+  
+  def file_tree
+    ThemesManager.new.file_tree(name)
+  end
+  
+  def live_version
+    theme_versions.live.first
+  end
+  
+  def has_update_available?
+    ThemesManager.new.check_for_updates(self)
   end
   
   def get_template(template_type)
     templates.by_type(template_type).active.first
   end
   
+  # Ensure a PublishedThemeVersion exists for this theme
+  def ensure_published_version_exists!
+    # Check if we already have a PublishedThemeVersion for this theme
+    return if PublishedThemeVersion.where(theme: self).exists?
+    
+    Rails.logger.info "Creating initial PublishedThemeVersion for theme: #{name}"
+    
+    # Create initial PublishedThemeVersion
+    published_version = PublishedThemeVersion.create!(
+      theme: self,
+      version_number: 1,
+      published_at: Time.current,
+      published_by: User.first, # TODO: Use current user if available
+      tenant: tenant
+    )
+    
+    # Copy all files from ThemesManager to PublishedThemeFile
+    manager = ThemesManager.new
+    active_theme_version = manager.active_theme_version
+    
+    if active_theme_version
+      active_theme_version.theme_files.each do |theme_file|
+        content = manager.get_file(theme_file.file_path)
+        next unless content
+        
+        # Convert absolute path to relative path
+        relative_path = theme_file.file_path.gsub(/^.*\/themes\/[^\/]+\//, '')
+        
+        PublishedThemeFile.create!(
+          published_theme_version: published_version,
+          file_path: relative_path,
+          file_type: theme_file.file_type,
+          content: content,
+          checksum: Digest::MD5.hexdigest(content)
+        )
+      end
+      
+      Rails.logger.info "Created initial PublishedThemeVersion #{published_version.id} with #{published_version.published_theme_files.count} files"
+    else
+      Rails.logger.warn "No active theme version found for #{name}"
+    end
+    
+    published_version
+  end
+  
   private
   
   def set_defaults
     self.active = false if active.nil?
-    self.settings ||= {}
+    self.config ||= {}
+  end
+  
+  def set_slug_from_name
+    self.slug = name.parameterize if name.present? && slug.blank?
   end
   
   def deactivate_others
     Theme.where.not(id: id).update_all(active: false) if active_changed? && active?
-  end
-  
-  def create_default_templates
-    Template::TEMPLATE_TYPES.each do |type|
-      templates.create!(
-        name: type.titleize,
-        template_type: type,
-        description: "Default #{type} template"
-      )
-    end
   end
 end

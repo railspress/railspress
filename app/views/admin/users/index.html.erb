@@ -1,4 +1,8 @@
 <% content_for :page_title, "Users" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "tabulator_custom", "data-turbo-track": "reload" %>
+<% end %>
 
 <div class="max-w-7xl mx-auto">
   <!-- Header -->
@@ -342,47 +346,5 @@
   });
 </script>
 
-<style>
-  /* Tabulator dark theme customization */
-  .tabulator {
-    background-color: transparent !important;
-    border: none !important;
-  }
-  
-  .tabulator-header {
-    background-color: #0a0a0a !important;
-    border-bottom: 1px solid #2a2a2a !important;
-  }
-  
-  .tabulator-col {
-    background-color: #0a0a0a !important;
-    border-right: 1px solid #2a2a2a !important;
-  }
-  
-  .tabulator-col-title {
-    color: #9ca3af !important;
-    font-weight: 600 !important;
-    font-size: 0.75rem !important;
-    text-transform: uppercase !important;
-  }
-  
-  .tabulator-row {
-    background-color: #111111 !important;
-    border-bottom: 1px solid #2a2a2a !important;
-    color: #d1d5db !important;
-  }
-  
-  .tabulator-row:hover {
-    background-color: #1a1a1a !important;
-  }
-  
-  .tabulator-row.tabulator-selected {
-    background-color: rgba(99, 102, 241, 0.1) !important;
-  }
-  
-  .tabulator-footer {
-    background-color: #0a0a0a !important;
-    border-top: 1px solid #2a2a2a !important;
-  }
-</style>
+<!-- Tabulator styles are now in admin/tabulator.css -->
 

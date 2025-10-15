@@ -1,0 +1,771 @@
+<section class="heading section" data-section-type="heading" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="heading-content">
+      <div class="heading-wrapper" style="text-align: {{ section.settings.text_alignment | default: 'center' }}; max-width: {{ section.settings.max_width | default: 800 }}px; margin: 0 auto;">
+        
+        {% if section.settings.show_badge and section.settings.badge_text %}
+          <div class="heading-badge">
+            <span class="badge-text">{{ section.settings.badge_text }}</span>
+          </div>
+        {% endif %}
+
+        {% if section.settings.heading %}
+          <h{{ section.settings.heading_level | default: 2 }} class="section-heading {{ section.settings.heading_style }}">
+            {{ section.settings.heading }}
+          </h{{ section.settings.heading_level | default: 2 }}>
+        {% endif %}
+
+        {% if section.settings.subheading %}
+          <h3 class="section-subheading">{{ section.settings.subheading }}</h3>
+        {% endif %}
+
+        {% if section.settings.description %}
+          <div class="section-description">
+            {{ section.settings.description }}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_divider %}
+          <div class="heading-divider {{ section.settings.divider_style }}">
+            {% if section.settings.divider_style == 'line' %}
+              <hr class="divider-line">
+            {% elsif section.settings.divider_style == 'dots' %}
+              <div class="divider-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            {% elsif section.settings.divider_style == 'icon' and section.settings.divider_icon %}
+              <div class="divider-icon">
+                <span>{{ section.settings.divider_icon }}</span>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_cta and section.settings.cta_text %}
+          <div class="heading-cta">
+            <a href="{{ section.settings.cta_url | default: '#' }}" class="cta-button {{ section.settings.cta_style }}">
+              {{ section.settings.cta_text }}
+              {% if section.settings.cta_icon %}
+                <span class="cta-icon">{{ section.settings.cta_icon }}</span>
+              {% endif %}
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .heading {
+    background-color: {{ section.settings.background_color | default: 'var(--color-background)' }};
+    padding: {{ section.settings.section_padding_vertical | default: 4 }}rem 0;
+  }
+  
+  .heading-wrapper {
+    position: relative;
+  }
+  
+  .heading-badge {
+    margin-bottom: 1.5rem;
+  }
+  
+  .badge-text {
+    display: inline-block;
+    background-color: {{ section.settings.badge_background_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.badge_text_color | default: 'white' }};
+    padding: {{ section.settings.badge_padding_vertical | default: 8 }}px {{ section.settings.badge_padding_horizontal | default: 16 }}px;
+    border-radius: var(--radius-full);
+    font-size: {{ section.settings.badge_size | default: 14 }}px;
+    font-weight: {{ section.settings.badge_weight | default: 600 }};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    {% if section.settings.badge_border %}
+      border: 2px solid {{ section.settings.badge_border_color | default: 'var(--color-primary)' }};
+    {% endif %}
+  }
+  
+  .section-heading {
+    color: {{ section.settings.heading_color | default: 'var(--h2-color)' }};
+    font-size: {{ section.settings.heading_size | default: 48 }}px;
+    font-weight: {{ section.settings.heading_weight | default: 700 }};
+    line-height: {{ section.settings.heading_line_height | default: 1.1 }};
+    margin-bottom: {{ section.settings.heading_margin_bottom | default: 1 }}rem;
+    letter-spacing: {{ section.settings.heading_letter_spacing | default: 0 }}px;
+  }
+  
+  .section-heading.gradient {
+    background: linear-gradient(135deg, {{ section.settings.gradient_start_color | default: 'var(--color-primary)' }}, {{ section.settings.gradient_end_color | default: 'var(--color-secondary)' }});
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .section-heading.outline {
+    -webkit-text-stroke: 2px {{ section.settings.outline_color | default: 'var(--color-primary)' }};
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .section-heading.shadow {
+    text-shadow: {{ section.settings.text_shadow_x | default: 2 }}px {{ section.settings.text_shadow_y | default: 2 }}px {{ section.settings.text_shadow_blur | default: 4 }}px {{ section.settings.text_shadow_color | default: 'rgba(0,0,0,0.3)' }};
+  }
+  
+  .section-subheading {
+    color: {{ section.settings.subheading_color | default: 'var(--color-primary)' }};
+    font-size: {{ section.settings.subheading_size | default: 20 }}px;
+    font-weight: {{ section.settings.subheading_weight | default: 500 }};
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+  }
+  
+  .section-description {
+    color: {{ section.settings.description_color | default: 'var(--p-color)' }};
+    font-size: {{ section.settings.description_size | default: 18 }}px;
+    line-height: {{ section.settings.description_line_height | default: 1.6 }};
+    margin-bottom: 2rem;
+    max-width: 600px;
+    {% if section.settings.text_alignment == 'center' %}
+      margin-left: auto;
+      margin-right: auto;
+    {% endif %}
+  }
+  
+  .heading-divider {
+    margin: {{ section.settings.divider_margin | default: 2 }}rem 0;
+  }
+  
+  .divider-line {
+    width: {{ section.settings.divider_width | default: 80 }}px;
+    height: {{ section.settings.divider_thickness | default: 4 }}px;
+    background-color: {{ section.settings.divider_color | default: 'var(--color-primary)' }};
+    border: none;
+    border-radius: var(--radius-full);
+    margin: 0 auto;
+  }
+  
+  .divider-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .divider-dots span {
+    width: {{ section.settings.divider_dot_size | default: 8 }}px;
+    height: {{ section.settings.divider_dot_size | default: 8 }}px;
+    background-color: {{ section.settings.divider_color | default: 'var(--color-primary)' }};
+    border-radius: 50%;
+  }
+  
+  .divider-icon {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .divider-icon span {
+    font-size: {{ section.settings.divider_icon_size | default: 24 }}px;
+    color: {{ section.settings.divider_color | default: 'var(--color-primary)' }};
+  }
+  
+  .heading-cta {
+    margin-top: 2rem;
+  }
+  
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: {{ section.settings.cta_padding_vertical | default: 12 }}px {{ section.settings.cta_padding_horizontal | default: 24 }}px;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+  
+  .cta-button.primary {
+    background-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.cta_text_color | default: 'white' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-button.primary:hover {
+    background-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    border-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-primary-dark)' }};
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .cta-button.secondary {
+    background-color: transparent;
+    color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-button.secondary:hover {
+    background-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .cta-button.outline {
+    background-color: transparent;
+    color: {{ section.settings.cta_text_color | default: 'var(--color-text)' }};
+    border-color: {{ section.settings.cta_border_color | default: 'var(--color-border)' }};
+  }
+  
+  .cta-button.outline:hover {
+    background-color: {{ section.settings.cta_hover_bg_color | default: 'var(--color-surface)' }};
+    border-color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+    color: {{ section.settings.cta_bg_color | default: 'var(--color-primary)' }};
+  }
+  
+  .cta-icon {
+    font-size: 1.25rem;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .section-heading {
+      font-size: 32px;
+    }
+    
+    .section-subheading {
+      font-size: 18px;
+    }
+    
+    .section-description {
+      font-size: 16px;
+    }
+    
+    .heading {
+      padding: 2rem 0;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Heading",
+  "tag": "section",
+  "class": "section-heading",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Your Heading Here"
+    },
+    {
+      "type": "select",
+      "id": "heading_level",
+      "label": "Heading Level",
+      "options": [
+        { "value": "1", "label": "H1" },
+        { "value": "2", "label": "H2" },
+        { "value": "3", "label": "H3" },
+        { "value": "4", "label": "H4" },
+        { "value": "5", "label": "H5" },
+        { "value": "6", "label": "H6" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max Width",
+      "min": 400,
+      "max": 1200,
+      "step": 100,
+      "default": 800,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_vertical",
+      "label": "Section Vertical Padding",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Badge"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show Badge",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge Text",
+      "default": "New"
+    },
+    {
+      "type": "range",
+      "id": "badge_size",
+      "label": "Badge Size",
+      "min": 12,
+      "max": 18,
+      "step": 2,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "badge_weight",
+      "label": "Badge Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "range",
+      "id": "badge_padding_horizontal",
+      "label": "Badge Horizontal Padding",
+      "min": 8,
+      "max": 24,
+      "step": 4,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "badge_padding_vertical",
+      "label": "Badge Vertical Padding",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "badge_background_color",
+      "label": "Badge Background Color"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge Text Color"
+    },
+    {
+      "type": "checkbox",
+      "id": "badge_border",
+      "label": "Badge Border",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "badge_border_color",
+      "label": "Badge Border Color"
+    },
+    {
+      "type": "header",
+      "content": "Heading Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading Size",
+      "min": 24,
+      "max": 72,
+      "step": 4,
+      "default": 48,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" },
+        { "value": "800", "label": "Extra Bold" }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "range",
+      "id": "heading_line_height",
+      "label": "Heading Line Height",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "default": 1.1,
+      "unit": ""
+    },
+    {
+      "type": "range",
+      "id": "heading_letter_spacing",
+      "label": "Heading Letter Spacing",
+      "min": -2,
+      "max": 4,
+      "step": 0.5,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_margin_bottom",
+      "label": "Heading Margin Bottom",
+      "min": 0.5,
+      "max": 3,
+      "step": 0.5,
+      "default": 1,
+      "unit": "rem"
+    },
+    {
+      "type": "select",
+      "id": "heading_style",
+      "label": "Heading Style",
+      "options": [
+        { "value": "default", "label": "Default" },
+        { "value": "gradient", "label": "Gradient" },
+        { "value": "outline", "label": "Outline" },
+        { "value": "shadow", "label": "Shadow" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading Color"
+    },
+    {
+      "type": "color",
+      "id": "gradient_start_color",
+      "label": "Gradient Start Color"
+    },
+    {
+      "type": "color",
+      "id": "gradient_end_color",
+      "label": "Gradient End Color"
+    },
+    {
+      "type": "color",
+      "id": "outline_color",
+      "label": "Outline Color"
+    },
+    {
+      "type": "range",
+      "id": "text_shadow_x",
+      "label": "Text Shadow X",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "default": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "text_shadow_y",
+      "label": "Text Shadow Y",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "default": 2,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "text_shadow_blur",
+      "label": "Text Shadow Blur",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "default": 4,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "text_shadow_color",
+      "label": "Text Shadow Color",
+      "default": "rgba(0,0,0,0.3)"
+    },
+    {
+      "type": "header",
+      "content": "Subheading Typography"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "label": "Subheading Size",
+      "min": 16,
+      "max": 28,
+      "step": 2,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "subheading_weight",
+      "label": "Subheading Weight",
+      "options": [
+        { "value": "400", "label": "Normal" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi Bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading Color"
+    },
+    {
+      "type": "header",
+      "content": "Description Typography"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description Size",
+      "min": 14,
+      "max": 24,
+      "step": 2,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "description_line_height",
+      "label": "Description Line Height",
+      "min": 1.2,
+      "max": 2,
+      "step": 0.1,
+      "default": 1.6,
+      "unit": ""
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description Color"
+    },
+    {
+      "type": "header",
+      "content": "Divider"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_divider",
+      "label": "Show Divider",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "divider_style",
+      "label": "Divider Style",
+      "options": [
+        { "value": "line", "label": "Line" },
+        { "value": "dots", "label": "Dots" },
+        { "value": "icon", "label": "Icon" }
+      ],
+      "default": "line"
+    },
+    {
+      "type": "text",
+      "id": "divider_icon",
+      "label": "Divider Icon (emoji)"
+    },
+    {
+      "type": "range",
+      "id": "divider_width",
+      "label": "Divider Width",
+      "min": 40,
+      "max": 200,
+      "step": 20,
+      "default": 80,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_thickness",
+      "label": "Divider Thickness",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 4,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_dot_size",
+      "label": "Divider Dot Size",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "divider_icon_size",
+      "label": "Divider Icon Size",
+      "min": 16,
+      "max": 48,
+      "step": 4,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "divider_color",
+      "label": "Divider Color"
+    },
+    {
+      "type": "range",
+      "id": "divider_margin",
+      "label": "Divider Margin",
+      "min": 1,
+      "max": 4,
+      "step": 0.5,
+      "default": 2,
+      "unit": "rem"
+    },
+    {
+      "type": "header",
+      "content": "Call to Action"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cta",
+      "label": "Show Call to Action",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA Text"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "CTA URL"
+    },
+    {
+      "type": "select",
+      "id": "cta_style",
+      "label": "CTA Style",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "text",
+      "id": "cta_icon",
+      "label": "CTA Icon (emoji)"
+    },
+    {
+      "type": "color",
+      "id": "cta_bg_color",
+      "label": "CTA Background Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_text_color",
+      "label": "CTA Text Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_hover_bg_color",
+      "label": "CTA Hover Background Color"
+    },
+    {
+      "type": "color",
+      "id": "cta_border_color",
+      "label": "CTA Border Color"
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_horizontal",
+      "label": "CTA Horizontal Padding",
+      "min": 16,
+      "max": 48,
+      "step": 8,
+      "default": 24,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "cta_padding_vertical",
+      "label": "CTA Vertical Padding",
+      "min": 8,
+      "max": 24,
+      "step": 4,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Heading",
+      "settings": {
+        "heading": "Your Heading Here",
+        "subheading": "Your subheading",
+        "description": "<p>Add a description to provide more context about your heading.</p>",
+        "text_alignment": "center",
+        "show_divider": true,
+        "divider_style": "line"
+      }
+    }
+  ]
+}
+{% endschema %}
+
