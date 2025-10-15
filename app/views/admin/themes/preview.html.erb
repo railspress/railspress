@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Preview - <%= @theme_name %></title>
+  
+  <!-- Theme CSS -->
+  <style>
+    /* Base styles for preview */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Preview header */
+    .preview-header {
+      background: #1a1a1a;
+      color: white;
+      padding: 12px 20px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .preview-header h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .preview-header .theme-name {
+      color: #6366f1;
+      font-weight: 500;
+    }
+    
+    .preview-header .close-btn {
+      background: #333;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .preview-header .close-btn:hover {
+      background: #444;
+    }
+    
+    /* Theme CSS from FrontendRendererService */
+    <%= @assets[:css].html_safe if @assets && @assets[:css].present? %>
+  </style>
+</head>
+<body>
+  <!-- Preview Header -->
+  <div class="preview-header">
+    <h1>Previewing: <span class="theme-name"><%= @theme_name %></span></h1>
+    <button class="close-btn" onclick="window.close()">Close</button>
+  </div>
+  
+  <!-- Theme Content -->
+  <div id="theme-preview-content">
+    <% if @preview_html.present? %>
+      <%= @preview_html.html_safe %>
+    <% else %>
+      <div style="padding: 20px; text-align: center; color: #666;">
+        <h2>Preview Not Available</h2>
+        <p>Theme: <%= @theme_name %></p>
+        <p>Error: No preview HTML generated</p>
+      </div>
+    <% end %>
+  </div>
+  
+  <!-- Theme JavaScript from FrontendRendererService -->
+  <% if @assets && @assets[:js].present? %>
+    <script>
+      <%= @assets[:js].html_safe %>
+    </script>
+  <% end %>
+</body>
+</html>

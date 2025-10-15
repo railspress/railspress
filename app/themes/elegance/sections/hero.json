@@ -1,0 +1,32 @@
+{
+  "name": "Hero",
+  "description": "Large banner section with heading, subheading, and call-to-action button",
+  "category": "Content",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Welcome to Our Site"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "A compelling subheading that describes your value proposition"
+    },
+    "button_text": {
+      "type": "text",
+      "label": "Button Text",
+      "default": "Get Started"
+    },
+    "button_url": {
+      "type": "url",
+      "label": "Button URL",
+      "default": "#"
+    },
+    "background_image": {
+      "type": "image",
+      "label": "Background Image"
+    }
+  }
+}
+

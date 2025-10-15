@@ -101,6 +101,35 @@ class Comment < ApplicationRecord
     parent_id.present?
   end
   
+  # Convert Comment to Liquid-compatible hash
+  def to_liquid
+    {
+      'id' => id,
+      'content' => content,
+      'author' => author,
+      'author_name' => author_name,
+      'author_email' => author_email,
+      'author_url' => author_url,
+      'created_at' => created_at,
+      'updated_at' => updated_at,
+      'status' => status,
+      'comment_type' => comment_type,
+      'approved' => approved?,
+      'pending' => pending?,
+      'is_reply' => is_reply?,
+      'is_threaded_reply' => is_threaded_reply?,
+      'parent_id' => parent_id,
+      'comment_parent_id' => comment_parent_id,
+      'browser_info' => browser_info,
+      'user' => user,
+      'replies' => replies.to_a, # Convert AssociationRelation to array
+      'comment_replies' => comment_replies.to_a # Convert AssociationRelation to array
+    }
+  end
+  
+  # Make methods public for Liquid access
+  public :to_liquid
+  
   private
   
   def set_defaults

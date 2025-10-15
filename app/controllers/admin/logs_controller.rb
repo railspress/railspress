@@ -111,13 +111,17 @@ class Admin::LogsController < Admin::BaseController
     log_dir = Rails.root.join('log')
     Dir.glob(log_dir.join('*.log')).map do |file|
       basename = File.basename(file, '.log')
+      
+      # Skip weird log files that contain commands or special characters
+      next if basename.include?('puts') || basename.include?(';') || basename.length > 50
+      
       {
         name: basename,
         path: file,
         size: File.size(file),
         modified: File.mtime(file)
       }
-    end.sort_by { |f| f[:modified] }.reverse
+    end.compact.sort_by { |f| f[:modified] }.reverse
   end
   
   def tail_file(file_path, lines = 100)

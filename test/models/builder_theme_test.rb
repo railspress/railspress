@@ -102,3 +102,4 @@ class BuilderThemeTest < ActiveSupport::TestCase
     assert_not_nil @builder_theme.updated_at
   end
 end
+

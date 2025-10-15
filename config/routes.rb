@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   # Theme assets
   get '/themes/:theme/assets/*path', to: 'theme_assets#show', constraints: { theme: /[a-zA-Z0-9_-]+/ }, format: false
   
+  
   # Devise routes for frontend
   devise_for :users, path: 'auth', controllers: {
     sessions: 'users/sessions',
@@ -22,6 +23,14 @@ Rails.application.routes.draw do
   
   # GraphQL API
   post "/graphql", to: "graphql#execute"
+
+
+  constraints lambda { |req| 
+    req.session["admin_logged_in"] == true || 
+    (req.session["warden.user.user.key"] && User.find_by(id: req.session["warden.user.user.key"][0])&.administrator?)
+  } do
+    mount Logster::Web => "/logs"
+  end
   
   # API v1
   namespace :api do
@@ -135,7 +144,11 @@ Rails.application.routes.draw do
       end
       
       resources :widgets
-      resources :themes, only: [:index, :show]
+      resources :themes, only: [:index, :show] do
+        member do
+          get :screenshot
+        end
+      end
       resources :plugins, only: [:index, :show]
       
       # Settings
@@ -178,6 +191,8 @@ Rails.application.routes.draw do
       mount Sidekiq::Web => '/admin/sidekiq'
     end
   end
+  
+  
   
   # Admin panel
   get '/admin', to: 'admin/dashboard#index'
@@ -292,6 +307,9 @@ Rails.application.routes.draw do
       end
       member do
         patch :activate
+        get :screenshot
+        get :load_customizer
+        get :load_preview
       end
       resources :templates
     end
@@ -306,6 +324,7 @@ Rails.application.routes.draw do
         get :preview
         get :render_preview
         get 'sections/:template', action: :sections, as: :sections
+        get :available_sections
         get :versions
         get :snapshots
         get 'file/:file_path', action: :get_file, as: :file
@@ -348,6 +367,9 @@ Rails.application.routes.draw do
         post :test
         patch :toggle_active
       end
+      collection do
+        post :bulk_action
+      end
     end
     
     # Settings sections
@@ -355,6 +377,7 @@ Rails.application.routes.draw do
     get 'settings/general', to: 'settings#general', as: 'general_settings'
     get 'settings/writing', to: 'settings#writing', as: 'writing_settings'
     get 'settings/reading', to: 'settings#reading', as: 'reading_settings'
+    get 'settings/discussion', to: 'settings#discussion', as: 'discussion_settings'
     get 'settings/media', to: 'settings#media', as: 'media_settings'
     get 'settings/permalinks', to: 'settings#permalinks', as: 'permalinks_settings'
     get 'settings/privacy', to: 'settings#privacy', as: 'privacy_settings'
@@ -364,6 +387,7 @@ Rails.application.routes.draw do
     patch 'settings/general', to: 'settings#update_general'
     patch 'settings/writing', to: 'settings#update_writing'
     patch 'settings/reading', to: 'settings#update_reading'
+    patch 'settings/discussion', to: 'settings#update_discussion'
     patch 'settings/media', to: 'settings#update_media'
     patch 'settings/permalinks', to: 'settings#update_permalinks'
     patch 'settings/privacy', to: 'settings#update_privacy'

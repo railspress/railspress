@@ -63,3 +63,4 @@ class LiquidTemplateRendererSimpleTest < ActiveSupport::TestCase
   end
 end
 
+

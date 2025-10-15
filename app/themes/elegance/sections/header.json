@@ -1,0 +1,28 @@
+{
+  "name": "Header",
+  "description": "Site header with logo, navigation menu, and optional search",
+  "category": "Navigation",
+  "settings": {
+    "logo": {
+      "type": "image",
+      "label": "Logo",
+      "default": ""
+    },
+    "logo_text": {
+      "type": "text",
+      "label": "Logo Text",
+      "default": "Your Site"
+    },
+    "menu_items": {
+      "type": "textarea",
+      "label": "Menu Items (one per line)",
+      "default": "Home\nAbout\nBlog\nContact"
+    },
+    "show_search": {
+      "type": "checkbox",
+      "label": "Show Search",
+      "default": true
+    }
+  }
+}
+

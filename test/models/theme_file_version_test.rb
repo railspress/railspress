@@ -178,3 +178,4 @@ class ThemeFileVersionTest < ActiveSupport::TestCase
     assert_equal @theme_version, version.theme_version
   end
 end
+

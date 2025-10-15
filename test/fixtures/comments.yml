@@ -19,3 +19,4 @@ two:
   created_at: <%= 2.hours.ago %>
   updated_at: <%= 2.hours.ago %>
 
+

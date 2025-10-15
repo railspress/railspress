@@ -290,3 +290,4 @@ localStorage.setItem('ai_text_generator_debug', 'true')
 - **Bulk Generation**: Generate content for multiple fields at once
 - **Integration**: Direct integration with popular editors (TinyMCE, CKEditor)
 
+

@@ -43,7 +43,7 @@ class LiquidTemplateVersionRenderer
     context['settings'] = load_theme_settings
     
     # Add sample data for preview
-    context.merge!(sample_data)
+    # No sample data needed - use real data
     
     # Render the section
     template.render(context)
@@ -69,7 +69,7 @@ class LiquidTemplateVersionRenderer
       }
       
       # Add sample data
-      context.merge!(sample_data)
+      # No sample data needed - use real data
       
       # Render the layout
       template.render(context)
@@ -127,13 +127,13 @@ class LiquidTemplateVersionRenderer
       {
         'title' => 'Homepage',
         'description' => 'Welcome to our site',
-        'posts' => sample_posts
+        'posts' => []
       }
     when 'blog'
       {
         'title' => 'Blog',
         'description' => 'Latest posts',
-        'posts' => sample_posts
+        'posts' => []
       }
     when 'page'
       {
@@ -157,67 +157,6 @@ class LiquidTemplateVersionRenderer
     end
   end
 
-  def sample_data
-    {
-      'site' => {
-        'title' => 'Sample Site',
-        'description' => 'A sample site for preview',
-        'url' => 'https://example.com'
-      },
-      'posts' => sample_posts,
-      'pages' => sample_pages,
-      'collections' => sample_collections
-    }
-  end
-
-  def sample_posts
-    [
-      {
-        'title' => 'Welcome to Our Blog',
-        'excerpt' => 'This is a sample blog post for preview purposes.',
-        'content' => '<p>This is the full content of a sample blog post.</p>',
-        'author' => 'Sample Author',
-        'date' => 1.day.ago.strftime('%B %d, %Y'),
-        'url' => '/posts/welcome-to-our-blog'
-      },
-      {
-        'title' => 'Getting Started',
-        'excerpt' => 'Learn how to get started with our platform.',
-        'content' => '<p>This is another sample blog post.</p>',
-        'author' => 'Sample Author',
-        'date' => 2.days.ago.strftime('%B %d, %Y'),
-        'url' => '/posts/getting-started'
-      }
-    ]
-  end
-
-  def sample_pages
-    [
-      {
-        'title' => 'About Us',
-        'content' => '<p>Learn more about our company and mission.</p>',
-        'url' => '/pages/about'
-      },
-      {
-        'title' => 'Contact',
-        'content' => '<p>Get in touch with us.</p>',
-        'url' => '/pages/contact'
-      }
-    ]
-  end
-
-  def sample_collections
-    {
-      'categories' => [
-        { 'name' => 'Technology', 'url' => '/categories/technology' },
-        { 'name' => 'Design', 'url' => '/categories/design' }
-      ],
-      'tags' => [
-        { 'name' => 'tutorial', 'url' => '/tags/tutorial' },
-        { 'name' => 'guide', 'url' => '/tags/guide' }
-      ]
-    }
-  end
 
   def default_layout
     <<~HTML
@@ -241,4 +180,5 @@ class LiquidTemplateVersionRenderer
     HTML
   end
 end
+
 

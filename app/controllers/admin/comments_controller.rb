@@ -17,16 +17,14 @@ class Admin::CommentsController < Admin::BaseController
           total: Comment.kept.count,
           approved: Comment.kept.where(status: 'approved').count,
           pending: Comment.kept.where(status: 'pending').count,
-          spam: Comment.kept.where(status: 'spam').count,
-          trash: Comment.trashed.count
+          spam: Comment.kept.where(status: 'spam').count
         }
         @bulk_actions = [
           { value: 'approve', label: 'Approve' },
           { value: 'unapprove', label: 'Unapprove' },
           { value: 'spam', label: 'Mark as Spam' },
           { value: 'trash', label: 'Move to Trash' },
-          { value: 'untrash', label: 'Restore' },
-          { value: 'delete', label: 'Delete Permanently' }
+          { value: 'untrash', label: 'Restore' }
         ]
         @status_options = [
           { value: 'approved', label: 'Approved' },
@@ -181,9 +179,6 @@ class Admin::CommentsController < Admin::BaseController
     when 'untrash'
       comments.find_each(&:untrash!)
       message = "#{comments.count} comments restored from trash"
-    when 'delete'
-      comments.find_each(&:destroy_permanently!)
-      message = "#{comments.count} comments permanently deleted"
     else
       message = "Invalid action"
     end
@@ -225,7 +220,7 @@ class Admin::CommentsController < Admin::BaseController
           created_at: comment.created_at.iso8601,
           edit_url: edit_admin_comment_path(comment),
           show_url: admin_comment_path(comment),
-          delete_url: admin_comment_path(comment)
+          delete_url: nil
         }
       end
     end

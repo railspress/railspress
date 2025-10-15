@@ -5,3 +5,4 @@ class Admin::AiDemoController < Admin::BaseController
   end
 end
 
+

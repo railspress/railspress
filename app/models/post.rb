@@ -239,4 +239,42 @@ class Post < ApplicationRecord
   def applicable_field_groups
     FieldGroup.active.ordered.select { |fg| fg.matches_location?(self) }
   end
+
+  # Generate URL for the post
+  def url
+    Rails.application.routes.url_helpers.blog_post_url(self.id, host: 'localhost:3000')
+  end
+
+  # Get the author of the post
+  def author
+    User.find_by(id: self.user_id)
+  end
+
+  # Get categories for the post
+  def categories
+    # This would need to be implemented based on your taxonomy system
+    # For now, return an empty array to prevent errors
+    []
+  end
+
+  # Convert Post to Liquid-compatible hash
+  def to_liquid
+    {
+      'id' => id,
+      'title' => title,
+      'content' => content.to_s, # Convert ActionText to string
+      'excerpt' => excerpt,
+      'url' => url,
+      'author' => author,
+      'categories' => categories.to_a, # Convert AssociationRelation to array
+      'terms' => terms.to_a, # Convert AssociationRelation to array
+      'published_at' => published_at,
+      'created_at' => created_at,
+      'updated_at' => updated_at,
+      'featured_image' => featured_image
+    }
+  end
+
+  # Make these methods public for Liquid access
+  public :url, :author, :categories, :to_liquid
 end

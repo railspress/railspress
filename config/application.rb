@@ -28,6 +28,7 @@ require 'liquid'
 require_relative '../app/middleware/redirect_handler'
 require_relative '../app/middleware/analytics_tracker'
 require_relative '../app/middleware/headless_mode_handler'
+require_relative '../app/middleware/allow_iframe_for_logs'
 
 module Railspress
   class Application < Rails::Application
@@ -64,5 +65,8 @@ module Railspress
     
     # Middleware for Analytics Tracking
     config.middleware.use AnalyticsTracker
+    
+    # Middleware for Logster iframe support
+    config.middleware.use AllowIframeForLogs
   end
 end

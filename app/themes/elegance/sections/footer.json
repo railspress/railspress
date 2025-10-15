@@ -1,0 +1,28 @@
+{
+  "name": "Footer",
+  "description": "Site footer with links, copyright information, and social media",
+  "category": "Navigation",
+  "settings": {
+    "copyright_text": {
+      "type": "text",
+      "label": "Copyright Text",
+      "default": "© 2024 Your Site. All rights reserved."
+    },
+    "footer_links": {
+      "type": "textarea",
+      "label": "Footer Links (one per line)",
+      "default": "Privacy Policy\nTerms of Service\nContact Us"
+    },
+    "show_social_links": {
+      "type": "checkbox",
+      "label": "Show Social Links",
+      "default": true
+    },
+    "social_links": {
+      "type": "textarea",
+      "label": "Social Links (one per line)",
+      "default": "https://twitter.com/yoursite\nhttps://facebook.com/yoursite\nhttps://instagram.com/yoursite"
+    }
+  }
+}
+

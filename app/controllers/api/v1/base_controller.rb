@@ -17,7 +17,8 @@ class Api::V1::BaseController < ActionController::API
   end
   
   def authenticate_api_key
-    api_key = request.headers['Authorization']&.split(' ')&.last
+    # Try Authorization header first, then query parameter
+    api_key = request.headers['Authorization']&.split(' ')&.last || params[:api_key]
     @api_user = User.find_by(api_key: api_key)
 
     unless @api_user

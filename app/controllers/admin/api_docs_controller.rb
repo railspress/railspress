@@ -1,3 +1,5 @@
+require 'redcarpet'
+
 class Admin::ApiDocsController < Admin::BaseController
   def index
     # Main API documentation landing page
@@ -25,14 +27,16 @@ class Admin::ApiDocsController < Admin::BaseController
     @mutations = @schema.mutation&.fields&.values || []
   end
   
-  def plugins
-    # Plugin development documentation
-    @plugin_docs = load_plugin_docs
-  end
-  
   def themes
     # Theme development documentation
     @theme_docs = load_theme_docs
+    @theme_docs_content = load_html_documentation('theme-development.html')
+  end
+  
+  def plugins
+    # Plugin development documentation
+    @plugin_docs = load_plugin_docs
+    @plugin_docs_content = load_html_documentation('plugin-development.html')
   end
 
   private
@@ -457,6 +461,18 @@ class Admin::ApiDocsController < Admin::BaseController
     end
     
     docs.sort_by { |d| d[:title] }
+  end
+  
+  def load_html_documentation(filename)
+    docs_path = Rails.root.join('docs', filename)
+    return nil unless File.exist?(docs_path)
+    
+    begin
+      File.read(docs_path)
+    rescue => e
+      Rails.logger.error "Failed to load HTML documentation: #{e.message}"
+      nil
+    end
   end
 end
 

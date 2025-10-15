@@ -274,8 +274,6 @@ class BuilderTheme < ApplicationRecord
   end
 
 
-  private
-
   def ensure_published_version!
     # Check if we have a PublishedThemeVersion for this theme
     published_version = PublishedThemeVersion.where(theme: theme).latest.first
@@ -319,6 +317,8 @@ class BuilderTheme < ApplicationRecord
     
     published_version
   end
+
+  private
 
   def next_version_number
     # Get the next version number for this theme

@@ -70,6 +70,31 @@ class Term < ApplicationRecord
     Post.joins(:term_relationships).where(term_relationships: { term_id: id })
   end
   
+  # Convert Term to Liquid-compatible hash
+  def to_liquid
+    {
+      'id' => id,
+      'name' => name,
+      'slug' => slug,
+      'description' => description,
+      'count' => count,
+      'taxonomy' => taxonomy&.name,
+      'taxonomy_slug' => taxonomy&.slug,
+      'parent_id' => parent_id,
+      'children' => children.to_a, # Convert AssociationRelation to array
+      'metadata' => metadata || {}
+    }
+  end
+  
+  # Generate URL for the term
+  def url
+    # This would need to be implemented based on your routing
+    "/#{taxonomy&.slug}/#{slug}"
+  end
+  
+  # Make methods public for Liquid access
+  public :url, :to_liquid
+  
   private
   
   def set_defaults

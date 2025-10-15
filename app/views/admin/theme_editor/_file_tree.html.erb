@@ -19,7 +19,7 @@
   <% else %>
     <!-- File -->
     <% if file[:editable] %>
-      <%= link_to admin_theme_editor_file_path(file: file[:path]), 
+      <%= link_to file_admin_theme_editor_index_path(file: file[:path]), 
           class: "file-tree-item flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded" do %>
         
         <!-- Editable file icon -->

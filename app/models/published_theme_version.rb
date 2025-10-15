@@ -29,4 +29,34 @@ class PublishedThemeVersion < ApplicationRecord
   rescue JSON::ParserError
     nil
   end
+  
+  # Liquid file system compatibility methods
+  def read_template_file(template_path)
+    Rails.logger.info "PublishedVersion: Looking for template: #{template_path}"
+    
+    # Try to find the file directly
+    file = published_theme_files.find_by(file_path: template_path)
+    if file
+      Rails.logger.info "PublishedVersion: Found template file: #{template_path}"
+      return file.content
+    end
+    
+    # Try with .liquid extension
+    file = published_theme_files.find_by(file_path: "#{template_path}.liquid")
+    if file
+      Rails.logger.info "PublishedVersion: Found template file with .liquid: #{template_path}.liquid"
+      return file.content
+    end
+    
+    # Try snippets directory
+    file = published_theme_files.find_by(file_path: "snippets/#{template_path}.liquid")
+    if file
+      Rails.logger.info "PublishedVersion: Found snippet file: snippets/#{template_path}.liquid"
+      return file.content
+    end
+    
+    Rails.logger.warn "PublishedVersion: Template file not found: #{template_path}"
+    # Fallback to empty string
+    ""
+  end
 end

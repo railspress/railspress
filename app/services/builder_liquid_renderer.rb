@@ -39,7 +39,7 @@ class BuilderLiquidRenderer
     self.class.register_liquid_filters(builder_theme.id)
 
     # Create liquid template with permissive settings
-    template = Liquid::Template.parse(section_content, error_mode: :warn)
+    template = Liquid::Template.parse(section_content, error_mode: :strict)
     
     # Prepare context with settings from database (user customizations)
     liquid_context = {
@@ -51,7 +51,11 @@ class BuilderLiquidRenderer
     }.merge(context)
     
     # Render section
-    template.render(liquid_context)
+    template.render!(liquid_context)
+  rescue Liquid::Error => e
+    Rails.logger.error "Liquid error in section #{section_id}: #{e.message}"
+    Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+    "<div class='error'>Liquid error in section #{section_id}: #{e.message}<br>Backtrace: #{e.backtrace.first(5).join('<br>')}</div>"
   rescue => e
     Rails.logger.error "Error rendering section #{section_id}: #{e.message}"
     "<div class='error'>Error rendering section: #{e.message}</div>"
@@ -65,7 +69,7 @@ class BuilderLiquidRenderer
     self.class.register_liquid_filters(builder_theme.id)
 
     # Create liquid template with permissive settings
-    template = Liquid::Template.parse(section_content, error_mode: :warn)
+    template = Liquid::Template.parse(section_content, error_mode: :strict)
     
     # Prepare context with settings from database (user customizations)
     liquid_context = {
@@ -77,10 +81,15 @@ class BuilderLiquidRenderer
     }.merge(context)
     
     # Render section
-    template.render(liquid_context)
+    template.render!(liquid_context)
+  rescue Liquid::Error => e
+    Rails.logger.error "Liquid error in section #{section.section_id}: #{e.message}"
+    Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+    "<div class='error'>Liquid error in section #{section.section_id}: #{e.message}<br>Backtrace: #{e.backtrace.first(5).join('<br>')}</div>"
   rescue => e
     Rails.logger.error "Error rendering section #{section.section_id}: #{e.message}"
-    "<div class='error'>Error rendering section: #{e.message}</div>"
+    Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+    "<div class='error'>Error rendering section: #{e.message}<br>Backtrace: #{e.backtrace.first(5).join('<br>')}</div>"
   end
 
   # Get all available template types
@@ -131,27 +140,9 @@ class BuilderLiquidRenderer
       
       published_version = @builder_theme.instance_variable_get(:@published_version)
       
-      # Create a custom file system for Liquid includes
-      file_system = Class.new(Liquid::LocalFileSystem) do
-        def initialize(published_version)
-          @published_version = published_version
-        end
-        
-        def read_template_file(template_path)
-          # Try to find the file in PublishedThemeFile
-          file = @published_version.published_theme_files.find_by(file_path: template_path)
-          return file.content if file
-          
-          # Try with .liquid extension
-          file = @published_version.published_theme_files.find_by(file_path: "#{template_path}.liquid")
-          return file.content if file
-          
-          # Fallback to empty string
-          ""
-        end
-      end
-      
-      Liquid::Template.file_system = file_system.new(published_version)
+      # Use PublishedVersion directly as the file system
+      Liquid::Template.file_system = published_version
+      Rails.logger.info "Set up PublishedVersion as Liquid file system"
     else
       # Use default file system for regular themes
       Liquid::Template.file_system = Liquid::LocalFileSystem.new("/", "%s.liquid")
@@ -184,10 +175,10 @@ class BuilderLiquidRenderer
     {}
   end
 
-  # Render preview with sample data
+  # Render preview - should use real data, not sample data
   def render_preview(template_type = 'index')
-    sample_context = build_sample_context
-    render_template(template_type, sample_context)
+    # This method should not be used - use real context data instead
+    raise "render_preview should not be used - use render_template with real context data"
   end
 
   # Update template data
@@ -228,13 +219,17 @@ class BuilderLiquidRenderer
     processed_content = process_section_tags(layout_content, context)
     
     # Parse the layout as a Liquid template with permissive settings
-    template = Liquid::Template.parse(processed_content, error_mode: :warn)
+    template = Liquid::Template.parse(processed_content, error_mode: :strict)
     
     # Prepare context with all available data
     liquid_context = build_liquid_context(context, rendered_data)
     
     # Render the layout
-    template.render(liquid_context)
+    template.render!(liquid_context)
+  rescue Liquid::Error => e
+    Rails.logger.error "Liquid error in layout: #{e.message}"
+    Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+    "<div class='error'>Liquid error in layout: #{e.message}<br>Backtrace: #{e.backtrace.first(5).join('<br>')}</div>"
   rescue => e
     Rails.logger.error "Error rendering layout: #{e.message}"
     "<div class='error'>Error rendering layout: #{e.message}</div>"
@@ -256,13 +251,17 @@ class BuilderLiquidRenderer
     self.class.register_liquid_filters(builder_theme.id)
 
     # Create liquid template with permissive settings
-    template = Liquid::Template.parse(section_content, error_mode: :warn)
+    template = Liquid::Template.parse(section_content, error_mode: :strict)
     
     # Prepare context
     liquid_context = build_liquid_context(context)
     
     # Render section
-    template.render(liquid_context)
+    template.render!(liquid_context)
+  rescue Liquid::Error => e
+    Rails.logger.error "Liquid error in section #{section_name}: #{e.message}"
+    Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+    "<div class='error'>Liquid error in section #{section_name}: #{e.message}<br>Backtrace: #{e.backtrace.first(5).join('<br>')}</div>"
   rescue => e
     Rails.logger.error "Error rendering section #{section_name}: #{e.message}"
     "<div class='error'>Error rendering section #{section_name}: #{e.message}</div>"
@@ -306,7 +305,18 @@ class BuilderLiquidRenderer
   end
 
   def build_liquid_context(context = {}, rendered_data = {})
-    base_context = build_sample_context
+    # Start with minimal base context - no sample data
+    base_context = {
+      'site' => {
+        'title' => 'RailsPress Site',
+        'description' => 'A RailsPress powered website',
+        'url' => 'https://example.com'
+      },
+      'page' => {
+        'title' => 'Page Title',
+        'url' => '/current-page'
+      }
+    }
     
     # Add rendered data context
     if rendered_data.present?
@@ -320,150 +330,6 @@ class BuilderLiquidRenderer
     base_context.merge(context)
   end
 
-  def build_sample_context
-    {
-      # Page context
-      'page' => {
-        'title' => 'Sample Page',
-        'description' => 'This is a sample page for preview',
-        'url' => '/sample',
-        'seo_title' => 'Sample Page - RailsPress',
-        'meta_description' => 'Sample meta description for preview',
-        'meta_keywords' => 'sample, preview, railspress',
-        'canonical_url' => 'https://example.com/sample',
-        'template' => 'index'
-      },
-      
-      # Site context
-      'site' => {
-        'title' => 'RailsPress Site',
-        'description' => 'A sample RailsPress site',
-        'url' => 'https://example.com',
-        'name' => 'RailsPress Site',
-        'tagline' => 'Built with Rails',
-        'language' => 'en',
-        'charset' => 'UTF-8',
-        'version' => '1.0.0'
-      },
-      
-      # Content collections
-      'posts' => sample_posts,
-      'pages' => sample_pages,
-      'collections' => {
-        'posts' => sample_posts,
-        'pages' => sample_pages,
-        'categories' => sample_categories,
-        'tags' => sample_tags
-      },
-      
-      # Taxonomies
-      'categories' => sample_categories,
-      'tags' => sample_tags,
-      'taxonomies' => {
-        'category' => sample_categories,
-        'tag' => sample_tags
-      },
-      
-      # Navigation
-      'menus' => {
-        'main' => sample_menu('Main Menu'),
-        'footer' => sample_menu('Footer Menu'),
-        'sidebar' => sample_menu('Sidebar Menu')
-      },
-      
-      # Current content
-      'post' => sample_posts.first,
-      'current_page' => sample_pages.first,
-      'category' => sample_categories.first,
-      'tag' => sample_tags.first,
-      
-      # Comments
-      'comments' => sample_comments,
-      'comment_count' => sample_comments.size,
-      
-      # Search
-      'search' => {
-        'query' => '',
-        'results' => sample_posts,
-        'result_count' => sample_posts.size
-      },
-      
-      # Pagination
-      'paginate' => {
-        'current_page' => 1,
-        'total_pages' => 3,
-        'per_page' => 10,
-        'total_entries' => 25,
-        'previous' => nil,
-        'next' => 2
-      },
-      
-      # User context
-      'current_user' => {
-        'id' => 1,
-        'name' => 'Admin User',
-        'email' => 'admin@example.com',
-        'role' => 'administrator',
-        'avatar' => '/images/avatar.jpg',
-        'url' => '/admin/profile'
-      },
-      
-      # Theme settings
-      'settings' => theme_settings,
-      'theme_settings' => theme_settings,
-      
-      # Assets
-      'assets' => assets,
-      
-      # Section context (will be overridden per section)
-      'section' => {
-        'settings' => theme_settings,
-        'id' => 'default',
-        'type' => 'default'
-      },
-      
-      # Request context
-      'request' => {
-        'path' => '/sample',
-        'url' => 'https://example.com/sample',
-        'method' => 'GET',
-        'headers' => {},
-        'params' => {}
-      },
-      
-      # Flash messages
-      'flash' => {
-        'notice' => nil,
-        'alert' => nil,
-        'success' => nil,
-        'error' => nil
-      },
-      
-      # SEO context
-      'seo' => {
-        'title' => 'Sample Page - RailsPress',
-        'description' => 'Sample meta description',
-        'keywords' => 'sample, preview, railspress',
-        'canonical' => 'https://example.com/sample',
-        'og_title' => 'Sample Page - RailsPress',
-        'og_description' => 'Sample meta description',
-        'og_image' => '/images/og-image.jpg',
-        'twitter_card' => 'summary_large_image'
-      },
-      
-      # Form context
-      'form' => {
-        'errors' => {},
-        'values' => {}
-      },
-      
-      # Breadcrumbs
-      'breadcrumbs' => [
-        { 'title' => 'Home', 'url' => '/' },
-        { 'title' => 'Sample Page', 'url' => '/sample' }
-      ]
-    }
-  end
 
   # Register all Liquid filters and tags
   def self.register_liquid_filters(builder_theme_id = nil)
@@ -929,209 +795,6 @@ class BuilderLiquidRenderer
     end
   end
 
-  def sample_posts
-    [
-      {
-        'title' => 'Sample Blog Post 1',
-        'content' => 'This is a sample blog post content. It demonstrates how the theme will look with actual content.',
-        'excerpt' => 'This is a sample blog post excerpt...',
-        'url' => '/posts/sample-post-1',
-        'published_at' => 1.day.ago,
-        'author' => {
-          'name' => 'John Doe',
-          'email' => 'john@example.com'
-        },
-        'featured_image' => {
-          'url' => 'https://via.placeholder.com/800x400',
-          'alt' => 'Sample featured image'
-        }
-      },
-      {
-        'title' => 'Sample Blog Post 2',
-        'content' => 'Another sample blog post to show how multiple posts look in the theme.',
-        'excerpt' => 'Another sample blog post excerpt...',
-        'url' => '/posts/sample-post-2',
-        'published_at' => 2.days.ago,
-        'author' => {
-          'name' => 'Jane Smith',
-          'email' => 'jane@example.com'
-        },
-        'featured_image' => {
-          'url' => 'https://via.placeholder.com/800x400',
-          'alt' => 'Another sample featured image'
-        }
-      },
-      {
-        'title' => 'Sample Blog Post 3',
-        'content' => 'A third sample post to demonstrate pagination and grid layouts.',
-        'excerpt' => 'A third sample blog post excerpt...',
-        'url' => '/posts/sample-post-3',
-        'published_at' => 3.days.ago,
-        'author' => {
-          'name' => 'Bob Johnson',
-          'email' => 'bob@example.com'
-        },
-        'featured_image' => {
-          'url' => 'https://via.placeholder.com/800x400',
-          'alt' => 'Third sample featured image'
-        }
-      }
-    ]
-  end
-
-  def sample_pages
-    [
-      {
-        'id' => 1,
-        'title' => 'About Us',
-        'slug' => 'about-us',
-        'content' => 'This is a sample about page content.',
-        'excerpt' => 'Learn more about our company and mission.',
-        'url' => '/about-us',
-        'published_at' => '2024-01-15T10:00:00Z',
-        'updated_at' => '2024-01-15T10:00:00Z',
-        'template' => 'page',
-        'meta' => {
-          'description' => 'Learn more about our company and mission.',
-          'keywords' => 'about, company, mission'
-        }
-      },
-      {
-        'id' => 2,
-        'title' => 'Contact',
-        'slug' => 'contact',
-        'content' => 'Get in touch with us for any questions.',
-        'excerpt' => 'Contact information and form.',
-        'url' => '/contact',
-        'published_at' => '2024-01-15T10:00:00Z',
-        'updated_at' => '2024-01-15T10:00:00Z',
-        'template' => 'contact',
-        'meta' => {
-          'description' => 'Contact information and form.',
-          'keywords' => 'contact, form, information'
-        }
-      },
-      {
-        'id' => 3,
-        'title' => 'Services',
-        'slug' => 'services',
-        'content' => 'Our comprehensive service offerings.',
-        'excerpt' => 'Discover our range of services.',
-        'url' => '/services',
-        'published_at' => '2024-01-15T10:00:00Z',
-        'updated_at' => '2024-01-15T10:00:00Z',
-        'template' => 'page',
-        'meta' => {
-          'description' => 'Discover our range of services.',
-          'keywords' => 'services, offerings, solutions'
-        }
-      }
-    ]
-  end
-
-  def sample_categories
-    [
-      {
-        'id' => 1,
-        'name' => 'Technology',
-        'slug' => 'technology',
-        'description' => 'Posts about technology and innovation.',
-        'url' => '/category/technology',
-        'post_count' => 5
-      },
-      {
-        'id' => 2,
-        'name' => 'Business',
-        'slug' => 'business',
-        'description' => 'Business insights and strategies.',
-        'url' => '/category/business',
-        'post_count' => 3
-      },
-      {
-        'id' => 3,
-        'name' => 'Design',
-        'slug' => 'design',
-        'description' => 'Design tips and inspiration.',
-        'url' => '/category/design',
-        'post_count' => 4
-      }
-    ]
-  end
-
-  def sample_tags
-    [
-      {
-        'id' => 1,
-        'name' => 'Rails',
-        'slug' => 'rails',
-        'url' => '/tag/rails',
-        'post_count' => 3
-      },
-      {
-        'id' => 2,
-        'name' => 'JavaScript',
-        'slug' => 'javascript',
-        'url' => '/tag/javascript',
-        'post_count' => 4
-      },
-      {
-        'id' => 3,
-        'name' => 'CSS',
-        'slug' => 'css',
-        'url' => '/tag/css',
-        'post_count' => 2
-      }
-    ]
-  end
-
-  def sample_menu(name)
-    {
-      'name' => name,
-      'items' => [
-        {
-          'title' => 'Home',
-          'url' => '/',
-          'type' => 'page'
-        },
-        {
-          'title' => 'About',
-          'url' => '/about',
-          'type' => 'page'
-        },
-        {
-          'title' => 'Blog',
-          'url' => '/blog',
-          'type' => 'page'
-        },
-        {
-          'title' => 'Contact',
-          'url' => '/contact',
-          'type' => 'page'
-        }
-      ]
-    }
-  end
-
-  def sample_comments
-    [
-      {
-        'id' => 1,
-        'author' => 'John Doe',
-        'email' => 'john@example.com',
-        'content' => 'Great article! Very informative.',
-        'created_at' => '2024-01-15T10:00:00Z',
-        'approved' => true
-      },
-      {
-        'id' => 2,
-        'author' => 'Jane Smith',
-        'email' => 'jane@example.com',
-        'content' => 'Thanks for sharing this insight.',
-        'created_at' => '2024-01-15T11:00:00Z',
-        'approved' => true
-      }
-    ]
-  end
 
   def default_layout
     <<~LIQUID

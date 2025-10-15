@@ -30,10 +30,15 @@ class Theme < ApplicationRecord
   
   def activate!
     Theme.where.not(id: id).update_all(active: false)
-    update(active: true)
+    success = update(active: true)
     
-    # Create PublishedThemeVersion if it doesn't exist
-    ensure_published_version_exists!
+    if success
+      # Create PublishedThemeVersion if it doesn't exist
+      ensure_published_version_exists!
+      true
+    else
+      false
+    end
   end
   
   def get_file(file_path)
@@ -86,17 +91,18 @@ class Theme < ApplicationRecord
       tenant: tenant
     )
     
-    # Copy all files from ThemesManager to PublishedThemeFile
+    # Copy all files from this theme's version to PublishedThemeFile
     manager = ThemesManager.new
-    active_theme_version = manager.active_theme_version
+    theme_version = theme_versions.live.first
     
-    if active_theme_version
-      active_theme_version.theme_files.each do |theme_file|
-        content = manager.get_file(theme_file.file_path)
-        next unless content
-        
+    if theme_version
+      theme_version.theme_files.each do |theme_file|
         # Convert absolute path to relative path
         relative_path = theme_file.file_path.gsub(/^.*\/themes\/[^\/]+\//, '')
+        
+        # Get content using relative path and theme name
+        content = manager.get_file(relative_path, name)
+        next unless content
         
         PublishedThemeFile.create!(
           published_theme_version: published_version,
@@ -109,10 +115,14 @@ class Theme < ApplicationRecord
       
       Rails.logger.info "Created initial PublishedThemeVersion #{published_version.id} with #{published_version.published_theme_files.count} files"
     else
-      Rails.logger.warn "No active theme version found for #{name}"
+      Rails.logger.warn "No theme version found for #{name}"
     end
     
     published_version
+  end
+  
+  def published_version
+    PublishedThemeVersion.where(theme: self).first
   end
   
   private

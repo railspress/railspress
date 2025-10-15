@@ -4,12 +4,30 @@ class Admin::ThemesController < Admin::BaseController
 
   # GET /admin/themes
   def index
-    # Sync themes from filesystem to database
-    @themes_manager.sync_themes
+    # Auto-sync themes from filesystem if none exist or if filesystem has themes not in database
+    filesystem_themes = Dir.glob(File.join(Rails.root, 'app', 'themes', '*')).map { |dir| File.basename(dir) }
+    database_themes = Theme.pluck(:slug)
+    
+    if Theme.count == 0 || filesystem_themes.any? { |theme| !database_themes.include?(theme) }
+      Rails.logger.info "Auto-syncing themes from filesystem..."
+      @themes_manager.sync_themes
+    end
     
     @active_theme = Theme.active.first
     @installed_themes = Theme.all.order(:name)
-    @available_themes = @installed_themes
+    
+    # Convert Theme objects to hash structure expected by the view
+    @available_themes = @installed_themes.map do |theme|
+      {
+        id: theme.id,
+        name: theme.name,
+        display_name: theme.name,
+        description: theme.description || "No description available",
+        author: theme.author || "Unknown",
+        version: theme.version || "1.0.0",
+        active: theme.active
+      }
+    end
   end
 
   # GET /admin/themes/1
@@ -71,19 +89,7 @@ class Admin::ThemesController < Admin::BaseController
 
   # PATCH /admin/themes/1/activate
   def activate
-    # Handle both ID and theme name/slug
-    if params[:id].match?(/\A\d+\z/)
-      @theme = Theme.find(params[:id])
-    else
-      # Try to find by slug first, then by name
-      @theme = Theme.find_by(slug: params[:id]) || Theme.find_by(name: params[:id])
-    end
-    
-    unless @theme
-      flash[:alert] = "✗ Theme not found."
-      redirect_to admin_themes_path
-      return
-    end
+    @theme = Theme.find(params[:id])
     
     if @theme.activate!
       flash[:notice] = "✓ Theme '#{@theme.name}' activated successfully! View your frontend to see the changes."
@@ -107,12 +113,83 @@ class Admin::ThemesController < Admin::BaseController
     redirect_to admin_themes_path
   end
 
-  # GET /admin/themes/preview?theme=theme_name
+
+  # GET /admin/themes/:id/load_customizer
+  def load_customizer
+    theme = Theme.find(params[:id])
+    
+    # Only sync if no published version exists
+    unless theme.published_version
+      @themes_manager.sync_theme(theme.slug)
+      theme.reload
+    end
+    
+    # Ensure published version exists
+    theme.ensure_published_version_exists!
+    
+    # Find or create BuilderTheme
+    builder_theme = BuilderTheme.current_for_theme(theme.name.underscore)
+    
+    if builder_theme
+      redirect_to admin_builder_path(builder_theme)
+    else
+      redirect_to admin_builder_index_path(theme_name: theme.name)
+    end
+  end
+
+  # GET /admin/themes/:id/load_preview
+  def load_preview
+    theme = Theme.find(params[:id])
+    
+    # Only sync if no published version exists
+    unless theme.published_version
+      @themes_manager.sync_theme(theme.slug)
+      theme.reload
+    end
+    
+    # Ensure published version exists
+    theme.ensure_published_version_exists!
+    
+    # Redirect to preview
+    redirect_to preview_admin_themes_path(id: theme.id)
+  end
+
+  # GET /admin/themes/preview?id=theme_id
   def preview
-    @theme_name = params[:theme]
+    @theme_id = params[:id]
+    @theme = Theme.find(@theme_id)
+    @theme_name = @theme.name
     @theme_config = load_theme_config(@theme_name)
     
-    render layout: false
+    # Ensure theme has a published version
+    @theme.ensure_published_version_exists!
+    published_version = @theme.published_version
+    
+    # If still no published version, create one
+    unless published_version
+      @theme.ensure_published_version_exists!
+      published_version = @theme.published_version
+    end
+    
+    if published_version
+      # Use FrontendRendererService for proper rendering
+      renderer = FrontendRendererService.new(published_version)
+      template_type = params[:template] || 'index'
+      
+      begin
+        @preview_html = renderer.render_template(template_type, preview_context)
+        @assets = renderer.assets
+      rescue => e
+        Rails.logger.error "Theme preview rendering failed: #{e.message}"
+        @preview_html = "<div style='padding: 20px; color: red;'>Preview Error: #{e.message}</div>"
+        @assets = { css: '', js: '' }
+      end
+    else
+      @preview_html = "<div style='padding: 20px; color: red;'>No published version found for #{@theme_name}</div>"
+      @assets = { css: '', js: '' }
+    end
+    
+    render 'preview', layout: false
   end
 
   private
@@ -126,7 +203,46 @@ class Admin::ThemesController < Admin::BaseController
   end
 
   def load_theme_config(theme_name)
-    config_path = Rails.root.join('app', 'themes', theme_name, 'config.yml')
-    File.exist?(config_path) ? YAML.load_file(config_path) : {}
+    theme = Theme.find_by(name: theme_name)
+    return {} unless theme
+    
+    config_path = Rails.root.join('app', 'themes', theme.slug, 'config', 'theme.json')
+    if File.exist?(config_path)
+      JSON.parse(File.read(config_path))
+    else
+      {}
+    end
+  rescue JSON::ParserError
+    {}
+  end
+  
+  def preview_context
+    {
+      # Page context
+      'page' => {
+        'title' => 'Theme Preview',
+        'description' => 'Preview of the theme',
+        'url' => '/preview',
+        'seo_title' => 'Theme Preview - RailsPress',
+        'meta_description' => 'Preview of the selected theme',
+        'template' => 'index'
+      },
+      
+      # Site context
+      'site' => {
+        'title' => 'RailsPress Site',
+        'description' => 'A sample RailsPress site',
+        'url' => 'https://example.com',
+        'name' => 'RailsPress Site',
+        'tagline' => 'Built with Rails'
+      },
+      
+      # Sample content
+      'posts' => [],
+      'pages' => [],
+      'current_user' => nil,
+      'settings' => {},
+      'theme_settings' => {}
+    }
   end
 end

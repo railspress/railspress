@@ -1,0 +1,33 @@
+{
+  "name": "Posts",
+  "description": "Display a list of blog posts with pagination and filtering options",
+  "category": "Blog",
+  "settings": {
+    "posts_per_page": {
+      "type": "number",
+      "label": "Posts Per Page",
+      "default": 6
+    },
+    "show_excerpt": {
+      "type": "checkbox",
+      "label": "Show Excerpt",
+      "default": true
+    },
+    "show_featured_image": {
+      "type": "checkbox",
+      "label": "Show Featured Image",
+      "default": true
+    },
+    "show_date": {
+      "type": "checkbox",
+      "label": "Show Date",
+      "default": true
+    },
+    "show_author": {
+      "type": "checkbox",
+      "label": "Show Author",
+      "default": false
+    }
+  }
+}
+

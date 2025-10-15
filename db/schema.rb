@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_15_003712) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_15_051306) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -802,6 +802,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_15_003712) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tenant_id"
+    t.text "theme_development_docs"
+    t.text "plugin_development_docs"
+    t.boolean "docs_sync_enabled", default: false
+    t.string "docs_sync_source_url"
+    t.datetime "docs_last_synced_at"
     t.index ["tenant_id"], name: "index_site_settings_on_tenant_id"
   end
 

@@ -1,7 +1,7 @@
 module Api
   module V1
     class CommentsController < BaseController
-      skip_before_action :authenticate_api_user!, only: [:index, :show, :create]
+      # No authentication required for public comment creation
       before_action :set_comment, only: [:show, :update, :destroy, :approve, :spam]
       
       # GET /api/v1/comments
@@ -19,7 +19,7 @@ module Api
         end
         
         # Only approved for non-authenticated users
-        unless current_api_user&.can_edit_others_posts?
+        unless @api_user&.can_edit_others_posts?
           comments = comments.approved
         end
         
@@ -40,14 +40,47 @@ module Api
       
       # POST /api/v1/comments
       def create
+        # Check if comments are enabled
+        unless SiteSetting.get('comments_enabled', true)
+          return render json: { error: 'Comments are disabled for this site' }, status: :forbidden
+        end
+        
+        # Check if registration is required and user is not logged in
+        if SiteSetting.get('comment_registration_required', false) && !@api_user
+          return render json: { error: 'You must be logged in to post comments' }, status: :unauthorized
+        end
+        
         @comment = Comment.new(comment_params)
-        @comment.user = current_api_user if current_api_user
-        @comment.status = :pending
+        @comment.user = @api_user if @api_user
+        
+        # Check Akismet if enabled
+        if akismet_enabled?
+          akismet_data = {
+            user_ip: request.remote_ip,
+            user_agent: request.user_agent,
+            referrer: request.referer,
+            permalink: commentable_url(@comment.commentable),
+            comment_type: 'comment',
+            comment_author: @comment.author_name || @comment.user&.email,
+            comment_author_email: @comment.author_email || @comment.user&.email,
+            comment_author_url: @comment.author_url,
+            comment_content: @comment.content
+          }
+          
+          akismet = AkismetService.new(akismet_api_key, site_url)
+          if akismet.spam?(akismet_data)
+            @comment.status = :spam
+          else
+            @comment.status = SiteSetting.get('comments_moderation', true) ? :pending : :approved
+          end
+        else
+          @comment.status = SiteSetting.get('comments_moderation', true) ? :pending : :approved
+        end
         
         if @comment.save
-          render_success(comment_serializer(@comment), {}, :created)
+          render json: { success: true, comment: { id: @comment.id, status: @comment.status } }, status: :created
         else
-          render_error(@comment.errors.full_messages.join(', '))
+          render json: { error: @comment.errors.full_messages.join(', ') }, status: :unprocessable_entity
         end
       end
       
@@ -101,13 +134,13 @@ module Api
       end
       
       def can_edit_comment?
-        return true if current_api_user&.can_edit_others_posts?
-        @comment.user_id == current_api_user&.id
+        return true if @api_user&.can_edit_others_posts?
+        @comment.user_id == @api_user&.id
       end
       
       def can_delete_comment?
-        return true if current_api_user&.administrator?
-        @comment.user_id == current_api_user&.id
+        return true if @api_user&.administrator?
+        @comment.user_id == @api_user&.id
       end
       
       def comment_params
@@ -153,6 +186,29 @@ module Api
         end
         
         data
+      end
+
+      def akismet_enabled?
+        SiteSetting.get('akismet_enabled', false) && SiteSetting.get('akismet_api_key', '').present?
+      end
+
+      def akismet_api_key
+        SiteSetting.get('akismet_api_key', '')
+      end
+
+      def site_url
+        SiteSetting.get('site_url', 'http://localhost:3000')
+      end
+
+      def commentable_url(commentable)
+        case commentable
+        when Post
+          "#{site_url}/posts/#{commentable.slug}"
+        when Page
+          "#{site_url}/pages/#{commentable.slug}"
+        else
+          site_url
+        end
       end
     end
   end

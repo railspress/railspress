@@ -9,21 +9,11 @@
 }
 {% endschema %}
 
-{% assign layout = section.settings.layout | default: 'list' %}
-{% assign posts = collections.posts | default: posts | default: recent_posts | default: featured_posts %}
-
-{% if posts.size > 0 %}
-  <div class="post-list post-list--{{ layout }}">
-    {% for post in posts limit: 6 %}
-      {% render 'post-card', post: post %}
-    {% endfor %}
-  </div>
-  
-  {% if paginate %}
-    {% section 'pagination' %}
-  {% endif %}
-{% else %}
-  <div class="container">
-    <p class="muted">No posts found.</p>
-  </div>
-{% endif %}
+<div class="post-list">
+  <article class="card">
+    <div class="card-body">
+      <h3 class="card-title">Test Post</h3>
+      <p class="card-excerpt">This is a test post to see if the Liquid error goes away.</p>
+    </div>
+  </article>
+</div>

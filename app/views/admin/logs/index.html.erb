@@ -49,155 +49,49 @@
   </div>
 
   <!-- Log Viewer -->
-  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden"
-       data-controller="log-viewer"
-       data-log-viewer-file-value="<%= @current_log %>">
-    
-    <!-- Toolbar -->
-    <div class="bg-[#0a0a0a] border-b border-[#2a2a2a] p-4">
-      <div class="flex items-center justify-between flex-wrap gap-4">
-        <!-- Left Side -->
-        <div class="flex items-center gap-3">
-          <!-- Status -->
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span data-log-viewer-target="status" class="text-sm text-green-400 font-medium">Connected</span>
-          </div>
-          
-          <!-- Separator -->
-          <div class="w-px h-6 bg-[#2a2a2a]"></div>
-          
-          <!-- Controls -->
-          <button data-action="click->log-viewer#togglePause"
-                  class="px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded transition">
-            ⏸ Pause
-          </button>
-          
-          <button data-action="click->log-viewer#toggleAutoScroll"
-                  class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded transition">
-            ⬇ Auto-scroll
-          </button>
-          
-          <button data-action="click->log-viewer#scrollToTop"
-                  class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition">
-            ⬆ Top
-          </button>
-          
-          <button data-action="click->log-viewer#scrollToBottom"
-                  class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition">
-            ⬇ Bottom
-          </button>
-          
-          <button data-action="click->log-viewer#clear"
-                  class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition">
-            🗑 Clear
-          </button>
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <!-- Header -->
+    <div class="bg-[#0a0a0a] border-b border-[#2a2a2a] px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+          <span class="text-sm text-green-400 font-medium">Live Logs</span>
+          <span class="text-xs text-gray-500 mx-2">•</span>
+          <span class="font-mono text-sm text-gray-300"><%= @current_log %>.log</span>
         </div>
-
-        <!-- Right Side -->
+        
         <div class="flex items-center gap-3">
-          <!-- Search -->
-          <div class="flex items-center gap-2">
-            <input type="text"
-                   placeholder="Search logs..."
-                   data-log-viewer-target="search"
-                   data-action="input->log-viewer#search"
-                   class="px-3 py-1.5 bg-[#1a1a1a] border border-[#2a2a2a] text-white text-sm rounded focus:border-indigo-500 w-64">
-            
-            <button data-action="click->log-viewer#copyToClipboard"
-                    class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition"
-                    title="Copy all logs">
-              📋 Copy
-            </button>
-          </div>
-          
-          <!-- Actions Dropdown -->
-          <div class="relative">
-            <%= link_to clear_logs_file_path(@current_log), 
-                data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to clear this log file? This cannot be undone." },
-                class: "px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition" do %>
-              Clear File
-            <% end %>
-          </div>
+          <%= link_to admin_clear_logs_file_path(@current_log), 
+              data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to clear this log file? This cannot be undone." },
+              class: "px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition" do %>
+            Clear File
+          <% end %>
         </div>
       </div>
     </div>
 
-    <!-- Log Output -->
-    <div class="relative">
-      <div data-log-viewer-target="output"
-           class="bg-black text-gray-300 p-4 overflow-y-auto overflow-x-auto"
-           style="height: 600px; font-family: 'Monaco', 'Menlo', 'Consolas', monospace;">
-        <!-- Logs will be streamed here -->
-        <div class="text-center text-gray-500 py-8">
-          <div class="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-indigo-400 rounded-full mb-4"></div>
-          <p>Connecting to log stream...</p>
-        </div>
-      </div>
+    <!-- Logster iframe -->
+    <div class="relative" style="height: 600px;">
+      <iframe src="/logs"
+              class="w-full h-full border-0"
+              title="Log Viewer"
+              style="background: #000;">
+      </iframe>
     </div>
 
     <!-- Footer -->
     <div class="bg-[#0a0a0a] border-t border-[#2a2a2a] px-4 py-3">
       <div class="flex items-center justify-between text-xs text-gray-500">
         <div>
-          <span class="font-mono"><%= @current_log %>.log</span>
-          <span class="mx-2">•</span>
-          <span>Real-time streaming</span>
+          <span>Powered by Logster</span>
         </div>
         <div class="flex items-center gap-4">
-          <span>Press <kbd class="px-2 py-1 bg-[#1a1a1a] rounded">⌘ + F</kbd> to search</span>
-          <span>Max 1000 lines in memory</span>
+          <span>Real-time log monitoring</span>
+          <span>Search & filter enabled</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Log Level Legend -->
-  <div class="mt-6 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
-    <h3 class="text-white font-semibold mb-4">Log Level Colors</h3>
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <div class="flex items-center gap-2">
-        <span class="text-gray-400 font-mono">DEBUG</span>
-        <span class="text-xs text-gray-500">→ Gray</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-blue-400 font-mono">INFO</span>
-        <span class="text-xs text-gray-500">→ Blue</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-yellow-400 font-mono">WARN</span>
-        <span class="text-xs text-gray-500">→ Yellow</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-red-400 font-mono font-bold">ERROR</span>
-        <span class="text-xs text-gray-500">→ Red</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-red-600 font-mono font-bold">FATAL</span>
-        <span class="text-xs text-gray-500">→ Dark Red</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tips -->
-  <div class="mt-6 bg-blue-900/20 border border-blue-500/30 rounded-xl p-6">
-    <div class="flex gap-4">
-      <div class="flex-shrink-0">
-        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-      </div>
-      <div class="flex-1">
-        <h4 class="text-blue-300 font-semibold mb-2">Tips</h4>
-        <ul class="text-blue-200 text-sm space-y-1">
-          <li>• Logs stream in real-time automatically</li>
-          <li>• Use Pause to stop streaming and review specific errors</li>
-          <li>• Search is case-insensitive and highlights matches</li>
-          <li>• Download full log files for offline analysis</li>
-          <li>• Clear button only clears the viewer, not the file</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
+  
 

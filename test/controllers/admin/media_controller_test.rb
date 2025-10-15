@@ -299,3 +299,4 @@ class Admin::MediaControllerTest < ActionDispatch::IntegrationTest
   end
 end
 
+

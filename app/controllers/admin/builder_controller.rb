@@ -73,37 +73,73 @@ class Admin::BuilderController < Admin::BaseController
   def save_draft
     sections_data = JSON.parse(params[:sections_data] || '{}')
     settings_data = JSON.parse(params[:settings_data] || '{}')
+    template = params[:template] || 'index'
     
-    # Update theme settings
-    @builder_theme.settings_data = settings_data
-    @builder_theme.save!
-    
-    # Update sections if provided
-    if sections_data.present?
-      # Clear existing sections
-      @builder_theme.builder_theme_sections.destroy_all
+    begin
+      # Ensure we have a published version to work with
+      @builder_theme.ensure_published_version!
       
-      # Add new sections
-      sections_data.each do |section_id, section_data|
-        @builder_theme.add_section(
-          section_data['type'],
-          section_data['settings'] || {}
-        )
+      # Update the template JSON file with new sections data
+      template_file = @builder_theme.published_version.published_theme_files.find_by(file_path: "templates/#{template}.json")
+      
+      if template_file
+        # Parse current template content
+        template_content = JSON.parse(template_file.current_content)
+        
+        # Update sections if provided
+        if sections_data.present?
+          template_content['sections'] = sections_data
+          template_content['order'] = Object.keys(sections_data)
+        end
+        
+        # Update the file content
+        template_file.update!(current_content: template_content.to_json)
       end
-    end
-    
-    # Update individual files if provided
-    if params[:files].present?
-      params[:files].each do |file_path, content|
-        @builder_theme.update_file(file_path, content)
+      
+      # Update theme settings if provided
+      if settings_data.present?
+        settings_file = @builder_theme.published_version.published_theme_files.find_by(file_path: 'config/settings_data.json')
+        
+        if settings_file
+          settings_file.update!(current_content: settings_data.to_json)
+        else
+          # Create settings file if it doesn't exist
+          @builder_theme.published_version.published_theme_files.create!(
+            file_path: 'config/settings_data.json',
+            current_content: settings_data.to_json,
+            tenant: @builder_theme.tenant
+          )
+        end
       end
-    end
-    
-    # Broadcast update to preview
-    broadcast_preview_update(@builder_theme)
-    
-    respond_to do |format|
-      format.json { render json: { success: true, message: 'Draft saved successfully!' } }
+      
+      # Update individual files if provided
+      if params[:files].present?
+        params[:files].each do |file_path, content|
+          file = @builder_theme.published_version.published_theme_files.find_by(file_path: file_path)
+          if file
+            file.update!(current_content: content)
+          else
+            @builder_theme.published_version.published_theme_files.create!(
+              file_path: file_path,
+              current_content: content,
+              tenant: @builder_theme.tenant
+            )
+          end
+        end
+      end
+      
+      # Broadcast update to preview
+      broadcast_preview_update(@builder_theme)
+      
+      respond_to do |format|
+        format.json { render json: { success: true, message: 'Draft saved successfully!' } }
+      end
+      
+    rescue => e
+      Rails.logger.error "Save draft failed: #{e.message}"
+      respond_to do |format|
+        format.json { render json: { success: false, errors: [e.message] }, status: :unprocessable_entity }
+      end
     end
   end
   
@@ -112,6 +148,22 @@ class Admin::BuilderController < Admin::BaseController
     begin
       # Publish the builder theme as a PublishedThemeVersion
       published_version = @builder_theme.publish!(current_user)
+      
+      # If this theme is active, clear any frontend caches
+      if @builder_theme.is_theme_active?
+        # Clear Rails cache for theme-related data
+        Rails.cache.delete_matched("theme_*")
+        
+        # Broadcast to frontend that theme has been updated
+        ActionCable.server.broadcast(
+          "theme_updates",
+          {
+            type: 'theme_published',
+            theme_name: @builder_theme.theme_name,
+            timestamp: Time.current.to_i
+          }
+        )
+      end
       
       respond_to do |format|
         format.json { render json: { success: true, message: 'Theme published successfully!', version_id: published_version.id } }
@@ -144,12 +196,15 @@ class Admin::BuilderController < Admin::BaseController
     @builder_theme = BuilderTheme.find(params[:id])
     @current_theme_name = @builder_theme.theme_name
     
+    # Ensure we have a published version to work with
+    @builder_theme.ensure_published_version!
+    
     # Get the PublishedThemeVersion for this builder theme
-    published_version = PublishedThemeVersion.where(theme: @builder_theme.theme).latest.first
+    published_version = @builder_theme.published_version
     
     if published_version
       # Use FrontendRendererService for proper rendering
-      renderer = FrontendRendererService.new(published_version)
+      renderer = FrontendRendererService.new(published_version, @builder_theme.id)
       template_type = params[:template] || 'index'
       
       begin
@@ -196,6 +251,63 @@ class Admin::BuilderController < Admin::BaseController
       render json: { success: true, sections: sections }
     else
       render json: { success: false, errors: ['Template not found'] }, status: :not_found
+    end
+  end
+
+  # GET /admin/builder/:id/available_sections
+  def available_sections
+    begin
+      # Get available sections from the BuilderTheme's theme directory
+      @builder_theme = BuilderTheme.find(params[:id])
+      
+      # Get the theme name from the BuilderTheme
+      theme_name = @builder_theme.theme_name
+      
+      # Get sections directory from the theme
+      manager = ThemesManager.new
+      sections_dir = File.join(manager.themes_path, theme_name, 'sections')
+      
+      if Dir.exist?(sections_dir)
+        sections = []
+        
+        # Read all .liquid files in the sections directory
+        Dir.glob(File.join(sections_dir, '*.liquid')).each do |file_path|
+          section_name = File.basename(file_path, '.liquid')
+          
+          # Ensure section_name is a string
+          section_name = section_name.to_s if section_name.respond_to?(:to_s)
+          
+          # Try to read section schema for description
+          schema_path = File.join(sections_dir, "#{section_name}.json")
+          description = 'Section description'
+          category = 'General'
+          
+          if File.exist?(schema_path)
+            begin
+              schema = JSON.parse(File.read(schema_path))
+              description = schema['description'] || schema.dig('settings', 'description') || 'Section description'
+              category = schema['category'] || 'General'
+            rescue JSON::ParserError
+              # Use default description if schema is invalid
+            end
+          end
+          
+          sections << {
+            id: section_name,
+            name: section_name.humanize,
+            description: description,
+            category: category
+          }
+        end
+        
+        render json: { success: true, sections: sections }
+      else
+        render json: { success: false, errors: ['Sections directory not found'] }, status: :not_found
+      end
+      
+    rescue => e
+      Rails.logger.error "Error loading available sections: #{e.message}"
+      render json: { success: false, errors: [e.message] }, status: :internal_server_error
     end
   end
   
@@ -272,9 +384,9 @@ class Admin::BuilderController < Admin::BaseController
     
     file_path = asset_paths[asset_name] || "assets/#{asset_name}"
     
-    # Use ThemesManager to get the file content
+    # Use ThemesManager to get the file content from the builder theme's theme
     manager = ThemesManager.new
-    file_content = manager.get_file(file_path)
+    file_content = manager.get_file(file_path, @builder_theme.theme_name)
     
     if file_content
       content_type = case File.extname(asset_name)

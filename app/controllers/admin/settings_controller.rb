@@ -21,6 +21,11 @@ class Admin::SettingsController < Admin::BaseController
     load_reading_settings
   end
 
+  # GET /admin/settings/discussion
+  def discussion
+    load_discussion_settings
+  end
+
   # GET /admin/settings/media
   def media
     load_media_settings
@@ -87,6 +92,14 @@ class Admin::SettingsController < Admin::BaseController
       SiteSetting.set(key, value, setting_type_for(key))
     end
     redirect_to admin_reading_settings_path, notice: 'Reading settings updated successfully.'
+  end
+
+  # PATCH /admin/settings/update_discussion
+  def update_discussion
+    params[:settings].each do |key, value|
+      SiteSetting.set(key, value, setting_type_for(key))
+    end
+    redirect_to admin_discussion_settings_path, notice: 'Discussion settings updated successfully.'
   end
 
   # PATCH /admin/settings/update_media
@@ -286,13 +299,20 @@ class Admin::SettingsController < Admin::BaseController
     }
   end
 
-  def load_privacy_settings
+  def load_discussion_settings
     @settings = {
       comments_enabled: SiteSetting.get('comments_enabled', true),
       comments_moderation: SiteSetting.get('comments_moderation', true),
       comment_registration_required: SiteSetting.get('comment_registration_required', false),
       close_comments_after_days: SiteSetting.get('close_comments_after_days', 0),
       show_avatars: SiteSetting.get('show_avatars', true),
+      akismet_api_key: SiteSetting.get('akismet_api_key', ''),
+      akismet_enabled: SiteSetting.get('akismet_enabled', false)
+    }
+  end
+
+  def load_privacy_settings
+    @settings = {
       gdpr_compliance_enabled: SiteSetting.get('gdpr_compliance_enabled', false),
       cookie_consent_required: SiteSetting.get('cookie_consent_required', false),
       privacy_policy_page_id: SiteSetting.get('privacy_policy_page_id', ''),

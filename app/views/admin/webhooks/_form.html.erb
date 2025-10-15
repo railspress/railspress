@@ -1,63 +1,62 @@
-<%= form_with model: [:admin, webhook], class: "space-y-6" do |f| %>
-  <% if webhook.errors.any? %>
-    <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded p-4 mb-6">
-      <h3 class="text-red-800 dark:text-red-200 font-semibold mb-2">
-        <%= pluralize(webhook.errors.count, "error") %> prohibited this webhook from being saved:
-      </h3>
-      <ul class="list-disc list-inside text-red-700 dark:text-red-300">
-        <% webhook.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+<div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+  <%= form_with model: [:admin, webhook], class: "space-y-6" do |f| %>
+    <% if webhook.errors.any? %>
+      <div class="bg-red-900/20 border-l-4 border-red-500 rounded p-4 mb-6">
+        <h3 class="text-red-200 font-semibold mb-2">
+          <%= pluralize(webhook.errors.count, "error") %> prohibited this webhook from being saved:
+        </h3>
+        <ul class="list-disc list-inside text-red-300">
+          <% webhook.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-6">
     <!-- Name -->
     <div>
-      <%= f.label :name, "Webhook Name", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+      <%= f.label :name, "Webhook Name", class: "block text-sm font-medium text-gray-300 mb-2" %>
       <%= f.text_field :name, 
-          class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white",
+          class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
           placeholder: "My Integration Webhook" %>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">A friendly name to identify this webhook</p>
+      <p class="mt-1 text-sm text-gray-500">A friendly name to identify this webhook</p>
     </div>
 
     <!-- URL -->
     <div>
-      <%= f.label :url, "Payload URL", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+      <%= f.label :url, "Payload URL", class: "block text-sm font-medium text-gray-300 mb-2" %>
       <%= f.url_field :url, 
-          class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white font-mono text-sm",
+          class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm",
           placeholder: "https://example.com/webhooks/railspress" %>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The URL that will receive POST requests</p>
+      <p class="mt-1 text-sm text-gray-500">The URL that will receive POST requests</p>
     </div>
 
     <!-- Description -->
     <div>
-      <%= f.label :description, "Description (Optional)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+      <%= f.label :description, "Description (Optional)", class: "block text-sm font-medium text-gray-300 mb-2" %>
       <%= f.text_area :description, 
           rows: 3,
-          class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white",
+          class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
           placeholder: "What does this webhook do?" %>
     </div>
 
     <!-- Events -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+      <label class="block text-sm font-medium text-gray-300 mb-3">
         Subscribe to Events
       </label>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <% Webhook::AVAILABLE_EVENTS.each do |event| %>
-          <div class="flex items-start">
-            <div class="flex items-center h-5">
-              <%= check_box_tag 'webhook[events][]', event, 
-                  webhook.events&.include?(event),
-                  class: "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500",
+          <div class="flex items-start space-x-3 p-3 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
+            <div class="flex-shrink-0 mt-1">
+              <%= check_box_tag "webhook[events][]", event, webhook.events&.include?(event),
+                  class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500",
                   id: "webhook_event_#{event.parameterize}" %>
             </div>
-            <div class="ml-3 text-sm">
-              <%= label_tag "webhook_event_#{event.parameterize}", event, class: "font-medium text-gray-700 dark:text-gray-300" %>
-              <p class="text-gray-500 dark:text-gray-400 text-xs">
+            <div class="flex-1">
+              <%= label_tag "webhook_event_#{event.parameterize}", event, class: "font-medium text-gray-300 cursor-pointer" %>
+              <p class="text-gray-500 text-xs mt-1">
                 <%= event_description(event) %>
               </p>
             </div>
@@ -67,88 +66,45 @@
     </div>
 
     <!-- Advanced Settings -->
-    <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-      <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
-        Advanced Settings
-      </h3>
+    <div class="border-t border-[#2a2a2a] pt-6">
+      <h3 class="text-lg font-medium text-gray-300 mb-4">Advanced Settings</h3>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Retry Limit -->
         <div>
-          <%= f.label :retry_limit, "Retry Limit", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+          <%= f.label :retry_limit, "Retry Limit", class: "block text-sm font-medium text-gray-300 mb-2" %>
           <%= f.number_field :retry_limit, 
-              min: 0, max: 10,
-              class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" %>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Maximum retry attempts (0-10)</p>
+              class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+              min: 0, max: 10, value: webhook.retry_limit || 3 %>
+          <p class="mt-1 text-sm text-gray-500">Number of retry attempts (0-10)</p>
         </div>
 
         <!-- Timeout -->
         <div>
-          <%= f.label :timeout, "Timeout (seconds)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" %>
+          <%= f.label :timeout, "Timeout (seconds)", class: "block text-sm font-medium text-gray-300 mb-2" %>
           <%= f.number_field :timeout, 
-              min: 1, max: 120,
-              class: "w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white" %>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Request timeout (1-120 seconds)</p>
+              class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+              min: 1, max: 120, value: webhook.timeout || 30 %>
+          <p class="mt-1 text-sm text-gray-500">Request timeout in seconds (1-120)</p>
         </div>
+      </div>
+
+      <!-- Active Status -->
+      <div class="mt-6">
+        <div class="flex items-center space-x-3">
+          <%= f.check_box :active, 
+              class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500" %>
+          <%= f.label :active, "Active", class: "text-sm font-medium text-gray-300 cursor-pointer" %>
+        </div>
+        <p class="mt-1 text-sm text-gray-500">Enable this webhook to start receiving events</p>
       </div>
     </div>
 
-    <!-- Active Toggle -->
-    <div class="flex items-center">
-      <%= f.check_box :active, class: "w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" %>
-      <%= f.label :active, "Active", class: "ml-2 text-sm font-medium text-gray-700 dark:text-gray-300" %>
-      <p class="ml-6 text-sm text-gray-500 dark:text-gray-400">Inactive webhooks won't receive events</p>
+    <!-- Submit Button -->
+    <div class="pt-6 border-t border-[#2a2a2a] flex items-center justify-end space-x-3">
+      <%= link_to "Cancel", admin_webhooks_path, class: "px-4 py-2 text-gray-400 hover:text-white transition" %>
+      <%= f.submit webhook.persisted? ? "Update Webhook" : "Create Webhook", 
+          class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer font-medium" %>
     </div>
-
-    <!-- Info Box -->
-    <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded p-4">
-      <div class="flex">
-        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <div class="text-sm text-blue-800 dark:text-blue-200">
-          <p class="font-semibold mb-1">About Webhook Security</p>
-          <p>A secret key will be automatically generated to sign payloads. Use this to verify webhook authenticity. Check the X-RailsPress-Signature header in your webhook handler.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Actions -->
-  <div class="flex items-center justify-between">
-    <%= link_to "Cancel", admin_webhooks_path, class: "px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900" %>
-    <%= f.submit webhook.new_record? ? "Create Webhook" : "Update Webhook", 
-        class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition cursor-pointer" %>
-  </div>
-<% end %>
-
-<% 
-  def event_description(event)
-    descriptions = {
-      'post.created' => 'Fired when a new post is created',
-      'post.updated' => 'Fired when a post is updated',
-      'post.published' => 'Fired when a post is published',
-      'post.deleted' => 'Fired when a post is deleted',
-      'page.created' => 'Fired when a new page is created',
-      'page.updated' => 'Fired when a page is updated',
-      'page.published' => 'Fired when a page is published',
-      'page.deleted' => 'Fired when a page is deleted',
-      'comment.created' => 'Fired when a comment is submitted',
-      'comment.approved' => 'Fired when a comment is approved',
-      'comment.spam' => 'Fired when a comment is marked as spam',
-      'user.created' => 'Fired when a new user registers',
-      'user.updated' => 'Fired when a user is updated',
-      'media.uploaded' => 'Fired when media is uploaded'
-    }
-    
-    descriptions[event] || 'Event trigger'
-  end
-%>
-
-
-
-
-
-
-
-
+  <% end %>
+</div>

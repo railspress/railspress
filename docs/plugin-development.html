@@ -1,0 +1,370 @@
+<div class="space-y-8">
+  <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-6 text-white">
+    <h2 class="text-2xl font-bold mb-2">Plugin Development</h2>
+    <p class="text-purple-100">Extend RailsPress functionality with powerful, modular plugins.</p>
+  </div>
+
+  <div class="prose prose-invert max-w-none">
+    <h3 class="text-xl font-semibold text-white mb-4">What Are Plugins?</h3>
+    <p class="text-gray-300 mb-4">
+      Plugins are modular extensions that add new functionality to RailsPress without modifying the core system. 
+      They can add new features, modify existing behavior, or integrate with external services.
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Plugin Structure</h4>
+      <pre class="text-green-400 text-sm"><code>lib/plugins/your_plugin/
+├── your_plugin.rb           # Main plugin class
+├── config/
+│   ├── routes.rb           # Plugin routes
+│   └── settings.yml        # Default settings
+├── app/
+│   ├── controllers/        # Plugin controllers
+│   ├── models/            # Plugin models
+│   ├── views/             # Plugin views
+│   └── helpers/           # Plugin helpers
+├── assets/
+│   ├── css/               # Plugin styles
+│   ├── js/                # Plugin JavaScript
+│   └── images/            # Plugin images
+└── README.md              # Plugin documentation</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Creating Your First Plugin</h3>
+    
+    <div class="space-y-4">
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">1. Plugin Class</h4>
+        <p class="text-gray-300 mb-3">Every plugin must inherit from the base Plugin class:</p>
+        <pre class="text-green-400 text-sm"><code>class YourPlugin < RailsPress::Plugin
+  def initialize
+    super('your_plugin', '1.0.0')
+  end
+
+  def activate
+    # Plugin activation logic
+  end
+
+  def deactivate
+    # Plugin deactivation logic
+  end
+end</code></pre>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">2. Plugin Registration</h4>
+        <p class="text-gray-300">Register your plugin in the main application:</p>
+        <pre class="text-green-400 text-sm"><code># config/initializers/plugins.rb
+RailsPress::PluginManager.register(YourPlugin.new)</code></pre>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">3. Plugin Hooks</h4>
+        <p class="text-gray-300 mb-3">Use hooks to integrate with RailsPress events:</p>
+        <pre class="text-green-400 text-sm"><code>class YourPlugin < RailsPress::Plugin
+  def initialize
+    super('your_plugin', '1.0.0')
+    
+    # Hook into post creation
+    hook :post_created do |post|
+      # Custom logic when post is created
+    end
+    
+    # Hook into user login
+    hook :user_logged_in do |user|
+      # Custom logic when user logs in
+    end
+  end
+end</code></pre>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Available Hooks</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">Content Hooks</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">post_created</code> - After post creation</li>
+          <li><code class="text-green-400">post_updated</code> - After post update</li>
+          <li><code class="text-green-400">post_published</code> - After post publication</li>
+          <li><code class="text-green-400">post_deleted</code> - After post deletion</li>
+        </ul>
+      </div>
+      
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">User Hooks</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">user_registered</code> - After user registration</li>
+          <li><code class="text-green-400">user_logged_in</code> - After user login</li>
+          <li><code class="text-green-400">user_logged_out</code> - After user logout</li>
+          <li><code class="text-green-400">user_updated</code> - After user update</li>
+        </ul>
+      </div>
+      
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">System Hooks</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">theme_activated</code> - After theme activation</li>
+          <li><code class="text-green-400">plugin_activated</code> - After plugin activation</li>
+          <li><code class="text-green-400">site_settings_updated</code> - After settings update</li>
+          <li><code class="text-green-400">media_uploaded</code> - After media upload</li>
+        </ul>
+      </div>
+      
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">Frontend Hooks</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">head_content</code> - Add content to &lt;head&gt;</li>
+          <li><code class="text-green-400">footer_content</code> - Add content to footer</li>
+          <li><code class="text-green-400">before_content</code> - Before main content</li>
+          <li><code class="text-green-400">after_content</code> - After main content</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Plugin Settings</h3>
+    <p class="text-gray-300 mb-4">
+      Plugins can have their own settings that users can configure through the admin panel.
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Defining Settings</h4>
+      <pre class="text-green-400 text-sm"><code>class YourPlugin < RailsPress::Plugin
+  def initialize
+    super('your_plugin', '1.0.0')
+    
+    # Define plugin settings
+    setting :api_key, type: :string, default: '', 
+            description: 'API Key for external service'
+    
+    setting :enabled, type: :boolean, default: true,
+            description: 'Enable this plugin'
+    
+    setting :max_posts, type: :integer, default: 10,
+            description: 'Maximum posts to process'
+  end
+  
+  def api_key
+    get_setting(:api_key)
+  end
+  
+  def enabled?
+    get_setting(:enabled)
+  end
+end</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Plugin Routes</h3>
+    <p class="text-gray-300 mb-4">
+      Plugins can define their own routes and controllers for custom functionality.
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Plugin Routes</h4>
+      <pre class="text-green-400 text-sm"><code># config/routes.rb (in your plugin)
+RailsPress::Plugin.routes.draw do
+  namespace :your_plugin do
+    resources :items, only: [:index, :show, :create, :update, :destroy]
+    get 'dashboard', to: 'dashboard#index'
+    post 'webhook', to: 'webhooks#receive'
+  end
+end</code></pre>
+    </div>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Plugin Controller</h4>
+      <pre class="text-green-400 text-sm"><code># app/controllers/your_plugin/items_controller.rb
+class YourPlugin::ItemsController < ApplicationController
+  before_action :authenticate_user!
+  
+  def index
+    @items = YourPlugin::Item.where(user: current_user)
+    render json: @items
+  end
+  
+  def create
+    @item = YourPlugin::Item.new(item_params)
+    @item.user = current_user
+    
+    if @item.save
+      render json: @item, status: :created
+    else
+      render json: { errors: @item.errors }, status: :unprocessable_entity
+    end
+  end
+  
+  private
+  
+  def item_params
+    params.require(:item).permit(:name, :description, :status)
+  end
+end</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Plugin Models</h3>
+    <p class="text-gray-300 mb-4">
+      Plugins can define their own models to store data specific to their functionality.
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Plugin Model Example</h4>
+      <pre class="text-green-400 text-sm"><code># app/models/your_plugin/item.rb
+class YourPlugin::Item < ApplicationRecord
+  belongs_to :user
+  belongs_to :tenant
+  
+  validates :name, presence: true
+  validates :status, inclusion: { in: %w[active inactive pending] }
+  
+  scope :active, -> { where(status: 'active') }
+  scope :for_user, ->(user) { where(user: user) }
+  
+  def activate!
+    update!(status: 'active')
+  end
+  
+  def deactivate!
+    update!(status: 'inactive')
+  end
+end</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Plugin Assets</h3>
+    <p class="text-gray-300 mb-4">
+      Plugins can include CSS, JavaScript, and image assets that are automatically loaded when the plugin is active.
+    </p>
+
+    <div class="space-y-4">
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">CSS Assets</h4>
+        <pre class="text-green-400 text-sm"><code>/* assets/css/your_plugin.css */
+.your-plugin-widget {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  padding: 1rem;
+}
+
+.your-plugin-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}</code></pre>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">JavaScript Assets</h4>
+        <pre class="text-green-400 text-sm"><code>// assets/js/your_plugin.js
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize plugin functionality
+  const widgets = document.querySelectorAll('.your-plugin-widget');
+  
+  widgets.forEach(widget => {
+    const button = widget.querySelector('.your-plugin-button');
+    
+    button.addEventListener('click', function() {
+      // Handle button click
+      console.log('Plugin button clicked!');
+    });
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Plugin Testing</h3>
+    <p class="text-gray-300 mb-4">
+      Plugins should include comprehensive tests to ensure reliability and compatibility.
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Plugin Test Example</h4>
+      <pre class="text-green-400 text-sm"><code># test/your_plugin_test.rb
+require 'test_helper'
+
+class YourPluginTest < ActiveSupport::TestCase
+  setup do
+    @plugin = YourPlugin.new
+    @user = users(:one)
+  end
+  
+  test "plugin initializes correctly" do
+    assert_equal 'your_plugin', @plugin.name
+    assert_equal '1.0.0', @plugin.version
+  end
+  
+  test "plugin activates without errors" do
+    assert_nothing_raised do
+      @plugin.activate
+    end
+  end
+  
+  test "plugin processes post creation hook" do
+    post = posts(:one)
+    
+    # Mock the hook behavior
+    @plugin.stub(:post_created_hook, ->(p) { p.update!(title: 'Modified') }) do
+      @plugin.activate
+      # Trigger the hook
+      @plugin.send(:post_created_hook, post)
+      assert_equal 'Modified', post.reload.title
+    end
+  end
+end</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Best Practices</h3>
+    <div class="space-y-3">
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Namespace Everything</h4>
+          <p class="text-gray-300 text-sm">Use proper namespacing to avoid conflicts with other plugins or core functionality.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Handle Errors Gracefully</h4>
+          <p class="text-gray-300 text-sm">Always include proper error handling to prevent plugin failures from affecting the entire system.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Clean Up on Deactivation</h4>
+          <p class="text-gray-300 text-sm">Properly clean up resources, database records, and scheduled jobs when the plugin is deactivated.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Document Everything</h4>
+          <p class="text-gray-300 text-sm">Include comprehensive documentation, examples, and clear installation instructions.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

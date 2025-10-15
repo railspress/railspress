@@ -9,47 +9,6 @@
   <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
         
         <%= form_with url: admin_settings_privacy_path, method: :patch, class: "space-y-6" do |f| %>
-          <!-- Comments Settings -->
-          <div>
-            <h3 class="text-lg font-semibold text-white mb-4">Discussion Settings</h3>
-            
-            <div class="space-y-3">
-              <%= label_tag 'settings[comments_enabled]', class: 'flex items-center space-x-2 cursor-pointer' do %>
-                <%= check_box_tag 'settings[comments_enabled]', '1', @settings[:comments_enabled],
-                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
-                <span class="text-gray-300">Allow people to post comments on new articles</span>
-              <% end %>
-
-              <%= label_tag 'settings[comments_moderation]', class: 'flex items-center space-x-2 cursor-pointer' do %>
-                <%= check_box_tag 'settings[comments_moderation]', '1', @settings[:comments_moderation],
-                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
-                <span class="text-gray-300">Comment must be manually approved</span>
-              <% end %>
-
-              <%= label_tag 'settings[comment_registration_required]', class: 'flex items-center space-x-2 cursor-pointer' do %>
-                <%= check_box_tag 'settings[comment_registration_required]', '1', @settings[:comment_registration_required],
-                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
-                <span class="text-gray-300">Users must be registered and logged in to comment</span>
-              <% end %>
-
-              <%= label_tag 'settings[show_avatars]', class: 'flex items-center space-x-2 cursor-pointer' do %>
-                <%= check_box_tag 'settings[show_avatars]', '1', @settings[:show_avatars],
-                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
-                <span class="text-gray-300">Show avatars in comments</span>
-              <% end %>
-            </div>
-
-            <div class="mt-4">
-              <%= label_tag 'settings[close_comments_after_days]', 'Automatically close comments on articles older than', class: 'block text-sm font-medium text-gray-300 mb-2' %>
-              <div class="flex items-center space-x-2">
-                <%= number_field_tag 'settings[close_comments_after_days]', @settings[:close_comments_after_days],
-                    min: 0,
-                    class: 'w-32 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
-                <span class="text-gray-400">days (0 to disable)</span>
-              </div>
-            </div>
-          </div>
-
           <!-- User Registration -->
           <div>
             <h3 class="text-lg font-semibold text-white mb-4">User Registration</h3>
@@ -119,4 +78,3 @@
         <% end %>
   </div>
 </div>
-

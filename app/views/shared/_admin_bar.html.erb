@@ -34,7 +34,7 @@
           <% end %>
           
           <% if current_user.can_manage_themes? %>
-            <%= link_to admin_theme_editor_index_path, class: "wp-admin-bar-submenu-item" do %>
+            <%= link_to admin_themes_path, class: "wp-admin-bar-submenu-item" do %>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
               </svg>
@@ -44,13 +44,26 @@
         </div>
       </div>
 
-      <!-- Edit Site (Customizer) -->
+      <!-- Edit Site (Builder) -->
       <% if current_user.can_manage_settings? %>
-        <%= link_to admin_settings_appearance_path, class: "wp-admin-bar-item wp-admin-bar-link" do %>
-          <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-          </svg>
-          <span class="wp-admin-bar-text">Edit Site</span>
+        <% active_theme = Theme.active.first %>
+        <% if active_theme %>
+          <% builder_theme = BuilderTheme.current_for_theme(active_theme.name.underscore) %>
+          <% if builder_theme %>
+            <%= link_to admin_builder_path(builder_theme), class: "wp-admin-bar-item wp-admin-bar-link" do %>
+              <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+              <span class="wp-admin-bar-text">Edit Site</span>
+            <% end %>
+          <% else %>
+            <%= link_to admin_builder_index_path(theme_name: active_theme.name), class: "wp-admin-bar-item wp-admin-bar-link" do %>
+              <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+              <span class="wp-admin-bar-text">Edit Site</span>
+            <% end %>
+          <% end %>
         <% end %>
       <% end %>
 

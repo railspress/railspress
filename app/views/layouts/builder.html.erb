@@ -153,7 +153,6 @@
                     <div class="flex items-center justify-between">
                       <div>
                         <h4 class="font-medium text-gray-900"><%= section_config['type'].humanize %></h4>
-                        <p class="text-sm text-gray-600"><%= section_id %></p>
                       </div>
                       <button class="text-red-500 hover:text-red-700" data-action="click->builder#removeSection" data-section-id="<%= section_id %>">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,6 +220,64 @@
           <div class="text-center text-gray-500 py-8">
             <p>Theme settings will appear here</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Section Modal -->
+  <div id="addSectionModal" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[650px] h-[480px] shadow-lg rounded-lg bg-white z-50 max-w-[calc(100%-2rem)]">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">Add Section</h3>
+        <button data-action="click->builder#closeAddSectionModal" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Modal Content -->
+      <div class="flex h-[336px]">
+        <!-- Left Panel - Sections List -->
+        <div class="w-1/2 border-r border-gray-200 flex flex-col">
+          <div class="p-4 border-b border-gray-200">
+            <h4 class="text-sm font-medium text-gray-900">Sections</h4>
+            <p class="text-xs text-gray-600 mt-1">Choose a section to add to your page</p>
+          </div>
+          <div class="flex-1 overflow-y-auto">
+            <div id="availableSections" class="p-4 space-y-2">
+              <!-- Available sections will be populated here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right Panel - Preview -->
+        <div class="w-1/2 flex flex-col">
+          <div class="p-4 border-b border-gray-200">
+            <h4 class="text-sm font-medium text-gray-900">Preview</h4>
+            <p class="text-xs text-gray-600 mt-1">See how this section will look</p>
+          </div>
+          <div class="flex-1 p-4 bg-gray-50">
+            <div id="sectionPreview" class="h-full bg-white rounded border border-gray-200 flex items-center justify-center">
+              <p class="text-gray-500 text-sm">Select a section to see preview</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="flex justify-between items-center p-6 border-t border-gray-200">
+        <div class="text-sm text-gray-600">
+          <span id="selectedSectionName" class="font-medium">No section selected</span>
+        </div>
+        <div class="flex space-x-3">
+          <button data-action="click->builder#closeAddSectionModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+            Cancel
+          </button>
+          <button id="addSelectedSectionBtn" data-action="click->builder#addSelectedSection" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Add Section
+          </button>
         </div>
       </div>
     </div>
@@ -370,5 +427,7 @@
       }
     }
   </style>
+
+  
 </body>
 </html>

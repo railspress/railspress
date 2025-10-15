@@ -67,11 +67,25 @@ class PostsController < ApplicationController
         'author' => post.user,
         'published_at' => post.published_at,
         'updated_at' => post.updated_at,
-        'categories' => post.terms.joins(:taxonomy).where(taxonomies: { slug: 'category' }),
-        'tags' => post.terms.joins(:taxonomy).where(taxonomies: { slug: 'tag' })
+        'categories' => post.terms.joins(:taxonomy).where(taxonomies: { slug: 'category' }).to_a,
+        'tags' => post.terms.joins(:taxonomy).where(taxonomies: { slug: 'tag' }).to_a
       },
-      'related_posts' => related_posts,
-      'comments' => comments,
+      'site' => {
+        'title' => SiteSetting.get('site_title', 'RailsPress'),
+        'description' => SiteSetting.get('site_description', 'Built with RailsPress'),
+        'settings' => {
+          'comments_enabled' => SiteSetting.get('comments_enabled', true),
+          'comments_moderation' => SiteSetting.get('comments_moderation', true),
+          'comment_registration_required' => SiteSetting.get('comment_registration_required', false),
+          'close_comments_after_days' => SiteSetting.get('close_comments_after_days', 0),
+          'show_avatars' => SiteSetting.get('show_avatars', true),
+          'akismet_enabled' => SiteSetting.get('akismet_enabled', false),
+          'akismet_api_key' => SiteSetting.get('akismet_api_key', '')
+        }
+      },
+      'related_posts' => related_posts.to_a,
+      'comments' => comments.to_a,
+      'current_user' => user_signed_in? ? current_user : nil,
       'template' => 'post'
     })
   end

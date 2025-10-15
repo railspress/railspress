@@ -84,6 +84,14 @@ class Webhook < ApplicationRecord
     failure_rate < 0.5  # Less than 50% failure rate
   end
   
+  # Calculate success rate percentage
+  def success_rate
+    return 100.0 if total_deliveries.zero?
+    
+    successful_deliveries = total_deliveries - failed_deliveries
+    (successful_deliveries.to_f / total_deliveries * 100).round(1)
+  end
+  
   private
   
   def generate_secret_key

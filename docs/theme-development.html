@@ -1,0 +1,230 @@
+<div class="space-y-8">
+  <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
+    <h2 class="text-2xl font-bold mb-2">Getting Started</h2>
+    <p class="text-blue-100">Learn how to create beautiful, responsive themes for RailsPress from scratch.</p>
+  </div>
+
+  <div class="prose prose-invert max-w-none">
+    <h3 class="text-xl font-semibold text-white mb-4">Theme Structure</h3>
+    <p class="text-gray-300 mb-4">
+      RailsPress themes follow a simple, organized structure that makes development intuitive and maintainable.
+    </p>
+    
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Directory Structure</h4>
+      <pre class="text-green-400 text-sm"><code>your-theme/
+├── config/
+│   └── theme.json          # Theme metadata
+├── views/
+│   ├── layouts/
+│   │   └── application.html.erb
+│   ├── pages/
+│   │   └── index.html.erb
+│   └── shared/
+│       ├── _header.html.erb
+│       └── _footer.html.erb
+├── assets/
+│   ├── css/
+│   │   └── theme.css
+│   ├── js/
+│   │   └── theme.js
+│   └── images/
+│       └── screenshot.png
+└── helpers/
+    └── theme_helper.rb</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Theme Configuration</h3>
+    <p class="text-gray-300 mb-4">
+      Every theme must include a <code class="bg-[#0d0d0d] text-green-400 px-2 py-1 rounded text-sm">theme.json</code> file in the config directory:
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <pre class="text-green-400 text-sm"><code>{
+  "name": "Your Theme Name",
+  "version": "1.0.0",
+  "description": "A beautiful theme for RailsPress",
+  "author": "Your Name",
+  "license": "MIT",
+  "tags": ["responsive", "modern", "blog"],
+  "screenshot": "assets/images/screenshot.png"
+}</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Creating Your First Theme</h3>
+    
+    <div class="space-y-4">
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">1. Create Theme Directory</h4>
+        <p class="text-gray-300">Create a new directory in <code class="bg-[#0d0d0d] text-green-400 px-2 py-1 rounded text-sm">app/themes/</code> with your theme name.</p>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">2. Add Configuration</h4>
+        <p class="text-gray-300">Create the <code class="bg-[#0d0d0d] text-green-400 px-2 py-1 rounded text-sm">config/theme.json</code> file with your theme metadata.</p>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">3. Create Layout</h4>
+        <p class="text-gray-300">Build your main layout in <code class="bg-[#0d0d0d] text-green-400 px-2 py-1 rounded text-sm">views/layouts/application.html.erb</code>.</p>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">4. Add Templates</h4>
+        <p class="text-gray-300">Create page templates in the <code class="bg-[#0d0d0d] text-green-400 px-2 py-1 rounded text-sm">views/pages/</code> directory.</p>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Liquid Template Engine</h3>
+    <p class="text-gray-300 mb-4">
+      RailsPress uses Liquid for templating, providing a safe and flexible way to create dynamic content.
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">Basic Liquid Syntax</h4>
+      <pre class="text-green-400 text-sm"><code>{{ page.title }}          <!-- Output variable -->
+{% if user.logged_in %}     <!-- Conditional -->
+  Welcome back!
+{% endif %}
+
+{% for post in posts %}     <!-- Loop -->
+  <article>{{ post.title }}</article>
+{% endfor %}</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Available Objects</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">Site Data</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">site.name</code> - Site title</li>
+          <li><code class="text-green-400">site.description</code> - Site description</li>
+          <li><code class="text-green-400">site.url</code> - Site URL</li>
+        </ul>
+      </div>
+      
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">Page Data</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">page.title</code> - Page title</li>
+          <li><code class="text-green-400">page.content</code> - Page content</li>
+          <li><code class="text-green-400">page.excerpt</code> - Page excerpt</li>
+        </ul>
+      </div>
+      
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">User Data</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">user.name</code> - User name</li>
+          <li><code class="text-green-400">user.email</code> - User email</li>
+          <li><code class="text-green-400">user.avatar</code> - User avatar</li>
+        </ul>
+      </div>
+      
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">Posts Collection</h4>
+        <ul class="text-gray-300 space-y-1 text-sm">
+          <li><code class="text-green-400">posts</code> - All posts</li>
+          <li><code class="text-green-400">posts.latest</code> - Latest posts</li>
+          <li><code class="text-green-400">posts.featured</code> - Featured posts</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Styling Your Theme</h3>
+    <p class="text-gray-300 mb-4">
+      RailsPress themes can use any CSS framework or custom styles. Popular choices include Tailwind CSS, Bootstrap, or custom CSS.
+    </p>
+
+    <div class="bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg p-4 my-4">
+      <h4 class="text-lg font-medium text-white mb-3">CSS Structure</h4>
+      <pre class="text-green-400 text-sm"><code>/* assets/css/theme.css */
+:root {
+  --primary-color: #3b82f6;
+  --secondary-color: #64748b;
+  --background-color: #ffffff;
+  --text-color: #1e293b;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.header {
+  background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+}</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Testing Your Theme</h3>
+    <div class="space-y-4">
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">1. Local Development</h4>
+        <p class="text-gray-300">Use the theme editor in the admin panel to test your changes in real-time.</p>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">2. Preview Mode</h4>
+        <p class="text-gray-300">Preview your theme without activating it to ensure everything works correctly.</p>
+      </div>
+
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4">
+        <h4 class="text-lg font-medium text-white mb-2">3. Responsive Testing</h4>
+        <p class="text-gray-300">Test your theme across different devices and screen sizes using the builder's device preview.</p>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-white mb-4">Best Practices</h3>
+    <div class="space-y-3">
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Mobile-First Design</h4>
+          <p class="text-gray-300 text-sm">Always design for mobile devices first, then enhance for larger screens.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Semantic HTML</h4>
+          <p class="text-gray-300 text-sm">Use proper HTML semantics for better accessibility and SEO.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Performance Optimization</h4>
+          <p class="text-gray-300 text-sm">Optimize images, minify CSS/JS, and use efficient selectors.</p>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-3">
+        <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-white font-medium">Accessibility</h4>
+          <p class="text-gray-300 text-sm">Ensure your theme is accessible to users with disabilities.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

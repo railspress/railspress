@@ -45,6 +45,61 @@ class ThemesManager
     themes
   end
   
+  # Sync a specific theme from filesystem to database
+  def sync_theme(theme_slug)
+    theme_dir = File.join(@themes_path, theme_slug)
+    
+    return false unless Dir.exist?(theme_dir)
+    
+    theme_json_file = File.join(theme_dir, 'config', 'theme.json')
+    
+    if File.exist?(theme_json_file)
+      theme_data = JSON.parse(File.read(theme_json_file))
+      # Handle both array and hash formats
+      theme_info = theme_data.is_a?(Array) ? theme_data.first : theme_data
+      
+      theme_config = {
+        name: theme_info['name'] || theme_slug.titleize,
+        slug: theme_slug,
+        description: theme_info['description'] || "Theme: #{theme_slug.titleize}",
+        version: theme_info['version'] || '1.0.0',
+        config: theme_info
+      }
+    else
+      theme_config = {
+        name: theme_slug.titleize,
+        slug: theme_slug,
+        description: "Theme: #{theme_slug.titleize}",
+        version: '1.0.0',
+        config: {}
+      }
+    end
+    
+    # Find or create theme
+    theme = Theme.find_or_create_by(name: theme_config[:name]) do |t|
+      t.slug = theme_config[:slug]
+      t.description = theme_config[:description]
+      t.version = theme_config[:version]
+      t.config = theme_config[:config]
+      t.active = false
+      # Use ActsAsTenant.current_tenant or fallback to first tenant
+      t.tenant = ActsAsTenant.current_tenant || Tenant.first
+    end
+    
+    # Update if changed
+    theme.update!(
+      slug: theme_config[:slug],
+      description: theme_config[:description],
+      version: theme_config[:version],
+      config: theme_config[:config]
+    )
+    
+    # Sync theme files for this theme
+    sync_theme_files(theme)
+    
+    theme
+  end
+
   # Sync themes from filesystem to database
   def sync_themes
     themes = scan_themes
@@ -57,7 +112,14 @@ class ThemesManager
         t.version = theme_data[:version]
         t.config = theme_data[:config]
         t.active = false
-        t.tenant = Tenant.current || Tenant.first
+        # Use ActsAsTenant.current_tenant or fallback to first tenant
+        # Ensure we get a proper Tenant model instance, not OpenStruct
+        current_tenant = ActsAsTenant.current_tenant
+        if current_tenant.is_a?(OpenStruct)
+          t.tenant = Tenant.find(current_tenant.id)
+        else
+          t.tenant = current_tenant || Tenant.first
+        end
       end
       
       # Update if changed
@@ -115,10 +177,10 @@ class ThemesManager
       content = File.read(file_path)
       file_checksum = Digest::SHA256.hexdigest(content)
       
-      # Create theme file for this version
+      # Create theme file for this version - store FULL PATH
       theme_file = ThemeFile.find_or_create_by(
         theme_name: theme_version.theme_name,
-        file_path: relative_path,
+        file_path: file_path, # Store full path, not relative
         theme_version_id: theme_version.id
       ) do |tf|
         tf.file_type = determine_file_type(relative_path)
@@ -161,22 +223,25 @@ class ThemesManager
     theme_version = theme.theme_versions.live.first
     return unless theme_version
     
-    theme_path = File.join(@themes_path, theme.name)
+    # Use theme slug for directory path, not name
+    theme_slug = theme.slug || theme.name.parameterize
+    theme_path = File.join(@themes_path, theme_slug)
     return unless Dir.exist?(theme_path)
     
     files = find_theme_files(theme_path)
     files_processed = 0
     versions_created = 0
+    published_files_updated = 0
     
     files.each do |file_path|
       relative_path = file_path.gsub("#{theme_path}/", '')
       content = File.read(file_path)
       file_checksum = Digest::SHA256.hexdigest(content)
       
-      # Find or create theme file
+      # Find or create theme file (use full path for consistency)
       theme_file = ThemeFile.find_or_create_by(
         theme_name: theme.name,
-        file_path: relative_path,
+        file_path: file_path, # Store full path
         theme_version_id: theme_version.id
       ) do |tf|
         tf.file_type = determine_file_type(relative_path)
@@ -193,10 +258,16 @@ class ThemesManager
         # Create new version
         version = create_file_version_if_needed(theme_file, content, file_checksum)
         versions_created += 1 if version
+        
+        # Update published files if theme is active
+        if theme.active?
+          updated = update_published_files_if_needed(theme, relative_path, content)
+          published_files_updated += 1 if updated
+        end
       end
     end
     
-    { files_processed: files_processed, versions_created: versions_created }
+    { files_processed: files_processed, versions_created: versions_created, published_files_updated: published_files_updated }
   end
   
   # Get active theme
@@ -224,11 +295,15 @@ class ThemesManager
     
     return nil unless theme_version
     
-    # Try relative path first
-    content = theme_version.file_content(file_path)
-    return content if content
+    # Build full path for lookup - use lowercase theme name for filesystem
+    theme_path = File.join(@themes_path, (theme_name || active_theme.name).downcase)
+    full_path = File.join(theme_path, file_path)
     
-    # If not found, try to find by matching the end of the path
+    # Try to find by full path
+    theme_file = theme_version.theme_files.find_by(file_path: full_path)
+    return theme_file.theme_file_versions.latest.first&.content if theme_file
+    
+    # If not found, try to find by matching the end of the path (for legacy data)
     theme_file = theme_version.theme_files.find { |file| file.file_path.end_with?("/#{file_path}") }
     return nil unless theme_file
     
@@ -321,6 +396,37 @@ class ThemesManager
     else
       false
     end
+  end
+  
+  # Update published theme files when files change
+  def update_published_files_if_needed(theme, relative_path, content)
+    published_version = theme.published_version
+    return false unless published_version
+    
+    # Find or create published theme file
+    published_file = published_version.published_theme_files.find_or_create_by(
+      file_path: relative_path
+    ) do |pf|
+      pf.file_type = determine_file_type(relative_path)
+      pf.content = content
+      pf.checksum = Digest::MD5.hexdigest(content)
+    end
+    
+    # Check if content has changed
+    new_checksum = Digest::MD5.hexdigest(content)
+    if published_file.checksum != new_checksum
+      published_file.update!(
+        content: content,
+        checksum: new_checksum
+      )
+      Rails.logger.info "Updated published file: #{relative_path} for theme: #{theme.name}"
+      return true
+    end
+    
+    false
+  rescue => e
+    Rails.logger.error "Failed to update published file #{relative_path}: #{e.message}"
+    false
   end
   
   private

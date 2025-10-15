@@ -1,0 +1,122 @@
+<% content_for :page_title, "Discussion Settings" %>
+
+<div class="max-w-4xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">Discussion Settings</h1>
+    <p class="text-gray-400">Configure comment and discussion settings for your site</p>
+  </div>
+
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <%= form_with url: admin_discussion_settings_path, method: :patch, class: "space-y-6" do |f| %>
+      <!-- Default Comment Settings -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-4">Default Comment Settings</h3>
+        
+        <div class="space-y-4">
+          <%= label_tag 'settings[comments_enabled]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+            <%= check_box_tag 'settings[comments_enabled]', '1', @settings[:comments_enabled],
+                class: 'w-4 h-4 text-green-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-green-500' %>
+            <span class="text-gray-300">Allow people to submit comments on new posts</span>
+          <% end %>
+
+          <%= label_tag 'settings[comments_moderation]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+            <%= check_box_tag 'settings[comments_moderation]', '1', @settings[:comments_moderation],
+                class: 'w-4 h-4 text-green-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-green-500' %>
+            <span class="text-gray-300">Comment must be manually approved</span>
+          <% end %>
+
+          <%= label_tag 'settings[comment_registration_required]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+            <%= check_box_tag 'settings[comment_registration_required]', '1', @settings[:comment_registration_required],
+                class: 'w-4 h-4 text-green-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-green-500' %>
+            <span class="text-gray-300">Users must be registered and logged in to comment</span>
+          <% end %>
+
+          <div>
+            <%= label_tag 'settings[close_comments_after_days]', 'Automatically close comments on posts older than', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= number_field_tag 'settings[close_comments_after_days]', @settings[:close_comments_after_days],
+                min: 0, max: 365, step: 1,
+                class: 'w-32 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <span class="text-gray-400 ml-2">days (0 = never close)</span>
+          </div>
+
+          <%= label_tag 'settings[show_avatars]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+            <%= check_box_tag 'settings[show_avatars]', '1', @settings[:show_avatars],
+                class: 'w-4 h-4 text-green-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-green-500' %>
+            <span class="text-gray-300">Show avatars on comments</span>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Akismet Spam Protection -->
+      <div class="border-t border-[#2a2a2a] pt-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Spam Protection</h3>
+        
+        <div class="space-y-4">
+          <%= label_tag 'settings[akismet_enabled]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+            <%= check_box_tag 'settings[akismet_enabled]', '1', @settings[:akismet_enabled],
+                class: 'w-4 h-4 text-green-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-green-500',
+                data: { controller: 'akismet-toggle' } %>
+            <span class="text-gray-300">Enable Akismet spam protection</span>
+          <% end %>
+
+          <div id="akismet-config" class="<%= 'hidden' unless @settings[:akismet_enabled] %>" data-akismet-toggle-target="config">
+            <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-4">
+              <div class="flex items-start gap-3 mb-3">
+                <svg class="w-5 h-5 text-yellow-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+                <div class="flex-1">
+                  <p class="text-sm text-gray-300">
+                    Akismet requires an API key from <a href="https://akismet.com" target="_blank" class="text-indigo-400 hover:text-indigo-300">akismet.com</a>. 
+                    Get your API key and enter it below.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <%= label_tag 'settings[akismet_api_key]', 'Akismet API Key', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+                <%= text_field_tag 'settings[akismet_api_key]', @settings[:akismet_api_key],
+                    placeholder: 'Enter your Akismet API key',
+                    class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                <p class="mt-1 text-sm text-gray-500">Your Akismet API key for spam detection</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end pt-6 border-t border-[#2a2a2a]">
+        <%= f.submit "Save Discussion Settings", 
+            class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  // Toggle Akismet configuration visibility - Turbo compatible
+  function toggleAkismetConfig() {
+    const akismetCheckbox = document.querySelector('input[name="settings[akismet_enabled]"]');
+    const akismetConfig = document.getElementById('akismet-config');
+    
+    if (akismetCheckbox && akismetConfig) {
+      if (akismetCheckbox.checked) {
+        akismetConfig.classList.remove('hidden');
+      } else {
+        akismetConfig.classList.add('hidden');
+      }
+    }
+  }
+
+  // Listen for both DOMContentLoaded and Turbo events
+  document.addEventListener('DOMContentLoaded', toggleAkismetConfig);
+  document.addEventListener('turbo:load', toggleAkismetConfig);
+  
+  // Add change event listener
+  document.addEventListener('change', function(e) {
+    if (e.target.name === 'settings[akismet_enabled]') {
+      toggleAkismetConfig();
+    }
+  });
+</script>

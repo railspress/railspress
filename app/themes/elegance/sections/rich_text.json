@@ -1,0 +1,34 @@
+{
+  "name": "Rich Text",
+  "description": "Text content with formatting options, headings, and styling",
+  "category": "Content",
+  "settings": {
+    "content": {
+      "type": "richtext",
+      "label": "Content",
+      "default": "<p>Add your content here...</p>"
+    },
+    "text_alignment": {
+      "type": "select",
+      "label": "Text Alignment",
+      "default": "left",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"}
+      ]
+    },
+    "max_width": {
+      "type": "select",
+      "label": "Max Width",
+      "default": "full",
+      "options": [
+        {"value": "narrow", "label": "Narrow"},
+        {"value": "medium", "label": "Medium"},
+        {"value": "wide", "label": "Wide"},
+        {"value": "full", "label": "Full Width"}
+      ]
+    }
+  }
+}
+

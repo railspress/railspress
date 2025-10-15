@@ -211,3 +211,4 @@ class ThemeFileTest < ActiveSupport::TestCase
     assert_not_includes theme_files, other_file
   end
 end
+

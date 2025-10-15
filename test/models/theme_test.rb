@@ -212,3 +212,4 @@ class ThemeTest < ActiveSupport::TestCase
     assert_equal 'custom-slug', theme.slug
   end
 end
+

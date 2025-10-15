@@ -1,17 +1,29 @@
 class FrontendRendererService
   attr_reader :published_version, :builder_renderer
 
-  def initialize(published_version)
+  def initialize(published_version, builder_theme_id = nil)
     @published_version = published_version
+    @builder_theme_id = builder_theme_id
     # Create a mock BuilderTheme for the existing BuilderLiquidRenderer
     @builder_theme = create_mock_builder_theme
+    Rails.logger.info "Created mock builder theme: #{@builder_theme.class}"
     @builder_renderer = BuilderLiquidRenderer.new(@builder_theme)
+    Rails.logger.info "Created BuilderLiquidRenderer"
   end
 
   # Render a template with all sections, header, footer, etc.
   def render_template(template_name, context = {})
     # Use the existing BuilderLiquidRenderer
-    @builder_renderer.render_template(template_name, context)
+    html = @builder_renderer.render_template(template_name, context)
+    
+    # Replace asset URLs with embedded content for preview
+    html = replace_asset_urls_with_content(html)
+    
+    html
+  rescue => e
+    Rails.logger.error "FrontendRendererService error: #{e.message}"
+    Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+    "<div class='error'>FrontendRendererService Error: #{e.message}<br>Backtrace: #{e.backtrace.first(5).join('<br>')}</div>"
   end
 
   # Get CSS and JS assets including all sections
@@ -21,6 +33,35 @@ class FrontendRendererService
   end
 
   private
+
+  def replace_asset_urls_with_content(html)
+    # Get assets from the renderer
+    assets = @builder_renderer.assets
+    
+    # Replace CSS link tags with embedded styles
+    html = html.gsub(/<link[^>]*href="[^"]*\/theme\.css"[^>]*>/) do |match|
+      if assets[:css].present?
+        "<style>#{assets[:css]}</style>"
+      else
+        match # Keep original if no CSS
+      end
+    end
+    
+    # Replace JS script tags with embedded scripts
+    html = html.gsub(/<script[^>]*src="[^"]*\/theme\.js"[^>]*><\/script>/) do |match|
+      if assets[:js].present?
+        "<script>#{assets[:js]}</script>"
+      else
+        match # Keep original if no JS
+      end
+    end
+    
+    html
+  rescue => e
+    Rails.logger.error "Error in replace_asset_urls_with_content: #{e.message}"
+    Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+    html # Return original HTML if there's an error
+  end
 
   def create_mock_builder_theme
     # Create a mock BuilderTheme object that delegates to PublishedThemeFile
@@ -76,8 +117,9 @@ class FrontendRendererService
       }
     end
     
-    # Store the published_version for access in methods
+    # Store the published_version and builder_theme_id for access in methods
     mock_theme.instance_variable_set(:@published_version, published_version)
+    mock_theme.instance_variable_set(:@builder_theme_id, @builder_theme_id)
     
     # Add other methods that might be needed
     def mock_theme.theme_name
@@ -85,7 +127,7 @@ class FrontendRendererService
     end
     
     def mock_theme.id
-      @published_version.id
+      @builder_theme_id || @published_version.id
     end
     
     mock_theme

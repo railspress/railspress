@@ -80,6 +80,14 @@ module Types
       terms
     end
     
+    def categories
+      object.terms_for_taxonomy('category')
+    end
+    
+    def tags
+      object.terms_for_taxonomy('tag')
+    end
+    
     def comments(status: nil, limit: nil)
       comments = object.comments
       comments = comments.where(status: status) if status

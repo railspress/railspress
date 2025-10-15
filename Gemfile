@@ -9,7 +9,7 @@ gem "rails", "~> 7.1.5", ">= 7.1.5.2"
 gem "sprockets-rails"
 
 # Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 2.1"
+gem "sqlite3", ">= 2.1", group: [:development, :test]
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
@@ -19,6 +19,9 @@ gem "importmap-rails"
 
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
 gem "turbo-rails"
+
+# Markdown processing for documentation
+gem "redcarpet"
 
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
@@ -32,8 +35,24 @@ gem "jbuilder"
 # Liquid template engine for themes
 gem "liquid", "~> 5.5", require: 'liquid'
 
+# Ferrum for screenshot generation
+gem "ferrum"
+
+# Redis for caching
 # Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
+gem "redis", ">= 4.0.1"
+
+# Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
+gem "kredis"
+
+# Redis caching and session store
+gem "redis-rails"
+
+# Logster for log viewing
+gem "logster"
+
+# Use Redis adapter to run Action Cable in production
+
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -82,8 +101,7 @@ gem "pagy"
 # Slugs and permalinks
 gem "stringex"
 
-# Redis for caching
-gem "redis", ">= 4.0.1"
+# Redis for caching (already defined above)
 
 # Background jobs & scheduling
 gem "sidekiq"

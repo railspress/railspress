@@ -145,3 +145,4 @@ class Admin::ThemeEditorControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_url
   end
 end
+

@@ -80,3 +80,4 @@ class Admin::ThemesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "✗ Failed to activate theme '#{@theme.name}'. Please check the theme files.", flash[:alert]
   end
 end
+

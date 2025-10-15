@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "versionSelector", "templateSelector", "sectionsList", "previewFrame", 
-    "deviceSelector", "data", "versionList", "snapshotList", "availableSections",
+    "deviceSelector", "data", "versionList", "snapshotList",
     "sectionTab", "themeTab", "sectionSettingsPanel", "themeSettingsPanel"
   ]
 
@@ -162,64 +162,202 @@ export default class extends Controller {
 
   showAddSectionModal() {
     const modal = document.getElementById('addSectionModal')
-    const container = this.availableSectionsTarget
+    const container = document.getElementById('availableSections')
+    container.innerHTML = '<div class="text-center py-4"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="text-sm text-gray-600 mt-2">Loading sections...</p></div>'
+    
+    modal.classList.remove('hidden')
+
+    // Add click outside to close
+    const clickOutsideHandler = (e) => {
+      if (!modal.contains(e.target)) {
+        this.closeAddSectionModal()
+        document.removeEventListener('click', clickOutsideHandler)
+      }
+    }
+    
+    // Add the click outside listener after a short delay to prevent immediate closing
+    setTimeout(() => {
+      document.addEventListener('click', clickOutsideHandler)
+    }, 100)
+
+    // Fetch available sections from the current theme
+    fetch(`/admin/builder/${this.themeId}/available_sections`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          this.renderAvailableSections(data.sections)
+        } else {
+          container.innerHTML = '<div class="text-center py-4 text-red-600">Error loading sections: ' + (data.errors || 'Unknown error') + '</div>'
+        }
+      })
+      .catch(error => {
+        console.error('Error loading sections:', error)
+        container.innerHTML = '<div class="text-center py-4 text-red-600">Error loading sections</div>'
+      })
+  }
+
+  renderAvailableSections(sections) {
+    const container = document.getElementById('availableSections')
     container.innerHTML = ''
 
-    // Add available section types with categories
-    const sectionCategories = {
-      'Content': [
-        { id: 'hero', name: 'Hero', description: 'Large banner section with heading and subheading' },
-        { id: 'rich-text', name: 'Rich Text', description: 'Text content with formatting options' },
-        { id: 'image', name: 'Image', description: 'Single image display with caption' },
-        { id: 'gallery', name: 'Image Gallery', description: 'Grid of images with lightbox' }
-      ],
-      'Blog': [
-        { id: 'post-list', name: 'Blog List', description: 'List of blog posts with pagination' },
-        { id: 'post-content', name: 'Post Content', description: 'Full blog post content' },
-        { id: 'related-posts', name: 'Related Posts', description: 'Related posts section' }
-      ],
-      'Navigation': [
-        { id: 'header', name: 'Header', description: 'Site header with navigation' },
-        { id: 'footer', name: 'Footer', description: 'Site footer with links' },
-        { id: 'menu', name: 'Menu', description: 'Navigation menu section' }
-      ],
-      'Interactive': [
-        { id: 'contact', name: 'Contact Form', description: 'Contact form section' },
-        { id: 'search-form', name: 'Search Form', description: 'Search functionality' },
-        { id: 'comments', name: 'Comments', description: 'Comments section for posts' }
-      ],
-      'Utility': [
-        { id: 'pagination', name: 'Pagination', description: 'Page navigation controls' },
-        { id: 'taxonomy-list', name: 'Category/Tag List', description: 'List of categories or tags' },
-        { id: 'seo-head', name: 'SEO Head', description: 'SEO meta tags and structured data' }
-      ]
+    if (!sections || sections.length === 0) {
+      container.innerHTML = '<div class="text-center py-4 text-gray-500">No sections available</div>'
+      return
     }
 
-    Object.entries(sectionCategories).forEach(([category, sections]) => {
+    // Group sections by category if they have one, otherwise use "General"
+    const sectionCategories = {}
+    
+    sections.forEach(section => {
+      const category = section.category || 'General'
+      if (!sectionCategories[category]) {
+        sectionCategories[category] = []
+      }
+      sectionCategories[category].push(section)
+    })
+
+    Object.entries(sectionCategories).forEach(([category, categorySections]) => {
       // Add category header
       const categoryDiv = document.createElement('div')
       categoryDiv.className = 'mb-4'
       categoryDiv.innerHTML = `
         <h3 class="text-sm font-semibold text-gray-700 mb-2">${category}</h3>
-        <div class="grid grid-cols-1 gap-2">
+        <div class="space-y-2">
       `
       
-      sections.forEach(section => {
+      categorySections.forEach(section => {
         const div = document.createElement('div')
-        div.className = 'bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors'
+        div.className = 'section-item bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors'
+        div.dataset.sectionId = section.id
         div.innerHTML = `
-          <h4 class="font-medium text-gray-900 text-sm">${section.name}</h4>
-          <p class="text-xs text-gray-600 mt-1">${section.description}</p>
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <h4 class="font-medium text-gray-900 text-sm">${section.name}</h4>
+              <p class="text-xs text-gray-600 mt-1">${section.description || 'No description available'}</p>
+            </div>
+            <div class="ml-3">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
         `
-        div.onclick = () => this.createSection(section.id)
-        categoryDiv.querySelector('.grid').appendChild(div)
+        div.onclick = () => this.selectSectionForPreview(section)
+        categoryDiv.querySelector('.space-y-2').appendChild(div)
       })
       
       categoryDiv.innerHTML += '</div>'
       container.appendChild(categoryDiv)
     })
+  }
 
-    modal.classList.remove('hidden')
+  selectSectionForPreview(section) {
+    // Remove previous selection
+    document.querySelectorAll('.section-item').forEach(item => {
+      item.classList.remove('border-blue-500', 'bg-blue-50')
+    })
+    
+    // Add selection to current section
+    const sectionElement = document.querySelector(`[data-section-id="${section.id}"]`)
+    if (sectionElement) {
+      sectionElement.classList.add('border-blue-500', 'bg-blue-50')
+    }
+    
+    // Store selected section
+    this.selectedSection = section
+    
+    // Update UI
+    document.getElementById('selectedSectionName').textContent = section.name
+    document.getElementById('addSelectedSectionBtn').disabled = false
+    
+    // Show preview
+    this.showSectionPreview(section)
+  }
+
+  showSectionPreview(section) {
+    const previewContainer = document.getElementById('sectionPreview')
+    
+    // Create a simple preview based on section type
+    let previewHTML = ''
+    
+    switch(section.id) {
+      case 'hero':
+        previewHTML = `
+          <div class="p-8 text-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <h1 class="text-3xl font-bold mb-4">Welcome to Our Site</h1>
+            <p class="text-lg mb-6">This is a hero section with compelling content</p>
+            <button class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium">Get Started</button>
+          </div>
+        `
+        break
+      case 'rich-text':
+        previewHTML = `
+          <div class="p-6">
+            <h2 class="text-2xl font-bold mb-4">Rich Text Section</h2>
+            <p class="text-gray-700 mb-4">This is a rich text section where you can add formatted content, paragraphs, and more.</p>
+            <p class="text-gray-700">You can include <strong>bold text</strong>, <em>italic text</em>, and other formatting options.</p>
+          </div>
+        `
+        break
+      case 'posts':
+        previewHTML = `
+          <div class="p-6">
+            <h2 class="text-2xl font-bold mb-4">Blog Posts</h2>
+            <div class="space-y-4">
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-semibold text-lg">Sample Blog Post Title</h3>
+                <p class="text-gray-600 text-sm">Published on January 15, 2024</p>
+                <p class="text-gray-700 mt-2">This is a preview of how blog posts will appear in this section...</p>
+              </div>
+              <div class="border-b border-gray-200 pb-4">
+                <h3 class="font-semibold text-lg">Another Blog Post</h3>
+                <p class="text-gray-600 text-sm">Published on January 10, 2024</p>
+                <p class="text-gray-700 mt-2">Another example of blog post content...</p>
+              </div>
+            </div>
+          </div>
+        `
+        break
+      case 'header':
+        previewHTML = `
+          <div class="bg-white border-b border-gray-200 p-4">
+            <div class="flex items-center justify-between">
+              <div class="text-xl font-bold">Your Logo</div>
+              <nav class="flex space-x-6">
+                <a href="#" class="text-gray-700 hover:text-blue-600">Home</a>
+                <a href="#" class="text-gray-700 hover:text-blue-600">About</a>
+                <a href="#" class="text-gray-700 hover:text-blue-600">Contact</a>
+              </nav>
+            </div>
+          </div>
+        `
+        break
+      case 'footer':
+        previewHTML = `
+          <div class="bg-gray-800 text-white p-6">
+            <div class="text-center">
+              <div class="text-xl font-bold mb-2">Your Logo</div>
+              <p class="text-gray-400 mb-4">Your company description goes here</p>
+              <p class="text-gray-500 text-sm">© 2024 Your Company. All rights reserved.</p>
+            </div>
+          </div>
+        `
+        break
+      default:
+        previewHTML = `
+          <div class="p-6 text-center">
+            <div class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-gray-900">${section.name}</h3>
+            <p class="text-gray-600 text-sm mt-1">${section.description || 'Section preview'}</p>
+          </div>
+        `
+    }
+    
+    previewContainer.innerHTML = previewHTML
   }
 
   createSection(sectionType) {
@@ -640,6 +778,12 @@ export default class extends Controller {
         if (sectionElement) {
           sectionElement.dataset.settings = JSON.stringify(settings)
         }
+        
+        // Update the internal sections data structure
+        if (this.sections[sectionId]) {
+          this.sections[sectionId].settings = settings
+        }
+        
         // Update preview
         this.updatePreviewContent()
       } else {
@@ -783,9 +927,25 @@ export default class extends Controller {
 
   // Save and Publish
   saveDraft() {
+    // Collect current sections data from DOM
+    const currentSections = {}
+    const sectionElements = this.sectionsListTarget.querySelectorAll('[data-section-id]')
+    
+    sectionElements.forEach(element => {
+      const sectionId = element.dataset.sectionId
+      const sectionType = element.dataset.sectionType
+      const settings = JSON.parse(element.dataset.settings || '{}')
+      
+      currentSections[sectionId] = {
+        type: sectionType,
+        settings: settings
+      }
+    })
+    
     const data = {
-      sections_data: JSON.stringify(this.sections),
-      settings_data: JSON.stringify(this.settings)
+      sections_data: JSON.stringify(currentSections),
+      settings_data: JSON.stringify(this.settings),
+      template: this.currentTemplate
     }
 
     fetch(`/admin/builder/${this.themeId}/save_draft`, {
@@ -1094,8 +1254,30 @@ export default class extends Controller {
     }, 3000)
   }
 
+  addSelectedSection() {
+    if (!this.selectedSection) {
+      this.showNotification('Please select a section first', 'error')
+      return
+    }
+    
+    this.createSection(this.selectedSection.id)
+  }
+
   closeAddSectionModal() {
     document.getElementById('addSectionModal').classList.add('hidden')
+    
+    // Reset selection
+    this.selectedSection = null
+    document.getElementById('selectedSectionName').textContent = 'No section selected'
+    document.getElementById('addSelectedSectionBtn').disabled = true
+    
+    // Clear preview
+    document.getElementById('sectionPreview').innerHTML = '<p class="text-gray-500 text-sm">Select a section to see preview</p>'
+    
+    // Clear section selection
+    document.querySelectorAll('.section-item').forEach(item => {
+      item.classList.remove('border-blue-500', 'bg-blue-50')
+    })
   }
 
   // Tab Management

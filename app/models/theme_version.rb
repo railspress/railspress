@@ -56,31 +56,51 @@ class ThemeVersion < ApplicationRecord
   end
   
   def file_content(file_path)
+    # Try exact match first (for full paths)
     theme_file = theme_files.find_by(file_path: file_path)
+    return theme_file.theme_file_versions.latest.first&.content if theme_file
+    
+    # Try to find by matching the end of the path (for legacy relative paths)
+    theme_file = theme_files.find { |file| file.file_path.end_with?("/#{file_path}") }
     return nil unless theme_file
     
     theme_file.theme_file_versions.latest.first&.content
   end
   
   def template_data(template_type)
-    content = file_content("templates/#{template_type}.json")
+    # Build full path for template file - use lowercase theme name for filesystem
+    theme_path = Rails.root.join('app', 'themes', theme_name.downcase)
+    full_path = File.join(theme_path, "templates/#{template_type}.json")
+    
+    content = file_content(full_path)
     content ? JSON.parse(content) : {}
   rescue JSON::ParserError
     {}
   end
   
   def section_content(section_type)
-    file_content("sections/#{section_type}.liquid") || ''
+    # Build full path for section file - use lowercase theme name for filesystem
+    theme_path = Rails.root.join('app', 'themes', theme_name.downcase)
+    full_path = File.join(theme_path, "sections/#{section_type}.liquid")
+    
+    file_content(full_path) || ''
   end
   
   def layout_content
-    file_content("layout/theme.liquid") || ''
+    # Build full path for layout file - use lowercase theme name for filesystem
+    theme_path = Rails.root.join('app', 'themes', theme_name.downcase)
+    full_path = File.join(theme_path, "layout/theme.liquid")
+    
+    file_content(full_path) || ''
   end
   
   def assets
+    # Build full paths for asset files - use lowercase theme name for filesystem
+    theme_path = Rails.root.join('app', 'themes', theme_name.downcase)
+    
     {
-      css: file_content("assets/theme.css") || '',
-      js: file_content("assets/theme.js") || ''
+      css: file_content(File.join(theme_path, "assets/theme.css")) || '',
+      js: file_content(File.join(theme_path, "assets/theme.js")) || ''
     }
   end
   

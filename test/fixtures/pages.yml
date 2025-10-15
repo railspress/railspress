@@ -18,3 +18,4 @@ two:
   updated_at: <%= 2.days.ago %>
   published_at: <%= 2.days.ago %>
 
+

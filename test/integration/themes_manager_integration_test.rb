@@ -126,3 +126,4 @@ class ThemesManagerIntegrationTest < ActiveSupport::TestCase
     assert_equal 'file', tree['templates']['index.json'][:type]
   end
 end
+

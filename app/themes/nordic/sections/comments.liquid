@@ -23,3 +23,174 @@
   <p class="muted">No comments yet. Be the first to comment!</p>
 </section>
 {% endif %}
+
+<!-- Comment Form -->
+{% if site.settings.comments_enabled %}
+<section class="comment-form" id="respond">
+  <h3 class="comment-form-title">Leave a Comment</h3>
+  
+  {% if site.settings.comment_registration_required and current_user == nil %}
+    <div class="comment-login-notice">
+      <p>You must be <a href="/login">logged in</a> to post a comment.</p>
+    </div>
+  {% else %}
+    <form id="comment-form" class="comment-form">
+      <input type="hidden" name="commentable_type" value="Post">
+      <input type="hidden" name="commentable_id" value="{{ post.id }}">
+      <input type="hidden" name="comment_type" value="comment">
+      
+      <div class="form-group">
+        <label for="comment_author_name">Name *</label>
+        <input type="text" id="comment_author_name" name="author_name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="comment_author_email">Email *</label>
+        <input type="email" id="comment_author_email" name="author_email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="comment_author_url">Website</label>
+        <input type="url" id="comment_author_url" name="author_url">
+      </div>
+      
+      <div class="form-group">
+        <label for="comment_content">Comment *</label>
+        <textarea id="comment_content" name="content" rows="5" required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary">Post Comment</button>
+        <div id="comment-status" class="comment-status"></div>
+      </div>
+    </form>
+  {% endif %}
+</section>
+{% else %}
+<section class="comment-form" id="respond">
+  <div class="comments-disabled-notice">
+    <p>Comments are disabled for this site.</p>
+  </div>
+</section>
+{% endif %}
+
+<script>
+document.getElementById('comment-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const form = e.target;
+  const statusDiv = document.getElementById('comment-status');
+  const submitBtn = form.querySelector('button[type="submit"]');
+  
+  // Disable submit button
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Posting...';
+  statusDiv.innerHTML = '';
+  
+  try {
+    // Prepare form data
+    const formData = new FormData(form);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+      data[key] = value;
+    }
+    
+    // Send to API
+    const response = await fetch('/api/v1/comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ comment: data })
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      statusDiv.innerHTML = '<div class="success">Comment posted successfully! It will appear after moderation.</div>';
+      form.reset();
+    } else {
+      statusDiv.innerHTML = '<div class="error">Error: ' + (result.error || 'Failed to post comment') + '</div>';
+    }
+  } catch (error) {
+    statusDiv.innerHTML = '<div class="error">Network error. Please try again.</div>';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Post Comment';
+  }
+});
+</script>
+
+<style>
+.comment-status .success {
+  color: #10b981;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+}
+
+.comment-status .error {
+  color: #ef4444;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-top: 1rem;
+}
+
+.comment-form {
+  max-width: 600px;
+  margin: 2rem 0;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+</style>
