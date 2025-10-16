@@ -195,3 +195,5 @@ class GraphqlQueryTest < ActionDispatch::IntegrationTest
   end
 end
 
+
+

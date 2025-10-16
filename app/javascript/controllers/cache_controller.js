@@ -1,61 +1,147 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["redisStats"]
-  static values = { statsUrl: String }
-  
+  static targets = ["form", "testButton", "flushButton"]
+
   connect() {
-    if (this.hasRedisStatsTarget && this.hasStatsUrlValue) {
-      this.loadRedisStats()
-    }
+    console.log("Cache controller connected")
   }
-  
-  async loadRedisStats() {
+
+  async submitForm(event) {
+    event.preventDefault()
+    
+    const form = event.target
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content
+    
+    // Build form data as URL encoded string (like Rails expects)
+    const formData = new URLSearchParams()
+    formData.append('authenticity_token', csrfToken)
+    
+    // Add all form fields
+    const inputs = form.querySelectorAll('input, select, textarea')
+    inputs.forEach(input => {
+      console.log('Processing input:', input.name, input.type, input.value, input.checked)
+      if (input.type === 'checkbox') {
+        if (input.checked) {
+          formData.append(input.name, input.value)
+        }
+      } else if (input.type !== 'hidden' || input.name === 'enabled') {
+        formData.append(input.name, input.value)
+      }
+    })
+    
+    console.log('Form data being sent:', formData.toString())
+    
     try {
-      const response = await fetch(this.statsUrlValue)
+      const response = await fetch(form.action, {
+        method: 'PATCH',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        credentials: 'same-origin'
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       
-      if (data.connected) {
-        this.renderRedisStats(data)
+      if (data.success) {
+        this.showSuccessToast(data.message)
       } else {
-        this.showRedisError()
+        this.showErrorToast(data.message)
       }
     } catch (error) {
-      console.error('Failed to load Redis stats:', error)
-      this.showRedisError()
+      console.error('Form submission error:', error)
+      this.showErrorToast('Failed to save settings')
     }
   }
-  
-  renderRedisStats(data) {
-    this.redisStatsTarget.innerHTML = `
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-[#0a0a0a] rounded-lg p-4">
-          <p class="text-gray-400 text-sm mb-1">Redis Version</p>
-          <p class="text-white font-semibold">${data.version}</p>
-        </div>
-        <div class="bg-[#0a0a0a] rounded-lg p-4">
-          <p class="text-gray-400 text-sm mb-1">Memory Used</p>
-          <p class="text-white font-semibold">${data.used_memory}</p>
-        </div>
-        <div class="bg-[#0a0a0a] rounded-lg p-4">
-          <p class="text-gray-400 text-sm mb-1">Connected Clients</p>
-          <p class="text-white font-semibold">${data.connected_clients}</p>
-        </div>
-        <div class="bg-[#0a0a0a] rounded-lg p-4">
-          <p class="text-gray-400 text-sm mb-1">Total Commands</p>
-          <p class="text-white font-semibold">${data.total_commands}</p>
-        </div>
-      </div>
-    `
+
+  async testConnection(event) {
+    event.preventDefault()
+    
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content
+      
+      const response = await fetch('/admin/cache/test_connection', {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `authenticity_token=${encodeURIComponent(csrfToken)}`,
+        credentials: 'same-origin'
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        this.showSuccessToast(data.message)
+      } else {
+        this.showErrorToast(data.message)
+      }
+    } catch (error) {
+      console.error('Test connection error:', error)
+      this.showErrorToast('Connection test failed')
+    }
   }
-  
-  showRedisError() {
-    this.redisStatsTarget.innerHTML = `
-      <div class="text-center py-4">
-        <p class="text-red-400">Failed to load Redis statistics</p>
-      </div>
-    `
+
+  async flushCache(event) {
+    event.preventDefault()
+    
+    try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content
+      
+      const response = await fetch('/admin/cache/flush', {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `authenticity_token=${encodeURIComponent(csrfToken)}`,
+        credentials: 'same-origin'
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        this.showSuccessToast(data.message)
+      } else {
+        this.showErrorToast(data.message)
+      }
+    } catch (error) {
+      console.error('Flush cache error:', error)
+      this.showErrorToast('Failed to flush cache')
+    }
+  }
+
+  showSuccessToast(message) {
+    if (typeof showSuccessToast === 'function') {
+      showSuccessToast(message)
+    } else {
+      alert('Success: ' + message)
+    }
+  }
+
+  showErrorToast(message) {
+    if (typeof showErrorToast === 'function') {
+      showErrorToast(message)
+    } else {
+      alert('Error: ' + message)
+    }
   }
 }
-
-

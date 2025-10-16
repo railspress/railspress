@@ -291,3 +291,5 @@ localStorage.setItem('ai_text_generator_debug', 'true')
 - **Integration**: Direct integration with popular editors (TinyMCE, CKEditor)
 
 
+
+

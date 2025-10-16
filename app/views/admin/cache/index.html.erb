@@ -3,102 +3,282 @@
   <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
 <% end %>
 
-<div class="max-w-4xl mx-auto" 
-     data-controller="cache"
-     data-cache-stats-url-value="<%= admin_cache_stats_path %>">
+<div class="max-w-7xl mx-auto" data-controller="cache" data-cache-stats-url-value="<%= admin_cache_stats_path %>">
   <div class="mb-8">
     <h1 class="text-2xl font-bold text-white mb-2">Cache Management</h1>
     <p class="text-gray-400">Configure and manage Redis caching for better performance</p>
   </div>
 
-  <!-- Cache Status -->
-  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
-    <h2 class="text-lg font-semibold text-white mb-4">Cache Status</h2>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-[#0a0a0a] rounded-lg p-4">
-        <p class="text-gray-400 text-sm mb-1">Cache</p>
-        <p class="text-xl font-bold <%= @cache_enabled ? 'text-emerald-400' : 'text-gray-400' %>">
-          <%= @cache_enabled ? 'Enabled' : 'Disabled' %>
-        </p>
-      </div>
-      
-      <div class="bg-[#0a0a0a] rounded-lg p-4">
-        <p class="text-gray-400 text-sm mb-1">Redis</p>
-        <p class="text-xl font-bold <%= @redis_configured ? 'text-emerald-400' : 'text-red-400' %>">
-          <%= @redis_configured ? 'Connected' : 'Not Available' %>
-        </p>
-      </div>
-      
-      <div class="bg-[#0a0a0a] rounded-lg p-4">
-        <p class="text-gray-400 text-sm mb-1">Store Type</p>
-        <p class="text-xl font-bold text-white">
-          <%= @cache_store.split('::').last %>
-        </p>
-      </div>
-    </div>
-
-    <div class="flex items-center space-x-4">
-      <% if @cache_enabled %>
-        <%= button_to "Disable Cache", admin_cache_disable_path, class: "px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition" %>
-      <% else %>
-        <%= button_to "Enable Cache", admin_cache_enable_path, class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition", disabled: !@redis_configured %>
-      <% end %>
-      
-      <%= button_to "Clear Cache", admin_cache_clear_path, class: "px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition", data: { confirm: 'Are you sure you want to clear all cached data?' } %>
-    </div>
-
-    <% unless @redis_configured %>
-      <div class="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-        <p class="text-sm text-yellow-400">
-          ⚠️ Redis is not available. To enable caching, please install and start Redis:
-        </p>
-        <pre class="mt-2 text-xs text-yellow-300 bg-[#0a0a0a] p-2 rounded">brew install redis
-redis-server</pre>
-      </div>
-    <% end %>
-  </div>
-
-  <!-- Redis Stats (if available) -->
-  <% if @redis_configured %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Left Section: Redis Cache Configuration -->
     <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
-      <h2 class="text-lg font-semibold text-white mb-4">Redis Statistics</h2>
-      <div data-cache-target="redisStats" class="space-y-3">
-        <p class="text-gray-400">Loading statistics...</p>
-      </div>
+      <h2 class="text-lg font-semibold text-white mb-6">Redis Cache Configuration</h2>
+      
+      <%= form_with url: admin_cache_path, method: :patch, class: "space-y-6", data: { action: "submit->cache#submitForm" } do |form| %>
+        <!-- Enable Redis Caching -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-white font-medium">Enable Redis Caching</label>
+            <div class="relative">
+              <%= form.hidden_field :enabled, value: "0" %>
+              <div class="toggle-switch <%= 'active' if @cache_enabled %>" 
+                   onclick="toggleRedisEnabled(this)">
+                <div class="toggle-slider <%= 'active' if @cache_enabled %>"></div>
+              </div>
+            </div>
+          </div>
+          <p class="text-sm text-gray-400">Use Redis for application caching and sessions.</p>
+        </div>
+
+        <!-- Redis URL -->
+        <div>
+          <label class="block text-white font-medium mb-2">Redis URL</label>
+              <%= form.text_field :url, 
+                  value: @redis_url || 'redis://localhost:6379/0',
+                  placeholder: "redis://localhost:6379/0",
+                  class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <p class="text-sm text-gray-400 mt-1">Main Redis connection URL.</p>
+        </div>
+
+        <!-- Cache URL -->
+        <div>
+          <label class="block text-white font-medium mb-2">Cache URL</label>
+              <%= form.text_field :cache_url, 
+                  value: @cache_url || 'redis://localhost:6379/1',
+                  placeholder: "redis://localhost:6379/1",
+                  class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <p class="text-sm text-gray-400 mt-1">Redis database for caching (separate from sessions).</p>
+        </div>
+
+        <!-- Session URL -->
+        <div>
+          <label class="block text-white font-medium mb-2">Session URL</label>
+              <%= form.text_field :session_url, 
+                  value: @session_url || 'redis://localhost:6379/2',
+                  placeholder: "redis://localhost:6379/2",
+                  class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <p class="text-sm text-gray-400 mt-1">Redis database for sessions.</p>
+        </div>
+
+        <!-- Connection Settings -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-white font-medium mb-2">Connection Timeout (seconds)</label>
+            <%= form.number_field :timeout, 
+                value: @timeout || 5,
+                class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          
+          <div>
+            <label class="block text-white font-medium mb-2">Connect Timeout (seconds)</label>
+            <%= form.number_field :connect_timeout, 
+                value: @connect_timeout || 5,
+                class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+        </div>
+
+        <!-- Reconnection Settings -->
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-white font-medium mb-2">Reconnect Attempts</label>
+            <%= form.number_field :reconnect_attempts, 
+                value: @reconnect_attempts || 3,
+                class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          
+          <div>
+            <label class="block text-white font-medium mb-2">Reconnect Delay (seconds)</label>
+            <%= form.number_field :reconnect_delay, 
+                value: @reconnect_delay || 0.5,
+                step: 0.1,
+                class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          
+          <div>
+            <label class="block text-white font-medium mb-2">Reconnect Delay Max</label>
+            <%= form.number_field :reconnect_delay_max, 
+                value: @reconnect_delay_max || 2.0,
+                step: 0.1,
+                class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+        </div>
+
+        <!-- Expiration Settings -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-white font-medium mb-2">Cache Expires In (hours)</label>
+            <%= form.number_field :cache_expires_in, 
+                value: @cache_expires_in || 1,
+                class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          
+          <div>
+            <label class="block text-white font-medium mb-2">Session Expires In (hours)</label>
+            <%= form.number_field :session_expires_in, 
+                value: @session_expires_in || 24,
+                class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="pt-4">
+          <%= form.submit "Save Redis Settings", 
+              class: "w-full px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition" %>
+        </div>
+      <% end %>
     </div>
 
-    <!-- Redis stats are now handled by the cache controller -->
-  <% end %>
+    <!-- Right Section: Redis Status and Actions -->
+    <div class="space-y-6">
+      <!-- Redis Status -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Redis Status</h2>
+        
+        <div class="space-y-4">
+          <!-- Redis Connection -->
+          <div class="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-white font-medium">Redis Connection</p>
+                <p class="text-sm text-gray-400">
+                  <%= @redis_connected ? 'Connected' : 'Not Available' %>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 rounded-full <%= @redis_connected ? 'bg-emerald-500' : 'bg-red-500' %>"></div>
+              <span class="text-sm <%= @redis_connected ? 'text-emerald-400' : 'text-red-400' %>">
+                <%= @redis_connected ? 'Connected' : 'Disconnected' %>
+              </span>
+            </div>
+          </div>
 
-  <!-- Cache Information -->
-  <div class="mt-6 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
-    <h2 class="text-lg font-semibold text-white mb-4">About Caching</h2>
-    <div class="space-y-3 text-sm text-gray-400">
-      <p>
-        <strong class="text-white">Redis Caching</strong> significantly improves performance by storing frequently accessed data in memory.
-      </p>
-      <p>
-        When enabled, RailsPress will cache:
-      </p>
-      <ul class="list-disc list-inside ml-4 space-y-1">
-        <li>Database queries</li>
-        <li>Rendered views and partials</li>
-        <li>API responses</li>
-        <li>Theme templates</li>
-        <li>Menu structures</li>
-      </ul>
-      <p class="mt-3">
-        <strong class="text-white">Note:</strong> You'll need to clear the cache after making content changes to see updates immediately.
-      </p>
+          <!-- Memory Usage -->
+          <div class="p-4 bg-[#0a0a0a] rounded-lg">
+            <p class="text-gray-400 text-sm mb-1">Memory Usage</p>
+            <p class="text-xl font-bold text-white"><%= @redis_stats[:memory_usage] || 'Unknown' %></p>
+          </div>
+
+          <!-- Connected Clients -->
+          <div class="p-4 bg-[#0a0a0a] rounded-lg">
+            <p class="text-gray-400 text-sm mb-1">Connected Clients</p>
+            <p class="text-xl font-bold text-white"><%= @redis_stats[:connected_clients] || '0' %></p>
+          </div>
+
+          <!-- Cache Hit Rate -->
+          <div class="p-4 bg-[#0a0a0a] rounded-lg">
+            <p class="text-gray-400 text-sm mb-1">Cache Hit Rate</p>
+            <p class="text-xl font-bold text-white">
+              <% if @redis_stats[:hit_rate] %>
+                <%= "#{(@redis_stats[:hit_rate].to_f * 100).round(1)}%" %>
+              <% else %>
+                0%
+              <% end %>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cache Actions -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Cache Actions</h2>
+        
+        <div class="space-y-3">
+          <%= button_to admin_cache_test_connection_path, 
+              method: :post,
+              data: { 
+                confirm: 'Test Redis connection?',
+                action: 'click->cache#testConnection'
+              },
+              class: "w-full flex items-center justify-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition" do %>
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1v-2z" clip-rule="evenodd"/>
+            </svg>
+            <span>Test Redis Connection</span>
+          <% end %>
+          
+          <%= button_to admin_cache_flush_path, 
+              method: :post,
+              data: { 
+                confirm: 'Are you sure you want to flush all cache data?',
+                action: 'click->cache#flushCache'
+              },
+              class: "w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition" do %>
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <span>Flush All Cache</span>
+          <% end %>
+          
+        </div>
+      </div>
+
+      <!-- Cache Statistics -->
+      <% if @redis_connected && @redis_stats.present? %>
+        <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+          <h2 class="text-lg font-semibold text-white mb-4">Cache Statistics</h2>
+          
+          <div class="space-y-3">
+            <div class="flex justify-between items-center py-2 border-b border-[#2a2a2a]">
+              <span class="text-gray-400">Total Keys</span>
+              <span class="text-white font-medium"><%= @redis_stats[:db_size] || '0' %></span>
+            </div>
+            
+            <div class="flex justify-between items-center py-2 border-b border-[#2a2a2a]">
+              <span class="text-gray-400">Cache Size</span>
+              <span class="text-white font-medium"><%= @redis_stats[:memory_usage] || '0' %></span>
+            </div>
+            
+            <div class="flex justify-between items-center py-2 border-b border-[#2a2a2a]">
+              <span class="text-gray-400">Hit Rate</span>
+              <span class="text-white font-medium">
+                <% if @redis_stats[:hit_rate] %>
+                  <%= "#{(@redis_stats[:hit_rate].to_f * 100).round(1)}%" %>
+                <% else %>
+                  0%
+                <% end %>
+              </span>
+            </div>
+            
+            <div class="flex justify-between items-center py-2">
+              <span class="text-gray-400">Uptime</span>
+              <span class="text-white font-medium">
+                <% if @redis_stats[:uptime] %>
+                  <% uptime_seconds = @redis_stats[:uptime].to_i %>
+                  <%= "#{uptime_seconds / 3600}h #{(uptime_seconds % 3600) / 60}m" %>
+                <% else %>
+                  0h 0m
+                <% end %>
+              </span>
+            </div>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>
 
+<script>
+function toggleRedisEnabled(toggleElement) {
+  const hiddenField = toggleElement.parentElement.querySelector('input[name="enabled"]');
+  const isActive = toggleElement.classList.contains('active');
+  
+  if (isActive) {
+    // Turn off
+    toggleElement.classList.remove('active');
+    toggleElement.querySelector('.toggle-slider').classList.remove('active');
+    hiddenField.value = '0';
+  } else {
+    // Turn on
+    toggleElement.classList.add('active');
+    toggleElement.querySelector('.toggle-slider').classList.add('active');
+    hiddenField.value = '1';
+  }
+}
 
-
-
-
-
-
-
+</script>

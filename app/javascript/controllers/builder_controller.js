@@ -484,9 +484,9 @@ export default class extends Controller {
     settingsPanel.innerHTML = `
       <div class="mb-4">
         <h3 class="text-lg font-medium text-gray-900 mb-4">${this.getSectionDisplayName(sectionType)} Settings</h3>
-        <div id="section-settings-form" class="space-y-4">
+        <form id="section-settings-form" class="space-y-4">
           ${this.renderSectionForm(sectionType, sectionSettings)}
-        </div>
+        </form>
       </div>
     `
 
@@ -731,7 +731,16 @@ export default class extends Controller {
 
   updateSectionSettingsFromForm(sectionId) {
     const form = document.getElementById('section-settings-form')
-    if (!form) return
+    if (!form) {
+      console.error('Form element not found:', 'section-settings-form')
+      return
+    }
+
+    // Check if it's a proper form element
+    if (!(form instanceof HTMLFormElement)) {
+      console.error('Element is not a form:', form)
+      return
+    }
 
     const formData = new FormData(form)
     const settings = {}
@@ -759,6 +768,8 @@ export default class extends Controller {
   }
 
   updateSectionSettings(sectionId, settings) {
+    console.log('Updating section settings:', { sectionId, settings, template: this.currentTemplate })
+    
     fetch(`/admin/builder/${this.themeId}/update_section/${sectionId}`, {
       method: 'PATCH',
       headers: {
@@ -770,8 +781,18 @@ export default class extends Controller {
         template: this.currentTemplate
       })
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log('Response status:', response.status)
+      return response.json()
+    })
     .then(data => {
+      console.log('Response data:', data)
+      if (data.errors) {
+        console.error('Server errors:', data.errors)
+      }
+      if (data.backtrace) {
+        console.error('Server backtrace:', data.backtrace)
+      }
       if (data.success) {
         // Update the DOM element with new settings
         const sectionElement = this.sectionsListTarget.querySelector(`[data-section-id="${sectionId}"]`)
@@ -783,6 +804,9 @@ export default class extends Controller {
         if (this.sections[sectionId]) {
           this.sections[sectionId].settings = settings
         }
+        
+        // Show success notification
+        this.showNotification('Section settings saved successfully!', 'success')
         
         // Update preview
         this.updatePreviewContent()
@@ -948,6 +972,8 @@ export default class extends Controller {
       template: this.currentTemplate
     }
 
+    console.log('Saving draft with data:', data)
+
     fetch(`/admin/builder/${this.themeId}/save_draft`, {
       method: 'PATCH',
       headers: {
@@ -1073,8 +1099,15 @@ export default class extends Controller {
   updatePreviewContent() {
     // Update the iframe src to trigger a reload
     const iframe = this.previewFrameTarget
-    const currentSrc = iframe.src
-    iframe.src = currentSrc.split('?')[0] + `?template=${this.currentTemplate}&t=${Date.now()}`
+    if (iframe) {
+      const currentSrc = iframe.src
+      // Force reload by adding timestamp
+      const newSrc = currentSrc.split('?')[0] + `?template=${this.currentTemplate}&t=${Date.now()}`
+      iframe.src = newSrc
+      console.log('Preview updated with new content:', newSrc)
+    } else {
+      console.error('Preview iframe not found!')
+    }
   }
 
   // Template Management

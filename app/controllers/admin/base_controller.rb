@@ -1,6 +1,7 @@
 class Admin::BaseController < ApplicationController
   before_action :authenticate_user!
   before_action :ensure_admin_access
+  after_action :clear_flash_messages
   
   layout 'admin'
   
@@ -22,6 +23,12 @@ class Admin::BaseController < ApplicationController
     unless current_user&.administrator?
       redirect_to admin_root_path, alert: 'Only administrators can perform this action.'
     end
+  end
+  
+  def clear_flash_messages
+    # Clear flash messages after they've been displayed
+    # This prevents them from persisting across page loads
+    flash.clear
   end
 end
 

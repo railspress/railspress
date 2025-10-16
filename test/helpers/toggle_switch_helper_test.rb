@@ -86,3 +86,5 @@ class ToggleSwitchHelperTest < ActionView::TestCase
 end
 
 
+
+

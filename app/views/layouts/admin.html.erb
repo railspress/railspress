@@ -214,6 +214,41 @@
         ring-color: #10b981 !important;
         box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
       }
+      
+      /* Toggle switch styling */
+      .toggle-switch {
+        width: 48px;
+        height: 24px;
+        background-color: #374151;
+        border-radius: 12px;
+        position: relative;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      
+      .toggle-switch:hover {
+        background-color: #4b5563;
+      }
+      
+      .toggle-slider {
+        width: 20px;
+        height: 20px;
+        background-color: #9ca3af;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: all 0.3s ease;
+      }
+      
+      .toggle-switch.active {
+        background-color: #10b981;
+      }
+      
+      .toggle-slider.active {
+        background-color: white;
+        transform: translateX(24px);
+      }
         
         /* Font sizes for hierarchy - correct hierarchy */
         .sidebar-section-header .sidebar-text {
@@ -841,12 +876,7 @@
           <span class="sidebar-text">Storage</span>
         <% end %>
         
-        <%= link_to admin_trash_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_trash_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-          </svg>
-          <span class="sidebar-text">Trash</span>
-        <% end %>
+    
           </div>
         </div>
 
@@ -1117,6 +1147,7 @@
           showErrorToast('<%= j(alert) %>');
         });
       <% end %>
+      
       
       // Mobile menu toggle
       function toggleMobileMenu() {
@@ -1449,6 +1480,7 @@
     
     <!-- Global Admin Controllers -->
     <div data-controller="tabulator-manager"></div>
+    <% flash.discard %>
   </body>
 </html>
 

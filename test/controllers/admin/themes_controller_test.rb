@@ -81,3 +81,5 @@ class Admin::ThemesControllerTest < ActionDispatch::IntegrationTest
   end
 end
 
+
+

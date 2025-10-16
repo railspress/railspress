@@ -528,9 +528,12 @@ Rails.application.routes.draw do
     
     # Cache Management
     get 'cache', to: 'cache#index'
+    patch 'cache', to: 'cache#update'
     post 'cache/enable', to: 'cache#enable'
     post 'cache/disable', to: 'cache#disable'
     post 'cache/clear', to: 'cache#clear'
+    post 'cache/test_connection', to: 'cache#test_connection'
+    post 'cache/flush', to: 'cache#flush_cache'
     get 'cache/stats', to: 'cache#stats'
     
     # Update Management
