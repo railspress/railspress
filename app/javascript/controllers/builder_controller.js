@@ -8,6 +8,7 @@ export default class extends Controller {
   ]
 
   connect() {
+    console.log("🚀🚀🚀 BUILDER CONTROLLER CONNECTED - FRESH VERSION! 🚀🚀🚀")
     console.log("Builder controller connected")
     this.themeId = this.dataTarget.dataset.themeId
     this.sections = JSON.parse(this.dataTarget.dataset.sections || '{}')
@@ -16,7 +17,9 @@ export default class extends Controller {
     this.themeSchema = JSON.parse(this.dataTarget.dataset.themeSchema || '[]')
     this.currentTemplate = 'index'
     this.currentDevice = 'desktop'
+    this.dragStarted = false
     
+    console.log("=== CONNECT: About to initialize sections ===")
     this.initializeSections()
     this.initializeSettings()
     this.connectActionCable()
@@ -32,56 +35,215 @@ export default class extends Controller {
     if (this.cableSubscription) {
       this.cableSubscription.unsubscribe()
     }
+    
+    // Clean up Shopify Draggable instance
+    if (this.sortableInstance) {
+      console.log('Cleaning up Shopify Draggable instance on disconnect')
+      this.sortableInstance.destroy()
+      this.sortableInstance = null
+    }
   }
 
   // Section Management
   initializeSections() {
     // Sections are now rendered server-side, just initialize SortableJS
-    this.initializeSortable()
+    console.log('=== INITIALIZING SECTIONS ===')
+    this.initializeSortable().catch(error => {
+      console.error('Failed to initialize Sortable:', error)
+    })
   }
 
-  initializeSortable() {
+  async initializeSortable() {
     const sectionsList = this.sectionsListTarget
-    if (window.Sortable && sectionsList) {
-      new Sortable(sectionsList, {
-        animation: 150,
-        ghostClass: 'opacity-50',
-        onEnd: (evt) => {
-          this.reorderSections(evt.oldIndex, evt.newIndex)
+    console.log('=== INITIALIZING SHOPIFY DRAGGABLE ===')
+    console.log('Sections list element:', sectionsList)
+    console.log('Available window objects before loading:', Object.keys(window).filter(k => k.includes('Draggable') || k.includes('Sortable')))
+    
+    if (!sectionsList) {
+      console.error('❌ Sections list not found!')
+      console.error('Available targets:', this.constructor.targets)
+      console.error('sectionsListTarget:', this.sectionsListTarget)
+      return
+    }
+    
+    console.log('✅ Sections list found, proceeding with Shopify Draggable initialization')
+    
+    // Check if we already have a working instance
+    if (this.sortableInstance && !this.sortableInstance.destroyed) {
+      console.log('Shopify Draggable already initialized and working')
+      return
+    }
+    
+    // Destroy existing Sortable instance if it exists
+    if (this.sortableInstance) {
+      console.log('Destroying existing Sortable instance')
+      this.sortableInstance.destroy()
+      this.sortableInstance = null
+    }
+    
+    try {
+      // Always load Shopify Draggable dynamically (remove any existing Sortable.js)
+      console.log('Loading Shopify Draggable from CDN...')
+      await this.loadShopifyDraggable()
+      console.log('Shopify Draggable loaded successfully!')
+      
+      console.log('Creating Shopify Draggable Sortable instance')
+      
+      // Wait for DOM to be ready
+      setTimeout(() => {
+        console.log('Available window objects:', Object.keys(window).filter(k => k.includes('Draggable') || k.includes('Sortable')))
+        console.log('Window.Draggable:', window.Draggable)
+        console.log('Window.Sortable:', window.Sortable)
+        
+        // Get Shopify's Sortable from Draggable (standalone browser API)
+        let SortableClass = null
+        if (window.Draggable && window.Draggable.Sortable) {
+          SortableClass = window.Draggable.Sortable
+          console.log('Using window.Draggable.Sortable (standalone)')
+        } else {
+          console.error('Shopify Draggable.Sortable not found!')
+          console.log('Available properties on window.Draggable:', window.Draggable ? Object.keys(window.Draggable) : 'undefined')
+          throw new Error('Shopify Draggable.Sortable not available')
         }
-      })
+        
+        this.sortableInstance = new SortableClass(sectionsList, {
+          draggable: '.section-item',
+          handle: '.drag-handle',
+          forceFallback: true,
+          fallbackOnBody: true
+        })
+        
+        console.log('Shopify Sortable instance created:', this.sortableInstance)
+        
+        // Use Shopify's event system (correct event names)
+        this.sortableInstance.on('sortable:start', (evt) => {
+          console.log('=== SHOPIFY DRAG STARTED ===')
+          console.log('Event:', evt)
+          this.dragStarted = true
+        })
+        
+        this.sortableInstance.on('sortable:sort', (evt) => {
+          console.log('=== SHOPIFY SORTING ===')
+          console.log('Event:', evt)
+        })
+        
+        this.sortableInstance.on('sortable:sorted', (evt) => {
+          console.log('=== SHOPIFY SORTED ===')
+          console.log('Event:', evt)
+        })
+        
+        this.sortableInstance.on('sortable:stop', (evt) => {
+          console.log('=== SHOPIFY DRAG ENDED ===')
+          console.log('Event:', evt)
+          console.log('Event data:', evt.data)
+          
+          this.dragStarted = false
+          
+          // Use actual event data for reordering
+          if (evt.data && typeof evt.data.oldIndex !== 'undefined' && typeof evt.data.newIndex !== 'undefined') {
+            console.log('Position changed - calling reorder!')
+            console.log('Old index:', evt.data.oldIndex, 'New index:', evt.data.newIndex)
+            this.reorderSections(evt.data.oldIndex, evt.data.newIndex)
+          } else {
+            console.log('No position change detected')
+          }
+        })
+        
+      }, 200)
+      
+    } catch (error) {
+      console.error('Failed to initialize Shopify Draggable:', error)
+      console.error('Error details:', error.message, error.stack)
+      // Don't throw error, just log it so the page still works
     }
   }
-
-  createSectionElement(sectionId, sectionData) {
-    const div = document.createElement('div')
-    div.className = 'bg-white border border-gray-200 rounded-lg p-4 mb-3 cursor-move hover:border-blue-300 transition-colors'
-    div.dataset.sectionId = sectionId
-    div.innerHTML = `
-      <div class="flex items-center justify-between">
-        <div class="flex-1">
-          <div class="flex items-center space-x-2">
-            <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
-            <h4 class="font-medium text-gray-900">${this.getSectionDisplayName(sectionData.type || sectionId)}</h4>
-          </div>
-          <p class="text-sm text-gray-600 mt-1">${this.getSectionDescription(sectionData)}</p>
-        </div>
-        <div class="flex items-center space-x-1">
-          <button class="text-gray-400 hover:text-gray-600 p-1" onclick="builder.editSection('${sectionId}')" title="Edit section">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-            </svg>
-          </button>
-          <button class="text-red-400 hover:text-red-600 p-1" onclick="builder.removeSection('${sectionId}')" title="Remove section">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `
-    return div
+  
+  loadShopifyDraggable() {
+    return new Promise((resolve, reject) => {
+      // Remove any existing Sortable.js scripts and objects first
+      const existingScripts = document.querySelectorAll('script[src*="sortable"], script[src*="draggable"]')
+      existingScripts.forEach(script => script.remove())
+      
+      if (window.Sortable) {
+        delete window.Sortable
+      }
+      if (window.Draggable) {
+        delete window.Draggable
+      }
+      
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/@shopify/draggable/build/umd/index.min.js'
+      script.onload = () => {
+        console.log('Shopify Draggable loaded successfully')
+        console.log('Available on window:', Object.keys(window).filter(k => k.includes('Draggable') || k.includes('Sortable')))
+        console.log('Window.Draggable:', window.Draggable)
+        console.log('Window.Sortable:', window.Sortable)
+        
+        // Verify Shopify Draggable loaded correctly
+        if (window.Draggable && window.Draggable.Sortable) {
+          console.log('Shopify Draggable.Sortable confirmed available')
+          resolve()
+        } else {
+          console.error('Shopify Draggable loaded but Sortable not found')
+          reject(new Error('Shopify Draggable.Sortable not available after loading'))
+        }
+      }
+      
+      script.onerror = (error) => {
+        console.error('Failed to load Shopify Draggable script:', error)
+        reject(new Error('Failed to load Shopify Draggable from CDN'))
+      }
+      document.head.appendChild(script)
+    })
   }
+
+  moveSection(fromIndex, toIndex) {
+    console.log('=== MANUAL MOVE SECTION ===')
+    console.log('From index:', fromIndex, 'To index:', toIndex)
+    
+    const sectionsList = this.sectionsListTarget
+    const sections = Array.from(sectionsList.querySelectorAll('.section-item'))
+    const sectionIds = sections.map(section => section.dataset.sectionId)
+    
+    console.log('Current section IDs:', sectionIds)
+    
+    // Reorder the array
+    const [movedSection] = sectionIds.splice(fromIndex, 1)
+    sectionIds.splice(toIndex, 0, movedSection)
+    
+    console.log('New section IDs:', sectionIds)
+    
+    // Send reorder request to server
+    fetch(`/admin/builder/${this.themeId}/reorder_sections`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ 
+        section_ids: sectionIds,
+        template: this.currentTemplate
+      })
+    })
+    .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('Manual reorder successful!')
+            this.showNotification('Sections reordered successfully!', 'success')
+            // Update the preview to show the new order
+            this.updatePreviewContent()
+          } else {
+            console.error('Manual reorder failed:', data.errors)
+            this.showNotification('Error reordering sections: ' + (data.errors || 'Unknown error'), 'error')
+          }
+        })
+    .catch(error => {
+      console.error('Manual reorder error:', error)
+      this.showNotification('Error reordering sections', 'error')
+    })
+  }
+
+  // Removed duplicate createSectionElement method - using the unified one below
 
   getSectionDisplayName(sectionType) {
     const displayNames = {
@@ -119,15 +281,46 @@ export default class extends Controller {
   }
 
   reorderSections(oldIndex, newIndex) {
-    // Get section IDs from the DOM
-    const sectionElements = this.sectionsListTarget.querySelectorAll('[data-section-id]')
-    const sectionIds = Array.from(sectionElements).map(el => el.dataset.sectionId)
+    console.log('=== REORDER SECTIONS CALLED ===')
+    console.log('Old index:', oldIndex, 'New index:', newIndex)
     
-    // Reorder the array
-    const [movedSection] = sectionIds.splice(oldIndex, 1)
-    sectionIds.splice(newIndex, 0, movedSection)
-
-    // Send reorder request to server
+    // BULLETPROOF REORDERING: Get the ACTUAL current DOM order and FORCE DEDUPLICATION
+    const sectionElements = this.sectionsListTarget.querySelectorAll('.section-item[data-section-id]')
+    const allSectionIds = Array.from(sectionElements).map(el => el.dataset.sectionId)
+    
+    // FORCE DEDUPLICATION: Remove duplicates while preserving order
+    const currentOrder = [...new Set(allSectionIds)]
+    
+    console.log('=== BULLETPROOF REORDER DEBUG ===')
+    console.log('Raw DOM section IDs:', allSectionIds)
+    console.log('Deduplicated DOM order:', currentOrder)
+    console.log('Original length:', allSectionIds.length, 'Deduplicated length:', currentOrder.length)
+    
+    // Note: We don't validate indices anymore since we get the final order directly from DOM
+    console.log('Shopify Draggable indices (for reference):', { oldIndex, newIndex })
+    
+    // BULLETPROOF FIX: Get the ACTUAL final order from DOM after drag
+    // Don't use oldIndex/newIndex because they're based on DOM with duplicates
+    const finalSectionElements = this.sectionsListTarget.querySelectorAll('.section-item[data-section-id]')
+    const rawFinalOrder = Array.from(finalSectionElements).map(el => el.dataset.sectionId)
+    const finalOrder = [...new Set(rawFinalOrder)] // Deduplicate final order
+    
+    console.log('Raw final DOM order:', rawFinalOrder)
+    console.log('Deduplicated final order:', finalOrder)
+    console.log('Final order sent to server:', finalOrder)
+    
+    // Validate the final order
+    if (finalOrder.length !== currentOrder.length) {
+      console.error('Length mismatch after reorder!', { 
+        originalLength: currentOrder.length, 
+        finalLength: finalOrder.length,
+        originalOrder: currentOrder,
+        finalOrder: finalOrder
+      })
+      return
+    }
+    
+    // Send reorder request to server with the ACTUAL final order
     fetch(`/admin/builder/${this.themeId}/reorder_sections`, {
       method: 'PATCH',
       headers: {
@@ -135,22 +328,24 @@ export default class extends Controller {
         'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
       },
       body: JSON.stringify({ 
-        section_ids: sectionIds,
+        section_ids: finalOrder,
         template: this.currentTemplate
       })
     })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        console.log('✅ Reorder successful!')
         this.showNotification('Sections reordered successfully!', 'success')
-        // Reload the page to show updated order
-        window.location.reload()
+        // Update the preview to show the new order
+        this.updatePreviewContent()
       } else {
+        console.error('❌ Reorder failed:', data.errors)
         this.showNotification('Error reordering sections: ' + (data.errors || 'Unknown error'), 'error')
       }
     })
     .catch(error => {
-      console.error('Error:', error)
+      console.error('❌ Reorder network error:', error)
       this.showNotification('Error reordering sections', 'error')
     })
   }
@@ -417,7 +612,15 @@ export default class extends Controller {
   }
 
   selectSection(event) {
+    // Don't select if we're in the middle of a drag operation
+    if (this.dragStarted) {
+      console.log('Drag in progress - ignoring click')
+      return
+    }
+    
     const sectionId = event.currentTarget.dataset.sectionId
+    console.log('=== SECTION SELECTED ===')
+    console.log('Section ID:', sectionId)
     
     // Remove previous selection
     this.sectionsListTarget.querySelectorAll('.border-blue-500').forEach(el => {
@@ -462,6 +665,29 @@ export default class extends Controller {
         console.error('Error:', error)
         this.showNotification('Error removing section', 'error')
       })
+    }
+  }
+
+  // Stimulus action method for remove section button
+  removeSectionAction(event) {
+    console.log('=== removeSectionAction called ===')
+    console.log('removeSectionAction called with event:', event)
+    console.log('event.target:', event.target)
+    console.log('event.currentTarget:', event.currentTarget)
+    
+    const button = event.target.closest('[data-section-id]')
+    console.log('button element:', button)
+    console.log('button dataset:', button?.dataset)
+    
+    const sectionId = button?.dataset?.sectionId
+    console.log('extracted sectionId:', sectionId)
+    
+    if (sectionId) {
+      console.log('Calling removeSection with sectionId:', sectionId)
+      this.removeSection(sectionId)
+    } else {
+      console.error('No section ID found in data attribute')
+      this.showNotification('Error: Could not find section ID', 'error')
     }
   }
 
@@ -770,6 +996,7 @@ export default class extends Controller {
   updateSectionSettings(sectionId, settings) {
     console.log('Updating section settings:', { sectionId, settings, template: this.currentTemplate })
     
+    // Use the more efficient update_section endpoint for individual section updates
     fetch(`/admin/builder/${this.themeId}/update_section/${sectionId}`, {
       method: 'PATCH',
       headers: {
@@ -806,7 +1033,7 @@ export default class extends Controller {
         }
         
         // Show success notification
-        this.showNotification('Section settings saved successfully!', 'success')
+        this.showNotification('Section settings updated successfully!', 'success')
         
         // Update preview
         this.updatePreviewContent()
@@ -816,8 +1043,31 @@ export default class extends Controller {
     })
     .catch(error => {
       console.error('Error:', error)
-      this.showNotification('Error updating section', 'error')
+      this.showNotification('Error updating section settings', 'error')
     })
+  }
+
+  getAllSectionsData() {
+    const sectionsData = {}
+    const sectionElements = this.sectionsListTarget.querySelectorAll('[data-section-id]')
+    
+    sectionElements.forEach(element => {
+      const sectionId = element.dataset.sectionId
+      const sectionType = element.dataset.sectionType
+      const settings = JSON.parse(element.dataset.settings || '{}')
+      
+      sectionsData[sectionId] = {
+        type: sectionType,
+        settings: settings
+      }
+    })
+    
+    return sectionsData
+  }
+
+  getSectionType(sectionId) {
+    const element = this.sectionsListTarget.querySelector(`[data-section-id="${sectionId}"]`)
+    return element ? element.dataset.sectionType : 'unknown'
   }
 
   clearSettings() {
@@ -999,21 +1249,47 @@ export default class extends Controller {
   }
 
   publish() {
-    if (!confirm('Are you sure you want to publish this theme? This will make it live on your site.')) {
+    console.log('🚀 PUBLISHING THEME TO LIVE SITE!')
+    
+    Swal.fire({
+      title: 'Publish Theme?',
+      text: 'Are you sure you want to publish this theme? This will update the live website.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, publish it!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (!result.isConfirmed) {
       return
     }
 
+    // Collect current sections data from DOM
+    const currentSections = this.getAllSectionsData()
+    
+    const data = {
+      sections_data: JSON.stringify(currentSections),
+      settings_data: JSON.stringify(this.settings),
+      template: this.currentTemplate
+    }
+
+    console.log('Publishing theme with data:', data)
+
     fetch(`/admin/builder/${this.themeId}/publish`, {
-      method: 'POST',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
-      }
+      },
+      body: JSON.stringify(data)
     })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        this.showNotification('Theme published successfully!', 'success')
+        this.showNotification('🎉 Theme published successfully! Your changes are now live!', 'success')
+        // Update preview after publishing
+        this.updatePreviewContent()
       } else {
         this.showNotification('Error publishing theme: ' + (data.errors || 'Unknown error'), 'error')
       }
@@ -1021,6 +1297,7 @@ export default class extends Controller {
     .catch(error => {
       console.error('Error:', error)
       this.showNotification('Error publishing theme', 'error')
+    })
     })
   }
 
@@ -1097,18 +1374,26 @@ export default class extends Controller {
 
 
   updatePreviewContent() {
+    // Add a longer delay to ensure database changes are committed and avoid race conditions
+    setTimeout(() => {
     // Update the iframe src to trigger a reload
     const iframe = this.previewFrameTarget
-    if (iframe) {
-      const currentSrc = iframe.src
-      // Force reload by adding timestamp
-      const newSrc = currentSrc.split('?')[0] + `?template=${this.currentTemplate}&t=${Date.now()}`
-      iframe.src = newSrc
-      console.log('Preview updated with new content:', newSrc)
-    } else {
-      console.error('Preview iframe not found!')
-    }
+      if (iframe) {
+    const currentSrc = iframe.src
+        // Force reload by adding timestamp
+        const newSrc = currentSrc.split('?')[0] + `?template=${this.currentTemplate}&t=${Date.now()}`
+        iframe.src = newSrc
+        console.log('Preview updated with new content:', newSrc)
+        console.log('Preview update delay: 500ms to ensure database changes are committed')
+      } else {
+        console.error('Preview iframe not found!')
+      }
+    }, 500) // 500ms delay to ensure database changes are committed and avoid race conditions
   }
+
+  // refreshSectionsList method removed - not needed since sections are rendered server-side
+
+  // renderSectionsList method removed - not needed since sections are rendered server-side
 
   // Template Management
   setupTemplateSelector() {
@@ -1170,56 +1455,9 @@ export default class extends Controller {
     })
   }
 
-  updateSectionsList(sections) {
-    const sectionsList = this.sectionsListTarget
-    if (!sectionsList) return
+  // updateSectionsList method removed - sections are rendered server-side, not client-side
 
-    // Clear existing sections
-    sectionsList.innerHTML = ''
-
-    if (sections && sections.length > 0) {
-      sections.forEach(section => {
-        const sectionElement = this.createSectionElement(section)
-        sectionsList.appendChild(sectionElement)
-      })
-    } else {
-      sectionsList.innerHTML = `
-        <div class="text-center text-gray-500 py-8">
-          <p>No sections added yet</p>
-          <p class="text-sm">Click "Add Section" to get started</p>
-        </div>
-      `
-    }
-
-    // Reinitialize sortable
-    this.initializeSortable()
-  }
-
-  createSectionElement(section) {
-    const div = document.createElement('div')
-    div.className = 'section-item bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2 cursor-move'
-    div.dataset.sectionId = section.section_id
-    div.dataset.sectionType = section.section_type
-    div.dataset.settings = JSON.stringify(section.settings || {})
-    div.setAttribute('data-action', 'click->builder#selectSection')
-    div.setAttribute('data-section-id-param', section.section_id)
-    
-    div.innerHTML = `
-      <div class="flex items-center justify-between">
-        <div>
-          <h4 class="font-medium text-gray-900">${section.section_type.humanize}</h4>
-          <p class="text-sm text-gray-600">${section.display_name || section.section_type.humanize}</p>
-        </div>
-        <button class="text-red-500 hover:text-red-700" data-action="click->builder#removeSection" data-section-id="${section.section_id}">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
-        </button>
-      </div>
-    `
-    
-    return div
-  }
+  // createSectionElement method removed - not needed since sections are rendered server-side
 
   updatePreviewIframe(templateName) {
     // Update the iframe source with the new template

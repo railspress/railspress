@@ -286,13 +286,32 @@ class BuilderLiquidRenderer
 
   def render_sections_from_rendered_data(rendered_data, context)
     sections_html = ''
-    # Avoid double-rendering header/footer: layout already includes {% section 'header' %} and {% section 'footer' %}
-    page_sections = rendered_data[:page_sections].reject { |s| %w[header footer].include?(s.section_type) }
-
-    page_sections.each do |section|
+    
+    # Get sections from template content with proper order
+    template_content = rendered_data[:template_content] || {}
+    sections = template_content['sections'] || {}
+    section_order = template_content['order'] || sections.keys
+    
+    # Render sections in the correct order
+    section_order.each do |section_id|
+      section_data = sections[section_id]
+      next unless section_data
+      
+      Rails.logger.info "Rendering section: #{section_id} (#{section_data['type']}) with settings: #{section_data['settings']}"
+      
+      # Skip header/footer as they're rendered by the layout
+      next if %w[header footer].include?(section_data['type'])
+      
       # Get section content from filesystem
-      section_content = get_section_content(section.section_type)
+      section_content = get_section_content(section_data['type'])
       next unless section_content
+      
+      # Create a mock section object for compatibility
+      section = OpenStruct.new(
+        section_id: section_id,
+        section_type: section_data['type'],
+        settings: section_data['settings'] || {}
+      )
       
       # Render section with its settings
       sections_html += render_section_with_content(section, section_content, context)

@@ -1,8 +1,8 @@
 class Admin::BuilderController < Admin::BaseController
-  before_action :set_current_theme, only: [:index, :show, :create_version, :save_draft, :publish, :rollback, :preview, :sections, :update_section]
-  before_action :set_builder_theme, only: [:show, :save_draft, :publish, :rollback, :preview, :sections, :update_section]
-  before_action :ensure_editor_access, except: [:preview]
-  skip_before_action :verify_authenticity_token, only: [:asset, :preview]
+  before_action :set_current_theme, only: [:index, :show, :create_version, :save_draft, :publish, :rollback, :preview, :sections, :update_section, :reorder_sections, :remove_section, :add_section]
+  before_action :set_builder_theme, only: [:show, :save_draft, :publish, :rollback, :preview, :sections, :update_section, :reorder_sections, :remove_section, :add_section]
+  before_action :ensure_editor_access, except: [:preview, :save_draft]
+  skip_before_action :verify_authenticity_token, only: [:preview]
   
   # GET /admin/builder
   def index
@@ -31,10 +31,45 @@ class Admin::BuilderController < Admin::BaseController
     # Load current template (default to index)
     @current_template_name = params[:template] || 'index'
     
-    # Get template data from ThemesManager
-    @template_data = @builder_theme.get_rendered_file(@current_template_name)
-    @current_page_sections = @template_data[:template_content]['sections'] || {}
-    @section_order = @template_data[:template_content]['order'] || []
+    # Get template data from ThemePreview (new system)
+    theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, @current_template_name)
+    
+    # Clean up any duplicate sections first
+    theme_preview.cleanup_duplicates!
+    
+    @current_page_sections = {}
+    @section_order = []
+    
+    # Build sections hash from ThemePreviewSection records
+    Rails.logger.info "=== SHOW ACTION DEBUG ==="
+    Rails.logger.info "ThemePreview sections count: #{theme_preview.ordered_sections.count}"
+    
+    # DEDUPLICATE SECTIONS: Group by section_id and take the latest one
+    sections_by_id = theme_preview.ordered_sections.group_by(&:section_id)
+    Rails.logger.info "Sections grouped by ID: #{sections_by_id.keys}"
+    
+    sections_by_id.each do |section_id, sections|
+      # Take the latest section if there are duplicates
+      section = sections.max_by(&:updated_at)
+      Rails.logger.info "Using section #{section_id} with position #{section.position} (from #{sections.count} duplicates)"
+      
+      @current_page_sections[section_id] = {
+        'type' => section.section_type,
+        'settings' => section.settings
+      }
+      @section_order << section_id
+    end
+    
+    Rails.logger.info "Final section_order: #{@section_order}"
+    Rails.logger.info "Final current_page_sections keys: #{@current_page_sections.keys}"
+    Rails.logger.info "Section order has duplicates: #{@section_order.length != @section_order.uniq.length}"
+    Rails.logger.info "Section order unique count: #{@section_order.uniq.length}"
+    
+    # FORCE DEDUPLICATION: Always deduplicate section order
+    Rails.logger.warn "FORCE DEDUPLICATION: Original order #{@section_order.length}, unique order #{@section_order.uniq.length}"
+    @section_order = @section_order.uniq
+    Rails.logger.info "FINAL CLEAN section_order: #{@section_order}"
+    
     @theme_schema = load_theme_schema
     
     render layout: 'builder'
@@ -69,78 +104,166 @@ class Admin::BuilderController < Admin::BaseController
     end
   end
   
-  # PATCH /admin/builder/:id/save_draft
-  def save_draft
+  # PATCH /admin/builder/:id/autosave
+  def autosave
     sections_data = JSON.parse(params[:sections_data] || params.dig(:builder, :sections_data) || '{}')
     settings_data = JSON.parse(params[:settings_data] || params.dig(:builder, :settings_data) || '{}')
     template = params[:template] || params.dig(:builder, :template) || 'index'
     
     begin
-      # Ensure we have a published version to work with
-      @builder_theme.ensure_published_version!
+      Rails.logger.info "Autosave triggered for template: #{template}"
       
-      # Update the template JSON file with new sections data
-      template_file = @builder_theme.published_version.published_theme_files.find_by(file_path: "templates/#{template}.json")
+      # Get or create theme preview for this template
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
       
-      if template_file
-        # Parse current template content
-        template_content = JSON.parse(template_file.content)
+      # Update sections in ThemePreview (only if sections_data is provided)
+      if sections_data.present?
+        # Get existing sections for efficient updates
+        existing_sections = theme_preview.theme_preview_sections.index_by(&:section_id)
+        processed_section_ids = []
         
-        # Update sections if provided
-        if sections_data.present?
-          template_content['sections'] = sections_data
-          template_content['order'] = Object.keys(sections_data)
+        # Create or update sections from the data
+        sections_data.each_with_index do |(section_id, section_config), index|
+          processed_section_ids << section_id
+          
+          if existing_sections[section_id]
+            # Update existing section
+            existing_sections[section_id].update!(
+              section_type: section_config['type'] || section_id,
+              settings: section_config['settings'] || {},
+              position: index
+            )
+          else
+            # Create new section
+            theme_preview.theme_preview_sections.create!(
+              section_id: section_id,
+              section_type: section_config['type'] || section_id,
+              settings: section_config['settings'] || {},
+              position: index
+            )
+          end
         end
         
-        # Update the file content (use content, not current_content)
-        template_file.update!(content: template_content.to_json)
-      else
-        # Create template file if it doesn't exist
-        Rails.logger.info "Creating template file for save_draft: templates/#{template}.json"
-        
-        template_content = {
-          'name' => template.humanize,
-          'sections' => sections_data.present? ? sections_data : {},
-          'order' => sections_data.present? ? Object.keys(sections_data) : []
-        }
-        
-        @builder_theme.published_version.published_theme_files.create!(
-          file_path: "templates/#{template}.json",
-          file_type: 'template',
-          content: template_content.to_json,
-          tenant: @builder_theme.tenant
+        # Remove sections that are no longer in the data
+        sections_to_remove = existing_sections.keys - processed_section_ids
+        sections_to_remove.each do |section_id|
+          existing_sections[section_id]&.destroy!
+        end
+      end
+      
+      # Update theme settings in ThemePreviewFile (only if settings_data is provided)
+      if settings_data.present?
+        ThemePreviewFile.update_template_content(
+          @builder_theme, 
+          'settings_data', 
+          settings_data
         )
       end
       
-      # Update theme settings if provided
-      if settings_data.present?
-        settings_file = @builder_theme.published_version.published_theme_files.find_by(file_path: 'config/settings_data.json')
-        
-        if settings_file
-          settings_file.update!(content: settings_data.to_json)
-        else
-          # Create settings file if it doesn't exist
-          @builder_theme.published_version.published_theme_files.create!(
-            file_path: 'config/settings_data.json',
-            content: settings_data.to_json,
-            tenant: @builder_theme.tenant
-          )
+      # Update individual files in ThemePreviewFile if provided
+      if params[:files].present?
+        params[:files].each do |file_path, content|
+          preview_file = @builder_theme.theme_preview_files.find_or_create_by(
+            file_path: file_path,
+            file_type: 'custom'
+          ) do |file|
+            file.tenant = @builder_theme.tenant
+          end
+          preview_file.update!(content: content)
         end
       end
       
-      # Update individual files if provided
-      if params[:files].present?
-        params[:files].each do |file_path, content|
-          file = @builder_theme.published_version.published_theme_files.find_by(file_path: file_path)
-          if file
-            file.update!(content: content)
+      respond_to do |format|
+        format.json { render json: { success: true, message: 'Autosaved successfully!' } }
+      end
+      
+    rescue => e
+      Rails.logger.error "Autosave failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      Rails.logger.error "Params: #{params.inspect}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /admin/builder/:id/save_draft
+  def save_draft
+    Rails.logger.info "=== SAVE DRAFT CALLED ==="
+    Rails.logger.info "Params: #{params.inspect}"
+    Rails.logger.info "@builder_theme: #{@builder_theme.inspect}"
+    
+    # Check if @builder_theme is nil
+    if @builder_theme.nil?
+      Rails.logger.error "ERROR: @builder_theme is nil!"
+      render json: { success: false, errors: ['Builder theme not found'] }, status: :not_found
+      return
+    end
+    
+    sections_data = JSON.parse(params[:sections_data] || params.dig(:builder, :sections_data) || '{}')
+    settings_data = JSON.parse(params[:settings_data] || params.dig(:builder, :settings_data) || '{}')
+    template = params[:template] || params.dig(:builder, :template) || 'index'
+    
+    begin
+      Rails.logger.info "Save draft params: #{params.inspect}"
+      Rails.logger.info "Sections data: #{sections_data.inspect}"
+      Rails.logger.info "Settings data: #{settings_data.inspect}"
+      
+      # Get or create theme preview for this template
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
+      
+      # Update sections in ThemePreview
+      if sections_data.present?
+        # Get existing sections for efficient updates
+        existing_sections = theme_preview.theme_preview_sections.index_by(&:section_id)
+        processed_section_ids = []
+        
+        # Create or update sections from the data
+        sections_data.each_with_index do |(section_id, section_config), index|
+          processed_section_ids << section_id
+          
+          if existing_sections[section_id]
+            # Update existing section
+            existing_sections[section_id].update!(
+              section_type: section_config['type'] || section_id,
+              settings: section_config['settings'] || {},
+              position: index
+            )
           else
-            @builder_theme.published_version.published_theme_files.create!(
-              file_path: file_path,
-              content: content,
-              tenant: @builder_theme.tenant
+            # Create new section
+            theme_preview.theme_preview_sections.create!(
+              section_id: section_id,
+              section_type: section_config['type'] || section_id,
+              settings: section_config['settings'] || {},
+              position: index
             )
           end
+        end
+        
+        # Remove sections that are no longer in the data
+        sections_to_remove = existing_sections.keys - processed_section_ids
+        sections_to_remove.each do |section_id|
+          existing_sections[section_id]&.destroy!
+        end
+      end
+      
+      # Update theme settings in ThemePreviewFile
+      if settings_data.present?
+        ThemePreviewFile.update_template_content(
+          @builder_theme, 
+          template, 
+          settings_data
+        )
+      end
+      
+      # Update individual files in ThemePreviewFile if provided
+      if params[:files].present?
+        params[:files].each do |file_path, content|
+          preview_file = @builder_theme.theme_preview_files.find_or_create_by(
+            file_path: file_path,
+            file_type: 'custom'
+          ) do |file|
+            file.tenant = @builder_theme.tenant
+          end
+          preview_file.update!(content: content)
         end
       end
       
@@ -148,7 +271,7 @@ class Admin::BuilderController < Admin::BaseController
       broadcast_preview_update(@builder_theme)
       
       respond_to do |format|
-        format.json { render json: { success: true, message: 'Draft saved successfully!' } }
+        format.json { render json: { success: true, message: 'Draft saved to preview successfully!' } }
       end
       
     rescue => e
@@ -160,39 +283,92 @@ class Admin::BuilderController < Admin::BaseController
       end
     end
   end
-  
-  # POST /admin/builder/:id/publish
+
+  # PATCH /admin/builder/:id/publish
   def publish
+    template = params[:template] || params.dig(:builder, :template) || 'index'
+    
     begin
-      # Publish the builder theme as a PublishedThemeVersion
-      published_version = @builder_theme.publish!(current_user)
+      Rails.logger.info "Publishing template: #{template}"
       
-      # If this theme is active, clear any frontend caches
-      if @builder_theme.is_theme_active?
-        # Clear Rails cache for theme-related data
-        Rails.cache.delete_matched("theme_*")
-        
-        # Broadcast to frontend that theme has been updated
-        ActionCable.server.broadcast(
-          "theme_updates",
-          {
-            type: 'theme_published',
-            theme_name: @builder_theme.theme_name,
-            timestamp: Time.current.to_i
-          }
+      # Get the theme preview
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
+      
+      # Ensure we have a published version to work with
+      published_version = @builder_theme.ensure_published_version!
+      
+      # Copy sections from ThemePreview to PublishedThemeFile
+      sections_data = {}
+      section_order = []
+      
+      theme_preview.ordered_sections.each do |section|
+        sections_data[section.section_id] = {
+          'type' => section.section_type,
+          'settings' => section.settings
+        }
+        section_order << section.section_id
+      end
+      
+      # Create/update the template file in PublishedThemeFile
+      template_content = {
+        'name' => template.humanize,
+        'sections' => sections_data,
+        'order' => section_order
+      }
+      
+      template_file = published_version.published_theme_files.find_or_create_by(
+        file_path: "templates/#{template}.json",
+        file_type: 'template'
+      )
+      
+      template_file.update!(
+        content: template_content.to_json,
+        checksum: Digest::MD5.hexdigest(template_content.to_json)
+      )
+      
+      # Copy theme settings if they exist in preview
+      settings_file = @builder_theme.theme_preview_files.find_by(
+        file_path: 'config/settings_data.json'
+      )
+      
+      if settings_file
+        published_settings_file = published_version.published_theme_files.find_or_create_by(
+          file_path: 'config/settings_data.json',
+          file_type: 'config'
+        )
+        published_settings_file.update!(
+          content: settings_file.content,
+          checksum: Digest::MD5.hexdigest(settings_file.content)
         )
       end
       
-      respond_to do |format|
-        format.json { render json: { success: true, message: 'Theme published successfully!', version_id: published_version.id } }
-        format.html { redirect_to admin_builder_path(@builder_theme), notice: 'Theme published successfully!' }
+      # Copy any other custom files from preview to published
+      @builder_theme.theme_preview_files.where.not(
+        file_path: ['config/settings_data.json', "templates/#{template}.json"]
+      ).each do |preview_file|
+        published_file = published_version.published_theme_files.find_or_create_by(
+          file_path: preview_file.file_path,
+          file_type: preview_file.file_type
+        )
+        published_file.update!(
+          content: preview_file.content,
+          checksum: Digest::MD5.hexdigest(preview_file.content)
+        )
       end
+      
+      # Mark the builder theme as published
+      @builder_theme.update!(published: true)
+      
+      Rails.logger.info "Successfully published template: #{template}"
+      
+      respond_to do |format|
+        format.json { render json: { success: true, message: 'Theme published successfully!' } }
+      end
+      
     rescue => e
       Rails.logger.error "Publish failed: #{e.message}"
-      respond_to do |format|
-        format.json { render json: { success: false, errors: [e.message] }, status: :unprocessable_entity }
-        format.html { redirect_to admin_builder_path(@builder_theme), alert: "Publish failed: #{e.message}" }
-      end
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
     end
   end
   
@@ -214,27 +390,19 @@ class Admin::BuilderController < Admin::BaseController
     @builder_theme = BuilderTheme.find(params[:id])
     @current_theme_name = @builder_theme.theme_name
     
-    # Ensure we have a published version to work with
-    @builder_theme.ensure_published_version!
+    # Ensure we have a published version to work with for base files (layout, assets)
+    published_version = @builder_theme.ensure_published_version!
     
-    # Get the PublishedThemeVersion for this builder theme
-    published_version = @builder_theme.published_version
+    template_type = params[:template] || 'index'
     
-    if published_version
-      # Use FrontendRendererService for proper rendering
-      renderer = FrontendRendererService.new(published_version, @builder_theme.id)
-      template_type = params[:template] || 'index'
-      
-      begin
-        @preview_html = renderer.render_template(template_type, preview_context)
-        @assets = renderer.assets
-      rescue => e
-        Rails.logger.error "Preview rendering failed: #{e.message}"
-        @preview_html = "<div style='padding: 20px; color: red;'>Preview Error: #{e.message}</div>"
-        @assets = { css: '', js: '' }
-      end
-    else
-      @preview_html = "<div style='padding: 20px; color: red;'>No published version found</div>"
+    begin
+      # Use ThemePreviewRenderer for builder previews (uses ThemePreview data + PublishedThemeFile base files)
+      renderer = ThemePreviewRenderer.new(@builder_theme, template_type)
+      @preview_html = renderer.render
+      @assets = { css: '', js: '' } # Assets are embedded in HTML by ThemePreviewRenderer
+    rescue => e
+      Rails.logger.error "Builder preview rendering failed: #{e.message}"
+      @preview_html = "<div style='padding: 20px; color: red;'>Preview Error: #{e.message}</div>"
       @assets = { css: '', js: '' }
     end
     
@@ -246,29 +414,24 @@ class Admin::BuilderController < Admin::BaseController
   def sections
     template_name = params[:template]
     
-    # Get template data from ThemesManager
-    template_data = @builder_theme.get_rendered_file(template_name)
-    
-    if template_data && template_data[:template_content]
-      sections_hash = template_data[:template_content]['sections'] || {}
-      section_order = template_data[:template_content]['order'] || []
+    begin
+      # Get or create theme preview for this template
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template_name)
       
-      # Convert to array format for JavaScript
-      sections = section_order.map.with_index do |section_id, index|
-        section_config = sections_hash[section_id]
-        next unless section_config
-        
+      # Get sections from ThemePreview
+      sections = theme_preview.ordered_sections.map do |section|
         {
-          section_id: section_id,
-          section_type: section_config['type'],
-          settings: section_config['settings'] || {},
-          position: index
+          section_id: section.section_id,
+          section_type: section.section_type,
+          settings: section.settings,
+          position: section.position
         }
-      end.compact
+      end
       
       render json: { success: true, sections: sections }
-    else
-      render json: { success: false, errors: ['Template not found'] }, status: :not_found
+    rescue => e
+      Rails.logger.error "Error getting sections: #{e.message}"
+      render json: { success: false, errors: [e.message] }, status: :unprocessable_entity
     end
   end
 
@@ -388,39 +551,6 @@ class Admin::BuilderController < Admin::BaseController
     }
   end
 
-  # GET /admin/builder/:id/:asset_name
-  def asset
-    @builder_theme = BuilderTheme.find(params[:id])
-    asset_name = params[:asset_name]
-    
-    # Map common asset names to file paths
-    asset_paths = {
-      'theme.css' => 'assets/theme.css',
-      'theme.js' => 'assets/theme.js',
-      'login.css' => 'assets/login.css'
-    }
-    
-    file_path = asset_paths[asset_name] || "assets/#{asset_name}"
-    
-    # Use ThemesManager to get the file content from the builder theme's theme
-    manager = ThemesManager.new
-    file_content = manager.get_file(file_path, @builder_theme.theme_name)
-    
-    if file_content
-      content_type = case File.extname(asset_name)
-      when '.css'
-        'text/css'
-      when '.js'
-        'application/javascript'
-      else
-        'text/plain'
-      end
-      
-      render plain: file_content, content_type: content_type
-    else
-      render plain: '', status: :not_found
-    end
-  end
 
   # POST /admin/builder/:id/add_section
   def add_section
@@ -428,15 +558,47 @@ class Admin::BuilderController < Admin::BaseController
     settings = JSON.parse(params[:settings] || '{}')
     template = params[:template] || 'index'
     
-    # Get the current page
-    page = @builder_theme.builder_pages.find_by(template_name: template)
-    return render json: { success: false, errors: 'Page not found' } unless page
-    
-    # Add section to the page using BuilderPageSection.create_section
-    section = BuilderPageSection.create_section(page, section_type, settings)
-    
-    respond_to do |format|
-      format.json { render json: { success: true, section: section_data(section) } }
+    begin
+      Rails.logger.info "Add section params: #{params.inspect}"
+      Rails.logger.info "Section type: #{section_type}, Template: #{template}"
+      
+      if section_type.blank?
+        return render json: { success: false, errors: ['Section type is required'] }, status: :bad_request
+      end
+
+      # Get or create theme preview
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
+      
+      # Generate a unique section ID
+      section_id = "#{section_type}_#{SecureRandom.hex(4)}"
+      
+      # Create new section in ThemePreviewSection
+      section = theme_preview.theme_preview_sections.create!(
+        section_id: section_id,
+        section_type: section_type,
+        settings: settings,
+        position: theme_preview.theme_preview_sections.count
+      )
+      
+      Rails.logger.info "Successfully added section #{section_id} (#{section_type}) to template #{template}"
+      
+      respond_to do |format|
+        format.json { render json: { 
+          success: true, 
+          section: {
+            section_id: section.section_id,
+            section_type: section.section_type,
+            settings: section.settings,
+            position: section.position
+          }
+        } }
+      end
+      
+    rescue => e
+      Rails.logger.error "Add section failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      Rails.logger.error "Params: #{params.inspect}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
     end
   end
 
@@ -445,17 +607,34 @@ class Admin::BuilderController < Admin::BaseController
     section_id = params[:section_id]
     template = params[:template] || 'index'
     
-    # Get the current page
-    page = @builder_theme.builder_pages.find_by(template_name: template)
-    return render json: { success: false, errors: 'Page not found' } unless page
-    
-    # Find and remove the section
-    section = page.builder_page_sections.find_by(section_id: section_id)
-    if section
-      section.destroy!
-      render json: { success: true, message: 'Section removed successfully!' }
-    else
-      render json: { success: false, errors: 'Section not found' }
+    begin
+      Rails.logger.info "Remove section params: #{params.inspect}"
+      Rails.logger.info "Section ID: #{section_id}, Template: #{template}"
+      
+      if section_id.blank?
+        return render json: { success: false, errors: ['Section ID is required'] }, status: :bad_request
+      end
+
+      # Get or create theme preview
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
+      
+      # Find and remove the section from ThemePreviewSection
+      section = theme_preview.theme_preview_sections.find_by(section_id: section_id)
+      if section
+        section.destroy!
+        Rails.logger.info "Successfully removed section #{section_id} from template #{template}"
+        
+        render json: { success: true, message: 'Section removed successfully!' }
+      else
+        Rails.logger.warn "Section #{section_id} not found in template #{template}"
+        render json: { success: false, errors: ['Section not found'] }, status: :not_found
+      end
+      
+    rescue => e
+      Rails.logger.error "Remove section failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      Rails.logger.error "Params: #{params.inspect}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
     end
   end
 
@@ -466,68 +645,42 @@ class Admin::BuilderController < Admin::BaseController
     # params[:settings] can arrive as a Hash (from JSON) or a String
     # Handle both direct params and nested builder params
     raw_settings = params[:settings] || params.dig(:builder, :settings)
-    settings = raw_settings.is_a?(String) ? JSON.parse(raw_settings) : (raw_settings || {})
+    settings = case raw_settings
+               when String
+                 JSON.parse(raw_settings)
+               when ActionController::Parameters
+                 raw_settings.to_unsafe_h
+               else
+                 raw_settings || {}
+               end
 
     begin
       Rails.logger.info "Update section params: #{params.inspect}"
       Rails.logger.info "Section ID: #{section_id}, Template: #{template}, Settings: #{settings.inspect}"
       
-      # Ensure we have a published version to work with
-      @builder_theme.ensure_published_version!
-      
-      # Update the template JSON file with new section settings
-      template_file = @builder_theme.published_version.published_theme_files.find_by(file_path: "templates/#{template}.json")
-      
-      if template_file
-        # Parse current template content
-        template_content = JSON.parse(template_file.content)
-        
-        # Update the specific section settings
-        if template_content['sections'] && template_content['sections'][section_id]
-          template_content['sections'][section_id]['settings'] = settings
-          
-          # Update the file content (use content, not current_content)
-          template_file.update!(content: template_content.to_json)
-          
-          # Also update the DOM element data for consistency
-          render json: { 
-            success: true, 
-            message: 'Section updated successfully!',
-            updated_settings: settings
-          }
-        else
-          render json: { success: false, errors: ['Section not found in template'] }, status: :not_found
-        end
-      else
-        # Create the template file if it doesn't exist
-        Rails.logger.info "Creating template file: templates/#{template}.json"
-        
-        # Create a basic template structure with the section
-        template_content = {
-          'name' => template.humanize,
-          'sections' => {
-            section_id => {
-              'type' => 'hero', # Default type, will be updated based on actual section
-              'settings' => settings
-            }
-          },
-          'order' => [section_id]
-        }
-        
-        template_file = @builder_theme.published_version.published_theme_files.create!(
-          file_path: "templates/#{template}.json",
-          file_type: 'template',
-          content: template_content.to_json,
-          tenant: @builder_theme.tenant
-        )
-        
-        render json: { 
-          success: true, 
-          message: 'Template file created and section updated successfully!',
-          updated_settings: settings
-        }
+      # Validate section_id is present
+      if section_id.blank?
+        return render json: { success: false, errors: ['Section ID is required'] }, status: :bad_request
       end
       
+      # Use ThemePreview for builder previews (separate from published themes)
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
+      
+      # Update the section settings
+      theme_preview.update_section_settings(section_id, settings)
+      
+      Rails.logger.info "Successfully updated section #{section_id} for template #{template}"
+      
+      render json: { 
+        success: true, 
+        message: 'Section updated successfully!',
+        section_id: section_id,
+        updated_settings: settings
+      }
+      
+    rescue JSON::ParserError => e
+      Rails.logger.error "JSON parsing error in update_section: #{e.message}"
+      render json: { success: false, errors: ['Invalid JSON in settings'] }, status: :bad_request
     rescue => e
       Rails.logger.error "Update section failed: #{e.message}"
       Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
@@ -538,18 +691,64 @@ class Admin::BuilderController < Admin::BaseController
 
   # PATCH /admin/builder/:id/reorder_sections
   def reorder_sections
-    section_ids = JSON.parse(params[:section_ids] || '[]')
-    template = params[:template] || 'index'
-    
-    # Get the current page
-    page = @builder_theme.builder_pages.find_by(template_name: template)
-    return render json: { success: false, errors: 'Page not found' } unless page
-    
-    # Reorder sections for the page using BuilderPageSection.reorder_sections
-    BuilderPageSection.reorder_sections(page, section_ids)
-    
-    respond_to do |format|
-      format.json { render json: { success: true, message: 'Sections reordered successfully!' } }
+    begin
+      # Handle both array and JSON string parameters
+      raw_section_ids = params[:section_ids] || params.dig(:builder, :section_ids) || []
+      
+      if raw_section_ids.is_a?(String)
+        section_ids = JSON.parse(raw_section_ids)
+      else
+        section_ids = raw_section_ids
+      end
+      
+      template = params[:template] || params.dig(:builder, :template) || 'index'
+      
+      Rails.logger.info "=== REORDER SECTIONS DEBUG ==="
+      Rails.logger.info "Raw section IDs: #{raw_section_ids.inspect}"
+      Rails.logger.info "Processed section IDs: #{section_ids.inspect}"
+      Rails.logger.info "Template: #{template}"
+      
+      # Validate that we have section IDs
+      if section_ids.blank?
+        return render json: { success: false, errors: ['No section IDs provided'] }, status: :bad_request
+      end
+      
+      # Use ThemePreview for builder previews (separate from published themes)
+      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
+      
+      # Validate that all section IDs exist in the preview
+      existing_section_ids = theme_preview.theme_preview_sections.pluck(:section_id)
+      invalid_section_ids = section_ids - existing_section_ids
+      
+      if invalid_section_ids.any?
+        Rails.logger.error "Invalid section IDs provided: #{invalid_section_ids.inspect}"
+        Rails.logger.error "Existing section IDs: #{existing_section_ids.inspect}"
+        return render json: { 
+          success: false, 
+          errors: ["Invalid section IDs: #{invalid_section_ids.join(', ')}"] 
+        }, status: :bad_request
+      end
+      
+      # Update the section order
+      theme_preview.update_section_order(section_ids)
+      
+      Rails.logger.info "Successfully reordered sections for template: #{template}"
+      
+      respond_to do |format|
+        format.json { render json: { 
+          success: true, 
+          message: 'Sections reordered successfully!',
+          section_ids: section_ids
+        } }
+      end
+      
+    rescue JSON::ParserError => e
+      Rails.logger.error "JSON parsing error in reorder_sections: #{e.message}"
+      render json: { success: false, errors: ['Invalid JSON in section IDs'] }, status: :bad_request
+    rescue => e
+      Rails.logger.error "Reorder sections failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
     end
   end
 

@@ -8,6 +8,8 @@ class BuilderTheme < ApplicationRecord
   has_many :builder_theme_sections, -> { ordered }, dependent: :destroy
   has_many :builder_pages, -> { ordered }, dependent: :destroy
   has_many :builder_theme_snapshots, dependent: :destroy
+  has_many :theme_previews, dependent: :destroy
+  has_many :theme_preview_files, dependent: :destroy
   
   # Serialization
   serialize :settings_data, coder: JSON, type: Hash
@@ -213,11 +215,19 @@ class BuilderTheme < ApplicationRecord
     template_file = published_version.published_theme_files.find_by(file_path: "templates/#{template_name}.json")
     template_content = template_file ? JSON.parse(template_file.content) : {}
     
+    Rails.logger.info "Template file found: #{template_file.present?}"
+    Rails.logger.info "Template content: #{template_content.inspect}"
+    
+    # Build page sections from template content
+    page_sections = build_page_sections_from_template(template_content)
+    Rails.logger.info "Built #{page_sections.length} page sections"
+    
     # Return rendered data with PublishedThemeFile content
     {
       template_name: template_name,
       template_content: template_content,
       layout_content: layout_content,
+      page_sections: page_sections,
       theme_settings: {},
       published_version: published_version
     }
@@ -319,6 +329,39 @@ class BuilderTheme < ApplicationRecord
   end
 
   private
+
+  # Build page sections from template JSON content
+  def build_page_sections_from_template(template_content)
+    sections = []
+    
+    # Get the order from template content
+    section_order = template_content['order'] || []
+    
+    # If no order specified, use the keys from sections
+    if section_order.empty? && template_content['sections']
+      section_order = template_content['sections'].keys
+    end
+    
+    # Build section objects in the correct order
+    section_order.each do |section_id|
+      section_data = template_content['sections']&.[](section_id)
+      next unless section_data
+      
+      # Create a mock section object that matches BuilderPageSection interface
+      section = OpenStruct.new(
+        section_id: section_id,
+        section_type: section_data['type'] || section_id,
+        settings: section_data['settings'] || {},
+        position: sections.length + 1,
+        display_name: section_data['name'] || section_id.humanize,
+        description: section_data['description'] || ''
+      )
+      
+      sections << section
+    end
+    
+    sections
+  end
 
   def next_version_number
     # Get the next version number for this theme

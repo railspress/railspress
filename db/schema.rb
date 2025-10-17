@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_15_051306) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -987,6 +987,45 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_15_051306) do
     t.index ["theme_version_id"], name: "index_theme_files_on_theme_version_id"
   end
 
+  create_table "theme_preview_files", force: :cascade do |t|
+    t.integer "builder_theme_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "file_path", null: false
+    t.string "file_type", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["builder_theme_id", "file_path"], name: "index_theme_preview_files_on_builder_theme_id_and_file_path", unique: true
+    t.index ["builder_theme_id"], name: "index_theme_preview_files_on_builder_theme_id"
+    t.index ["file_type"], name: "index_theme_preview_files_on_file_type"
+    t.index ["tenant_id"], name: "index_theme_preview_files_on_tenant_id"
+  end
+
+  create_table "theme_preview_sections", force: :cascade do |t|
+    t.integer "theme_preview_id", null: false
+    t.string "section_id", null: false
+    t.string "section_type", null: false
+    t.text "settings", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["theme_preview_id", "position"], name: "index_theme_preview_sections_on_theme_preview_id_and_position"
+    t.index ["theme_preview_id", "section_id"], name: "idx_on_theme_preview_id_section_id_78607b8c4d", unique: true
+    t.index ["theme_preview_id"], name: "index_theme_preview_sections_on_theme_preview_id"
+  end
+
+  create_table "theme_previews", force: :cascade do |t|
+    t.integer "builder_theme_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "template_name", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["builder_theme_id", "template_name"], name: "index_theme_previews_on_builder_theme_id_and_template_name", unique: true
+    t.index ["builder_theme_id"], name: "index_theme_previews_on_builder_theme_id"
+    t.index ["tenant_id"], name: "index_theme_previews_on_tenant_id"
+  end
+
   create_table "theme_version_files", force: :cascade do |t|
     t.integer "theme_version_id", null: false
     t.string "file_path"
@@ -1261,6 +1300,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_15_051306) do
   add_foreign_key "theme_file_versions", "theme_versions"
   add_foreign_key "theme_file_versions", "users"
   add_foreign_key "theme_files", "theme_versions"
+  add_foreign_key "theme_preview_files", "builder_themes"
+  add_foreign_key "theme_preview_files", "tenants"
+  add_foreign_key "theme_preview_sections", "theme_previews"
+  add_foreign_key "theme_previews", "builder_themes"
+  add_foreign_key "theme_previews", "tenants"
   add_foreign_key "theme_version_files", "theme_versions"
   add_foreign_key "theme_versions", "users"
   add_foreign_key "themes", "tenants"

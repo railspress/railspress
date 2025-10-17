@@ -319,7 +319,8 @@ Rails.application.routes.draw do
       member do
         post :create_version
         patch :save_draft
-        post :publish
+        patch :autosave
+        patch :publish
         post :rollback
         get :preview
         get :render_preview
@@ -329,7 +330,6 @@ Rails.application.routes.draw do
         get :snapshots
         get 'file/:file_path', action: :get_file, as: :file
         patch 'file/:file_path', action: :update_file
-        get ':asset_name', action: :asset, as: :asset, constraints: { asset_name: /[^\/]+/ }
         
         # Section management
         post :add_section

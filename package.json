@@ -16,6 +16,7 @@
     "@editorjs/raw": "^2.5.1",
     "@editorjs/table": "^2.4.5",
     "@editorjs/underline": "^1.2.1",
-    "@editorjs/warning": "^1.4.1"
+    "@editorjs/warning": "^1.4.1",
+    "@shopify/draggable": "^1.1.4"
   }
 }
