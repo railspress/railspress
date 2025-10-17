@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { Sortable, Plugins } from "@shopify/draggable"
 
 export default class extends Controller {
   static targets = [
@@ -10,6 +11,7 @@ export default class extends Controller {
   connect() {
     console.log("🚀🚀🚀 BUILDER CONTROLLER CONNECTED - FRESH VERSION! 🚀🚀🚀")
     console.log("Builder controller connected")
+    console.log('hi there')
     this.themeId = this.dataTarget.dataset.themeId
     this.sections = JSON.parse(this.dataTarget.dataset.sections || '{}')
     this.settings = JSON.parse(this.dataTarget.dataset.settings || '{}')
@@ -55,9 +57,8 @@ export default class extends Controller {
 
   async initializeSortable() {
     const sectionsList = this.sectionsListTarget
-    console.log('=== INITIALIZING SHOPIFY DRAGGABLE ===')
+    console.log('=== INITIALIZING SHOPIFY DRAGGABLE NPM ===')
     console.log('Sections list element:', sectionsList)
-    console.log('Available window objects before loading:', Object.keys(window).filter(k => k.includes('Draggable') || k.includes('Sortable')))
     
     if (!sectionsList) {
       console.error('❌ Sections list not found!')
@@ -65,8 +66,10 @@ export default class extends Controller {
       console.error('sectionsListTarget:', this.sectionsListTarget)
       return
     }
+
     
-    console.log('✅ Sections list found, proceeding with Shopify Draggable initialization')
+    
+    console.log('✅ Sections list found, proceeding with Shopify Draggable NPM initialization')
     
     // Check if we already have a working instance
     if (this.sortableInstance && !this.sortableInstance.destroyed) {
@@ -82,57 +85,46 @@ export default class extends Controller {
     }
     
     try {
-      // Always load Shopify Draggable dynamically (remove any existing Sortable.js)
-      console.log('Loading Shopify Draggable from CDN...')
-      await this.loadShopifyDraggable()
-      console.log('Shopify Draggable loaded successfully!')
+      console.log('Creating Shopify Draggable Sortable instance with NPM package')
+      console.log('Sortable class:', Sortable)
+      console.log('Plugins available:', Plugins)
       
-      console.log('Creating Shopify Draggable Sortable instance')
+      // Create Sortable instance with plugins
       
-      // Wait for DOM to be ready
-      setTimeout(() => {
-        console.log('Available window objects:', Object.keys(window).filter(k => k.includes('Draggable') || k.includes('Sortable')))
-        console.log('Window.Draggable:', window.Draggable)
-        console.log('Window.Sortable:', window.Sortable)
-        
-        // Get Shopify's Sortable from Draggable (standalone browser API)
-        let SortableClass = null
-        if (window.Draggable && window.Draggable.Sortable) {
-          SortableClass = window.Draggable.Sortable
-          console.log('Using window.Draggable.Sortable (standalone)')
-        } else {
-          console.error('Shopify Draggable.Sortable not found!')
-          console.log('Available properties on window.Draggable:', window.Draggable ? Object.keys(window.Draggable) : 'undefined')
-          throw new Error('Shopify Draggable.Sortable not available')
-        }
-        
-        this.sortableInstance = new SortableClass(sectionsList, {
-          draggable: '.section-item',
-          handle: '.drag-handle',
-          forceFallback: true,
-          fallbackOnBody: true
-        })
-        
-        console.log('Shopify Sortable instance created:', this.sortableInstance)
-        
-        // Use Shopify's event system (correct event names)
-        this.sortableInstance.on('sortable:start', (evt) => {
-          console.log('=== SHOPIFY DRAG STARTED ===')
-          console.log('Event:', evt)
-          this.dragStarted = true
-        })
-        
-        this.sortableInstance.on('sortable:sort', (evt) => {
-          console.log('=== SHOPIFY SORTING ===')
-          console.log('Event:', evt)
-        })
-        
-        this.sortableInstance.on('sortable:sorted', (evt) => {
-          console.log('=== SHOPIFY SORTED ===')
-          console.log('Event:', evt)
-        })
-        
-        this.sortableInstance.on('sortable:stop', (evt) => {
+      this.sortableInstance = new Sortable(sectionsList, {
+        draggable: '.section-item',
+        handle: '.section-item',
+        mirror: { 
+          constrainDimensions: true 
+        },
+        plugins: [
+          Plugins.ResizeMirror,
+          Plugins.SwapAnimation, // smooth swap while sorting
+          Plugins.Collidable,    // prevent dropping over "no-drop" zones
+          Plugins.Snappable      // snap feedback while dragging
+        ]
+      })
+      
+      console.log('Shopify Sortable instance created with plugins:', this.sortableInstance)
+      
+      // Use Shopify's event system (correct event names)
+      this.sortableInstance.on('sortable:start', (evt) => {
+        console.log('=== SHOPIFY DRAG STARTED ===')
+        console.log('Event:', evt)
+        this.dragStarted = true
+      })
+      
+      this.sortableInstance.on('sortable:sort', (evt) => {
+        console.log('=== SHOPIFY SORTING ===')
+        console.log('Event:', evt)
+      })
+      
+      this.sortableInstance.on('sortable:sorted', (evt) => {
+        console.log('=== SHOPIFY SORTED ===')
+        console.log('Event:', evt)
+      })
+      
+      this.sortableInstance.on('sortable:stop', (evt) => {
           console.log('=== SHOPIFY DRAG ENDED ===')
           console.log('Event:', evt)
           console.log('Event data:', evt.data)
@@ -149,8 +141,6 @@ export default class extends Controller {
           }
         })
         
-      }, 200)
-      
     } catch (error) {
       console.error('Failed to initialize Shopify Draggable:', error)
       console.error('Error details:', error.message, error.stack)
@@ -158,44 +148,7 @@ export default class extends Controller {
     }
   }
   
-  loadShopifyDraggable() {
-    return new Promise((resolve, reject) => {
-      // Remove any existing Sortable.js scripts and objects first
-      const existingScripts = document.querySelectorAll('script[src*="sortable"], script[src*="draggable"]')
-      existingScripts.forEach(script => script.remove())
-      
-      if (window.Sortable) {
-        delete window.Sortable
-      }
-      if (window.Draggable) {
-        delete window.Draggable
-      }
-      
-      const script = document.createElement('script')
-      script.src = 'https://cdn.jsdelivr.net/npm/@shopify/draggable/build/umd/index.min.js'
-      script.onload = () => {
-        console.log('Shopify Draggable loaded successfully')
-        console.log('Available on window:', Object.keys(window).filter(k => k.includes('Draggable') || k.includes('Sortable')))
-        console.log('Window.Draggable:', window.Draggable)
-        console.log('Window.Sortable:', window.Sortable)
-        
-        // Verify Shopify Draggable loaded correctly
-        if (window.Draggable && window.Draggable.Sortable) {
-          console.log('Shopify Draggable.Sortable confirmed available')
-          resolve()
-        } else {
-          console.error('Shopify Draggable loaded but Sortable not found')
-          reject(new Error('Shopify Draggable.Sortable not available after loading'))
-        }
-      }
-      
-      script.onerror = (error) => {
-        console.error('Failed to load Shopify Draggable script:', error)
-        reject(new Error('Failed to load Shopify Draggable from CDN'))
-      }
-      document.head.appendChild(script)
-    })
-  }
+  // CDN loading method removed - now using NPM package directly
 
   moveSection(fromIndex, toIndex) {
     console.log('=== MANUAL MOVE SECTION ===')
@@ -213,6 +166,9 @@ export default class extends Controller {
     
     console.log('New section IDs:', sectionIds)
     
+    // Show spinning icon during reorder
+    this.showAutosaveSpinner()
+    
     // Send reorder request to server
     fetch(`/admin/builder/${this.themeId}/reorder_sections`, {
       method: 'PATCH',
@@ -229,16 +185,21 @@ export default class extends Controller {
         .then(data => {
           if (data.success) {
             console.log('Manual reorder successful!')
-            this.showNotification('Sections reordered successfully!', 'success')
+            // Hide spinner and show green dot
+            this.hideAutosaveSpinner()
             // Update the preview to show the new order
             this.updatePreviewContent()
           } else {
             console.error('Manual reorder failed:', data.errors)
+            // Hide spinner and show error
+            this.hideAutosaveSpinner()
             this.showNotification('Error reordering sections: ' + (data.errors || 'Unknown error'), 'error')
           }
         })
     .catch(error => {
       console.error('Manual reorder error:', error)
+      // Hide spinner and show error
+      this.hideAutosaveSpinner()
       this.showNotification('Error reordering sections', 'error')
     })
   }
@@ -320,6 +281,9 @@ export default class extends Controller {
       return
     }
     
+    // Show spinning icon during reorder
+    this.showAutosaveSpinner()
+    
     // Send reorder request to server with the ACTUAL final order
     fetch(`/admin/builder/${this.themeId}/reorder_sections`, {
       method: 'PATCH',
@@ -336,16 +300,21 @@ export default class extends Controller {
     .then(data => {
       if (data.success) {
         console.log('✅ Reorder successful!')
-        this.showNotification('Sections reordered successfully!', 'success')
+        // Hide spinner and show green dot
+        this.hideAutosaveSpinner()
         // Update the preview to show the new order
         this.updatePreviewContent()
       } else {
         console.error('❌ Reorder failed:', data.errors)
+        // Hide spinner and show error
+        this.hideAutosaveSpinner()
         this.showNotification('Error reordering sections: ' + (data.errors || 'Unknown error'), 'error')
       }
     })
     .catch(error => {
       console.error('❌ Reorder network error:', error)
+      // Hide spinner and show error
+      this.hideAutosaveSpinner()
       this.showNotification('Error reordering sections', 'error')
     })
   }
@@ -1201,6 +1170,9 @@ export default class extends Controller {
 
   // Save and Publish
   saveDraft() {
+    // Show spinning icon
+    this.showAutosaveSpinner()
+    
     // Collect current sections data from DOM
     const currentSections = {}
     const sectionElements = this.sectionsListTarget.querySelectorAll('[data-section-id]')
@@ -1235,17 +1207,65 @@ export default class extends Controller {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        this.showNotification('Draft saved successfully!', 'success')
+        // Hide spinner and show green dot
+        this.hideAutosaveSpinner()
         // Update preview after saving
         this.updatePreviewContent()
       } else {
+        // Hide spinner and show error
+        this.hideAutosaveSpinner()
         this.showNotification('Error saving draft: ' + (data.errors || 'Unknown error'), 'error')
       }
     })
     .catch(error => {
       console.error('Error:', error)
+      // Hide spinner and show error
+      this.hideAutosaveSpinner()
       this.showNotification('Error saving draft', 'error')
     })
+  }
+
+  showAutosaveSpinner() {
+    // Find the autosave indicator and replace with spinning icon
+    const autosaveIndicator = document.querySelector('.autosave-indicator')
+    console.log('🔍 showAutosaveSpinner called, found element:', autosaveIndicator)
+    if (autosaveIndicator) {
+      console.log('🔄 Replacing green dot with spinning icon')
+      // Completely replace the green dot with spinning icon
+      autosaveIndicator.className = 'autosave-indicator'
+      autosaveIndicator.style.display = 'flex'
+      autosaveIndicator.style.alignItems = 'center'
+      autosaveIndicator.style.justifyContent = 'center'
+      autosaveIndicator.innerHTML = `
+        <svg class="w-3 h-3 text-blue-500" fill="none" viewBox="0 0 24 24" style="animation: spin 2s linear infinite;">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      `
+      autosaveIndicator.title = "Saving..."
+      console.log('✅ Spinning icon set, classes removed:', autosaveIndicator.className)
+    } else {
+      console.error('❌ Autosave indicator not found!')
+    }
+  }
+
+  hideAutosaveSpinner() {
+    // Find the autosave indicator and restore green dot
+    const autosaveIndicator = document.querySelector('.autosave-indicator')
+    console.log('🔍 hideAutosaveSpinner called, found element:', autosaveIndicator)
+    if (autosaveIndicator) {
+      console.log('🔄 Restoring green dot')
+      // Reset styles and restore green dot classes
+      autosaveIndicator.className = 'autosave-indicator w-3 h-3 bg-green-500 rounded-full'
+      autosaveIndicator.style.display = 'block'
+      autosaveIndicator.style.alignItems = ''
+      autosaveIndicator.style.justifyContent = ''
+      autosaveIndicator.innerHTML = ''
+      autosaveIndicator.title = "Autosave enabled"
+      console.log('✅ Green dot restored, classes:', autosaveIndicator.className)
+    } else {
+      console.error('❌ Autosave indicator not found!')
+    }
   }
 
   publish() {

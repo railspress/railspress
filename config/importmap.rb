@@ -31,3 +31,6 @@ pin "@editorjs/attaches", to: "https://cdn.jsdelivr.net/npm/@editorjs/attaches@1
 
 # Admin table configurations
 pin "admin_table_columns", to: "admin_table_columns.js"
+
+# Shopify Draggable
+pin "@shopify/draggable", to: "@shopify--draggable.js" # @1.1.4

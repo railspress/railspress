@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Theme Builder - RailsPress</title>
   <!-- 🚀 ASSETS SERVED SANITY CHECK - NO CACHE DEV MODE 🚀 -->
+  <!-- 🚀 CACHE BUSTING: <%= Time.current.to_i %> 🚀 -->
+  <style>
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
   
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
@@ -126,8 +133,8 @@
           </button>
         </div>
         
-        <!-- SINGLE AUTOSAVE INDICATOR OUTSIDE CONTAINER -->
-        <div class="w-3 h-3 bg-green-500 rounded-full" title="Autosave enabled"></div>
+              <!-- SINGLE AUTOSAVE INDICATOR OUTSIDE CONTAINER -->
+              <div class="autosave-indicator w-3 h-3 bg-green-500 rounded-full" title="Autosave enabled"></div>
         
         <!-- Publish button -->
         <button data-action="click->builder#publish" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
@@ -153,6 +160,8 @@
               <!-- DEBUG: Section order unique: <%= @section_order.uniq.inspect %> -->
               <!-- DEBUG: Section order unique count: <%= @section_order.uniq.count %> -->
               <!-- DEBUG: Has duplicates: <%= @section_order.count != @section_order.uniq.count %> -->
+              <!-- DEBUG: Cache busting timestamp: <%= Time.current.to_i %> -->
+              <!-- DEBUG: Current page sections keys: <%= @current_page_sections.keys.inspect %> -->
               <% 
                 # FORCE DEDUPLICATION: Remove duplicates and preserve order
                 unique_section_order = @section_order.uniq
@@ -169,7 +178,7 @@
                 <% section_config = @current_page_sections[section_id] %>
                 <!-- DEBUG: Rendering section <%= index %>: <%= section_id %> -->
                 <% if section_config %>
-                  <div class="section-item bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2" 
+                  <div class="section-item bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2 cursor-move" 
                        data-section-id="<%= section_id %>" 
                        data-section-type="<%= section_config['type'] %>"
                        data-settings="<%= section_config['settings'].to_json %>"
@@ -177,11 +186,6 @@
                        data-section-id-param="<%= section_id %>">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center space-x-3 flex-1">
-                        <div class="drag-handle text-gray-400 hover:text-gray-600 cursor-move">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
-                          </svg>
-                        </div>
                         <div>
                           <h4 class="font-medium text-gray-900"><%= section_config['type'].humanize %></h4>
                         </div>

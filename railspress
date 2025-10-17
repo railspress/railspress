@@ -100,6 +100,7 @@ restart_server() {
     stop_server
     sleep 2
     echo -e "${GREEN}Starting server...${NC}"
+    rails assets:precompile RAILS_ENV=development
     rails server -d -p 3000
     echo -e "${GREEN}Server restarted on http://localhost:3000${NC}"
 }
