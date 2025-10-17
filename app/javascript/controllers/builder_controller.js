@@ -12,6 +12,10 @@ export default class extends Controller {
     console.log("🚀🚀🚀 BUILDER CONTROLLER CONNECTED - FRESH VERSION! 🚀🚀🚀")
     console.log("Builder controller connected")
     console.log('hi there')
+    
+    // Initialize dark mode first
+    this.initializeDarkMode()
+    
     this.themeId = this.dataTarget.dataset.themeId
     this.sections = JSON.parse(this.dataTarget.dataset.sections || '{}')
     this.settings = JSON.parse(this.dataTarget.dataset.settings || '{}')
@@ -28,6 +32,9 @@ export default class extends Controller {
     this.setupTemplateSelector()
     this.setupDevicePreview()
     this.initializeThemeSettings()
+    
+    // Initialize device buttons
+    this.initializeDeviceButtons()
     
     // Initialize device preview on load
     this.updatePreviewFrameDevice()
@@ -93,7 +100,7 @@ export default class extends Controller {
       
       this.sortableInstance = new Sortable(sectionsList, {
         draggable: '.section-item',
-        handle: '.section-item',
+        handle: '.drag-handle',
         mirror: { 
           constrainDimensions: true 
         },
@@ -135,7 +142,12 @@ export default class extends Controller {
           if (evt.data && typeof evt.data.oldIndex !== 'undefined' && typeof evt.data.newIndex !== 'undefined') {
             console.log('Position changed - calling reorder!')
             console.log('Old index:', evt.data.oldIndex, 'New index:', evt.data.newIndex)
-            this.reorderSections(evt.data.oldIndex, evt.data.newIndex)
+            
+            // Add delay to prevent excessive calls and clean up DOM first
+            setTimeout(() => {
+              this.cleanupDuplicateSections()
+              this.reorderSections(evt.data.oldIndex, evt.data.newIndex)
+            }, 300) // 300ms delay
           } else {
             console.log('No position change detected')
           }
@@ -965,6 +977,9 @@ export default class extends Controller {
   updateSectionSettings(sectionId, settings) {
     console.log('Updating section settings:', { sectionId, settings, template: this.currentTemplate })
     
+    // Show spinning icon
+    this.showAutosaveSpinner()
+    
     // Use the more efficient update_section endpoint for individual section updates
     fetch(`/admin/builder/${this.themeId}/update_section/${sectionId}`, {
       method: 'PATCH',
@@ -1001,17 +1016,21 @@ export default class extends Controller {
           this.sections[sectionId].settings = settings
         }
         
-        // Show success notification
-        this.showNotification('Section settings updated successfully!', 'success')
+        // Hide spinning icon and show green dot
+        this.hideAutosaveSpinner()
         
         // Update preview
         this.updatePreviewContent()
       } else {
+        // Hide spinning icon and show green dot on error
+        this.hideAutosaveSpinner()
         this.showNotification('Error updating section: ' + (data.errors || 'Unknown error'), 'error')
       }
     })
     .catch(error => {
       console.error('Error:', error)
+      // Hide spinning icon and show green dot on error
+      this.hideAutosaveSpinner()
       this.showNotification('Error updating section settings', 'error')
     })
   }
@@ -1074,9 +1093,20 @@ export default class extends Controller {
 
       this.themeJsonEditor.on('change', () => {
         const settings = this.themeJsonEditor.getValue()
-        this.settings = settings
-        // Auto-save and update preview
-        this.saveDraft()
+        const previousSettings = this.settings
+        
+        // Only save if settings actually changed
+        if (JSON.stringify(settings) !== JSON.stringify(previousSettings)) {
+          console.log('🎯 Settings actually changed, debouncing save...')
+          this.settings = settings
+          // Debounce auto-save to prevent excessive saving
+          clearTimeout(this.saveTimeout)
+          this.saveTimeout = setTimeout(() => {
+            this.saveDraft()
+          }, 1000) // Save after 1 second of inactivity
+        } else {
+          console.log('🚫 Settings unchanged, skipping save')
+        }
       })
     }
   }
@@ -1265,6 +1295,37 @@ export default class extends Controller {
       console.log('✅ Green dot restored, classes:', autosaveIndicator.className)
     } else {
       console.error('❌ Autosave indicator not found!')
+    }
+  }
+
+  cleanupDuplicateSections() {
+    console.log('🧹 CLEANING UP DUPLICATE SECTIONS...')
+    const sectionsList = this.sectionsListTarget
+    if (!sectionsList) return
+    
+    const sectionItems = sectionsList.querySelectorAll('.section-item')
+    const sectionIds = []
+    const duplicates = []
+    
+    // Find duplicates
+    sectionItems.forEach((item, index) => {
+      const sectionId = item.getAttribute('data-section-id')
+      if (sectionIds.includes(sectionId)) {
+        duplicates.push({ element: item, index, sectionId })
+      } else {
+        sectionIds.push(sectionId)
+      }
+    })
+    
+    if (duplicates.length > 0) {
+      console.log(`🗑️ Found ${duplicates.length} duplicate sections:`, duplicates.map(d => d.sectionId))
+      // Remove duplicates (keep first occurrence, remove rest)
+      duplicates.forEach(duplicate => {
+        duplicate.element.remove()
+      })
+      console.log('✅ Duplicate sections removed')
+    } else {
+      console.log('✅ No duplicates found')
     }
   }
 
@@ -1591,6 +1652,28 @@ export default class extends Controller {
   }
 
   // Device selection methods
+  initializeDeviceButtons() {
+    console.log('Initializing device buttons with current device:', this.currentDevice)
+    
+    const deviceButtons = document.querySelectorAll('[data-action*="setDevice"]')
+    console.log('Found device buttons:', deviceButtons.length)
+    
+    deviceButtons.forEach(button => {
+      console.log('Processing button:', button.dataset.device, 'Current classes:', button.className)
+      
+      // Remove active class
+      button.classList.remove('active')
+      
+      if (button.dataset.device === this.currentDevice) {
+        // Add active class for the selected device
+        button.classList.add('active')
+        console.log('✅ Set device button as ACTIVE:', button.dataset.device, 'New classes:', button.className)
+      } else {
+        console.log('Set device button as inactive:', button.dataset.device)
+      }
+    })
+  }
+
   setDevice(event) {
     const device = event.currentTarget.dataset.device
     console.log('Device button clicked:', device)
@@ -1599,13 +1682,20 @@ export default class extends Controller {
     
     // Update active state for device buttons
     const deviceButtons = document.querySelectorAll('[data-action*="setDevice"]')
+    console.log('Updating device buttons for device:', device, 'Found buttons:', deviceButtons.length)
+    
     deviceButtons.forEach(button => {
+      console.log('Updating button:', button.dataset.device, 'Current classes:', button.className)
+      
+      // Remove active class
+      button.classList.remove('active')
+      
       if (button.dataset.device === device) {
-        button.classList.add('bg-blue-100', 'text-blue-600')
-        button.classList.remove('hover:bg-gray-200')
+        // Add active class for the selected device
+        button.classList.add('active')
+        console.log('✅ Set button as ACTIVE:', button.dataset.device, 'New classes:', button.className)
       } else {
-        button.classList.remove('bg-blue-100', 'text-blue-600')
-        button.classList.add('hover:bg-gray-200')
+        console.log('Set button as inactive:', button.dataset.device)
       }
     })
     
@@ -1693,6 +1783,111 @@ export default class extends Controller {
     console.log('Redo action')
   }
 
+  viewInNewTab() {
+    // Get the current preview URL and open it in a new tab
+    const iframe = this.previewFrameTarget
+    if (iframe) {
+      const previewUrl = iframe.src
+      console.log('Opening preview in new tab:', previewUrl)
+      window.open(previewUrl, '_blank')
+    } else {
+      console.error('Preview iframe not found')
+    }
+  }
+
+  toggleDarkMode() {
+    console.log('🌙 TOGGLING DARK MODE - NUCLEAR VERSION!')
+    
+    // Get current theme
+    const body = document.body
+    const html = document.documentElement
+    const currentTheme = body.getAttribute('data-theme') || 'light'
+    const isDark = currentTheme === 'dark'
+    
+    // Toggle theme
+    const newTheme = isDark ? 'light' : 'dark'
+    
+    // Apply theme to both body and html
+    body.setAttribute('data-theme', newTheme)
+    html.setAttribute('data-theme', newTheme)
+    
+    // Toggle dark class on both body and html
+    if (newTheme === 'dark') {
+      body.classList.add('dark')
+      html.classList.add('dark')
+    } else {
+      body.classList.remove('dark')
+      html.classList.remove('dark')
+    }
+    
+    // Update icons
+    const moonIcon = document.querySelector('.moon-icon')
+    const sunIcon = document.querySelector('.sun-icon')
+    
+    if (moonIcon && sunIcon) {
+      if (newTheme === 'dark') {
+        moonIcon.classList.add('hidden')
+        sunIcon.classList.remove('hidden')
+      } else {
+        moonIcon.classList.remove('hidden')
+        sunIcon.classList.add('hidden')
+      }
+    }
+    
+    // Store in localStorage
+    localStorage.setItem('builder-theme', newTheme)
+    
+    console.log(`✅ NUCLEAR TOGGLE COMPLETE - Theme switched to: ${newTheme}`)
+    console.log('Body classes:', body.className)
+    console.log('Body data-theme:', body.getAttribute('data-theme'))
+  }
+
+  initializeDarkMode() {
+    console.log('🌙 INITIALIZING DARK MODE FROM LOCALSTORAGE')
+    
+    // Read theme from localStorage, default to 'light' if not set
+    const savedTheme = localStorage.getItem('builder-theme') || 'light'
+    console.log('📱 Saved theme from localStorage:', savedTheme)
+    
+    const body = document.body
+    const html = document.documentElement
+    
+    // Apply the saved theme
+    body.setAttribute('data-theme', savedTheme)
+    html.setAttribute('data-theme', savedTheme)
+    
+    if (savedTheme === 'dark') {
+      body.classList.add('dark')
+      html.classList.add('dark')
+    } else {
+      body.classList.remove('dark')
+      html.classList.remove('dark')
+    }
+    
+    // Update icons based on current theme
+    setTimeout(() => {
+      const moonIcon = document.querySelector('.moon-icon')
+      const sunIcon = document.querySelector('.sun-icon')
+      
+      if (moonIcon && sunIcon) {
+        if (savedTheme === 'dark') {
+          moonIcon.classList.add('hidden')
+          sunIcon.classList.remove('hidden')
+          console.log('✅ Icons updated: Sun visible, Moon hidden (dark mode active)')
+        } else {
+          moonIcon.classList.remove('hidden')
+          sunIcon.classList.add('hidden')
+          console.log('✅ Icons updated: Moon visible, Sun hidden (light mode active)')
+        }
+      } else {
+        console.log('❌ Icons not found:', { moonIcon, sunIcon })
+      }
+    }, 100)
+    
+    console.log(`✅ Theme initialized from localStorage: ${savedTheme}`)
+    console.log('Body classes:', body.className)
+    console.log('Body data-theme:', body.getAttribute('data-theme'))
+  }
 }
 
 // Make builder instance globally available for onclick handlers
