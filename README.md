@@ -4,6 +4,8 @@
 
 ### **The Ultimate Ruby on Rails CMS**
 
+![RailsPress Builder](docs/screenshots/pagebuilder.png)
+
 [![Ruby](https://img.shields.io/badge/Ruby-3.3.9+-red.svg)](https://www.ruby-lang.org/)
 [![Rails](https://img.shields.io/badge/Rails-7.1+-red.svg)](https://rubyonrails.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
