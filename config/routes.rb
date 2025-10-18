@@ -6,7 +6,8 @@ Rails.application.routes.draw do
   # Devise routes for frontend
   devise_for :users, path: 'auth', controllers: {
     sessions: 'users/sessions',
-    registrations: 'users/registrations'
+    registrations: 'users/registrations',
+    omniauth_callbacks: 'omniauth_callbacks'
   }
   
   # Devise routes for admin (using scope to avoid conflicts)
@@ -19,6 +20,10 @@ Rails.application.routes.draw do
     patch '/admin/password', to: 'admin/passwords#update', as: :admin_user_password
     put '/admin/password', to: 'admin/passwords#update'
     post '/admin/password', to: 'admin/passwords#create'
+    
+    # OAuth routes for admin
+    get '/admin/auth/:provider/callback', to: 'omniauth_callbacks#create'
+    post '/admin/auth/:provider/callback', to: 'omniauth_callbacks#create'
   end
   
   # GraphQL API
@@ -226,8 +231,14 @@ Rails.application.routes.draw do
         patch :unpublish
         patch :restore
         get :write  # Fullscreen editor for existing post
+        get :versions  # View post versions
+        post :restore_version  # Restore to specific version
       end
     end
+    
+    # User preferences
+    get 'user_preferences', to: 'user_preferences#show'
+    patch 'user_preferences', to: 'user_preferences#update'
     
     resources :pages do
       collection do
@@ -326,6 +337,7 @@ Rails.application.routes.draw do
         get :render_preview
         get 'sections/:template', action: :sections, as: :sections
         get :available_sections
+        get :section_data
         get :versions
         get :snapshots
         get 'file/:file_path', action: :get_file, as: :file
@@ -336,6 +348,14 @@ Rails.application.routes.draw do
         delete 'remove_section/:section_id', action: :remove_section, as: :remove_section
         patch 'update_section/:section_id', action: :update_section, as: :update_section
         patch :reorder_sections
+        
+        # Block management
+        post :add_block
+        delete 'remove_block/:block_id', action: :remove_block, as: :remove_block
+        patch 'update_block/:block_id', action: :update_block, as: :update_block
+        
+        # Theme settings management
+        patch :update_theme_settings
       end
     end
     resources :plugins do
@@ -364,6 +384,7 @@ Rails.application.routes.draw do
     # Webhooks
     resources :webhooks do
       member do
+        get :test
         post :test
         patch :toggle_active
       end
@@ -409,6 +430,11 @@ Rails.application.routes.draw do
     get 'settings/storage', to: 'settings#storage', as: 'storage_settings'
     patch 'settings/storage', to: 'settings#update_storage'
     resources :storage_providers, path: 'settings/storage_providers'
+    
+    # OAuth settings
+    get 'settings/oauth', to: 'oauth#index', as: 'oauth_settings'
+    patch 'settings/oauth', to: 'oauth#update'
+    post 'settings/oauth/test_connection', to: 'oauth#test_connection', as: 'oauth_test_connection'
     
     # Upload security settings
     namespace :settings do

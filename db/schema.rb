@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -528,6 +528,22 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
     t.index ["translatable_id", "translatable_type", "locale", "key"], name: "index_mobility_text_translations_on_keys", unique: true
   end
 
+  create_table "oauth_accounts", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "provider", null: false
+    t.string "uid", null: false
+    t.string "email", null: false
+    t.string "name", null: false
+    t.string "avatar_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "email", "tenant_id"], name: "index_oauth_accounts_on_provider_and_email_and_tenant_id"
+    t.index ["provider", "uid", "tenant_id"], name: "index_oauth_accounts_on_provider_and_uid_and_tenant_id", unique: true
+    t.index ["tenant_id"], name: "index_oauth_accounts_on_tenant_id"
+    t.index ["user_id"], name: "index_oauth_accounts_on_user_id"
+  end
+
   create_table "page_templates", force: :cascade do |t|
     t.string "name", null: false
     t.string "template_type", null: false
@@ -987,6 +1003,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
     t.index ["theme_version_id"], name: "index_theme_files_on_theme_version_id"
   end
 
+  create_table "theme_preview_blocks", force: :cascade do |t|
+    t.integer "theme_preview_section_id", null: false
+    t.string "block_type"
+    t.string "block_id"
+    t.text "settings"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["theme_preview_section_id"], name: "index_theme_preview_blocks_on_theme_preview_section_id"
+  end
+
   create_table "theme_preview_files", force: :cascade do |t|
     t.integer "builder_theme_id", null: false
     t.integer "tenant_id", null: false
@@ -1021,6 +1048,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
     t.text "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "theme_settings"
+    t.json "theme_settings_json"
     t.index ["builder_theme_id", "template_name"], name: "index_theme_previews_on_builder_theme_id_and_template_name", unique: true
     t.index ["builder_theme_id"], name: "index_theme_previews_on_builder_theme_id"
     t.index ["tenant_id"], name: "index_theme_previews_on_tenant_id"
@@ -1146,6 +1175,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
     t.string "editor_preference", default: "blocknote"
     t.string "monaco_theme"
     t.string "api_key"
+    t.text "sidebar_order"
     t.index ["api_key"], name: "index_users_on_api_key", unique: true
     t.index ["api_token"], name: "index_users_on_api_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -1263,6 +1293,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
   add_foreign_key "menu_items", "menus"
   add_foreign_key "menu_items", "tenants"
   add_foreign_key "menus", "tenants"
+  add_foreign_key "oauth_accounts", "tenants"
+  add_foreign_key "oauth_accounts", "users"
   add_foreign_key "page_templates", "tenants"
   add_foreign_key "pages", "page_templates"
   add_foreign_key "pages", "tenants"
@@ -1300,6 +1332,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_16_070132) do
   add_foreign_key "theme_file_versions", "theme_versions"
   add_foreign_key "theme_file_versions", "users"
   add_foreign_key "theme_files", "theme_versions"
+  add_foreign_key "theme_preview_blocks", "theme_preview_sections"
   add_foreign_key "theme_preview_files", "builder_themes"
   add_foreign_key "theme_preview_files", "tenants"
   add_foreign_key "theme_preview_sections", "theme_previews"

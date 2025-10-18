@@ -21,6 +21,7 @@ class Upload < ApplicationRecord
   
   # Callbacks
   after_commit :trigger_upload_hooks, on: [:create, :update], if: -> { file.attached? }
+  before_validation :configure_storage, on: :create
   
   # Scopes
   scope :images, -> { joins(file_attachment: :blob).where(active_storage_blobs: { content_type: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] }) }
@@ -54,7 +55,18 @@ class Upload < ApplicationRecord
   end
   
   def url
-    file.attached? ? Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true) : nil
+    return nil unless file.attached?
+    
+    # Check if CDN is enabled
+    storage_config = StorageConfigurationService.new
+    if storage_config.cdn_enabled?
+      # Return CDN URL
+      cdn_base = storage_config.cdn_url.chomp('/')
+      "#{cdn_base}#{Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true)}"
+    else
+      # Return regular Rails blob path
+      Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true)
+    end
   end
   
   def quarantined?
@@ -74,6 +86,12 @@ class Upload < ApplicationRecord
   end
   
   private
+  
+  def configure_storage
+    # Configure storage based on current settings
+    storage_config = StorageConfigurationService.new
+    storage_config.configure_active_storage
+  end
   
   def trigger_upload_hooks
     Railspress::PluginSystem.do_action('upload_created', self) if saved_change_to_id?

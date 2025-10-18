@@ -1,0 +1,116 @@
+{
+  "name": "Features",
+  "description": "Showcase key features with icons and descriptions",
+  "category": "Content",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Our Features"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Discover what makes us different"
+    },
+    "layout": {
+      "type": "select",
+      "label": "Layout",
+      "default": "grid",
+      "options": [
+        {"value": "grid", "label": "Grid"},
+        {"value": "list", "label": "List"},
+        {"value": "carousel", "label": "Carousel"}
+      ]
+    },
+    "columns": {
+      "type": "select",
+      "label": "Columns",
+      "default": "3",
+      "options": [
+        {"value": "2", "label": "2 Columns"},
+        {"value": "3", "label": "3 Columns"},
+        {"value": "4", "label": "4 Columns"}
+      ]
+    },
+    "show_icons": {
+      "type": "checkbox",
+      "label": "Show Icons",
+      "default": true
+    },
+    "background_color": {
+      "type": "color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    }
+  },
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Feature Title"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "Feature description goes here..."
+        },
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon (CSS class or SVG)",
+          "default": "icon-star"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "Link URL"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link Text",
+          "default": "Learn More"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "default": {
+    "blocks": [
+      {
+        "type": "feature",
+        "settings": {
+          "title": "Feature 1",
+          "description": "Description of feature 1",
+          "icon": "icon-star",
+          "link_text": "Learn More"
+        }
+      },
+      {
+        "type": "feature",
+        "settings": {
+          "title": "Feature 2",
+          "description": "Description of feature 2",
+          "icon": "icon-heart",
+          "link_text": "Learn More"
+        }
+      },
+      {
+        "type": "feature",
+        "settings": {
+          "title": "Feature 3",
+          "description": "Description of feature 3",
+          "icon": "icon-check",
+          "link_text": "Learn More"
+        }
+      }
+    ]
+  }
+}

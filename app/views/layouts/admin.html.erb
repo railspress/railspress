@@ -7,7 +7,7 @@
     <%= csp_meta_tag %>
     
     <% if current_user&.api_key.present? %>
-      <meta name="api-key" content="<%= current_user.api_key %>">
+      <meta name="api-key" content="<%= current_user&.api_key %>">
     <% end %>
     
     <% if admin_favicon_url.present? %>
@@ -876,6 +876,13 @@
           <span class="sidebar-text">Storage</span>
         <% end %>
         
+        <%= link_to admin_oauth_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_oauth_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+          <span class="sidebar-text">OAuth</span>
+        <% end %>
+        
     
           </div>
         </div>
@@ -952,6 +959,21 @@
             <span class="sidebar-text">Webhooks</span>
           <% end %>
         <% end %>
+        
+        <!-- Admin Sidebar Bottom Hook - Plugins can add navigation items here -->
+        <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+          <% 
+            begin
+              hook_result = Railspress::PluginSystem.do_action('admin_sidebar_bottom')
+              if hook_result.present?
+                concat raw(hook_result)
+              end
+            rescue => e
+              Rails.logger.error "Error executing admin_sidebar_bottom hook: #{e.message}"
+            end
+          %>
+        <% end %>
+        
           </div>
         </div>
       </nav>
@@ -970,11 +992,39 @@
             </svg>
           </button>
           
+          <!-- Admin Left Topbar Hook - Plugins can add content before page title -->
+          <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+            <% 
+              begin
+                hook_result = Railspress::PluginSystem.do_action('admin_left_topbar_content')
+                if hook_result.present?
+                  concat raw(hook_result)
+                end
+              rescue => e
+                Rails.logger.error "Error executing admin_left_topbar_content hook: #{e.message}"
+              end
+            %>
+          <% end %>
+          
           <h1 class="text-xl font-semibold text-white">
             <%= content_for?(:page_title) ? yield(:page_title) : (content_for?(:title) ? yield(:title) : "Dashboard") %>
           </h1>
         </div>
         <div class="flex items-center space-x-4">
+          <!-- Admin Right Topbar Hook - Plugins can add content here -->
+          <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+            <% 
+              begin
+                hook_result = Railspress::PluginSystem.do_action('admin_right_topbar_content')
+                if hook_result.present?
+                  concat raw(hook_result)
+                end
+              rescue => e
+                Rails.logger.error "Error executing admin_right_topbar_content hook: #{e.message}"
+              end
+            %>
+          <% end %>
+          
           <!-- External Link -->
           <button onclick="window.open('<%= root_path %>', '_blank')" 
                   class="hidden md:flex items-center gap-2 px-3 py-2 bg-[#0a0a0a] hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-gray-300 hover:text-white transition group">
@@ -985,22 +1035,23 @@
           
           
           <!-- User Dropdown -->
-          <div class="relative" id="user-dropdown">
-            <button onclick="toggleUserDropdown()" class="flex items-center gap-3 px-3 py-2 hover:bg-[#1a1a1a] rounded-lg transition">
-              <!-- Avatar -->
-              <% if current_user.avatar.attached? %>
-                <%= image_tag current_user.avatar, class: "w-8 h-8 rounded-full object-cover border-2 border-[#2a2a2a]" %>
-              <% else %>
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
-                  <%= (current_user.name.presence || current_user.email).first.upcase %>
+          <% if current_user %>
+            <div class="relative" id="user-dropdown">
+              <button onclick="toggleUserDropdown()" class="flex items-center gap-3 px-3 py-2 hover:bg-[#1a1a1a] rounded-lg transition">
+                <!-- Avatar -->
+                <% if current_user.avatar.attached? %>
+                  <%= image_tag current_user.avatar, class: "w-8 h-8 rounded-full object-cover border-2 border-[#2a2a2a]" %>
+                <% else %>
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
+                    <%= (current_user.name.presence || current_user.email).first.upcase %>
+                  </div>
+                <% end %>
+                
+                <!-- Name & Role (hidden on small screens) -->
+                <div class="text-left hidden lg:block">
+                  <p class="text-sm font-medium text-white"><%= current_user.name || current_user.email.split('@').first.titleize %></p>
+                  <p class="text-xs text-gray-500"><%= current_user.role.titleize %></p>
                 </div>
-              <% end %>
-              
-              <!-- Name & Role (hidden on small screens) -->
-              <div class="text-left hidden lg:block">
-                <p class="text-sm font-medium text-white"><%= current_user.name || current_user.email.split('@').first.titleize %></p>
-                <p class="text-xs text-gray-500"><%= current_user.role.titleize %></p>
-              </div>
               
               <svg class="w-4 h-4 text-gray-400 dropdown-arrow transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -1058,14 +1109,43 @@
           </div>
         </div>
       </div>
+      <% end %>
 
       <!-- Flash Messages -->
       <!-- Flash messages now shown as SweetAlert2 toasts (see script at bottom) -->
+
+      <!-- Admin Content Top Hook - Plugins can add content before page content -->
+      <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+        <% 
+          begin
+            hook_result = Railspress::PluginSystem.do_action('admin_content_top')
+            if hook_result.present?
+              concat raw(hook_result)
+            end
+          rescue => e
+            Rails.logger.error "Error executing admin_content_top hook: #{e.message}"
+          end
+        %>
+      <% end %>
 
       <!-- Page Content -->
       <div class="p-4 lg:p-8">
         <%= yield %>
       </div>
+      
+      <!-- Admin Content Bottom Hook - Plugins can add content after page content -->
+      <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+        <% 
+          begin
+            hook_result = Railspress::PluginSystem.do_action('admin_content_bottom')
+            if hook_result.present?
+              concat raw(hook_result)
+            end
+          rescue => e
+            Rails.logger.error "Error executing admin_content_bottom hook: #{e.message}"
+          end
+        %>
+      <% end %>
     </main>
     
     
@@ -1475,11 +1555,111 @@
       .category-title {
         @apply px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider;
       }
+      
+      /* Hot Reload Dialog Animations */
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
+      
+      @keyframes progressBar {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(0%); }
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      
+      @keyframes fadeOut {
+        from { opacity: 1; transform: scale(1); }
+        to { opacity: 0; transform: scale(0.9); }
+      }
+      
+      #hot-reload-dialog {
+        animation: fadeIn 0.3s ease-out;
+      }
+      
+      #hot-reload-dialog.hidden {
+        animation: fadeOut 0.3s ease-in;
+      }
     </style>
     
     
+    <!-- Hot Reload Dialog -->
+    <div id="hot-reload-dialog" 
+         data-controller="hot-reload-dialog" 
+         data-hot-reload-dialog-target="dialog"
+         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div class="bg-gradient-to-br from-purple-900/90 to-blue-900/90 border border-purple-500/30 rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
+        <!-- Animated Icon -->
+        <div class="flex justify-center mb-6">
+          <div data-hot-reload-dialog-target="icon" 
+               class="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Content -->
+        <div data-hot-reload-dialog-target="text" class="text-center">
+          <!-- Content will be populated by JavaScript -->
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="mt-6">
+          <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div data-hot-reload-dialog-target="progress" 
+                 class="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transform -translate-x-full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Footer Hook - Plugins can add scripts, styles, or content here -->
+    <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+      <% 
+        begin
+          hook_result = Railspress::PluginSystem.do_action('admin_footer')
+          if hook_result.present?
+            concat raw(hook_result)
+          end
+        rescue => e
+          Rails.logger.error "Error executing admin_footer hook: #{e.message}"
+        end
+      %>
+    <% end %>
+
     <!-- Global Admin Controllers -->
     <div data-controller="tabulator-manager"></div>
+    
+    <!-- Hot Reload Trigger Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Check for hot reload flash message
+        <% if flash[:hot_reload] %>
+          const dialog = document.getElementById('hot-reload-dialog');
+          const controller = Stimulus.getControllerForElementAndIdentifier(dialog, 'hot-reload-dialog');
+          
+          if (controller) {
+            controller.show('<%= flash[:plugin_name] %>', '<%= flash[:action] %>');
+            
+            // After showing dialog, reload the page after a delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          }
+        <% end %>
+      });
+    </script>
+    
     <% flash.discard %>
   </body>
 </html>

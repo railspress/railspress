@@ -1,0 +1,37 @@
+{
+  "name": "Error Content",
+  "description": "Error page content (404, 500, etc.)",
+  "category": "System",
+  "settings": {
+    "error_code": {
+      "type": "text",
+      "label": "Error Code",
+      "default": "404"
+    },
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Page Not Found"
+    },
+    "message": {
+      "type": "textarea",
+      "label": "Error Message",
+      "default": "Sorry, the page you are looking for could not be found."
+    },
+    "show_search": {
+      "type": "checkbox",
+      "label": "Show Search Form",
+      "default": true
+    },
+    "show_home_link": {
+      "type": "checkbox",
+      "label": "Show Home Link",
+      "default": true
+    },
+    "background_color": {
+      "type": "color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    }
+  }
+}

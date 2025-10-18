@@ -50,6 +50,12 @@ class BuilderLiquidRenderer
       }
     }.merge(context)
     
+    # Add context data based on section schema requirements
+    context_data = get_section_context(section_data['type'])
+    context_data.each do |key, value|
+      liquid_context["@#{key}"] = value
+    end
+    
     # Render section
     template.render!(liquid_context)
   rescue Liquid::Error => e
@@ -79,6 +85,12 @@ class BuilderLiquidRenderer
         'type' => section.section_type
       }
     }.merge(context)
+    
+    # Add context data based on section schema requirements
+    context_data = get_section_context(section.section_type)
+    context_data.each do |key, value|
+      liquid_context["@#{key}"] = value
+    end
     
     # Render section
     template.render!(liquid_context)
@@ -132,6 +144,112 @@ class BuilderLiquidRenderer
   end
 
   private
+
+  # Get context data for a specific section based on its schema requirements
+  def get_section_context(section_type)
+    # Get the section schema to see what context it requests
+    section_schema = get_section_schema(section_type)
+    return {} unless section_schema&.dig('context_requests')
+    
+    context_data = {}
+    section_schema['context_requests'].each do |key, request_config|
+      case key
+      when 'menus'
+        context_data[key] = get_menus_context
+      when 'pages'
+        context_data[key] = get_pages_context
+      when 'posts'
+        context_data[key] = get_posts_context
+      when 'categories'
+        context_data[key] = get_categories_context
+      when 'products'
+        context_data[key] = get_products_context
+      else
+        Rails.logger.warn "Unknown context request: #{key}"
+      end
+    end
+    
+    context_data
+  end
+
+  def get_section_schema(section_type)
+    # Get the section schema from the theme files
+    theme_name = builder_theme.theme_name
+    manager = ThemesManager.new
+    schema_path = File.join(manager.themes_path, theme_name, 'sections', "#{section_type}.json")
+    
+    return nil unless File.exist?(schema_path)
+    
+    JSON.parse(File.read(schema_path))
+  rescue JSON::ParserError, Errno::ENOENT
+    nil
+  end
+
+  def get_menus_context
+    # Return available menus for navigation
+    # In a real system, this would query the database
+    [
+      {
+        id: 1,
+        name: 'Main Navigation',
+        menu_items: [
+          { id: 1, title: 'Home', url: '/', order: 1 },
+          { id: 2, title: 'About', url: '/about', order: 2 },
+          { id: 3, title: 'Services', url: '/services', order: 3 },
+          { id: 4, title: 'Contact', url: '/contact', order: 4 }
+        ]
+      },
+      {
+        id: 2,
+        name: 'Footer Links',
+        menu_items: [
+          { id: 5, title: 'Privacy Policy', url: '/privacy', order: 1 },
+          { id: 6, title: 'Terms of Service', url: '/terms', order: 2 },
+          { id: 7, title: 'Support', url: '/support', order: 3 }
+        ]
+      }
+    ]
+  end
+
+  def get_pages_context
+    # Return available pages
+    # In a real system, this would query the database
+    [
+      { id: 1, title: 'Home', slug: 'home', url: '/' },
+      { id: 2, title: 'About Us', slug: 'about', url: '/about' },
+      { id: 3, title: 'Services', slug: 'services', url: '/services' },
+      { id: 4, title: 'Contact', slug: 'contact', url: '/contact' },
+      { id: 5, title: 'Privacy Policy', slug: 'privacy', url: '/privacy' }
+    ]
+  end
+
+  def get_posts_context
+    # Return recent posts
+    # In a real system, this would query the database
+    [
+      { id: 1, title: 'Welcome to Our Blog', slug: 'welcome-blog', url: '/blog/welcome-blog' },
+      { id: 2, title: 'Getting Started Guide', slug: 'getting-started', url: '/blog/getting-started' }
+    ]
+  end
+
+  def get_categories_context
+    # Return post categories
+    # In a real system, this would query the database
+    [
+      { id: 1, name: 'News', slug: 'news' },
+      { id: 2, name: 'Tutorials', slug: 'tutorials' },
+      { id: 3, name: 'Updates', slug: 'updates' }
+    ]
+  end
+
+  def get_products_context
+    # Return sample products (for e-commerce sections)
+    # In a real system, this would query the database
+    [
+      { id: 1, title: 'Sample Product 1', price: 29.99, url: '/products/sample-1' },
+      { id: 2, title: 'Sample Product 2', price: 49.99, url: '/products/sample-2' }
+    ]
+  end
 
   def setup_liquid_file_system
     # Create a custom file system that can resolve includes from PublishedThemeFile
@@ -255,6 +373,12 @@ class BuilderLiquidRenderer
     
     # Prepare context
     liquid_context = build_liquid_context(context)
+    
+    # Add context data based on section schema requirements
+    context_data = get_section_context(section_name)
+    context_data.each do |key, value|
+      liquid_context["@#{key}"] = value
+    end
     
     # Render section
     template.render!(liquid_context)

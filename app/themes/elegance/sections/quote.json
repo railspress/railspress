@@ -1,0 +1,41 @@
+{
+  "name": "Quote",
+  "description": "Blockquote section with citation",
+  "category": "Content",
+  "settings": {
+    "quote": {
+      "type": "textarea",
+      "label": "Quote",
+      "default": "This is an inspiring quote that will motivate your visitors."
+    },
+    "author": {
+      "type": "text",
+      "label": "Author",
+      "default": "Author Name"
+    },
+    "position": {
+      "type": "text",
+      "label": "Position/Title"
+    },
+    "style": {
+      "type": "select",
+      "label": "Style",
+      "default": "default",
+      "options": [
+        {"value": "default", "label": "Default"},
+        {"value": "minimal", "label": "Minimal"},
+        {"value": "bordered", "label": "Bordered"}
+      ]
+    },
+    "text_alignment": {
+      "type": "select",
+      "label": "Text Alignment",
+      "default": "center",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"}
+      ]
+    }
+  }
+}

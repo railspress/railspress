@@ -1,0 +1,41 @@
+{
+  "name": "Recent Posts",
+  "description": "Display recent blog posts",
+  "category": "Blog",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Recent Posts"
+    },
+    "posts_count": {
+      "type": "number",
+      "label": "Number of Posts",
+      "default": 3
+    },
+    "layout": {
+      "type": "select",
+      "label": "Layout",
+      "default": "grid",
+      "options": [
+        {"value": "grid", "label": "Grid"},
+        {"value": "list", "label": "List"}
+      ]
+    },
+    "show_excerpt": {
+      "type": "checkbox",
+      "label": "Show Excerpt",
+      "default": true
+    },
+    "show_featured_image": {
+      "type": "checkbox",
+      "label": "Show Featured Image",
+      "default": true
+    },
+    "show_date": {
+      "type": "checkbox",
+      "label": "Show Date",
+      "default": true
+    }
+  }
+}

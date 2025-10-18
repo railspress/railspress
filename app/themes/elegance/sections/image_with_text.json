@@ -1,0 +1,48 @@
+{
+  "name": "Image with Text",
+  "description": "Image and text content side by side",
+  "category": "Content",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Your Heading Here"
+    },
+    "text": {
+      "type": "richtext",
+      "label": "Text",
+      "default": "<p>Add your text content here...</p>"
+    },
+    "image": {
+      "type": "image",
+      "label": "Image"
+    },
+    "image_position": {
+      "type": "select",
+      "label": "Image Position",
+      "default": "left",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "right", "label": "Right"}
+      ]
+    },
+    "image_size": {
+      "type": "select",
+      "label": "Image Size",
+      "default": "medium",
+      "options": [
+        {"value": "small", "label": "Small (25%)"},
+        {"value": "medium", "label": "Medium (50%)"},
+        {"value": "large", "label": "Large (75%)"}
+      ]
+    },
+    "button_text": {
+      "type": "text",
+      "label": "Button Text"
+    },
+    "button_url": {
+      "type": "url",
+      "label": "Button URL"
+    }
+  }
+}

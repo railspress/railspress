@@ -1,0 +1,101 @@
+{
+  "name": "Testimonials",
+  "description": "Customer testimonials and reviews",
+  "category": "Marketing",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "What Our Customers Say"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Read what our satisfied customers have to say"
+    },
+    "layout": {
+      "type": "select",
+      "label": "Layout",
+      "default": "grid",
+      "options": [
+        {"value": "grid", "label": "Grid"},
+        {"value": "carousel", "label": "Carousel"},
+        {"value": "list", "label": "List"}
+      ]
+    },
+    "columns": {
+      "type": "select",
+      "label": "Columns",
+      "default": "3",
+      "options": [
+        {"value": "2", "label": "2 Columns"},
+        {"value": "3", "label": "3 Columns"},
+        {"value": "4", "label": "4 Columns"}
+      ]
+    },
+    "show_ratings": {
+      "type": "checkbox",
+      "label": "Show Star Ratings",
+      "default": true
+    }
+  },
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": "Testimonial",
+          "default": "This is an amazing product!"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author Name",
+          "default": "John Doe"
+        },
+        {
+          "type": "text",
+          "id": "position",
+          "label": "Position/Title"
+        },
+        {
+          "type": "image",
+          "id": "avatar",
+          "label": "Author Photo"
+        },
+        {
+          "type": "number",
+          "id": "rating",
+          "label": "Rating (1-5)",
+          "default": 5
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "default": {
+    "blocks": [
+      {
+        "type": "testimonial",
+        "settings": {
+          "content": "This product exceeded my expectations!",
+          "author": "Jane Smith",
+          "position": "CEO, Company Inc.",
+          "rating": 5
+        }
+      },
+      {
+        "type": "testimonial",
+        "settings": {
+          "content": "Amazing quality and great customer service.",
+          "author": "Mike Johnson",
+          "position": "Marketing Director",
+          "rating": 5
+        }
+      }
+    ]
+  }
+}

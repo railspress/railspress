@@ -24,6 +24,20 @@
   <!-- Stats Cards -->
   <%= render 'admin/shared/stats_cards', stats: @stats %>
 
+  <!-- Navigation Tabs -->
+  <div class="border-b border-gray-700">
+    <nav class="-mb-px flex space-x-8">
+      <%= link_to admin_webhooks_path, 
+          class: "py-2 px-1 border-b-2 font-medium text-sm #{'border-indigo-500 text-indigo-400' if params[:show_inactive] != 'true'}" do %>
+        Active Webhooks
+      <% end %>
+      <%= link_to admin_webhooks_path(show_inactive: 'true'), 
+          class: "py-2 px-1 border-b-2 font-medium text-sm #{'border-indigo-500 text-indigo-400' if params[:show_inactive] == 'true'}" do %>
+        All Webhooks
+      <% end %>
+    </nav>
+  </div>
+
   <!-- Admin Table -->
   <%= render 'admin/shared/admin_table', 
       table_type: 'webhooks', 

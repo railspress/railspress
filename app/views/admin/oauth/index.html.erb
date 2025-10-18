@@ -1,0 +1,320 @@
+<% content_for :page_title, "OAuth Settings" %>
+
+<div class="max-w-6xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">OAuth Settings</h1>
+    <p class="text-gray-400">Configure OAuth providers for user authentication</p>
+  </div>
+
+  <%= form_with url: admin_oauth_settings_path, method: :patch, class: "space-y-8" do |f| %>
+    
+    <!-- Google OAuth -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Google</h3>
+        <div class="flex items-center space-x-3">
+          <button type="button" onclick="testConnection('google')" class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+            Test Connection
+          </button>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= check_box_tag 'settings[google_oauth_enabled]', '1', @settings[:google_enabled],
+                class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+            <span class="text-gray-300 text-sm">Enabled</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= label_tag 'google_client_id', 'Client ID', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'google_client_id', @settings[:google_client_id],
+              placeholder: '123456789-abcdefghijklmnop.apps.googleusercontent.com',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+        
+        <div>
+          <%= label_tag 'google_client_secret', 'Client Secret', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <div class="relative">
+            <%= password_field_tag 'google_client_secret', @settings[:google_client_secret],
+                placeholder: 'Enter your client secret',
+                class: 'w-full px-4 py-2 pr-10 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <button type="button" onclick="togglePasswordVisibility('google_client_secret')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div>
+          <%= label_tag 'google_redirect_uri', 'Redirect URI', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'google_redirect_uri', @settings[:google_redirect_uri],
+              placeholder: 'https://yoursite.com/auth/google/callback',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+        
+        <div>
+          <%= label_tag 'google_tenant', 'Tenant', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <div class="flex items-center space-x-2">
+            <%= text_field_tag 'google_tenant', @settings[:google_tenant],
+                placeholder: 'Optional: your-tenant.com',
+                class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <div class="relative group">
+              <div class="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center cursor-help">
+                <span class="text-black text-xs font-bold">i</span>
+              </div>
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                For Google Workspace domains
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GitHub OAuth -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">GitHub</h3>
+        <div class="flex items-center space-x-3">
+          <button type="button" onclick="testConnection('github')" class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+            Test Connection
+          </button>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= check_box_tag 'settings[github_oauth_enabled]', '1', @settings[:github_enabled],
+                class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+            <span class="text-gray-300 text-sm">Enabled</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= label_tag 'github_client_id', 'Client ID', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'github_client_id', @settings[:github_client_id],
+              placeholder: 'Iv1.8a61f9b3a7aba766',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+        
+        <div>
+          <%= label_tag 'github_client_secret', 'Client Secret', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <div class="relative">
+            <%= password_field_tag 'github_client_secret', @settings[:github_client_secret],
+                placeholder: 'Enter your client secret',
+                class: 'w-full px-4 py-2 pr-10 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <button type="button" onclick="togglePasswordVisibility('github_client_secret')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="md:col-span-2">
+          <%= label_tag 'github_redirect_uri', 'Redirect URI', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'github_redirect_uri', @settings[:github_redirect_uri],
+              placeholder: 'https://yoursite.com/auth/github/callback',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Facebook OAuth -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Facebook</h3>
+        <div class="flex items-center space-x-3">
+          <button type="button" onclick="testConnection('facebook')" class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+            Test Connection
+          </button>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= check_box_tag 'settings[facebook_oauth_enabled]', '1', @settings[:facebook_enabled],
+                class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+            <span class="text-gray-300 text-sm">Enabled</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= label_tag 'facebook_app_id', 'App ID', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'facebook_app_id', @settings[:facebook_app_id],
+              placeholder: '1234567890123456',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+        
+        <div>
+          <%= label_tag 'facebook_app_secret', 'App Secret', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <div class="relative">
+            <%= password_field_tag 'facebook_app_secret', @settings[:facebook_app_secret],
+                placeholder: 'Enter your app secret',
+                class: 'w-full px-4 py-2 pr-10 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <button type="button" onclick="togglePasswordVisibility('facebook_app_secret')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="md:col-span-2">
+          <%= label_tag 'facebook_redirect_uri', 'Redirect URI', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'facebook_redirect_uri', @settings[:facebook_redirect_uri],
+              placeholder: 'https://yoursite.com/auth/facebook/callback',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Twitter OAuth -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Twitter</h3>
+        <div class="flex items-center space-x-3">
+          <button type="button" onclick="testConnection('twitter')" class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">
+            Test Connection
+          </button>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= check_box_tag 'settings[twitter_oauth_enabled]', '1', @settings[:twitter_enabled],
+                class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+            <span class="text-gray-300 text-sm">Enabled</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= label_tag 'twitter_api_key', 'API Key', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'twitter_api_key', @settings[:twitter_api_key],
+              placeholder: 'Your Twitter API Key',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+        
+        <div>
+          <%= label_tag 'twitter_api_secret', 'API Secret', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <div class="relative">
+            <%= password_field_tag 'twitter_api_secret', @settings[:twitter_api_secret],
+                placeholder: 'Enter your API secret',
+                class: 'w-full px-4 py-2 pr-10 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <button type="button" onclick="togglePasswordVisibility('twitter_api_secret')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="md:col-span-2">
+          <%= label_tag 'twitter_redirect_uri', 'Redirect URI', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= text_field_tag 'twitter_redirect_uri', @settings[:twitter_redirect_uri],
+              placeholder: 'https://yoursite.com/auth/twitter/callback',
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- General OAuth Settings -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h3 class="text-lg font-semibold text-white mb-4">General Settings</h3>
+      
+      <div class="space-y-4">
+        <div class="flex items-center space-x-3">
+          <%= check_box_tag 'settings[oauth_auto_register]', '1', @settings[:oauth_auto_register],
+              class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+          <%= label_tag 'settings[oauth_auto_register]', 'Auto-register new users', class: 'text-gray-300 cursor-pointer' %>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+          <%= check_box_tag 'settings[oauth_require_email]', '1', @settings[:oauth_require_email],
+              class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+          <%= label_tag 'settings[oauth_require_email]', 'Require email address', class: 'text-gray-300 cursor-pointer' %>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+          <%= check_box_tag 'settings[oauth_allow_existing_users]', '1', @settings[:oauth_allow_existing_users],
+              class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+          <%= label_tag 'settings[oauth_allow_existing_users]', 'Allow existing users to link accounts', class: 'text-gray-300 cursor-pointer' %>
+        </div>
+        
+        <div>
+          <%= label_tag 'settings[oauth_default_role]', 'Default Role for New Users', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+          <%= select_tag 'settings[oauth_default_role]',
+              options_for_select([
+                ['Subscriber', 'subscriber'],
+                ['Contributor', 'contributor'],
+                ['Author', 'author'],
+                ['Editor', 'editor'],
+                ['Administrator', 'administrator']
+              ], @settings[:oauth_default_role]),
+              class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex justify-end">
+      <%= submit_tag 'Save OAuth Settings', 
+          class: 'px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors' %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+function togglePasswordVisibility(fieldId) {
+  const field = document.getElementById(fieldId);
+  const button = field.nextElementSibling;
+  
+  if (field.type === 'password') {
+    field.type = 'text';
+    button.innerHTML = `
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
+      </svg>
+    `;
+  } else {
+    field.type = 'password';
+    button.innerHTML = `
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+      </svg>
+    `;
+  }
+}
+
+function testConnection(provider) {
+  const button = event.target;
+  const originalText = button.textContent;
+  
+  button.textContent = 'Testing...';
+  button.disabled = true;
+  
+  fetch('<%= admin_oauth_test_connection_path %>', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    body: JSON.stringify({ provider: provider })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      showSuccessToast(data.message);
+    } else {
+      showErrorToast(data.message);
+    }
+  })
+  .catch(error => {
+    showErrorToast('Connection test failed: ' + error.message);
+  })
+  .finally(() => {
+    button.textContent = originalText;
+    button.disabled = false;
+  });
+}
+</script>

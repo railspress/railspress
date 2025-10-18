@@ -32,6 +32,7 @@ class ThemePreviewRenderer
     "<div class='error'>ThemePreviewRenderer Error: #{e.message}<br>Backtrace: #{e.backtrace.first(5).join('<br>')}</div>"
   end
 
+
   # Get CSS and JS assets including all sections
   def assets
     # Use the existing BuilderLiquidRenderer's assets method
@@ -59,7 +60,7 @@ class ThemePreviewRenderer
         section_config = template_content['sections'][section_id]
         next unless section_config
         
-        # Create a mock section object
+        # Create a mock section object with blocks support
         section = Object.new
         def section.section_id
           @section_id
@@ -73,11 +74,36 @@ class ThemePreviewRenderer
         def section.position
           @position
         end
+        def section.blocks
+          @blocks || []
+        end
         
         section.instance_variable_set(:@section_id, section_id)
         section.instance_variable_set(:@section_type, section_config['type'])
         section.instance_variable_set(:@settings, section_config['settings'] || {})
         section.instance_variable_set(:@position, index)
+        
+        # Add blocks support if the section has blocks
+        if section_config['blocks']
+          blocks = section_config['blocks'].map do |block_data|
+            block = Object.new
+            def block.id
+              @id
+            end
+            def block.type
+              @type
+            end
+            def block.settings
+              @settings
+            end
+            
+            block.instance_variable_set(:@id, block_data['id'] || SecureRandom.hex(8))
+            block.instance_variable_set(:@type, block_data['type'])
+            block.instance_variable_set(:@settings, block_data['settings'] || {})
+            block
+          end
+          section.instance_variable_set(:@blocks, blocks)
+        end
         
         page_sections << section
       end

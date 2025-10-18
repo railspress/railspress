@@ -1,0 +1,41 @@
+{
+  "name": "Page Header",
+  "description": "Header section for individual pages",
+  "category": "Layout",
+  "settings": {
+    "title": {
+      "type": "text",
+      "label": "Page Title",
+      "default": "Page Title"
+    },
+    "subtitle": {
+      "type": "textarea",
+      "label": "Subtitle",
+      "default": "Page subtitle or description"
+    },
+    "background_image": {
+      "type": "image",
+      "label": "Background Image"
+    },
+    "background_color": {
+      "type": "color",
+      "label": "Background Color",
+      "default": "#f8f9fa"
+    },
+    "text_color": {
+      "type": "color",
+      "label": "Text Color",
+      "default": "#000000"
+    },
+    "height": {
+      "type": "select",
+      "label": "Height",
+      "default": "medium",
+      "options": [
+        {"value": "small", "label": "Small"},
+        {"value": "medium", "label": "Medium"},
+        {"value": "large", "label": "Large"}
+      ]
+    }
+  }
+}

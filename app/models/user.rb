@@ -2,7 +2,8 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable, :omniauthable,
+         omniauth_providers: [:google_oauth2, :github, :facebook, :twitter]
 
   # WordPress-like roles
   enum role: {
@@ -26,6 +27,7 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :api_tokens, dependent: :destroy
   has_many :ai_usages, dependent: :destroy
+  has_many :oauth_accounts, dependent: :destroy
   
   # Meta fields for plugin extensibility
   has_many :meta_fields, as: :metable, dependent: :destroy
@@ -48,6 +50,21 @@ class User < ApplicationRecord
   
   def preferred_monaco_theme
     monaco_theme.presence || 'auto' # Default to auto
+  end
+  
+  # Sidebar order preference
+  def sidebar_order
+    if super.present?
+      JSON.parse(super)
+    else
+      ['publish', 'featured-image', 'categories-tags', 'excerpt', 'seo']
+    end
+  rescue JSON::ParserError
+    ['publish', 'featured-image', 'categories-tags', 'excerpt', 'seo']
+  end
+  
+  def sidebar_order=(order)
+    super(order.is_a?(Array) ? order.to_json : order)
   end
   
   # Validations

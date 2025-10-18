@@ -272,29 +272,80 @@
                 <% section_config = @current_page_sections[section_id] %>
                 <!-- DEBUG: Rendering section <%= index %>: <%= section_id %> -->
                 <% if section_config %>
-                  <div class="section-item theme-bg-secondary theme-border-secondary border rounded-lg p-3 mb-2" 
+                  <div class="section-item theme-bg-secondary theme-border-secondary border rounded-lg mb-2" 
                        data-section-id="<%= section_id %>" 
                        data-section-type="<%= section_config['type'] %>"
                        data-settings="<%= section_config['settings'].to_json %>"
                        data-action="click->builder#selectSection"
                        data-section-id-param="<%= section_id %>">
-                    <div class="flex items-center justify-between">
+                    
+                    <!-- Section Header -->
+                    <div class="flex items-center justify-between p-3">
                       <div class="flex items-center space-x-3 flex-1">
                         <div class="drag-handle theme-text-tertiary hover:theme-text-secondary cursor-move">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
                           </svg>
                         </div>
-                        <div>
+                        <div class="flex items-center space-x-2">
+                          <svg class="w-4 h-4 theme-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                          </svg>
                           <h4 class="font-medium theme-text-primary"><%= section_config['type'].humanize %></h4>
                         </div>
                       </div>
-                      <button class="text-red-500 hover:text-red-700" data-action="click->builder#removeSectionAction" data-section-id="<%= section_id %>">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                      </button>
+                      <div class="flex items-center space-x-2">
+                        <!-- Add Block Button (for sections that support blocks) -->
+                        <% if section_config['type'] == 'accordion' || section_config['type'] == 'columns' || section_config['type'] == 'features' || section_config['type'] == 'testimonials' %>
+                          <button class="text-blue-500 hover:text-blue-700" data-action="click->builder#addBlock" data-section-id="<%= section_id %>" title="Add Block">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                          </button>
+                        <% end %>
+                        <!-- Remove Section Button -->
+                        <button class="text-red-500 hover:text-red-700" data-action="click->builder#removeSectionAction" data-section-id="<%= section_id %>" title="Remove Section">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
+                    
+                    <!-- Blocks Tree (if section has blocks) -->
+                    <% if section_config['blocks'] && section_config['blocks'].any? %>
+                      <div class="blocks-tree theme-border-secondary border-t">
+                        <% section_config['blocks'].each_with_index do |block, block_index| %>
+                          <div class="block-item theme-bg-tertiary theme-border-secondary border-b last:border-b-0 p-2 pl-6" 
+                               data-block-id="<%= block['id'] %>" 
+                               data-block-type="<%= block['type'] %>"
+                               data-section-id="<%= section_id %>"
+                               data-action="click->builder#selectBlock">
+                            <div class="flex items-center justify-between">
+                              <div class="flex items-center space-x-2">
+                                <div class="drag-handle theme-text-tertiary hover:theme-text-secondary cursor-move">
+                                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                  </svg>
+                                </div>
+                                <svg class="w-3 h-3 theme-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                                <span class="text-sm theme-text-secondary"><%= block['type'].humanize %></span>
+                                <% if block['settings'] && block['settings']['title'] %>
+                                  <span class="text-xs theme-text-tertiary">- <%= block['settings']['title'] %></span>
+                                <% end %>
+                              </div>
+                              <button class="text-red-400 hover:text-red-600" data-action="click->builder#removeBlock" data-block-id="<%= block['id'] %>" data-section-id="<%= section_id %>" title="Remove Block">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        <% end %>
+                      </div>
+                    <% end %>
                   </div>
                 <% end %>
               <% end %>

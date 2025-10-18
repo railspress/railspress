@@ -1,0 +1,43 @@
+{
+  "name": "Heading",
+  "description": "Section heading with customizable styling",
+  "category": "Content",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Your Heading Here"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Optional subheading text"
+    },
+    "heading_size": {
+      "type": "select",
+      "label": "Heading Size",
+      "default": "h2",
+      "options": [
+        {"value": "h1", "label": "H1 (Largest)"},
+        {"value": "h2", "label": "H2 (Large)"},
+        {"value": "h3", "label": "H3 (Medium)"},
+        {"value": "h4", "label": "H4 (Small)"}
+      ]
+    },
+    "alignment": {
+      "type": "select",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"}
+      ]
+    },
+    "text_color": {
+      "type": "color",
+      "label": "Text Color",
+      "default": "#000000"
+    }
+  }
+}

@@ -12,6 +12,60 @@ class Post < ApplicationRecord
   # Versioning
   has_paper_trail
   
+  # Versioning methods
+  def versions_count
+    versions.count
+  end
+  
+  def latest_version
+    versions.last
+  end
+  
+  def version_at(timestamp)
+    versions.where('created_at <= ?', timestamp).order(:created_at).last
+  end
+  
+  def changes_since(version)
+    return {} unless version
+    
+    current_changes = {}
+    version.changeset.each do |field, change|
+      current_changes[field] = {
+        from: change[0],
+        to: change[1],
+        current: send(field)
+      }
+    end
+    current_changes
+  end
+  
+  def restore_to_version(version_id)
+    version = versions.find(version_id)
+    return false unless version
+    
+    # Create a backup of current version before restoring
+    PaperTrail.without_versioning do
+      version.reify.save!
+    end
+    true
+  rescue => e
+    Rails.logger.error "Failed to restore version #{version_id}: #{e.message}"
+    false
+  end
+  
+  def version_summary(version)
+    changes = version.changeset
+    return "Initial version" if changes.empty?
+    
+    summary_parts = []
+    summary_parts << "Title changed" if changes.key?('title')
+    summary_parts << "Content updated" if changes.key?('content')
+    summary_parts << "Status changed" if changes.key?('status')
+    summary_parts << "SEO updated" if changes.key?('meta_title') || changes.key?('meta_description')
+    
+    summary_parts.any? ? summary_parts.join(', ') : "Minor changes"
+  end
+  
   # Search - Database agnostic
   def self.search_full_text(query)
     return none if query.blank?

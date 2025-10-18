@@ -4,6 +4,9 @@ class Admin::PluginsController < Admin::BaseController
 
   # GET /admin/plugins
   def index
+    # Auto-discover and register plugins from filesystem
+    discover_and_register_plugins
+    
     @installed_plugins = Plugin.all.order(active: :desc, name: :asc)
   end
 
@@ -97,6 +100,7 @@ class Admin::PluginsController < Admin::BaseController
     if @plugin.activate!
       # Load the plugin
       load_plugin(@plugin)
+      
       redirect_to admin_plugins_path, notice: "Plugin '#{@plugin.name}' activated successfully."
     else
       redirect_to admin_plugins_path, alert: "Failed to activate plugin."
@@ -143,17 +147,47 @@ class Admin::PluginsController < Admin::BaseController
 
   # GET /admin/plugins/1/settings
   def settings
-    @plugin_settings = @plugin.settings || {}
+    # Get saved settings from database
+    saved_settings = @plugin.settings || {}
+    
+    # Try to load plugin instance to get schema and defaults
+    @plugin_instance = load_plugin_instance(@plugin)
+    
+    if @plugin_instance&.has_settings?
+      # Get default values from schema
+      default_settings = {}
+      @plugin_instance.settings_schema.each do |setting|
+        default_settings[setting[:key]] = setting[:default] if setting[:default]
+      end
+      
+      # Merge defaults with saved settings (saved settings take precedence)
+      @plugin_settings = default_settings.merge(saved_settings)
+      @schema = @plugin_instance.settings_schema
+    else
+      # Fallback: just use saved settings
+      @plugin_settings = saved_settings
+      @schema = nil
+    end
   end
 
   # PATCH /admin/plugins/1/update_settings
   def update_settings
     @plugin = Plugin.find(params[:id])
+    new_settings = settings_params
     
-    if @plugin.update(settings: params[:plugin][:settings])
-      redirect_to admin_plugins_path, notice: "Plugin settings updated."
+    # Try to get plugin instance for validation
+    @plugin_instance = load_plugin_instance(@plugin)
+    
+    if @plugin_instance&.has_settings?
+      # Validate settings against schema if available
+      # For now, we'll just save the settings
+      # In a more advanced implementation, we could validate types, required fields, etc.
+    end
+    
+    if @plugin.update(settings: new_settings)
+      redirect_to admin_plugins_path, notice: "Plugin settings updated successfully."
     else
-      redirect_to settings_admin_plugin_path(@plugin), alert: "Failed to update settings."
+      redirect_to settings_admin_plugin_path(@plugin), alert: "Failed to update plugin settings."
     end
   end
 
@@ -402,29 +436,6 @@ class Admin::PluginsController < Admin::BaseController
   end
 
   # GET /admin/plugins/1/settings
-  def settings
-    @plugin_settings = @plugin.settings || {}
-    
-    # Try to load plugin instance to get schema
-    @plugin_instance = Railspress::PluginSystem.get_plugin(@plugin.name.underscore) rescue nil
-    
-    # If no plugin instance, try to load the plugin class
-    if @plugin_instance.nil?
-      plugin_path = Rails.root.join('lib', 'plugins', @plugin.name.underscore, "#{@plugin.name.underscore}.rb")
-      if File.exist?(plugin_path)
-        begin
-          load plugin_path
-          plugin_class_name = @plugin.name.classify
-          plugin_class = plugin_class_name.constantize rescue nil
-          @plugin_instance = plugin_class.new if plugin_class && plugin_class.ancestors.include?(Railspress::PluginBase)
-        rescue => e
-          Rails.logger.error "Failed to load plugin for settings: #{e.message}"
-        end
-      end
-    end
-    
-    @schema = @plugin_instance&.settings_schema
-  end
 
   # PATCH /admin/plugins/1/update_settings
   def update_settings
@@ -461,7 +472,14 @@ class Admin::PluginsController < Admin::BaseController
   end
 
   def settings_params
-    params.require(:plugin).permit(:settings).to_h.dig(:settings) || {}
+    # Handle both nested and flat settings parameters
+    if params[:plugin] && params[:plugin][:settings]
+      params.require(:plugin).permit(:settings).to_h.dig(:settings) || {}
+    elsif params[:settings]
+      params.permit(settings: {}).to_h[:settings] || {}
+    else
+      {}
+    end
   end
 
   def load_plugin(plugin)
@@ -480,5 +498,102 @@ class Admin::PluginsController < Admin::BaseController
       Rails.logger.warn "Plugin file not found: #{plugin_path}"
       true # Don't fail if file doesn't exist yet
     end
+  end
+
+  def discover_and_register_plugins
+    plugins_dir = Rails.root.join('lib', 'plugins')
+    return unless Dir.exist?(plugins_dir)
+    
+    # Scan for plugin directories
+    Dir.glob(File.join(plugins_dir, '*')).each do |plugin_dir|
+      next unless File.directory?(plugin_dir)
+      
+      plugin_name = File.basename(plugin_dir)
+      plugin_file = File.join(plugin_dir, "#{plugin_name}.rb")
+      
+      next unless File.exist?(plugin_file)
+      
+      # Check if plugin is already registered
+      next if Plugin.exists?(name: plugin_name.humanize)
+      
+      begin
+        # Load the plugin file to get metadata
+        load plugin_file
+        
+        # Try to get plugin class and metadata
+        plugin_class_name = plugin_name.classify
+        plugin_class = plugin_class_name.constantize rescue nil
+        
+        if plugin_class && plugin_class.ancestors.include?(Railspress::PluginBase)
+          # Create plugin instance to get metadata
+          plugin_instance = plugin_class.new
+          
+          # Get metadata from instance
+          plugin_name_str = plugin_instance.name
+          plugin_version_str = plugin_instance.version
+          plugin_description_str = plugin_instance.description
+          plugin_author_str = plugin_instance.author || 'Unknown'
+          
+          # Register in database
+          Plugin.create!(
+            name: plugin_name_str,
+            description: plugin_description_str,
+            author: plugin_author_str,
+            version: plugin_version_str,
+            active: false
+          )
+          
+          Rails.logger.info "Auto-registered plugin: #{plugin_name_str}"
+        else
+          # If plugin class doesn't inherit from PluginBase, try to register with basic info
+          Plugin.create!(
+            name: plugin_name.humanize,
+            description: "Plugin: #{plugin_name.humanize}",
+            author: 'Unknown',
+            version: '1.0.0',
+            active: false
+          )
+          
+          Rails.logger.info "Auto-registered basic plugin: #{plugin_name.humanize}"
+        end
+      rescue => e
+        Rails.logger.error "Failed to auto-register plugin #{plugin_name}: #{e.message}"
+      end
+    end
+  end
+
+  def load_plugin_instance(plugin)
+    # Dynamic plugin discovery - find the plugin directory that matches this plugin
+    plugins_dir = Rails.root.join('lib', 'plugins')
+    return nil unless Dir.exist?(plugins_dir)
+    
+    Dir.glob(File.join(plugins_dir, '*')).each do |plugin_dir|
+      next unless File.directory?(plugin_dir)
+      
+      candidate_name = File.basename(plugin_dir)
+      plugin_file = File.join(plugin_dir, "#{candidate_name}.rb")
+      
+      next unless File.exist?(plugin_file)
+      
+      begin
+        # Load the plugin file
+        load plugin_file
+        plugin_class_name = candidate_name.classify
+        plugin_class = plugin_class_name.constantize rescue nil
+        
+        if plugin_class && plugin_class.ancestors.include?(Railspress::PluginBase)
+          # Create a temporary instance to check the name
+          temp_instance = plugin_class.new
+          if temp_instance.name == plugin.name
+            return temp_instance
+          end
+        end
+      rescue => e
+        # Continue to next plugin if this one fails
+        next
+      end
+    end
+    
+    nil
   end
 end

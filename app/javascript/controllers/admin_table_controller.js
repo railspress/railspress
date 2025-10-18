@@ -82,7 +82,11 @@ export default class extends Controller {
     
     // Handle title clicks for navigation
     if (cell.getColumn().getField() === 'title') {
-      window.location.href = data.edit_url || data.show_url
+      // For webhooks, use show_url, for others use edit_url
+      const url = this.settings.tableType === 'webhooks' ? data.show_url : (data.edit_url || data.show_url)
+      if (url) {
+        window.location.href = url
+      }
     }
   }
 
@@ -109,7 +113,9 @@ export default class extends Controller {
     // Search functionality
     if (this.hasSearchTarget) {
       this.searchTarget.addEventListener('input', this.debounce((e) => {
-        this.table.setFilter("title", "like", e.target.value)
+        // Search by title for most tables, but by name for webhooks
+        const searchField = this.settings.tableType === 'webhooks' ? 'name' : 'title'
+        this.table.setFilter(searchField, "like", e.target.value)
       }, 300))
     }
 

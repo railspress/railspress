@@ -1,0 +1,116 @@
+{
+  "name": "Columns",
+  "description": "Multi-column layout with customizable content",
+  "category": "Layout",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Our Services"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Discover what we can do for you"
+    },
+    "columns_count": {
+      "type": "select",
+      "label": "Number of Columns",
+      "default": "3",
+      "options": [
+        {"value": "2", "label": "2 Columns"},
+        {"value": "3", "label": "3 Columns"},
+        {"value": "4", "label": "4 Columns"}
+      ]
+    },
+    "column_alignment": {
+      "type": "select",
+      "label": "Column Alignment",
+      "default": "center",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"}
+      ]
+    },
+    "show_icons": {
+      "type": "checkbox",
+      "label": "Show Icons",
+      "default": true
+    },
+    "background_color": {
+      "type": "color",
+      "label": "Background Color",
+      "default": "#f8f9fa"
+    }
+  },
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Column Title"
+        },
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": "Content",
+          "default": "Add your content here..."
+        },
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon (CSS class or SVG)",
+          "default": "icon-star"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "Link URL"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link Text",
+          "default": "Learn More"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "default": {
+    "blocks": [
+      {
+        "type": "column",
+        "settings": {
+          "title": "Service 1",
+          "content": "Description of service 1",
+          "icon": "icon-star",
+          "link_text": "Learn More"
+        }
+      },
+      {
+        "type": "column",
+        "settings": {
+          "title": "Service 2",
+          "content": "Description of service 2",
+          "icon": "icon-heart",
+          "link_text": "Learn More"
+        }
+      },
+      {
+        "type": "column",
+        "settings": {
+          "title": "Service 3",
+          "content": "Description of service 3",
+          "icon": "icon-check",
+          "link_text": "Learn More"
+        }
+      }
+    ]
+  }
+}

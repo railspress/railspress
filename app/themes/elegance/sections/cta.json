@@ -1,0 +1,61 @@
+{
+  "name": "Call to Action",
+  "description": "Prominent call-to-action section with button and text",
+  "category": "Marketing",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Ready to Get Started?"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Join thousands of satisfied customers today"
+    },
+    "button_text": {
+      "type": "text",
+      "label": "Button Text",
+      "default": "Get Started Now"
+    },
+    "button_url": {
+      "type": "url",
+      "label": "Button URL",
+      "default": "#"
+    },
+    "button_style": {
+      "type": "select",
+      "label": "Button Style",
+      "default": "primary",
+      "options": [
+        {"value": "primary", "label": "Primary"},
+        {"value": "secondary", "label": "Secondary"},
+        {"value": "outline", "label": "Outline"}
+      ]
+    },
+    "background_color": {
+      "type": "color",
+      "label": "Background Color",
+      "default": "#007bff"
+    },
+    "text_color": {
+      "type": "color",
+      "label": "Text Color",
+      "default": "#ffffff"
+    },
+    "background_image": {
+      "type": "image",
+      "label": "Background Image"
+    },
+    "alignment": {
+      "type": "select",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"}
+      ]
+    }
+  }
+}

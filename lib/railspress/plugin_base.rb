@@ -31,6 +31,11 @@ module Railspress
         @plugin_license = license if license
         @plugin_license
       end
+      
+      # DSL method for defining settings schema
+      def settings_schema(&block)
+        @settings_schema_block = block
+      end
     end
     
     attr_reader :settings_schema, :admin_pages, :routes_block
@@ -61,6 +66,11 @@ module Railspress
       @author = self.class.plugin_author
       @url = self.class.plugin_url
       @license = self.class.plugin_license
+      
+      # Execute settings schema block if defined
+      if self.class.instance_variable_get(:@settings_schema_block)
+        instance_eval(&self.class.instance_variable_get(:@settings_schema_block))
+      end
       
       setup if respond_to?(:setup, true)
     end
@@ -178,6 +188,134 @@ module Railspress
     # Check if plugin has settings
     def has_settings?
       @settings_schema.any?
+    end
+    
+    # ========================================
+    # SETTINGS SCHEMA DSL METHODS
+    # ========================================
+    
+    # Define a settings section
+    def section(title, options = {}, &block)
+      # For now, we'll just execute the block
+      # In a more advanced implementation, we could group settings by section
+      instance_eval(&block) if block_given?
+    end
+    
+    # Define a text input setting
+    def text(key, label, options = {})
+      define_setting(key, {
+        type: 'text',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        placeholder: options[:placeholder],
+        default: options[:default]
+      })
+    end
+    
+    # Define a textarea setting
+    def textarea(key, label, options = {})
+      define_setting(key, {
+        type: 'textarea',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        placeholder: options[:placeholder],
+        default: options[:default],
+        rows: options[:rows] || 4
+      })
+    end
+    
+    # Define a select dropdown setting
+    def select(key, label, options_array, options = {})
+      define_setting(key, {
+        type: 'select',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        default: options[:default],
+        options: options_array
+      })
+    end
+    
+    # Define a checkbox setting
+    def checkbox(key, label, options = {})
+      define_setting(key, {
+        type: 'checkbox',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        default: options[:default] || false
+      })
+    end
+    
+    # Define a number input setting
+    def number(key, label, options = {})
+      define_setting(key, {
+        type: 'number',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        default: options[:default],
+        min: options[:min],
+        max: options[:max]
+      })
+    end
+    
+    # Define a URL input setting
+    def url(key, label, options = {})
+      define_setting(key, {
+        type: 'url',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        placeholder: options[:placeholder],
+        default: options[:default]
+      })
+    end
+    
+    # Define a color picker setting
+    def color(key, label, options = {})
+      define_setting(key, {
+        type: 'color',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        default: options[:default]
+      })
+    end
+    
+    # Define a radio button setting
+    def radio(key, label, options_array, options = {})
+      define_setting(key, {
+        type: 'radio',
+        label: label,
+        description: options[:description],
+        required: options[:required] || false,
+        default: options[:default],
+        options: options_array
+      })
+    end
+    
+    # Register a UI block (placeholder method)
+    def register_block(block_name, options = {})
+      # This is a placeholder for UI block registration
+      # In a full implementation, this would register blocks for the theme system
+      Rails.logger.info "Registered UI block: #{block_name}"
+    end
+    
+    # Add an action hook (similar to WordPress add_action)
+    def add_action(hook_name, callback = nil, priority = 10, &block)
+      if block_given?
+        callback = block
+      end
+      
+      if callback
+        Railspress::PluginSystem.add_action(hook_name, callback, priority, plugin_name)
+        Rails.logger.info "Added action hook: #{hook_name} for plugin: #{plugin_name}"
+      else
+        Rails.logger.warn "No callback provided for hook: #{hook_name}"
+      end
     end
     
     # Check if setting is enabled (for boolean settings)
@@ -589,12 +727,6 @@ module Railspress
     # HOOKS & FILTERS
     # ========================================
     
-    # Add an action hook
-    def add_action(hook_name, method_name, priority = 10)
-      Railspress::PluginSystem.add_action(hook_name, -> (*args) {
-        self.send(method_name, *args)
-      }, priority)
-    end
     
     # Add a filter hook
     def add_filter(filter_name, method_name, priority = 10)
@@ -681,9 +813,14 @@ module Railspress
     # UTILITY METHODS
     # ========================================
     
+    # Get plugin name (instance method)
+    def plugin_name
+      self.class.plugin_name
+    end
+    
     # Get plugin identifier (snake_case name)
     def plugin_identifier
-      name.underscore.gsub(/\s+/, '_').gsub(/[^a-z0-9_]/, '')
+      plugin_name.underscore.gsub(/\s+/, '_').gsub(/[^a-z0-9_]/, '')
     end
     
     # Get plugin directory path

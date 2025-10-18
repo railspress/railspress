@@ -11,6 +11,9 @@
       <div class="px-8 py-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Sign In</h2>
         
+        <!-- OAuth Buttons -->
+        <%= render 'shared/oauth_buttons', resource_name: resource_name %>
+        
         <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
           <div class="space-y-4">
             <div>

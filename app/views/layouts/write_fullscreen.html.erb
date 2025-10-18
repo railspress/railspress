@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= content_for?(:title) ? yield(:title) : 'Write - RailsPress' %></title>
+  
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- BlockNote CSS (load conditionally) -->
+  <script>
+    // Load BlockNote CSS if needed
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.querySelector('[data-controller*="blocknote"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/@blocknote/mantine@0.12.4/dist/style.css';
+        document.head.appendChild(link);
+      }
+    });
+  </script>
+  
+  <!-- Editor.js Core (load conditionally) -->
+  <script>
+    // Only load Editor.js if the page contains an Editor.js editor
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.querySelector('[data-controller*="editorjs"]')) {
+        console.log('Loading Editor.js...');
+        
+        // Load Editor.js core
+        const coreScript = document.createElement('script');
+        coreScript.src = 'https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.31.0';
+        coreScript.onload = function() {
+          console.log('Editor.js core loaded successfully');
+          window.EditorJSLoaded = true;
+        };
+        coreScript.onerror = function() {
+          console.error('Failed to load Editor.js core');
+          window.EditorJSLoaded = false;
+        };
+        document.head.appendChild(coreScript);
+      }
+    });
+  </script>
+  
+  <%= javascript_importmap_tags %>
+  
+  <style>
+    /* Full height layout for Write Editor */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      color: #111827;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+      overflow: hidden; /* Prevent body scroll */
+    }
+    
+    /* Dark mode styles */
+    .dark {
+      background: #111827;
+      color: #f9fafb;
+    }
+    
+    .dark body {
+      background: #111827;
+      color: #f9fafb;
+    }
+    
+    /* BlockNote editor styles */
+    .blocknote-editor {
+      height: 100%;
+    }
+    
+    .blocknote-editor-dark {
+      background: transparent;
+      color: #111827;
+    }
+    
+    .dark .blocknote-editor-dark {
+      color: #f9fafb;
+    }
+    
+    /* Content editor wrapper */
+    .content-editor-wrapper {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Trix editor theme */
+    .trix-content {
+      background: transparent !important;
+      color: #111827 !important;
+      border: none !important;
+      outline: none !important;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    
+    .dark .trix-content {
+      color: #f9fafb !important;
+    }
+    
+    .trix-content:focus {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    
+    /* Trix toolbar styling */
+    .trix-toolbar {
+      background: #f9fafb !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 0.5rem 0.5rem 0 0 !important;
+    }
+    
+    .dark .trix-toolbar {
+      background: #1f2937 !important;
+      border-color: #374151 !important;
+    }
+    
+    /* Simple editor styles */
+    .simple-editor textarea {
+      background: transparent !important;
+      color: #111827 !important;
+      border: none !important;
+      outline: none !important;
+      font-size: 18px;
+      line-height: 1.6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
+    }
+    
+    .dark .simple-editor textarea {
+      color: #f9fafb !important;
+    }
+    
+    .simple-editor textarea:focus {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    
+    /* Editor.js styles */
+    .editorjs-container {
+      background: transparent !important;
+    }
+    
+    .codex-editor {
+      background: transparent !important;
+    }
+    
+    .codex-editor__redactor {
+      background: transparent !important;
+    }
+    
+    /* Beautiful typography */
+    .prose {
+      max-width: none;
+    }
+    
+    .prose p {
+      font-size: 18px;
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+    
+    .prose h1, .prose h2, .prose h3 {
+      font-weight: 700;
+      line-height: 1.2;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .prose h1 {
+      font-size: 2.25rem;
+    }
+    
+    .prose h2 {
+      font-size: 1.875rem;
+    }
+    
+    .prose h3 {
+      font-size: 1.5rem;
+    }
+    
+    /* Smooth animations */
+    * {
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    
+    /* Autosave indicator animations */
+    .autosave-indicator {
+      transition: all 0.3s ease;
+    }
+    
+    .autosave-indicator .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Fade in/out animations for autosave states */
+    .autosave-indicator .hidden {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    
+    .autosave-indicator .text-green-500,
+    .autosave-indicator .animate-spin {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    /* Hide scrollbar but keep functionality */
+    .editor-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .editor-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .editor-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    
+    .editor-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Collapsible animations */
+    [data-collapsible-target="content"] {
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out, overflow 0.3s ease-out;
+      overflow: hidden;
+    }
+    
+    /* Sidebar animations */
+    [data-sidebar-target="content"] {
+      transition: opacity 0.3s ease-out, pointer-events 0.3s ease-out;
+    }
+    
+    [data-sidebar-target="toggleIcon"] {
+      transition: transform 0.3s ease-out;
+    }
+    
+    /* Drag and drop styles */
+    .sidebar-section {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .sidebar-section.dragging {
+      transform: rotate(2deg);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+    }
+    
+    .drag-handle {
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+    }
+    
+    .drag-handle:hover {
+      opacity: 1;
+    }
+    
+    .sidebar-section:hover .drag-handle {
+      opacity: 0.8;
+    }
+    
+    /* Drag mirror styles */
+    .draggable-mirror {
+      opacity: 0.8;
+      transform: rotate(2deg);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+  </style>
+</head>
+
+<body class="antialiased">
+  <%= yield %>
+</body>
+</html>

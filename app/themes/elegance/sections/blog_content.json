@@ -1,0 +1,57 @@
+{
+  "name": "Blog Content",
+  "description": "Display blog posts with various layout options",
+  "category": "Blog",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Latest Blog Posts"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Stay updated with our latest news and insights"
+    },
+    "layout": {
+      "type": "select",
+      "label": "Layout",
+      "default": "grid",
+      "options": [
+        {"value": "grid", "label": "Grid"},
+        {"value": "list", "label": "List"},
+        {"value": "masonry", "label": "Masonry"}
+      ]
+    },
+    "posts_per_page": {
+      "type": "number",
+      "label": "Posts Per Page",
+      "default": 6
+    },
+    "show_excerpt": {
+      "type": "checkbox",
+      "label": "Show Excerpt",
+      "default": true
+    },
+    "show_featured_image": {
+      "type": "checkbox",
+      "label": "Show Featured Image",
+      "default": true
+    },
+    "show_date": {
+      "type": "checkbox",
+      "label": "Show Date",
+      "default": true
+    },
+    "show_author": {
+      "type": "checkbox",
+      "label": "Show Author",
+      "default": false
+    },
+    "show_read_more": {
+      "type": "checkbox",
+      "label": "Show Read More Button",
+      "default": true
+    }
+  }
+}

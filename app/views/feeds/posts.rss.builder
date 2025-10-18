@@ -1,5 +1,5 @@
 xml.instruct! :xml, version: "1.0"
-xml.rss version: "2.0", "xmlns:atom" => "http://www.w3.org/2005/Atom", "xmlns:dc" => "http://purl.org/dc/elements/1.1/" do
+xml.rss version: "2.0", "xmlns:atom" => "http://www.w3.org/2005/Atom", "xmlns:dc" => "http://purl.org/dc/elements/1.1/", "xmlns:content" => "http://purl.org/rss/1.0/modules/content/" do
   xml.channel do
     xml.title @title_suffix.present? ? "#{SiteSetting.get('site_title', 'RailsPress')} - #{@title_suffix}" : SiteSetting.get('site_title', 'RailsPress')
     xml.description SiteSetting.get('site_description', "Latest posts from #{SiteSetting.get('site_title', 'RailsPress')}")
@@ -27,12 +27,12 @@ xml.rss version: "2.0", "xmlns:atom" => "http://www.w3.org/2005/Atom", "xmlns:dc
         end
         
         # Categories
-        post.categories.each do |category|
+        post.category.each do |category|
           xml.category category.name, domain: category_url(category.slug)
         end
         
         # Tags
-        post.tags.each do |tag|
+        post.post_tag.each do |tag|
           xml.category tag.name, domain: tag_url(tag.slug)
         end
         

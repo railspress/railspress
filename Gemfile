@@ -29,6 +29,13 @@ gem "stimulus-rails"
 # Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
 gem "tailwindcss-rails"
 
+# OAuth authentication
+gem "omniauth"
+gem "omniauth-google-oauth2"
+gem "omniauth-github"
+gem "omniauth-facebook"
+gem "omniauth-twitter"
+
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 

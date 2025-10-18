@@ -81,7 +81,7 @@
       
       <%= form.label :editor_preference, 'Preferred Content Editor', class: 'block text-sm font-medium text-gray-300 mb-2' %>
       <%= form.select :editor_preference,
-          options_for_select(available_editors, @user.editor_preference || 'blocknote'),
+          options_for_select(@available_editors, @user.editor_preference || 'blocknote'),
           {},
           class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
       

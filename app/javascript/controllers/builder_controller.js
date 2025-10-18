@@ -337,49 +337,118 @@ export default class extends Controller {
   }
 
   showAddSectionModal() {
+    console.log('🔍 showAddSectionModal called!')
     const modal = document.getElementById('addSectionModal')
     const container = document.getElementById('availableSections')
+    
+    console.log('🔍 Modal element:', modal)
+    console.log('🔍 Container element:', container)
+    
+    if (!modal) {
+      console.error('❌ Modal element not found!')
+      return
+    }
+    
+    if (!container) {
+      console.error('❌ Container element not found!')
+      return
+    }
+    
     container.innerHTML = '<div class="text-center py-4"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="text-sm text-gray-600 mt-2">Loading sections...</p></div>'
     
     modal.classList.remove('hidden')
+    console.log('✅ Modal shown')
 
-    // Add click outside to close
-    const clickOutsideHandler = (e) => {
+    // Add click outside to close - but don't interfere with Stimulus actions
+    this.modalClickOutsideHandler = (e) => {
+      // Only handle clicks outside the modal
       if (!modal.contains(e.target)) {
+        console.log('🔍 Click outside modal, closing')
         this.closeAddSectionModal()
-        document.removeEventListener('click', clickOutsideHandler)
       }
     }
     
     // Add the click outside listener after a short delay to prevent immediate closing
     setTimeout(() => {
-      document.addEventListener('click', clickOutsideHandler)
+      document.addEventListener('click', this.modalClickOutsideHandler)
     }, 100)
+    
+    // Add direct click handlers to Cancel and Close buttons
+    // Look for various possible selectors for cancel/close buttons (using valid CSS selectors only)
+    const cancelBtn = modal.querySelector('button[data-action*="closeAddSectionModal"], button[data-action*="close"], .cancel-btn, .close-btn')
+    const closeBtn = modal.querySelector('button[data-action*="closeAddSectionModal"], .close-btn')
+    
+    // Also try to find buttons by text content
+    const allButtons = modal.querySelectorAll('button')
+    let cancelButton = null
+    let closeButton = null
+    
+    allButtons.forEach(btn => {
+      const text = btn.textContent.toLowerCase().trim()
+      if (text.includes('cancel') && !cancelButton) {
+        cancelButton = btn
+      } else if (text.includes('close') && !closeButton) {
+        closeButton = btn
+      }
+    })
+    
+    // Use the found buttons or fallback to the original selectors
+    const finalCancelBtn = cancelButton || cancelBtn
+    const finalCloseBtn = closeButton || closeBtn
+    
+    if (finalCancelBtn) {
+      finalCancelBtn.onclick = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        console.log('🔍 Cancel button clicked directly')
+        this.closeAddSectionModal()
+      }
+    }
+    
+    if (finalCloseBtn && finalCloseBtn !== finalCancelBtn) {
+      finalCloseBtn.onclick = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        console.log('🔍 Close button clicked directly')
+        this.closeAddSectionModal()
+      }
+    }
 
     // Fetch available sections from the current theme
+    console.log('🔍 Fetching available sections from:', `/admin/builder/${this.themeId}/available_sections`)
     fetch(`/admin/builder/${this.themeId}/available_sections`)
-      .then(response => response.json())
+      .then(response => {
+        console.log('🔍 Response status:', response.status)
+        return response.json()
+      })
       .then(data => {
+        console.log('🔍 Response data:', data)
         if (data.success) {
+          console.log('✅ Successfully loaded sections:', data.sections)
           this.renderAvailableSections(data.sections)
         } else {
+          console.error('❌ Error loading sections:', data.errors)
           container.innerHTML = '<div class="text-center py-4 text-red-600">Error loading sections: ' + (data.errors || 'Unknown error') + '</div>'
         }
       })
       .catch(error => {
-        console.error('Error loading sections:', error)
+        console.error('❌ Error loading sections:', error)
         container.innerHTML = '<div class="text-center py-4 text-red-600">Error loading sections</div>'
       })
   }
 
   renderAvailableSections(sections) {
+    console.log('🔍 renderAvailableSections called with sections:', sections)
     const container = document.getElementById('availableSections')
     container.innerHTML = ''
 
     if (!sections || sections.length === 0) {
+      console.log('❌ No sections available')
       container.innerHTML = '<div class="text-center py-4 text-gray-500">No sections available</div>'
       return
     }
+    
+    console.log(`✅ Rendering ${sections.length} sections`)
 
     // Group sections by category if they have one, otherwise use "General"
     const sectionCategories = {}
@@ -402,6 +471,7 @@ export default class extends Controller {
       `
       
       categorySections.forEach(section => {
+        console.log('🔍 Rendering section:', section.id, section.name)
         const div = document.createElement('div')
         div.className = 'section-item bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors'
         div.dataset.sectionId = section.id
@@ -418,16 +488,39 @@ export default class extends Controller {
             </div>
           </div>
         `
-        div.onclick = () => this.selectSectionForPreview(section)
+        // Add click event listener after DOM insertion
         categoryDiv.querySelector('.space-y-2').appendChild(div)
+        console.log('✅ Section div added to DOM:', div)
       })
       
       categoryDiv.innerHTML += '</div>'
       container.appendChild(categoryDiv)
     })
+    
+    // Add event delegation for section clicks
+    container.addEventListener('click', (e) => {
+      const sectionDiv = e.target.closest('.section-item')
+      if (sectionDiv) {
+        const sectionId = sectionDiv.dataset.sectionId
+        console.log('🔍 Section div clicked via delegation:', sectionId)
+        
+        // Find the section data
+        const section = sections.find(s => s.id === sectionId)
+        if (section) {
+          console.log('🔍 Found section data:', section)
+          this.selectSectionForPreview(section)
+        } else {
+          console.error('❌ Section data not found for ID:', sectionId)
+        }
+      }
+    })
+    
+    console.log('✅ Event delegation added to container')
   }
 
   selectSectionForPreview(section) {
+    console.log('🔍 selectSectionForPreview called with section:', section)
+    
     // Remove previous selection
     document.querySelectorAll('.section-item').forEach(item => {
       item.classList.remove('border-blue-500', 'bg-blue-50')
@@ -437,14 +530,46 @@ export default class extends Controller {
     const sectionElement = document.querySelector(`[data-section-id="${section.id}"]`)
     if (sectionElement) {
       sectionElement.classList.add('border-blue-500', 'bg-blue-50')
+      console.log('✅ Section element found and styled:', sectionElement)
+    } else {
+      console.error('❌ Section element not found for ID:', section.id)
     }
     
     // Store selected section
     this.selectedSection = section
+    console.log('✅ Selected section stored:', this.selectedSection)
     
     // Update UI
-    document.getElementById('selectedSectionName').textContent = section.name
-    document.getElementById('addSelectedSectionBtn').disabled = false
+    const selectedSectionName = document.getElementById('selectedSectionName')
+    const addSelectedSectionBtn = document.getElementById('addSelectedSectionBtn')
+    
+    if (selectedSectionName) {
+      selectedSectionName.textContent = section.name
+      console.log('✅ Section name updated:', section.name)
+    } else {
+      console.error('❌ selectedSectionName element not found')
+    }
+    
+    if (addSelectedSectionBtn) {
+      addSelectedSectionBtn.disabled = false
+      console.log('✅ Add Section button enabled, disabled state:', addSelectedSectionBtn.disabled)
+      
+      // Force enable the button and remove disabled classes
+      addSelectedSectionBtn.removeAttribute('disabled')
+      addSelectedSectionBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed')
+      console.log('✅ Button forced enabled, classes removed')
+      
+      // Add direct click event listener as fallback
+      addSelectedSectionBtn.onclick = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        console.log('🔍 Direct click handler triggered!')
+        this.addSelectedSection()
+      }
+      console.log('✅ Direct click handler added to button')
+    } else {
+      console.error('❌ addSelectedSectionBtn element not found')
+    }
     
     // Show preview
     this.showSectionPreview(section)
@@ -453,92 +578,76 @@ export default class extends Controller {
   showSectionPreview(section) {
     const previewContainer = document.getElementById('sectionPreview')
     
-    // Create a simple preview based on section type
-    let previewHTML = ''
-    
-    switch(section.id) {
-      case 'hero':
-        previewHTML = `
-          <div class="p-8 text-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-            <h1 class="text-3xl font-bold mb-4">Welcome to Our Site</h1>
-            <p class="text-lg mb-6">This is a hero section with compelling content</p>
-            <button class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium">Get Started</button>
-          </div>
-        `
-        break
-      case 'rich-text':
-        previewHTML = `
-          <div class="p-6">
-            <h2 class="text-2xl font-bold mb-4">Rich Text Section</h2>
-            <p class="text-gray-700 mb-4">This is a rich text section where you can add formatted content, paragraphs, and more.</p>
-            <p class="text-gray-700">You can include <strong>bold text</strong>, <em>italic text</em>, and other formatting options.</p>
-          </div>
-        `
-        break
-      case 'posts':
-        previewHTML = `
-          <div class="p-6">
-            <h2 class="text-2xl font-bold mb-4">Blog Posts</h2>
-            <div class="space-y-4">
-              <div class="border-b border-gray-200 pb-4">
-                <h3 class="font-semibold text-lg">Sample Blog Post Title</h3>
-                <p class="text-gray-600 text-sm">Published on January 15, 2024</p>
-                <p class="text-gray-700 mt-2">This is a preview of how blog posts will appear in this section...</p>
-              </div>
-              <div class="border-b border-gray-200 pb-4">
-                <h3 class="font-semibold text-lg">Another Blog Post</h3>
-                <p class="text-gray-600 text-sm">Published on January 10, 2024</p>
-                <p class="text-gray-700 mt-2">Another example of blog post content...</p>
-              </div>
-            </div>
-          </div>
-        `
-        break
-      case 'header':
-        previewHTML = `
-          <div class="bg-white border-b border-gray-200 p-4">
-            <div class="flex items-center justify-between">
-              <div class="text-xl font-bold">Your Logo</div>
-              <nav class="flex space-x-6">
-                <a href="#" class="text-gray-700 hover:text-blue-600">Home</a>
-                <a href="#" class="text-gray-700 hover:text-blue-600">About</a>
-                <a href="#" class="text-gray-700 hover:text-blue-600">Contact</a>
-              </nav>
-            </div>
-          </div>
-        `
-        break
-      case 'footer':
-        previewHTML = `
-          <div class="bg-gray-800 text-white p-6">
-            <div class="text-center">
-              <div class="text-xl font-bold mb-2">Your Logo</div>
-              <p class="text-gray-400 mb-4">Your company description goes here</p>
-              <p class="text-gray-500 text-sm">© 2024 Your Company. All rights reserved.</p>
-            </div>
-          </div>
-        `
-        break
-      default:
-        previewHTML = `
-          <div class="p-6 text-center">
-            <div class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+    // Check if section has a preview image defined in schema
+    if (section.preview_image) {
+      // Try to load the preview image from theme assets
+      const themeName = this.getCurrentThemeName()
+      const imagePath = `/themes/${themeName}/assets/${section.preview_image}`
+      
+      previewContainer.innerHTML = `
+        <div class="text-center">
+          <img src="${imagePath}" 
+               alt="${section.name} preview" 
+               class="w-full h-32 object-cover rounded-lg border border-gray-200"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div style="display: none;" class="p-4 text-center text-gray-500">
+            <div class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-2 flex items-center justify-center">
               <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
             </div>
-            <h3 class="font-semibold text-gray-900">${section.name}</h3>
-            <p class="text-gray-600 text-sm mt-1">${section.description || 'Section preview'}</p>
+            <p class="text-sm">Preview image not found</p>
+          </div>
+        </div>
+      `
+    } else {
+      // Show section info with context data if available
+      let contextInfo = ''
+      if (section.context_requests && Object.keys(section.context_requests).length > 0) {
+        const contextKeys = Object.keys(section.context_requests)
+        contextInfo = `
+          <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+            <p class="text-xs font-medium text-blue-800 mb-2">Available Context:</p>
+            <div class="space-y-1">
+              ${contextKeys.map(key => `
+                <div class="flex items-center text-xs text-blue-700">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  @${key} (${section.context_requests[key].description || 'Context data'})
+                </div>
+              `).join('')}
+            </div>
           </div>
         `
+      }
+      
+      previewContainer.innerHTML = `
+        <div class="p-6 text-center text-gray-500">
+          <div class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+          </div>
+          <p class="text-sm font-medium">${section.name}</p>
+          <p class="text-xs text-gray-400 mt-1">${section.description}</p>
+          ${contextInfo}
+        </div>
+      `
     }
-    
-    previewContainer.innerHTML = previewHTML
+  }
+  
+  getCurrentThemeName() {
+    // Get theme name from the builder theme data
+    return this.dataTarget.dataset.themeName || 'elegance'
   }
 
   createSection(sectionType) {
+    console.log('🔍 createSection called with sectionType:', sectionType)
     const defaultSettings = this.getDefaultSectionSettings(sectionType)
+    console.log('🔍 Default settings:', defaultSettings)
     
+    console.log('🔍 Making POST request to add_section endpoint')
     fetch(`/admin/builder/${this.themeId}/add_section`, {
       method: 'POST',
       headers: {
@@ -691,227 +800,199 @@ export default class extends Controller {
     settingsPanel.innerHTML = `
       <div class="mb-4">
         <h3 class="text-lg font-medium text-gray-900 mb-4">${this.getSectionDisplayName(sectionType)} Settings</h3>
-        <form id="section-settings-form" class="space-y-4">
-          ${this.renderSectionForm(sectionType, sectionSettings)}
-        </form>
+        <div class="text-center py-4">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+          <p class="text-sm text-gray-600 mt-2">Loading settings...</p>
+        </div>
       </div>
     `
 
-    // Add event listeners for form changes
-    this.attachFormListeners(sectionId)
+    // Render form asynchronously
+    this.renderSectionFormAsync(sectionType, sectionSettings, sectionId)
   }
 
-  renderSectionForm(sectionType, settings) {
-    const forms = {
-      header: `
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Logo Text</label>
-            <input type="text" name="logo_text" value="${settings.logo_text || ''}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_search" ${settings.show_search ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Search</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_cart" ${settings.show_cart ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Cart</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_account" ${settings.show_account ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Account</span>
-            </label>
-          </div>
+  async renderSectionFormAsync(sectionType, settings, sectionId) {
+    try {
+      const formHTML = await this.renderSectionForm(sectionType, settings)
+      
+      const settingsPanel = this.sectionSettingsPanelTarget
+      settingsPanel.innerHTML = `
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">${this.getSectionDisplayName(sectionType)} Settings</h3>
+          <form id="section-settings-form" class="space-y-4">
+            ${formHTML}
+          </form>
         </div>
-      `,
-      hero: `
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Heading</label>
-            <input type="text" name="heading" value="${settings.heading || ''}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Subheading</label>
-            <input type="text" name="subheading" value="${settings.subheading || ''}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea name="description" rows="3" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">${settings.description || ''}</textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Text Alignment</label>
-            <select name="text_alignment" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="left" ${settings.text_alignment === 'left' ? 'selected' : ''}>Left</option>
-              <option value="center" ${settings.text_alignment === 'center' ? 'selected' : ''}>Center</option>
-              <option value="right" ${settings.text_alignment === 'right' ? 'selected' : ''}>Right</option>
-            </select>
-          </div>
-        </div>
-      `,
-      footer: `
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Logo Text</label>
-            <input type="text" name="logo_text" value="${settings.logo_text || ''}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea name="description" rows="3" 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">${settings.description || ''}</textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Copyright Text</label>
-            <input type="text" name="copyright_text" value="${settings.copyright_text || ''}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-        </div>
-      `,
-      post_header: `
-        <div class="space-y-4">
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_breadcrumbs" ${settings.show_breadcrumbs ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Breadcrumbs</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_featured_image" ${settings.show_featured_image ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Featured Image</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_author" ${settings.show_author ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Author</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_date" ${settings.show_date ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Date</span>
-            </label>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
-            <input type="color" name="background_color" value="${settings.background_color || '#f8fafc'}" 
-                   class="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Text Alignment</label>
-            <select name="text_alignment" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="left" ${settings.text_alignment === 'left' ? 'selected' : ''}>Left</option>
-              <option value="center" ${settings.text_alignment === 'center' ? 'selected' : ''}>Center</option>
-              <option value="right" ${settings.text_alignment === 'right' ? 'selected' : ''}>Right</option>
-            </select>
-          </div>
-        </div>
-      `,
-      post_content: `
-        <div class="space-y-4">
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_sidebar" ${settings.show_sidebar ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Sidebar</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_author_bio" ${settings.show_author_bio ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Author Bio</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_related_posts" ${settings.show_related_posts ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Related Posts</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_comments" ${settings.show_comments ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Comments</span>
-            </label>
-          </div>
-        </div>
-      `,
-      related_posts: `
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Heading</label>
-            <input type="text" name="heading" value="${settings.heading || ''}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Posts Count</label>
-            <input type="number" name="posts_count" value="${settings.posts_count || 3}" min="1" max="20"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Layout</label>
-            <select name="layout" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="grid" ${settings.layout === 'grid' ? 'selected' : ''}>Grid</option>
-              <option value="list" ${settings.layout === 'list' ? 'selected' : ''}>List</option>
-            </select>
-          </div>
-        </div>
-      `,
-      comments: `
-        <div class="space-y-4">
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_comments" ${settings.show_comments ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Comments</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_comment_form" ${settings.show_comment_form ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Comment Form</span>
-            </label>
-          </div>
-          <div class="flex items-center space-x-4">
-            <label class="flex items-center">
-              <input type="checkbox" name="show_gravatar" ${settings.show_gravatar ? 'checked' : ''} 
-                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-              <span class="ml-2 text-sm text-gray-700">Show Gravatar</span>
-            </label>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Max Depth</label>
-            <input type="number" name="max_depth" value="${settings.max_depth || 3}" min="1" max="10"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+      `
+      
+      // Add event listeners for form changes
+      this.attachFormListeners(sectionId)
+    } catch (error) {
+      console.error('❌ Error rendering section form:', error)
+      const settingsPanel = this.sectionSettingsPanelTarget
+      settingsPanel.innerHTML = `
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">${this.getSectionDisplayName(sectionType)} Settings</h3>
+          <div class="text-red-500 p-4 bg-red-50 rounded-md">
+            <p>Error loading section settings: ${error.message}</p>
           </div>
         </div>
       `
     }
+  }
+
+  async renderSectionForm(sectionType, settings) {
+    console.log('🔍 renderSectionForm called for section:', sectionType)
     
-    return forms[sectionType] || `
-      <div class="text-center text-gray-500 py-4">
-        <p>No settings available for this section type.</p>
+    // Get section schema and context data
+    const sectionData = await this.getSectionData(sectionType)
+    if (!sectionData) {
+      return '<div class="text-red-500">Error loading section data</div>'
+    }
+    
+    const { schema, contextData } = sectionData
+    console.log('🔍 Section schema:', schema)
+    console.log('🔍 Context data:', contextData)
+    
+    // Generate form based on schema
+    return this.generateFormFromSchema(schema, settings, contextData)
+  }
+
+  async getSectionData(sectionType) {
+    try {
+      console.log('🔍 Fetching section data for:', sectionType)
+      
+      // Fetch section schema and context data from the server
+      const response = await fetch(`/admin/builder/${this.themeId}/section_data?section_type=${sectionType}`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('🔍 Section data response:', data)
+      
+      return {
+        schema: data.schema,
+        contextData: data.context_data || {}
+      }
+    } catch (error) {
+      console.error('❌ Error fetching section data:', error)
+      return null
+    }
+  }
+
+  generateFormFromSchema(schema, settings, contextData) {
+    if (!schema || !schema.settings) {
+      return '<div class="text-gray-500">No settings defined for this section</div>'
+    }
+    
+    let formHTML = '<div class="space-y-4">'
+    
+    Object.entries(schema.settings).forEach(([key, field]) => {
+      formHTML += this.renderFormField(key, field, settings[key], contextData)
+    })
+    
+    formHTML += '</div>'
+    return formHTML
+  }
+
+  renderFormField(key, field, value, contextData) {
+    const label = field.label || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    const description = field.description ? `<p class="text-xs text-gray-500 mt-1">${field.description}</p>` : ''
+    
+    switch (field.type) {
+      case 'text':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="text" name="${key}" value="${value || field.default || ''}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      case 'number':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="number" name="${key}" value="${value || field.default || ''}" 
+                   min="${field.min || ''}" max="${field.max || ''}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      case 'checkbox':
+        return `
+          <div class="flex items-center space-x-4">
+            <label class="flex items-center">
+              <input type="checkbox" name="${key}" ${value || field.default ? 'checked' : ''} 
+                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-sm text-gray-700">${label}</span>
+            </label>
+          </div>
+          ${description}
+        `
+      
+      case 'select':
+        return this.renderSelectField(key, field, value, contextData, label, description)
+      
+      case 'image':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="file" name="${key}" accept="image/*" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      default:
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="text" name="${key}" value="${value || field.default || ''}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+    }
+  }
+
+  renderSelectField(key, field, value, contextData, label, description) {
+    let optionsHTML = ''
+    
+    if (field.options_source && field.options_source.startsWith('@')) {
+      // Use context data for options
+      const contextKey = field.options_source.substring(1) // Remove @
+      const contextOptions = contextData[contextKey] || []
+      
+      console.log('🔍 Rendering select with context data:', contextKey, contextOptions)
+      
+      contextOptions.forEach(option => {
+        const optionValue = option[field.option_value || 'id']
+        const optionLabel = option[field.option_label || 'name']
+        const selected = value == optionValue ? 'selected' : ''
+        optionsHTML += `<option value="${optionValue}" ${selected}>${optionLabel}</option>`
+      })
+    } else if (field.options) {
+      // Use static options
+      field.options.forEach(option => {
+        const optionValue = option.value
+        const optionLabel = option.label
+        const selected = value == optionValue ? 'selected' : ''
+        optionsHTML += `<option value="${optionValue}" ${selected}>${optionLabel}</option>`
+      })
+    }
+    
+    return `
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+        <select name="${key}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Select ${label.toLowerCase()}</option>
+          ${optionsHTML}
+        </select>
+        ${description}
       </div>
     `
   }
@@ -1071,44 +1152,313 @@ export default class extends Controller {
     this.renderThemeSettings()
   }
 
-  renderThemeSettings() {
+  async renderThemeSettings() {
     const settingsPanel = this.themeSettingsPanelTarget
     settingsPanel.innerHTML = `
       <div class="mb-4">
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Theme Settings</h3>
-        <div id="theme-json-editor-container"></div>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Theme Settings</h3>
+        <div class="text-center py-4">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+          <p class="text-sm text-gray-600 mt-2">Loading theme settings...</p>
+        </div>
       </div>
     `
 
-    // Initialize JSONEditor for theme settings
-    if (window.JSONEditor) {
-      const container = document.getElementById('theme-json-editor-container')
-      this.themeJsonEditor = new JSONEditor(container, {
-        schema: this.getThemeSchema(),
-        startval: this.settings,
-        theme: 'bootstrap4',
-        iconlib: 'fontawesome5',
-        show_errors: 'always'
-      })
-
-      this.themeJsonEditor.on('change', () => {
-        const settings = this.themeJsonEditor.getValue()
-        const previousSettings = this.settings
-        
-        // Only save if settings actually changed
-        if (JSON.stringify(settings) !== JSON.stringify(previousSettings)) {
-          console.log('🎯 Settings actually changed, debouncing save...')
-          this.settings = settings
-          // Debounce auto-save to prevent excessive saving
-          clearTimeout(this.saveTimeout)
-          this.saveTimeout = setTimeout(() => {
-            this.saveDraft()
-          }, 1000) // Save after 1 second of inactivity
-        } else {
-          console.log('🚫 Settings unchanged, skipping save')
-        }
-      })
+    try {
+      // Generate form from theme schema
+      const formHTML = await this.renderThemeForm()
+      
+      settingsPanel.innerHTML = `
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Theme Settings</h3>
+          <form id="theme-settings-form" class="space-y-6">
+            ${formHTML}
+          </form>
+        </div>
+      `
+      
+      // Add event listeners for form changes
+      this.attachThemeFormListeners()
+    } catch (error) {
+      console.error('❌ Error rendering theme settings:', error)
+      settingsPanel.innerHTML = `
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Theme Settings</h3>
+          <div class="text-red-500 p-4 bg-red-50 rounded-md">
+            <p>Error loading theme settings: ${error.message}</p>
+          </div>
+        </div>
+      `
     }
+  }
+  
+  async renderThemeForm() {
+    console.log('🔍 renderThemeForm called')
+    
+    if (!this.themeSchema || this.themeSchema.length === 0) {
+      return '<div class="text-gray-500">No theme settings defined</div>'
+    }
+    
+    let formHTML = ''
+    
+    // Group settings by category
+    this.themeSchema.forEach(group => {
+      formHTML += `
+        <div class="theme-settings-group border border-gray-200 rounded-lg p-4">
+          <h4 class="text-md font-semibold text-gray-800 mb-4">${group.name}</h4>
+          <div class="space-y-4">
+      `
+      
+      if (group.settings) {
+        group.settings.forEach(setting => {
+          formHTML += this.renderThemeSettingField(setting)
+        })
+      }
+      
+      formHTML += `
+          </div>
+        </div>
+      `
+    })
+    
+    return formHTML
+  }
+  
+  renderThemeSettingField(setting) {
+    const label = setting.label || setting.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    const description = setting.description ? `<p class="text-xs text-gray-500 mt-1">${setting.description}</p>` : ''
+    const currentValue = this.settings[setting.id] || setting.default
+    
+    switch (setting.type) {
+      case 'header':
+        return `
+          <div class="theme-setting-header">
+            <h5 class="text-sm font-medium text-gray-700 mb-2">${setting.content}</h5>
+          </div>
+        `
+      
+      case 'text':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="text" name="${setting.id}" value="${currentValue || ''}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      case 'color':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <div class="flex items-center space-x-2">
+              <input type="color" name="${setting.id}" value="${currentValue || setting.default || '#000000'}" 
+                     class="w-12 h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="text" name="${setting.id}_text" value="${currentValue || setting.default || '#000000'}" 
+                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            ${description}
+          </div>
+        `
+      
+      case 'range':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <div class="flex items-center space-x-3">
+              <input type="range" name="${setting.id}" 
+                     min="${setting.min || 0}" max="${setting.max || 100}" step="${setting.step || 1}"
+                     value="${currentValue || setting.default || 0}"
+                     class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+              <span class="text-sm text-gray-600 w-16 text-right">${currentValue || setting.default || 0}${setting.unit || ''}</span>
+            </div>
+            ${description}
+          </div>
+        `
+      
+      case 'select':
+        let optionsHTML = ''
+        if (setting.options) {
+          setting.options.forEach(option => {
+            const selected = currentValue == option.value ? 'selected' : ''
+            optionsHTML += `<option value="${option.value}" ${selected}>${option.label}</option>`
+          })
+        }
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <select name="${setting.id}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              ${optionsHTML}
+            </select>
+            ${description}
+          </div>
+        `
+      
+      case 'checkbox':
+        return `
+          <div class="flex items-center space-x-4">
+            <label class="flex items-center">
+              <input type="checkbox" name="${setting.id}" ${currentValue ? 'checked' : ''} 
+                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-sm text-gray-700">${label}</span>
+            </label>
+          </div>
+          ${description}
+        `
+      
+      case 'font_picker':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <select name="${setting.id}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="Inter, sans-serif" ${currentValue === 'Inter, sans-serif' ? 'selected' : ''}>Inter</option>
+              <option value="Roboto, sans-serif" ${currentValue === 'Roboto, sans-serif' ? 'selected' : ''}>Roboto</option>
+              <option value="Open Sans, sans-serif" ${currentValue === 'Open Sans, sans-serif' ? 'selected' : ''}>Open Sans</option>
+              <option value="Lato, sans-serif" ${currentValue === 'Lato, sans-serif' ? 'selected' : ''}>Lato</option>
+              <option value="Montserrat, sans-serif" ${currentValue === 'Montserrat, sans-serif' ? 'selected' : ''}>Montserrat</option>
+              <option value="Poppins, sans-serif" ${currentValue === 'Poppins, sans-serif' ? 'selected' : ''}>Poppins</option>
+              <option value="Fira Code, monospace" ${currentValue === 'Fira Code, monospace' ? 'selected' : ''}>Fira Code</option>
+            </select>
+            ${description}
+          </div>
+        `
+      
+      case 'image_picker':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="file" name="${setting.id}" accept="image/*" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      default:
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="text" name="${setting.id}" value="${currentValue || ''}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+    }
+  }
+  
+  attachThemeFormListeners() {
+    const form = document.getElementById('theme-settings-form')
+    if (!form) return
+    
+    // Add change listeners to all form elements
+    const inputs = form.querySelectorAll('input, select, textarea')
+    inputs.forEach(input => {
+      input.addEventListener('change', () => {
+        this.updateThemeSettingsFromForm()
+      })
+      input.addEventListener('input', () => {
+        // Debounce rapid changes
+        clearTimeout(this.updateTimeout)
+        this.updateTimeout = setTimeout(() => {
+          this.updateThemeSettingsFromForm()
+        }, 500)
+      })
+    })
+    
+    // Special handling for color inputs
+    const colorInputs = form.querySelectorAll('input[type="color"]')
+    colorInputs.forEach(colorInput => {
+      const textInput = form.querySelector(`input[name="${colorInput.name}_text"]`)
+      if (textInput) {
+        colorInput.addEventListener('change', () => {
+          textInput.value = colorInput.value
+        })
+        textInput.addEventListener('change', () => {
+          colorInput.value = textInput.value
+        })
+      }
+    })
+    
+    // Special handling for range inputs
+    const rangeInputs = form.querySelectorAll('input[type="range"]')
+    rangeInputs.forEach(rangeInput => {
+      const valueSpan = rangeInput.parentElement.querySelector('span')
+      if (valueSpan) {
+        rangeInput.addEventListener('input', () => {
+          const unit = rangeInput.name.includes('size') || rangeInput.name.includes('padding') || rangeInput.name.includes('margin') ? 'px' : ''
+          valueSpan.textContent = rangeInput.value + unit
+        })
+      }
+    })
+  }
+  
+  updateThemeSettingsFromForm() {
+    const form = document.getElementById('theme-settings-form')
+    if (!form) {
+      console.error('Theme form element not found:', 'theme-settings-form')
+      return
+    }
+    
+    const formData = new FormData(form)
+    const settings = {}
+    
+    // Collect all form values
+    for (let [key, value] of formData.entries()) {
+      // Skip text inputs that are paired with color inputs
+      if (key.endsWith('_text')) continue
+      settings[key] = value
+    }
+    
+    // Handle checkboxes (they don't appear in FormData if unchecked)
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]')
+    checkboxes.forEach(checkbox => {
+      settings[checkbox.name] = checkbox.checked
+    })
+    
+    // Update the theme settings
+    this.updateThemeSettings(settings)
+  }
+  
+  updateThemeSettings(settings) {
+    console.log('Updating theme settings:', { settings, template: this.currentTemplate })
+    
+    // Show spinning icon
+    this.showAutosaveSpinner()
+    
+    // Update internal settings
+    this.settings = settings
+    
+    // Save theme settings to server
+    fetch(`/admin/builder/${this.themeId}/update_theme_settings`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ 
+        settings: settings,
+        template: this.currentTemplate
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Hide spinning icon and show green dot
+        this.hideAutosaveSpinner()
+        
+        // Update preview
+        this.updatePreviewContent()
+      } else {
+        // Hide spinning icon and show error
+        this.hideAutosaveSpinner()
+        this.showNotification('Error updating theme settings: ' + (data.errors || 'Unknown error'), 'error')
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error)
+      // Hide spinning icon and show error
+      this.hideAutosaveSpinner()
+      this.showNotification('Error updating theme settings', 'error')
+    })
   }
 
   getThemeSchema() {
@@ -1259,7 +1609,7 @@ export default class extends Controller {
     // Find the autosave indicator and replace with spinning icon
     const autosaveIndicator = document.querySelector('.autosave-indicator')
     console.log('🔍 showAutosaveSpinner called, found element:', autosaveIndicator)
-    if (autosaveIndicator) {
+    if (autosaveIndicator && autosaveIndicator.style) {
       console.log('🔄 Replacing green dot with spinning icon')
       // Completely replace the green dot with spinning icon
       autosaveIndicator.className = 'autosave-indicator'
@@ -1275,7 +1625,7 @@ export default class extends Controller {
       autosaveIndicator.title = "Saving..."
       console.log('✅ Spinning icon set, classes removed:', autosaveIndicator.className)
     } else {
-      console.error('❌ Autosave indicator not found!')
+      console.error('❌ Autosave indicator not found or has no style property!')
     }
   }
 
@@ -1283,7 +1633,7 @@ export default class extends Controller {
     // Find the autosave indicator and restore green dot
     const autosaveIndicator = document.querySelector('.autosave-indicator')
     console.log('🔍 hideAutosaveSpinner called, found element:', autosaveIndicator)
-    if (autosaveIndicator) {
+    if (autosaveIndicator && autosaveIndicator.style) {
       console.log('🔄 Restoring green dot')
       // Reset styles and restore green dot classes
       autosaveIndicator.className = 'autosave-indicator w-3 h-3 bg-green-500 rounded-full'
@@ -1294,7 +1644,7 @@ export default class extends Controller {
       autosaveIndicator.title = "Autosave enabled"
       console.log('✅ Green dot restored, classes:', autosaveIndicator.className)
     } else {
-      console.error('❌ Autosave indicator not found!')
+      console.error('❌ Autosave indicator not found or has no style property!')
     }
   }
 
@@ -1607,29 +1957,457 @@ export default class extends Controller {
   }
 
   addSelectedSection() {
+    console.log('🔍 addSelectedSection method called!')
+    console.log('🔍 Selected section:', this.selectedSection)
+    console.log('🔍 Button element:', document.getElementById('addSelectedSectionBtn'))
+    console.log('🔍 Button disabled state:', document.getElementById('addSelectedSectionBtn')?.disabled)
+    
     if (!this.selectedSection) {
+      console.log('❌ No section selected')
       this.showNotification('Please select a section first', 'error')
       return
     }
     
+    console.log('✅ Creating section:', this.selectedSection.id)
     this.createSection(this.selectedSection.id)
   }
 
   closeAddSectionModal() {
-    document.getElementById('addSectionModal').classList.add('hidden')
+    console.log('🔍 closeAddSectionModal called!')
+    const modal = document.getElementById('addSectionModal')
+    console.log('🔍 Modal element:', modal)
+    
+    if (modal) {
+      modal.classList.add('hidden')
+      console.log('✅ Modal hidden')
+    } else {
+      console.error('❌ Modal element not found!')
+    }
+    
+    // Remove any existing click outside handlers
+    if (this.modalClickOutsideHandler) {
+      document.removeEventListener('click', this.modalClickOutsideHandler)
+      this.modalClickOutsideHandler = null
+    }
     
     // Reset selection
     this.selectedSection = null
-    document.getElementById('selectedSectionName').textContent = 'No section selected'
-    document.getElementById('addSelectedSectionBtn').disabled = true
+    const selectedSectionName = document.getElementById('selectedSectionName')
+    const addSelectedSectionBtn = document.getElementById('addSelectedSectionBtn')
+    
+    if (selectedSectionName) {
+      selectedSectionName.textContent = 'No section selected'
+    }
+    
+    if (addSelectedSectionBtn) {
+      addSelectedSectionBtn.disabled = true
+      addSelectedSectionBtn.onclick = null // Remove direct click handler
+    }
     
     // Clear preview
-    document.getElementById('sectionPreview').innerHTML = '<p class="text-gray-500 text-sm">Select a section to see preview</p>'
+    const sectionPreview = document.getElementById('sectionPreview')
+    if (sectionPreview) {
+      sectionPreview.innerHTML = '<p class="text-gray-500 text-sm">Select a section to see preview</p>'
+    }
     
     // Clear section selection
     document.querySelectorAll('.section-item').forEach(item => {
       item.classList.remove('border-blue-500', 'bg-blue-50')
     })
+    
+    console.log('✅ Modal closed and reset')
+  }
+
+  // Block Management
+  addBlock(event) {
+    const sectionId = event.currentTarget.dataset.sectionId
+    console.log('🔍 addBlock called for section:', sectionId)
+    
+    // Get section data to determine block type
+    const sectionElement = this.sectionsListTarget.querySelector(`[data-section-id="${sectionId}"]`)
+    if (!sectionElement) {
+      console.error('Section element not found:', sectionId)
+      return
+    }
+    
+    const sectionType = sectionElement.dataset.sectionType
+    console.log('Section type:', sectionType)
+    
+    // Determine block type based on section type
+    let blockType = 'accordion_item'
+    if (sectionType === 'columns') blockType = 'column'
+    if (sectionType === 'features') blockType = 'feature'
+    if (sectionType === 'testimonials') blockType = 'testimonial'
+    
+    // Create new block
+    this.createBlock(sectionId, blockType)
+  }
+  
+  createBlock(sectionId, blockType) {
+    console.log('🔍 createBlock called:', { sectionId, blockType })
+    
+    const blockId = `${blockType}_${SecureRandom.hex(4)}`
+    const defaultSettings = this.getDefaultBlockSettings(blockType)
+    
+    fetch(`/admin/builder/${this.themeId}/add_block`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({
+        section_id: sectionId,
+        block_type: blockType,
+        block_id: blockId,
+        settings: defaultSettings,
+        template: this.currentTemplate
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        this.showNotification('Block added successfully!', 'success')
+        // Reload the page to show the new block
+        window.location.reload()
+      } else {
+        this.showNotification('Error adding block: ' + (data.errors || 'Unknown error'), 'error')
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error)
+      this.showNotification('Error adding block', 'error')
+    })
+  }
+  
+  getDefaultBlockSettings(blockType) {
+    const defaults = {
+      'accordion_item': { title: 'New Accordion Item', content: 'Add your content here...' },
+      'column': { title: 'New Column', content: 'Add your content here...', icon: 'icon-star' },
+      'feature': { title: 'New Feature', description: 'Feature description...', icon: 'icon-star' },
+      'testimonial': { content: 'Great product!', author: 'Customer Name', rating: 5 }
+    }
+    return defaults[blockType] || {}
+  }
+  
+  selectBlock(event) {
+    const blockId = event.currentTarget.dataset.blockId
+    const sectionId = event.currentTarget.dataset.sectionId
+    console.log('🔍 selectBlock called:', { blockId, sectionId })
+    
+    // Remove previous selection
+    this.sectionsListTarget.querySelectorAll('.block-item').forEach(item => {
+      item.classList.remove('border-blue-500', 'bg-blue-50')
+    })
+    
+    // Add selection to current block
+    const blockElement = this.sectionsListTarget.querySelector(`[data-block-id="${blockId}"]`)
+    if (blockElement) {
+      blockElement.classList.add('border-blue-500', 'bg-blue-50')
+    }
+    
+    // Show block settings in the right sidebar
+    this.showBlockSettings(blockId, sectionId)
+  }
+  
+  showBlockSettings(blockId, sectionId) {
+    // Get block data from the DOM element
+    const blockElement = this.sectionsListTarget.querySelector(`[data-block-id="${blockId}"]`)
+    if (!blockElement) return
+    
+    const blockType = blockElement.dataset.blockType
+    const sectionElement = this.sectionsListTarget.querySelector(`[data-section-id="${sectionId}"]`)
+    const sectionType = sectionElement.dataset.sectionType
+    
+    console.log('Rendering block settings for:', { blockId, blockType, sectionType })
+    
+    const settingsPanel = this.sectionSettingsPanelTarget
+    settingsPanel.innerHTML = `
+      <div class="mb-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">${blockType.humanize()} Settings</h3>
+        <div class="text-center py-4">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+          <p class="text-sm text-gray-600 mt-2">Loading block settings...</p>
+        </div>
+      </div>
+    `
+    
+    // Render block form asynchronously
+    this.renderBlockFormAsync(blockType, sectionType, blockId, sectionId)
+  }
+  
+  async renderBlockFormAsync(blockType, sectionType, blockId, sectionId) {
+    try {
+      const formHTML = await this.renderBlockForm(blockType, sectionType)
+      
+      const settingsPanel = this.sectionSettingsPanelTarget
+      settingsPanel.innerHTML = `
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">${blockType.humanize()} Settings</h3>
+          <form id="block-settings-form" class="space-y-4">
+            ${formHTML}
+          </form>
+        </div>
+      `
+      
+      // Add event listeners for form changes
+      this.attachBlockFormListeners(blockId, sectionId)
+    } catch (error) {
+      console.error('❌ Error rendering block form:', error)
+      const settingsPanel = this.sectionSettingsPanelTarget
+      settingsPanel.innerHTML = `
+        <div class="mb-4">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">${blockType.humanize()} Settings</h3>
+          <div class="text-red-500 p-4 bg-red-50 rounded-md">
+            <p>Error loading block settings: ${error.message}</p>
+          </div>
+        </div>
+      `
+    }
+  }
+  
+  async renderBlockForm(blockType, sectionType) {
+    console.log('🔍 renderBlockForm called for block:', blockType, 'in section:', sectionType)
+    
+    // Get block schema from section schema
+    const sectionData = await this.getSectionData(sectionType)
+    if (!sectionData) {
+      return '<div class="text-red-500">Error loading section data</div>'
+    }
+    
+    const { schema } = sectionData
+    console.log('🔍 Section schema:', schema)
+    
+    // Find the block definition in the schema
+    const blockDefinition = schema.blocks?.find(block => block.type === blockType)
+    if (!blockDefinition) {
+      return '<div class="text-gray-500">No settings defined for this block</div>'
+    }
+    
+    // Generate form based on block schema
+    return this.generateFormFromBlockSchema(blockDefinition, {})
+  }
+  
+  generateFormFromBlockSchema(blockDefinition, settings) {
+    if (!blockDefinition.settings) {
+      return '<div class="text-gray-500">No settings defined for this block</div>'
+    }
+    
+    let formHTML = '<div class="space-y-4">'
+    
+    blockDefinition.settings.forEach(setting => {
+      formHTML += this.renderBlockFormField(setting, settings[setting.id])
+    })
+    
+    formHTML += '</div>'
+    return formHTML
+  }
+  
+  renderBlockFormField(setting, value) {
+    const label = setting.label || setting.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    const description = setting.description ? `<p class="text-xs text-gray-500 mt-1">${setting.description}</p>` : ''
+    
+    switch (setting.type) {
+      case 'text':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="text" name="${setting.id}" value="${value || setting.default || ''}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      case 'textarea':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <textarea name="${setting.id}" rows="3"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">${value || setting.default || ''}</textarea>
+            ${description}
+          </div>
+        `
+      
+      case 'richtext':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <textarea name="${setting.id}" rows="4"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">${value || setting.default || ''}</textarea>
+            ${description}
+          </div>
+        `
+      
+      case 'number':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="number" name="${setting.id}" value="${value || setting.default || ''}" 
+                   min="${setting.min || ''}" max="${setting.max || ''}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      case 'checkbox':
+        return `
+          <div class="flex items-center space-x-4">
+            <label class="flex items-center">
+              <input type="checkbox" name="${setting.id}" ${value || setting.default ? 'checked' : ''} 
+                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              <span class="ml-2 text-sm text-gray-700">${label}</span>
+            </label>
+          </div>
+          ${description}
+        `
+      
+      case 'image':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="file" name="${setting.id}" accept="image/*" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      case 'url':
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="url" name="${setting.id}" value="${value || setting.default || ''}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+      
+      default:
+        return `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+            <input type="text" name="${setting.id}" value="${value || setting.default || ''}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            ${description}
+          </div>
+        `
+    }
+  }
+  
+  attachBlockFormListeners(blockId, sectionId) {
+    const form = document.getElementById('block-settings-form')
+    if (!form) return
+    
+    // Add change listeners to all form elements
+    const inputs = form.querySelectorAll('input, select, textarea')
+    inputs.forEach(input => {
+      input.addEventListener('change', () => {
+        this.updateBlockSettingsFromForm(blockId, sectionId)
+      })
+      input.addEventListener('input', () => {
+        // Debounce rapid changes
+        clearTimeout(this.updateTimeout)
+        this.updateTimeout = setTimeout(() => {
+          this.updateBlockSettingsFromForm(blockId, sectionId)
+        }, 500)
+      })
+    })
+  }
+  
+  updateBlockSettingsFromForm(blockId, sectionId) {
+    const form = document.getElementById('block-settings-form')
+    if (!form) {
+      console.error('Block form element not found:', 'block-settings-form')
+      return
+    }
+    
+    const formData = new FormData(form)
+    const settings = {}
+    
+    // Collect all form values
+    for (let [key, value] of formData.entries()) {
+      settings[key] = value
+    }
+    
+    // Handle checkboxes (they don't appear in FormData if unchecked)
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]')
+    checkboxes.forEach(checkbox => {
+      settings[checkbox.name] = checkbox.checked
+    })
+    
+    // Update the block settings
+    this.updateBlockSettings(blockId, sectionId, settings)
+  }
+  
+  updateBlockSettings(blockId, sectionId, settings) {
+    console.log('Updating block settings:', { blockId, sectionId, settings, template: this.currentTemplate })
+    
+    // Show spinning icon
+    this.showAutosaveSpinner()
+    
+    fetch(`/admin/builder/${this.themeId}/update_block/${blockId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ 
+        section_id: sectionId,
+        settings: settings,
+        template: this.currentTemplate
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Hide spinning icon and show green dot
+        this.hideAutosaveSpinner()
+        
+        // Update preview
+        this.updatePreviewContent()
+      } else {
+        // Hide spinning icon and show error
+        this.hideAutosaveSpinner()
+        this.showNotification('Error updating block: ' + (data.errors || 'Unknown error'), 'error')
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error)
+      // Hide spinning icon and show error
+      this.hideAutosaveSpinner()
+      this.showNotification('Error updating block settings', 'error')
+    })
+  }
+  
+  removeBlock(event) {
+    const blockId = event.currentTarget.dataset.blockId
+    const sectionId = event.currentTarget.dataset.sectionId
+    
+    if (confirm('Are you sure you want to remove this block?')) {
+      fetch(`/admin/builder/${this.themeId}/remove_block/${blockId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ 
+          section_id: sectionId,
+          template: this.currentTemplate
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          this.showNotification('Block removed successfully!', 'success')
+          // Reload the page to show updated blocks
+          window.location.reload()
+        } else {
+          this.showNotification('Error removing block: ' + (data.errors || 'Unknown error'), 'error')
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error)
+        this.showNotification('Error removing block', 'error')
+      })
+    }
   }
 
   // Tab Management
@@ -1649,6 +2427,12 @@ export default class extends Controller {
     this.themeTabTarget.classList.remove('text-gray-500')
     this.sectionTabTarget.classList.remove('border-blue-500', 'text-gray-700')
     this.sectionTabTarget.classList.add('text-gray-500')
+    
+    // Initialize theme settings if not already done
+    if (!this.themeSettingsInitialized) {
+      this.initializeThemeSettings()
+      this.themeSettingsInitialized = true
+    }
   }
 
   // Device selection methods
@@ -1713,49 +2497,57 @@ export default class extends Controller {
     // Get the white preview container (the rounded div with bg-white)
     const previewContainer = iframe.parentElement
     // Get the parent container (the one with bg-gray-100 p-4)
-    const parentContainer = previewContainer.parentElement
+    const parentContainer = previewContainer?.parentElement
     
     if (!previewContainer || !parentContainer) {
-      console.error('Preview containers not found!')
+      console.error('Preview containers not found!', { previewContainer, parentContainer })
       return
     }
     
     console.log('Setting device to:', this.currentDevice)
     
-    // Reset all styles first
-    parentContainer.style.maxWidth = ''
-    parentContainer.style.width = ''
-    previewContainer.style.maxWidth = ''
-    previewContainer.style.margin = ''
-    previewContainer.style.width = ''
+    // Reset all styles first - with null checks
+    if (parentContainer && parentContainer.style) {
+      parentContainer.style.maxWidth = ''
+      parentContainer.style.width = ''
+    }
+    if (previewContainer && previewContainer.style) {
+      previewContainer.style.maxWidth = ''
+      previewContainer.style.margin = ''
+      previewContainer.style.width = ''
+    }
     
     // Parent container always takes full width
-    parentContainer.style.maxWidth = '100%'
-    parentContainer.style.width = '100%'
+    if (parentContainer && parentContainer.style) {
+      parentContainer.style.maxWidth = '100%'
+      parentContainer.style.width = '100%'
+    }
     
     // Apply device-specific styles to white container only
-    switch (this.currentDevice) {
-      case 'desktop':
-        // Desktop: white container takes full width
-        previewContainer.style.maxWidth = '100%'
-        previewContainer.style.width = '100%'
-        previewContainer.style.margin = '0'
-        console.log('Applied desktop styles')
-        break
-      case 'tablet':
-        // Tablet: white container is 768px centered
-        previewContainer.style.maxWidth = '100%'
-        previewContainer.style.width = '768px'
-        previewContainer.style.margin = '0 auto'
-        console.log('Applied tablet styles')
-        break
-      case 'mobile':
-        // Mobile: white container is 375px centered
-        previewContainer.style.maxWidth = '100%'
-        previewContainer.style.width = '375px'
-        previewContainer.style.margin = '0 auto'
-        console.log('Applied mobile styles')
-        break
+    if (previewContainer && previewContainer.style) {
+      switch (this.currentDevice) {
+        case 'desktop':
+          // Desktop: white container takes full width
+          previewContainer.style.maxWidth = '100%'
+          previewContainer.style.width = '100%'
+          previewContainer.style.margin = '0'
+          console.log('Applied desktop styles')
+          break
+        case 'tablet':
+          // Tablet: white container is 768px centered
+          previewContainer.style.maxWidth = '100%'
+          previewContainer.style.width = '768px'
+          previewContainer.style.margin = '0 auto'
+          console.log('Applied tablet styles')
+          break
+        case 'mobile':
+          // Mobile: white container is 375px centered
+          previewContainer.style.maxWidth = '100%'
+          previewContainer.style.width = '375px'
+          previewContainer.style.margin = '0 auto'
+          console.log('Applied mobile styles')
+          break
+      }
     }
   }
 

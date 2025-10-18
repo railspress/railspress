@@ -9,6 +9,8 @@ export default class extends Controller {
   }
 
   async connect() {
+    console.log("Editor.js controller connecting...")
+    
     // Wait for Editor.js to be loaded from CDN
     await this.waitForEditorJS()
     
@@ -28,139 +30,38 @@ export default class extends Controller {
       }
     }
 
-    // Initialize Editor.js
-    this.editor = new EditorJS({
-      holder: this.element.querySelector('.editorjs-container'),
-      
-      placeholder: this.placeholderValue || 'Start writing...',
-      
-      autofocus: true,
-      
-      data: initialData,
-      
-      tools: {
-        header: {
-          class: window.Header,
-          config: {
-            levels: [1, 2, 3, 4, 5, 6],
-            defaultLevel: 2
-          },
-          inlineToolbar: true,
-          shortcut: 'CMD+SHIFT+H'
+    // Check if Editor.js is available
+    if (typeof window.EditorJS === 'undefined') {
+      console.error('Editor.js not available, showing fallback')
+      this.showFallbackEditor()
+      return
+    }
+
+    // Initialize Editor.js with minimal configuration
+    try {
+      this.editor = new window.EditorJS({
+        holder: this.element.querySelector('.editorjs-container'),
+        placeholder: this.placeholderValue || 'Start writing...',
+        autofocus: true,
+        data: initialData,
+        
+        // Minimal tools configuration
+        tools: {},
+        
+        onChange: async () => {
+          await this.saveContent()
+          this.triggerAutoSave()
         },
         
-        list: {
-          class: window.NestedList,
-          inlineToolbar: true,
-          shortcut: 'CMD+SHIFT+L'
-        },
-        
-        checklist: {
-          class: window.Checklist,
-          inlineToolbar: true
-        },
-        
-        quote: {
-          class: window.Quote,
-          inlineToolbar: true,
-          config: {
-            quotePlaceholder: 'Enter a quote',
-            captionPlaceholder: 'Quote author'
-          },
-          shortcut: 'CMD+SHIFT+Q'
-        },
-        
-        code: {
-          class: window.Code,
-          shortcut: 'CMD+SHIFT+C'
-        },
-        
-        warning: {
-          class: window.Warning,
-          inlineToolbar: true,
-          config: {
-            titlePlaceholder: 'Title',
-            messagePlaceholder: 'Message'
-          }
-        },
-        
-        delimiter: {
-          class: window.Delimiter
-        },
-        
-        table: {
-          class: window.Table,
-          inlineToolbar: true
-        },
-        
-        raw: {
-          class: window.RawTool
-        },
-        
-        image: {
-          class: window.ImageTool,
-          config: {
-            endpoints: {
-              byFile: '/admin/upload/image',
-              byUrl: '/admin/upload/image_url'
-            },
-            additionalRequestHeaders: {
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content
-            }
-          }
-        },
-        
-        attaches: {
-          class: window.AttachesTool,
-          config: {
-            endpoint: '/admin/upload/file',
-            additionalRequestHeaders: {
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content
-            }
-          }
-        },
-        
-        embed: {
-          class: window.Embed,
-          config: {
-            services: {
-              youtube: true,
-              vimeo: true,
-              twitter: true,
-              instagram: true,
-              codepen: true,
-              github: true
-            }
-          },
-          inlineToolbar: true
-        },
-        
-        // Inline tools
-        marker: {
-          class: window.Marker,
-          shortcut: 'CMD+SHIFT+M'
-        },
-        
-        inlineCode: {
-          class: window.InlineCode,
-          shortcut: 'CMD+E'
-        },
-        
-        underline: {
-          class: window.Underline,
-          shortcut: 'CMD+U'
+        onReady: () => {
+          console.log('Editor.js is ready!')
+          this.setupKeyboardShortcuts()
         }
-      },
-      
-      onChange: async () => {
-        await this.saveContent()
-      },
-      
-      onReady: () => {
-        console.log('Editor.js is ready!')
-        this.setupKeyboardShortcuts()
-      }
-    })
+      })
+    } catch (error) {
+      console.error('Editor.js initialization failed:', error)
+      this.showFallbackEditor()
+    }
   }
 
   disconnect() {
@@ -330,24 +231,78 @@ export default class extends Controller {
   // Helper to wait for Editor.js to load
   waitForEditorJS() {
     return new Promise((resolve) => {
-      if (window.EditorJS) {
+      if (window.EditorJS && window.EditorJSLoaded) {
         resolve()
       } else {
         const checkInterval = setInterval(() => {
-          if (window.EditorJS) {
+          if (window.EditorJS && window.EditorJSLoaded) {
             clearInterval(checkInterval)
             resolve()
           }
         }, 100)
         
-        // Timeout after 10 seconds
+        // Timeout after 5 seconds
         setTimeout(() => {
           clearInterval(checkInterval)
-          console.error('Editor.js failed to load')
+          console.warn('Editor.js failed to load within timeout')
           resolve()
-        }, 10000)
+        }, 5000)
       }
     })
+  }
+
+  triggerAutoSave() {
+    // Dispatch event for autosave functionality
+    const event = new CustomEvent('editor:content-changed', {
+      detail: { content: this.inputTarget.value }
+    })
+    window.dispatchEvent(event)
+  }
+
+  showFallbackEditor() {
+    const container = this.element.querySelector('.editorjs-container')
+    if (container) {
+      container.innerHTML = `
+        <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 mb-4">
+          <p class="font-medium mb-2">📝 Using Rich Text Editor</p>
+          <p class="text-sm">Editor.js is loading... Using a rich text editor with formatting toolbar.</p>
+        </div>
+        <div class="rich-text-fallback">
+          <div class="toolbar flex gap-2 mb-2 p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-t-lg">
+            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('bold', false, null); document.querySelector('.rich-text-editor').focus()" title="Bold (Ctrl+B)">
+              <strong>B</strong>
+            </button>
+            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('italic', false, null); document.querySelector('.rich-text-editor').focus()" title="Italic (Ctrl+I)">
+              <em>I</em>
+            </button>
+            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('underline', false, null); document.querySelector('.rich-text-editor').focus()" title="Underline (Ctrl+U)">
+              <u>U</u>
+            </button>
+            <div class="border-l border-[#3a3a3a] mx-1"></div>
+            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('formatBlock', false, 'h2'); document.querySelector('.rich-text-editor').focus()" title="Heading">
+              H1
+            </button>
+            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('insertUnorderedList', false, null); document.querySelector('.rich-text-editor').focus()" title="List">
+              ≡
+            </button>
+            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="const url = prompt('Enter URL:'); if (url) document.execCommand('createLink', false, url); document.querySelector('.rich-text-editor').focus()" title="Link">
+              🔗
+            </button>
+          </div>
+          <div class="rich-text-editor min-h-[400px] p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-b-lg text-white focus:outline-none focus:border-indigo-500" contenteditable="true">
+            ${this.contentValue || '<p>Start writing...</p>'}
+          </div>
+        </div>
+      `
+      
+      // Add event listener to update hidden input
+      const editor = container.querySelector('.rich-text-editor')
+      if (editor && this.hasInputTarget) {
+        editor.addEventListener('input', () => {
+          this.inputTarget.value = editor.innerHTML
+        })
+      }
+    }
   }
 }
 

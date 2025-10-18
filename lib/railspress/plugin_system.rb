@@ -34,28 +34,133 @@ module Railspress
         Rails.logger.info "Plugin registered: #{name}"
       end
 
+      # Reload plugins (for development)
+      def reload_plugins
+        return unless Rails.env.development?
+        
+        # Clear existing state completely
+        @plugins = {}
+        @hooks = Hash.new { |hash, key| hash[key] = [] }
+        
+        # Reload all active plugins
+        load_plugins
+        
+        Rails.logger.info "Plugins reloaded: #{loaded_plugins.join(', ')}"
+        puts "✅ Plugins reloaded: #{loaded_plugins.join(', ')}"
+      end
+      
       # Load all active plugins from database
       def load_plugins
         initialize_system unless @plugins
         
+        # Skip loading plugins if database tables don't exist yet (e.g., during migrations)
+        return unless ActiveRecord::Base.connection.table_exists?('plugins')
+        
         Plugin.active.find_each do |plugin_record|
-          plugin_path = Rails.root.join('lib', 'plugins', plugin_record.name.underscore, "#{plugin_record.name.underscore}.rb")
+          # Use dynamic plugin discovery to find the correct plugin file
+          plugin_path = find_plugin_file(plugin_record.name)
           
-          if File.exist?(plugin_path)
+          if plugin_path && File.exist?(plugin_path)
             begin
-              require plugin_path
-              Rails.logger.info "Loaded plugin: #{plugin_record.name}"
+              # Use load instead of require for development reloading
+              load_method = Rails.env.development? ? :load : :require
+              send(load_method, plugin_path)
+              
+              # Find and instantiate the plugin class
+              plugin_instance = instantiate_plugin(plugin_record.name)
+              if plugin_instance
+                # Call the activate method to register hooks
+                plugin_instance.activate
+                @plugins[plugin_record.name] = plugin_instance
+                Rails.logger.info "Loaded, instantiated, and activated plugin: #{plugin_record.name}"
+              else
+                Rails.logger.warn "Failed to instantiate plugin: #{plugin_record.name}"
+              end
             rescue => e
               Rails.logger.error "Failed to load plugin #{plugin_record.name}: #{e.message}"
             end
+          else
+            Rails.logger.warn "Plugin file not found for: #{plugin_record.name}"
           end
         end
       end
+      
+      # Find plugin file using dynamic discovery
+      def find_plugin_file(plugin_name)
+        plugins_dir = Rails.root.join('lib', 'plugins')
+        return nil unless Dir.exist?(plugins_dir)
+        
+        Dir.glob(File.join(plugins_dir, '*')).each do |plugin_dir|
+          next unless File.directory?(plugin_dir)
+          
+          candidate_name = File.basename(plugin_dir)
+          plugin_file = File.join(plugin_dir, "#{candidate_name}.rb")
+          
+          next unless File.exist?(plugin_file)
+          
+          begin
+            # Load the plugin file to check if it matches our plugin
+            load plugin_file
+            plugin_class_name = candidate_name.classify
+            plugin_class = plugin_class_name.constantize rescue nil
+            
+            if plugin_class && plugin_class.ancestors.include?(Railspress::PluginBase)
+              # Create a temporary instance to check the name
+              temp_instance = plugin_class.new
+              if temp_instance.name == plugin_name
+                return plugin_file
+              end
+            end
+          rescue => e
+            # Continue to next plugin if this one fails
+            next
+          end
+        end
+        
+        nil
+      end
+      
+      # Instantiate a plugin by name
+      def instantiate_plugin(plugin_name)
+        plugins_dir = Rails.root.join('lib', 'plugins')
+        return nil unless Dir.exist?(plugins_dir)
+        
+        Dir.glob(File.join(plugins_dir, '*')).each do |plugin_dir|
+          next unless File.directory?(plugin_dir)
+          
+          candidate_name = File.basename(plugin_dir)
+          plugin_file = File.join(plugin_dir, "#{candidate_name}.rb")
+          
+          next unless File.exist?(plugin_file)
+          
+          begin
+            plugin_class_name = candidate_name.classify
+            plugin_class = plugin_class_name.constantize rescue nil
+            
+            if plugin_class && plugin_class.ancestors.include?(Railspress::PluginBase)
+              # Create a temporary instance to check the name
+              temp_instance = plugin_class.new
+              if temp_instance.name == plugin_name
+                return temp_instance
+              end
+            end
+          rescue => e
+            # Continue to next plugin if this one fails
+            next
+          end
+        end
+        
+        nil
+      end
 
       # Add an action hook
-      def add_action(hook_name, callback, priority = 10)
+      def add_action(hook_name, callback, priority = 10, plugin_name = nil)
         @hooks ||= Hash.new { |hash, key| hash[key] = [] }
-        @hooks[hook_name] << { callback: callback, priority: priority }
+        @hooks[hook_name] << { 
+          callback: callback, 
+          priority: priority, 
+          plugin_name: plugin_name 
+        }
         @hooks[hook_name].sort_by! { |h| h[:priority] }
       end
 
@@ -63,21 +168,30 @@ module Railspress
       def do_action(hook_name, *args)
         return unless @hooks[hook_name]
         
+        results = []
         @hooks[hook_name].each do |hook|
+          # Skip hooks from deactivated plugins
+          next unless plugin_active?(hook[:plugin_name])
+          
           begin
             if hook[:callback].respond_to?(:call)
-              hook[:callback].call(*args)
+              result = hook[:callback].call(*args)
+              results << result if result
             elsif hook[:callback].is_a?(Symbol) || hook[:callback].is_a?(String)
               # If it's a method name, try to call it
               method_name = hook[:callback].to_sym
               if self.respond_to?(method_name)
-                self.send(method_name, *args)
+                result = self.send(method_name, *args)
+                results << result if result
               end
             end
           rescue => e
-            Rails.logger.error "Error executing hook #{hook_name}: #{e.message}"
+            Rails.logger.error "Error executing hook #{hook_name} from plugin #{hook[:plugin_name]}: #{e.message}"
           end
         end
+        
+        # Return the results joined together (for HTML output)
+        results.join.html_safe
       end
 
       # Add a filter hook
@@ -118,6 +232,16 @@ module Railspress
       # Get all loaded plugins
       def loaded_plugins
         @plugins.keys
+      end
+      
+      # Check if a plugin is active
+      def plugin_active?(plugin_name)
+        return true unless plugin_name # Allow hooks without plugin names (backward compatibility)
+        
+        # Check if plugin exists and is active in the database
+        return false unless ActiveRecord::Base.connection.table_exists?('plugins')
+        
+        Plugin.exists?(name: plugin_name, active: true)
       end
       
       # Register admin page for a plugin

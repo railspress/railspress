@@ -1,5 +1,5 @@
 class Admin::PostsController < Admin::BaseController
-  before_action :set_post, only: %i[ show edit update destroy publish unpublish write restore ]
+  before_action :set_post, only: %i[ show edit update destroy publish unpublish write restore versions restore_version ]
   layout :choose_layout
 
   # GET /admin/posts or /admin/posts.json
@@ -111,14 +111,14 @@ class Admin::PostsController < Admin::BaseController
     @post = current_user.posts.build(status: :draft)
     @categories = Term.for_taxonomy('category').ordered
     @tags = Term.for_taxonomy('post_tag').ordered
-    render :write, layout: 'editor_fullscreen'
+    render :write, layout: 'write_fullscreen'
   end
   
   # GET /admin/posts/:id/write (member)
   def write
     @categories = Term.for_taxonomy('category').ordered
     @tags = Term.for_taxonomy('post_tag').ordered
-    render layout: 'editor_fullscreen'
+    render layout: 'write_fullscreen'
   end
 
   # GET /admin/posts/1/edit
@@ -133,13 +133,22 @@ class Admin::PostsController < Admin::BaseController
 
     respond_to do |format|
       if @post.save
-        format.html { redirect_to [:admin, @post], notice: "Post was successfully created." }
-        format.json { render :show, status: :created, location: @post }
+        if params[:autosave] == 'true'
+          # Autosave response - redirect to edit page for continued editing
+          format.json { render json: { status: 'success', id: @post.id, edit_url: admin_post_path(@post) } }
+        else
+          format.html { redirect_to [:admin, @post], notice: "Post was successfully created." }
+          format.json { render :show, status: :created, location: @post }
+        end
       else
         @categories = Term.for_taxonomy('category').ordered
         @tags = Term.for_taxonomy('post_tag').ordered
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @post.errors, status: :unprocessable_entity }
+        if params[:autosave] == 'true'
+          format.json { render json: { status: 'error', errors: @post.errors }, status: :unprocessable_entity }
+        else
+          format.html { render :new, status: :unprocessable_entity }
+          format.json { render json: @post.errors, status: :unprocessable_entity }
+        end
       end
     end
   end
@@ -148,13 +157,22 @@ class Admin::PostsController < Admin::BaseController
   def update
     respond_to do |format|
       if @post.update(post_params)
-        format.html { redirect_to [:admin, @post], notice: "Post was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @post }
+        if params[:autosave] == 'true'
+          # Autosave response - just return success
+          format.json { render json: { status: 'success', updated_at: @post.updated_at } }
+        else
+          format.html { redirect_to [:admin, @post], notice: "Post was successfully updated.", status: :see_other }
+          format.json { render :show, status: :ok, location: @post }
+        end
       else
         @categories = Term.for_taxonomy('category').ordered
         @tags = Term.for_taxonomy('post_tag').ordered
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @post.errors, status: :unprocessable_entity }
+        if params[:autosave] == 'true'
+          format.json { render json: { status: 'error', errors: @post.errors }, status: :unprocessable_entity }
+        else
+          format.html { render :edit, status: :unprocessable_entity }
+          format.json { render json: @post.errors, status: :unprocessable_entity }
+        end
       end
     end
   end
@@ -305,6 +323,39 @@ class Admin::PostsController < Admin::BaseController
     end
     
     def choose_layout
-      action_name == 'write' || action_name == 'write_new' ? 'editor_fullscreen' : 'admin'
+      action_name == 'write' || action_name == 'write_new' ? 'write_fullscreen' : 'admin'
+    end
+
+    # Version-related actions
+    def versions
+      @versions = @post.versions.includes(:user).order(created_at: :desc)
+      
+      respond_to do |format|
+        format.html
+        format.json { render json: @versions.map { |v| version_json(v) } }
+      end
+    end
+
+    def restore_version
+      version_id = params[:version_id]
+      
+      if @post.restore_to_version(version_id)
+        redirect_to edit_admin_post_path(@post), notice: 'Version restored successfully!'
+      else
+        redirect_to versions_admin_post_path(@post), alert: 'Failed to restore version.'
+      end
+    end
+
+    private
+
+    def version_json(version)
+      {
+        id: version.id,
+        created_at: version.created_at,
+        user: version.whodunnit ? User.find_by(id: version.whodunnit)&.name : 'System',
+        summary: @post.version_summary(version),
+        changes: version.changeset.keys,
+        event: version.event
+      }
     end
 end

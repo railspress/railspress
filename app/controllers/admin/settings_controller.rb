@@ -61,6 +61,11 @@ class Admin::SettingsController < Admin::BaseController
     load_appearance_settings
   end
 
+  # GET /admin/settings/storage
+  def storage
+    load_storage_settings
+  end
+
   # PATCH /admin/settings/update_general
   def update_general
     params[:settings].each do |key, value|
@@ -233,6 +238,43 @@ class Admin::SettingsController < Admin::BaseController
     redirect_to admin_settings_appearance_path, notice: 'Appearance settings updated successfully.'
   end
 
+  # PATCH /admin/settings/update_storage
+  def update_storage
+    # Update storage settings
+    if params[:settings]
+      params[:settings].each do |key, value|
+        SiteSetting.set(key, value, setting_type_for(key))
+      end
+    end
+    
+    # Update tenant storage configuration if we have a current tenant
+    if defined?(ActsAsTenant) && ActsAsTenant.current_tenant
+      tenant = ActsAsTenant.current_tenant
+      tenant.update!(
+        storage_type: params[:storage_type] || 'local',
+        storage_bucket: params[:storage_bucket],
+        storage_region: params[:storage_region],
+        storage_access_key: params[:storage_access_key],
+        storage_secret_key: params[:storage_secret_key],
+        storage_endpoint: params[:storage_endpoint],
+        storage_path: params[:storage_path]
+      )
+    end
+    
+    # Apply storage configuration
+    begin
+      storage_config = StorageConfigurationService.new
+      storage_config.configure_active_storage
+      storage_config.update_storage_config
+    rescue => e
+      Rails.logger.error "Failed to apply storage configuration: #{e.message}"
+      redirect_to admin_storage_settings_path, alert: 'Storage settings updated but configuration failed to apply. Please check the logs.'
+      return
+    end
+    
+    redirect_to admin_storage_settings_path, notice: 'Storage settings updated successfully.'
+  end
+
   private
 
   def load_general_settings
@@ -377,6 +419,34 @@ class Admin::SettingsController < Admin::BaseController
     }
   end
 
+  def load_storage_settings
+    # Get current tenant storage settings if available
+    current_tenant = defined?(ActsAsTenant) ? ActsAsTenant.current_tenant : nil
+    
+    @settings = {
+      # Storage Type
+      storage_type: current_tenant&.storage_type || SiteSetting.get('storage_type', 'local'),
+      
+      # Local Storage Configuration
+      local_storage_path: SiteSetting.get('local_storage_path', Rails.root.join('storage').to_s),
+      
+      # S3 Configuration
+      storage_bucket: current_tenant&.storage_bucket || SiteSetting.get('storage_bucket', ''),
+      storage_region: current_tenant&.storage_region || SiteSetting.get('storage_region', 'us-east-1'),
+      storage_access_key: current_tenant&.storage_access_key || SiteSetting.get('storage_access_key', ''),
+      storage_secret_key: current_tenant&.storage_secret_key || SiteSetting.get('storage_secret_key', ''),
+      storage_endpoint: current_tenant&.storage_endpoint || SiteSetting.get('storage_endpoint', ''),
+      storage_path: current_tenant&.storage_path || SiteSetting.get('storage_path', ''),
+      
+      # General Storage Settings
+      enable_cdn: SiteSetting.get('enable_cdn', false),
+      cdn_url: SiteSetting.get('cdn_url', ''),
+      auto_optimize_uploads: SiteSetting.get('auto_optimize_uploads', true),
+      max_file_size: SiteSetting.get('max_file_size', 10), # MB
+      allowed_file_types: SiteSetting.get('allowed_file_types', 'jpg,jpeg,png,gif,pdf,doc,docx,mp4,mp3')
+    }
+  end
+
   def configure_action_mailer
     provider = SiteSetting.get('email_provider', 'smtp')
     
@@ -405,7 +475,7 @@ class Admin::SettingsController < Admin::BaseController
       auto_redirect_old_urls comments_enabled comments_moderation 
       comment_registration_required show_avatars gdpr_compliance_enabled
       cookie_consent_required allow_user_registration email_logging_enabled
-      hide_branding
+      hide_branding enable_cdn auto_optimize_uploads
     ]
     
     integer_settings = %w[
@@ -413,6 +483,7 @@ class Admin::SettingsController < Admin::BaseController
       image_max_width image_max_height thumbnail_width thumbnail_height
       medium_width medium_height large_width large_height max_upload_size
       close_comments_after_days excerpt_length smtp_port smtp_timeout
+      max_file_size
     ]
     
     if boolean_settings.include?(key)

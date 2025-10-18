@@ -8,6 +8,7 @@ class Admin::ProfileController < Admin::BaseController
 
   # GET /admin/profile/edit
   def edit
+    @available_editors = available_editors
   end
 
   # PATCH /admin/profile
@@ -45,5 +46,14 @@ class Admin::ProfileController < Admin::BaseController
 
   def user_params
     params.require(:user).permit(:email, :name, :password, :password_confirmation, :avatar, :bio, :website, :twitter, :github, :linkedin, :phone, :location, :avatar_url, :editor_preference)
+  end
+
+  def available_editors
+    [
+      ['BlockNote (Modern Block Editor)', 'blocknote'],
+      ['Editor.js (Rich Block Editor)', 'editorjs'],
+      ['Trix (Rich Text Editor)', 'trix'],
+      ['Simple Textarea', 'simple']
+    ]
   end
 end

@@ -3,78 +3,37 @@ class Admin::WebhooksController < Admin::BaseController
   
   def index
     @webhooks = Webhook.order(created_at: :desc)
+    
+    # Filter by active status if specified
+    if params[:show_inactive] != 'true'
+      @webhooks = @webhooks.where(active: true)
+    end
+    
     @recent_deliveries = WebhookDelivery.includes(:webhook).recent.limit(20)
     
     # Prepare data for Tabulator
-    @webhooks_data = @webhooks.map do |webhook|
-      # Status HTML
-      status_html = if webhook.active?
-        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>Active</span>'
-      else
-        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">Inactive</span>'
-      end
-      
-      # Add unhealthy indicator if needed
-      unless webhook.healthy?
-        status_html += '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 ml-2">Unhealthy</span>'
-      end
-      
-      # Actions HTML
-      actions_html = %{
-        <div class="flex space-x-2">
-          <a href="/admin/webhooks/#{webhook.id}" class="text-indigo-600 hover:text-indigo-900">View</a>
-          <a href="/admin/webhooks/#{webhook.id}/edit" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-          <a href="/admin/webhooks/#{webhook.id}/test" data-method="post" class="text-green-600 hover:text-green-900">Test</a>
-          <a href="/admin/webhooks/#{webhook.id}/toggle_active" data-method="patch" class="text-yellow-600 hover:text-yellow-900">#{webhook.active? ? 'Disable' : 'Enable'}</a>
-          <a href="/admin/webhooks/#{webhook.id}" data-method="delete" data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">Delete</a>
-        </div>
-      }
-      
-      {
-        id: webhook.id,
-        name: webhook.name,
-        url: webhook.url,
-        events: webhook.events.join(', '),
-        status: status_html,
-        health: webhook.healthy? ? 'healthy' : 'unhealthy',
-        total_deliveries: webhook.total_deliveries,
-        failed_deliveries: webhook.failed_deliveries,
-        success_rate: webhook.success_rate,
-        created_at: webhook.created_at.iso8601,
-        updated_at: webhook.updated_at.iso8601,
-        actions: actions_html
-      }
-    end
+    @webhooks_data = webhooks_json
     
     # Define columns for Tabulator
     @columns = [
       {
         title: "",
-        field: "checkbox",
         formatter: "rowSelection",
         titleFormatter: "rowSelection",
         width: 40,
-        hozAlign: "center",
-        headerSort: false,
-        frozen: true
+        headerSort: false
       },
       {
         title: "Name & URL",
-        field: "name",
+        field: "title",
         width: 300,
-        formatter: "html",
-        formatterParams: {
-          template: "<div><strong>{{name}}</strong><br><small class='text-gray-500 font-mono'>{{url}}</small></div>"
-        }
+        formatter: "html"
       },
       {
         title: "Events",
         field: "events",
         width: 200,
-        formatter: "html",
-        formatterParams: {
-          template: "<span class='inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'>{{events}}</span>"
-        }
+        formatter: "html"
       },
       {
         title: "Status",
@@ -84,12 +43,9 @@ class Admin::WebhooksController < Admin::BaseController
       },
       {
         title: "Stats",
-        field: "total_deliveries",
+        field: "stats",
         width: 120,
-        formatter: "html",
-        formatterParams: {
-          template: "<div><strong>{{total_deliveries}}</strong> total<br><small class='text-gray-500'>{{failed_deliveries}} failed</small></div>"
-        }
+        formatter: "html"
       },
       {
         title: "Success Rate",
@@ -230,6 +186,55 @@ class Admin::WebhooksController < Admin::BaseController
       :timeout,
       events: []
     )
+  end
+  
+  def webhooks_json
+    @webhooks.map do |webhook|
+      {
+        id: webhook.id,
+        title: "<a href=\"#{admin_webhook_path(webhook)}\" class=\"text-indigo-600 hover:text-indigo-900 font-medium\">#{webhook.name}</a><br><small class=\"text-gray-500 font-mono\">#{webhook.url}</small>",
+        name: webhook.name, # For search functionality
+        events: format_events(webhook.events),
+        status: format_status(webhook),
+        stats: "<div><strong>#{webhook.total_deliveries}</strong> total<br><small class=\"text-gray-500\">#{webhook.failed_deliveries} failed</small></div>",
+        success_rate: webhook.success_rate,
+        created_at: webhook.created_at.iso8601,
+        actions: format_actions(webhook),
+        edit_url: edit_admin_webhook_path(webhook),
+        show_url: admin_webhook_path(webhook)
+      }
+    end
+  end
+  
+  def format_events(events)
+    events.map { |event| "<span class=\"inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200\">#{event}</span>" }.join(' ')
+  end
+  
+  def format_status(webhook)
+    status_html = if webhook.active?
+      '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"><svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>Active</span>'
+    else
+      '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">Inactive</span>'
+    end
+    
+    # Add unhealthy indicator if needed
+    unless webhook.healthy?
+      status_html += '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 ml-2">Unhealthy</span>'
+    end
+    
+    status_html
+  end
+  
+  def format_actions(webhook)
+    %{
+      <div class="flex space-x-2">
+        <a href="#{admin_webhook_path(webhook)}" class="text-indigo-600 hover:text-indigo-900">View</a>
+        <a href="#{edit_admin_webhook_path(webhook)}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+        <a href="#{test_admin_webhook_path(webhook)}" data-method="post" class="text-green-600 hover:text-green-900">Test</a>
+        <a href="#{toggle_active_admin_webhook_path(webhook)}" data-method="patch" class="text-yellow-600 hover:text-yellow-900">#{webhook.active? ? 'Disable' : 'Enable'}</a>
+        <a href="#{admin_webhook_path(webhook)}" data-method="delete" data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">Delete</a>
+      </div>
+    }
   end
 end
 

@@ -26,11 +26,11 @@ xml.feed xmlns: "http://www.w3.org/2005/Atom" do
       xml.content post.content.to_s, type: "html"
       
       # Categories as Atom categories
-      post.categories.each do |category|
+      post.category.each do |category|
         xml.category term: category.slug, label: category.name
       end
       
-      post.tags.each do |tag|
+      post.post_tag.each do |tag|
         xml.category term: tag.slug, label: tag.name
       end
     end

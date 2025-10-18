@@ -1,6 +1,6 @@
 class Admin::BuilderController < Admin::BaseController
-  before_action :set_current_theme, only: [:index, :show, :create_version, :save_draft, :publish, :rollback, :preview, :sections, :update_section, :reorder_sections, :remove_section, :add_section]
-  before_action :set_builder_theme, only: [:show, :save_draft, :publish, :rollback, :preview, :sections, :update_section, :reorder_sections, :remove_section, :add_section]
+  before_action :set_current_theme, only: [:index, :show, :create_version, :save_draft, :publish, :rollback, :preview, :sections, :update_section, :reorder_sections, :remove_section, :add_section, :add_block, :remove_block, :update_block, :update_theme_settings]
+  before_action :set_builder_theme, only: [:show, :save_draft, :publish, :rollback, :preview, :sections, :update_section, :reorder_sections, :remove_section, :add_section, :add_block, :remove_block, :update_block, :update_theme_settings]
   before_action :ensure_editor_access, except: [:preview, :save_draft]
   skip_before_action :verify_authenticity_token, only: [:preview]
   
@@ -450,26 +450,42 @@ class Admin::BuilderController < Admin::BaseController
       
       if Dir.exist?(sections_dir)
         sections = []
+        processed_sections = Set.new
         
-        # Read all .liquid files in the sections directory
+        # First, process .liquid files
         Dir.glob(File.join(sections_dir, '*.liquid')).each do |file_path|
           section_name = File.basename(file_path, '.liquid')
+          section_name = section_name.to_s
           
-          # Ensure section_name is a string
-          section_name = section_name.to_s if section_name.respond_to?(:to_s)
+          # Skip if we've already processed this section
+          next if processed_sections.include?(section_name)
+          processed_sections.add(section_name)
           
           # Try to read section schema for description
           schema_path = File.join(sections_dir, "#{section_name}.json")
           description = 'Section description'
           category = 'General'
+          preview_image = nil
           
           if File.exist?(schema_path)
             begin
               schema = JSON.parse(File.read(schema_path))
-              description = schema['description'] || schema.dig('settings', 'description') || 'Section description'
+              description = schema['description'] || 'Section description'
               category = schema['category'] || 'General'
+              preview_image = schema['preview_image']
             rescue JSON::ParserError
               # Use default description if schema is invalid
+            end
+          end
+          
+          # Extract context requests from schema
+          context_requests = {}
+          if File.exist?(schema_path)
+            begin
+              schema = JSON.parse(File.read(schema_path))
+              context_requests = schema['context_requests'] || {}
+            rescue JSON::ParserError
+              # Use empty context requests if schema is invalid
             end
           end
           
@@ -477,11 +493,46 @@ class Admin::BuilderController < Admin::BaseController
             id: section_name,
             name: section_name.humanize,
             description: description,
-            category: category
+            category: category,
+            preview_image: preview_image,
+            context_requests: context_requests
           }
         end
         
-        render json: { success: true, sections: sections }
+        # Then, process standalone .json files (sections without .liquid files)
+        Dir.glob(File.join(sections_dir, '*.json')).each do |file_path|
+          section_name = File.basename(file_path, '.json')
+          section_name = section_name.to_s
+          
+          # Skip if we've already processed this section
+          next if processed_sections.include?(section_name)
+          processed_sections.add(section_name)
+          
+          begin
+            schema = JSON.parse(File.read(file_path))
+            sections << {
+              id: section_name,
+              name: section_name.humanize,
+              description: schema['description'] || 'Section description',
+              category: schema['category'] || 'General',
+              preview_image: schema['preview_image'],
+              context_requests: schema['context_requests'] || {}
+            }
+          rescue JSON::ParserError
+            # Skip invalid JSON files
+            next
+          end
+        end
+        
+        # Add context data for sections that request it
+        sections_with_context = sections.map do |section|
+          if section[:context_requests].present?
+            section[:context_data] = get_context_data_for_section(section[:context_requests])
+          end
+          section
+        end
+        
+        render json: { success: true, sections: sections_with_context }
       else
         render json: { success: false, errors: ['Sections directory not found'] }, status: :not_found
       end
@@ -490,6 +541,121 @@ class Admin::BuilderController < Admin::BaseController
       Rails.logger.error "Error loading available sections: #{e.message}"
       render json: { success: false, errors: [e.message] }, status: :internal_server_error
     end
+  end
+
+  # GET /admin/builder/:id/section_data
+  def section_data
+    begin
+      @builder_theme = BuilderTheme.find(params[:id])
+      section_type = params[:section_type]
+      
+      # Get section schema
+      theme_name = @builder_theme.theme_name
+      manager = ThemesManager.new
+      schema_path = File.join(manager.themes_path, theme_name, 'sections', "#{section_type}.json")
+      
+      schema = {}
+      if File.exist?(schema_path)
+        schema = JSON.parse(File.read(schema_path))
+      end
+      
+      # Get context data for this section
+      context_data = get_context_data_for_section(schema['context_requests'] || {})
+      
+      render json: { 
+        success: true, 
+        schema: schema,
+        context_data: context_data
+      }
+      
+    rescue => e
+      Rails.logger.error "Error loading section data: #{e.message}"
+      render json: { success: false, errors: [e.message] }, status: :internal_server_error
+    end
+  end
+
+  def get_context_data_for_section(context_requests)
+    context_data = {}
+    
+    context_requests.each do |key, request_config|
+      case key
+      when 'menus'
+        context_data[key] = get_menus_context
+      when 'pages'
+        context_data[key] = get_pages_context
+      when 'posts'
+        context_data[key] = get_posts_context
+      when 'categories'
+        context_data[key] = get_categories_context
+      when 'products'
+        context_data[key] = get_products_context
+      else
+        Rails.logger.warn "Unknown context request: #{key}"
+      end
+    end
+    
+    context_data
+  end
+
+  def get_menus_context
+    # Return available menus for navigation
+    [
+      {
+        id: 1,
+        name: 'Main Navigation',
+        menu_items: [
+          { id: 1, title: 'Home', url: '/', order: 1 },
+          { id: 2, title: 'About', url: '/about', order: 2 },
+          { id: 3, title: 'Services', url: '/services', order: 3 },
+          { id: 4, title: 'Contact', url: '/contact', order: 4 }
+        ]
+      },
+      {
+        id: 2,
+        name: 'Footer Links',
+        menu_items: [
+          { id: 5, title: 'Privacy Policy', url: '/privacy', order: 1 },
+          { id: 6, title: 'Terms of Service', url: '/terms', order: 2 },
+          { id: 7, title: 'Support', url: '/support', order: 3 }
+        ]
+      }
+    ]
+  end
+
+  def get_pages_context
+    # Return available pages
+    [
+      { id: 1, title: 'Home', slug: 'home', url: '/' },
+      { id: 2, title: 'About Us', slug: 'about', url: '/about' },
+      { id: 3, title: 'Services', slug: 'services', url: '/services' },
+      { id: 4, title: 'Contact', slug: 'contact', url: '/contact' },
+      { id: 5, title: 'Privacy Policy', slug: 'privacy', url: '/privacy' }
+    ]
+  end
+
+  def get_posts_context
+    # Return recent posts
+    [
+      { id: 1, title: 'Welcome to Our Blog', slug: 'welcome-blog', url: '/blog/welcome-blog' },
+      { id: 2, title: 'Getting Started Guide', slug: 'getting-started', url: '/blog/getting-started' }
+    ]
+  end
+
+  def get_categories_context
+    # Return post categories
+    [
+      { id: 1, name: 'News', slug: 'news' },
+      { id: 2, name: 'Tutorials', slug: 'tutorials' },
+      { id: 3, name: 'Updates', slug: 'updates' }
+    ]
+  end
+
+  def get_products_context
+    # Return sample products (for e-commerce sections)
+    [
+      { id: 1, title: 'Sample Product 1', price: 29.99, url: '/products/sample-1' },
+      { id: 2, title: 'Sample Product 2', price: 49.99, url: '/products/sample-2' }
+    ]
   end
   
   # GET /admin/builder/:id/file/:file_path
@@ -555,7 +721,19 @@ class Admin::BuilderController < Admin::BaseController
   # POST /admin/builder/:id/add_section
   def add_section
     section_type = params[:section_type]
-    settings = JSON.parse(params[:settings] || '{}')
+    # Handle both string and ActionController::Parameters for settings
+    raw_settings = params[:settings] || params.dig(:builder, :settings) || {}
+    settings = case raw_settings
+               when String
+                 JSON.parse(raw_settings)
+               when ActionController::Parameters
+                 raw_settings.to_unsafe_h
+               else
+                 raw_settings || {}
+               end
+    
+    # Ensure settings is always a Hash (not nil) to satisfy the NOT NULL constraint
+    settings = {} if settings.nil?
     template = params[:template] || 'index'
     
     begin
@@ -566,8 +744,13 @@ class Admin::BuilderController < Admin::BaseController
         return render json: { success: false, errors: ['Section type is required'] }, status: :bad_request
       end
 
-      # Get or create theme preview
-      theme_preview = ThemePreview.find_or_create_for_builder(@builder_theme, template)
+      # Get or create theme preview (without auto-initialization to avoid clearing sections)
+      theme_preview = ThemePreview.find_or_create_by(
+        builder_theme: @builder_theme,
+        template_name: template
+      ) do |preview|
+        preview.tenant = @builder_theme.tenant
+      end
       
       # Generate a unique section ID
       section_id = "#{section_type}_#{SecureRandom.hex(4)}"
@@ -632,6 +815,231 @@ class Admin::BuilderController < Admin::BaseController
       
     rescue => e
       Rails.logger.error "Remove section failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      Rails.logger.error "Params: #{params.inspect}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
+    end
+  end
+
+  # POST /admin/builder/:id/add_block
+  def add_block
+    section_id = params[:section_id]
+    block_type = params[:block_type]
+    block_id = params[:block_id]
+    settings = case params[:settings]
+               when String
+                 JSON.parse(params[:settings])
+               when ActionController::Parameters
+                 params[:settings].to_unsafe_h
+               else
+                 params[:settings] || {}
+               end
+    template = params[:template] || 'index'
+    
+    begin
+      Rails.logger.info "Add block params: #{params.inspect}"
+      Rails.logger.info "Section ID: #{section_id}, Block Type: #{block_type}, Block ID: #{block_id}"
+      
+      if section_id.blank? || block_type.blank? || block_id.blank?
+        return render json: { success: false, errors: ['Section ID, block type, and block ID are required'] }, status: :bad_request
+      end
+
+      # Get or create theme preview
+      theme_preview = ThemePreview.find_or_create_by(
+        builder_theme: @builder_theme,
+        template_name: template
+      ) do |preview|
+        preview.tenant = @builder_theme.tenant
+      end
+      
+      # Find the section
+      section = theme_preview.theme_preview_sections.find_by(section_id: section_id)
+      if !section
+        return render json: { success: false, errors: ['Section not found'] }, status: :not_found
+      end
+      
+      # Create new block
+      block = section.theme_preview_blocks.create!(
+        block_id: block_id,
+        block_type: block_type,
+        settings: settings,
+        position: section.theme_preview_blocks.count
+      )
+      
+      Rails.logger.info "Successfully added block #{block_id} (#{block_type}) to section #{section_id}"
+      
+      respond_to do |format|
+        format.json { render json: { 
+          success: true, 
+          block: {
+            block_id: block.block_id,
+            block_type: block.block_type,
+            settings: block.settings,
+            position: block.position
+          }
+        } }
+      end
+      
+    rescue => e
+      Rails.logger.error "Add block failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      Rails.logger.error "Params: #{params.inspect}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /admin/builder/:id/remove_block/:block_id
+  def remove_block
+    block_id = params[:block_id]
+    section_id = params[:section_id]
+    template = params[:template] || 'index'
+    
+    begin
+      Rails.logger.info "Remove block params: #{params.inspect}"
+      Rails.logger.info "Block ID: #{block_id}, Section ID: #{section_id}"
+      
+      if block_id.blank?
+        return render json: { success: false, errors: ['Block ID is required'] }, status: :bad_request
+      end
+
+      # Get theme preview
+      theme_preview = ThemePreview.find_or_create_by(
+        builder_theme: @builder_theme,
+        template_name: template
+      ) do |preview|
+        preview.tenant = @builder_theme.tenant
+      end
+      
+      # Find the section and block
+      section = theme_preview.theme_preview_sections.find_by(section_id: section_id)
+      if !section
+        return render json: { success: false, errors: ['Section not found'] }, status: :not_found
+      end
+      
+      block = section.theme_preview_blocks.find_by(block_id: block_id)
+      if block
+        block.destroy!
+        Rails.logger.info "Successfully removed block #{block_id} from section #{section_id}"
+        
+        render json: { success: true, message: 'Block removed successfully!' }
+      else
+        Rails.logger.warn "Block #{block_id} not found in section #{section_id}"
+        render json: { success: false, errors: ['Block not found'] }, status: :not_found
+      end
+      
+    rescue => e
+      Rails.logger.error "Remove block failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      Rails.logger.error "Params: #{params.inspect}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /admin/builder/:id/update_block/:block_id
+  def update_block
+    block_id = params[:block_id]
+    section_id = params[:section_id]
+    template = params[:template] || 'index'
+    settings = case params[:settings]
+               when String
+                 JSON.parse(params[:settings])
+               when ActionController::Parameters
+                 params[:settings].to_unsafe_h
+               else
+                 params[:settings] || {}
+               end
+
+    begin
+      Rails.logger.info "Update block params: #{params.inspect}"
+      Rails.logger.info "Block ID: #{block_id}, Section ID: #{section_id}, Settings: #{settings.inspect}"
+      
+      if block_id.blank?
+        return render json: { success: false, errors: ['Block ID is required'] }, status: :bad_request
+      end
+      
+      # Get theme preview
+      theme_preview = ThemePreview.find_or_create_by(
+        builder_theme: @builder_theme,
+        template_name: template
+      ) do |preview|
+        preview.tenant = @builder_theme.tenant
+      end
+      
+      # Find the section and block
+      section = theme_preview.theme_preview_sections.find_by(section_id: section_id)
+      if !section
+        return render json: { success: false, errors: ['Section not found'] }, status: :not_found
+      end
+      
+      block = section.theme_preview_blocks.find_by(block_id: block_id)
+      if !block
+        return render json: { success: false, errors: ['Block not found'] }, status: :not_found
+      end
+      
+      # Update the block settings
+      block.update!(settings: settings)
+      
+      Rails.logger.info "Successfully updated block #{block_id} for section #{section_id}"
+      
+      render json: { 
+        success: true, 
+        message: 'Block updated successfully!',
+        block_id: block_id,
+        updated_settings: settings
+      }
+      
+    rescue JSON::ParserError => e
+      Rails.logger.error "JSON parsing error in update_block: #{e.message}"
+      render json: { success: false, errors: ['Invalid JSON in settings'] }, status: :bad_request
+    rescue => e
+      Rails.logger.error "Update block failed: #{e.message}"
+      Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
+      Rails.logger.error "Params: #{params.inspect}"
+      render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /admin/builder/:id/update_theme_settings
+  def update_theme_settings
+    template = params[:template] || 'index'
+    settings = case params[:settings]
+               when String
+                 JSON.parse(params[:settings])
+               when ActionController::Parameters
+                 params[:settings].to_unsafe_h
+               else
+                 params[:settings] || {}
+               end
+
+    begin
+      Rails.logger.info "Update theme settings params: #{params.inspect}"
+      Rails.logger.info "Template: #{template}, Settings: #{settings.inspect}"
+      
+      # Get or create theme preview
+      theme_preview = ThemePreview.find_or_create_by(
+        builder_theme: @builder_theme,
+        template_name: template
+      ) do |preview|
+        preview.tenant = @builder_theme.tenant
+      end
+      
+      # Update theme settings
+      theme_preview.update!(theme_settings_json: settings)
+      
+      Rails.logger.info "Successfully updated theme settings for template #{template}"
+      
+      render json: { 
+        success: true, 
+        message: 'Theme settings updated successfully!',
+        template: template,
+        updated_settings: settings
+      }
+      
+    rescue JSON::ParserError => e
+      Rails.logger.error "JSON parsing error in update_theme_settings: #{e.message}"
+      render json: { success: false, errors: ['Invalid JSON in settings'] }, status: :bad_request
+    rescue => e
+      Rails.logger.error "Update theme settings failed: #{e.message}"
       Rails.logger.error "Backtrace: #{e.backtrace.join("\n")}"
       Rails.logger.error "Params: #{params.inspect}"
       render json: { success: false, errors: [e.message], backtrace: e.backtrace.first(5) }, status: :unprocessable_entity
@@ -752,9 +1160,7 @@ class Admin::BuilderController < Admin::BaseController
     end
   end
 
-  private
-
-  def section_data(section)
+  def format_section_data(section)
     {
       id: section.section_id,
       type: section.section_type,
@@ -800,8 +1206,6 @@ class Admin::BuilderController < Admin::BaseController
       end
     }
   end
-  
-  private
   
   def set_current_theme
     # Allow editing any theme, not just active ones
@@ -861,6 +1265,116 @@ class Admin::BuilderController < Admin::BaseController
   end
 
   private
+
+  def get_context_data_for_section(context_requests)
+    context_data = {}
+    
+    context_requests.each do |key, request_config|
+      case key
+      when 'menus'
+        context_data[key] = get_menus_context
+      when 'pages'
+        context_data[key] = get_pages_context
+      when 'posts'
+        context_data[key] = get_posts_context
+      when 'categories'
+        context_data[key] = get_categories_context
+      when 'products'
+        context_data[key] = get_products_context
+      else
+        Rails.logger.warn "Unknown context request: #{key}"
+      end
+    end
+    
+    context_data
+  end
+
+  def get_menus_context
+    # Return available menus for navigation
+    [
+      {
+        id: 1,
+        name: 'Main Navigation',
+        menu_items: [
+          { id: 1, title: 'Home', url: '/', order: 1 },
+          { id: 2, title: 'About', url: '/about', order: 2 },
+          { id: 3, title: 'Services', url: '/services', order: 3 },
+          { id: 4, title: 'Contact', url: '/contact', order: 4 }
+        ]
+      },
+      {
+        id: 2,
+        name: 'Footer Links',
+        menu_items: [
+          { id: 5, title: 'Privacy Policy', url: '/privacy', order: 1 },
+          { id: 6, title: 'Terms of Service', url: '/terms', order: 2 },
+          { id: 7, title: 'Support', url: '/support', order: 3 }
+        ]
+      }
+    ]
+  end
+
+  def get_pages_context
+    # Return available pages
+    [
+      { id: 1, title: 'Home', slug: 'home', url: '/' },
+      { id: 2, title: 'About Us', slug: 'about', url: '/about' },
+      { id: 3, title: 'Services', slug: 'services', url: '/services' },
+      { id: 4, title: 'Contact', slug: 'contact', url: '/contact' },
+      { id: 5, title: 'Privacy Policy', slug: 'privacy', url: '/privacy' }
+    ]
+  end
+
+  def get_posts_context
+    # Return recent posts
+    [
+      { id: 1, title: 'Welcome to Our Blog', slug: 'welcome-blog', url: '/blog/welcome-blog' },
+      { id: 2, title: 'Getting Started Guide', slug: 'getting-started', url: '/blog/getting-started' }
+    ]
+  end
+
+  def get_categories_context
+    # Return post categories
+    [
+      { id: 1, name: 'News', slug: 'news' },
+      { id: 2, name: 'Tutorials', slug: 'tutorials' },
+      { id: 3, name: 'Updates', slug: 'updates' }
+    ]
+  end
+
+  def get_products_context
+    # Return sample products (for e-commerce sections)
+    [
+      { id: 1, title: 'Sample Product 1', price: 29.99, url: '/products/sample-1' },
+      { id: 2, title: 'Sample Product 2', price: 49.99, url: '/products/sample-2' }
+    ]
+  end
+
+  def format_section_data(section)
+    {
+      id: section.section_id,
+      type: section.section_type,
+      settings: section.settings,
+      position: section.position,
+      created_at: section.created_at,
+      updated_at: section.updated_at
+    }
+  end
+
+  def set_current_theme
+    # Allow editing any theme, not just active ones
+    if params[:theme_id].present?
+      @current_theme = Theme.find(params[:theme_id])
+    elsif params[:theme_name].present?
+      @current_theme = Theme.where("LOWER(name) = ?", params[:theme_name].downcase).first
+    else
+      @current_theme = Theme.active.first || Theme.first
+    end
+  end
+
+  def set_builder_theme
+    @builder_theme = BuilderTheme.find(params[:id])
+  end
 
   def fallback_templates
     # Fallback to default templates

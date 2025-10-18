@@ -1,0 +1,195 @@
+<% content_for :page_title, "Storage Settings" %>
+
+<div class="max-w-4xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">Storage Settings</h1>
+    <p class="text-gray-400">Configure file storage and media handling</p>
+  </div>
+
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <%= form_with url: admin_storage_settings_path, method: :patch, class: "space-y-6" do |f| %>
+      
+      <!-- Storage Type -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-4">Storage Provider</h3>
+        <div class="space-y-3">
+          <%= label_tag 'storage_type_local', class: 'flex items-center space-x-3 cursor-pointer' do %>
+            <%= radio_button_tag 'storage_type', 'local', @settings[:storage_type] == 'local',
+                class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+            <span class="text-gray-300">Local Storage</span>
+          <% end %>
+          
+          <%= label_tag 'storage_type_s3', class: 'flex items-center space-x-3 cursor-pointer' do %>
+            <%= radio_button_tag 'storage_type', 's3', @settings[:storage_type] == 's3',
+                class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 focus:ring-indigo-500' %>
+            <span class="text-gray-300">Amazon S3</span>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Local Storage Configuration (shown when Local is selected) -->
+      <div id="local-config" class="<%= @settings[:storage_type] == 'local' ? '' : 'hidden' %>">
+        <h3 class="text-lg font-semibold text-white mb-4">Local Storage Configuration</h3>
+        <div class="bg-[#0a0a0a] p-4 rounded-lg space-y-4">
+          
+          <!-- Local Storage Path -->
+          <div>
+            <%= label_tag 'settings[local_storage_path]', 'Storage Directory Path', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'settings[local_storage_path]', @settings[:local_storage_path],
+                placeholder: '/path/to/storage',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Absolute path where files will be stored locally</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- S3 Configuration (shown when S3 is selected) -->
+      <div id="s3-config" class="<%= @settings[:storage_type] == 's3' ? '' : 'hidden' %>">
+        <h3 class="text-lg font-semibold text-white mb-4">S3 Configuration</h3>
+        <div class="bg-[#0a0a0a] p-4 rounded-lg space-y-4">
+          
+          <!-- Bucket -->
+          <div>
+            <%= label_tag 'storage_bucket', 'S3 Bucket', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'storage_bucket', @settings[:storage_bucket],
+                placeholder: 'your-bucket-name',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">The name of your S3 bucket</p>
+          </div>
+
+          <!-- Region -->
+          <div>
+            <%= label_tag 'storage_region', 'S3 Region', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'storage_region', @settings[:storage_region],
+                placeholder: 'us-east-1',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">AWS region where your bucket is located</p>
+          </div>
+
+          <!-- Access Key -->
+          <div>
+            <%= label_tag 'storage_access_key', 'Access Key ID', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'storage_access_key', @settings[:storage_access_key],
+                placeholder: 'AKIA...',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Your AWS access key ID</p>
+          </div>
+
+          <!-- Secret Key -->
+          <div>
+            <%= label_tag 'storage_secret_key', 'Secret Access Key', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= password_field_tag 'storage_secret_key', @settings[:storage_secret_key],
+                placeholder: 'Enter your secret key',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Your AWS secret access key</p>
+          </div>
+
+          <!-- Endpoint (optional) -->
+          <div>
+            <%= label_tag 'storage_endpoint', 'Custom Endpoint (Optional)', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'storage_endpoint', @settings[:storage_endpoint],
+                placeholder: 'https://s3.amazonaws.com',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Custom S3 endpoint (leave blank for default AWS)</p>
+          </div>
+
+          <!-- Path (optional) -->
+          <div>
+            <%= label_tag 'storage_path', 'Storage Path (Optional)', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'storage_path', @settings[:storage_path],
+                placeholder: 'uploads/',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Optional path prefix for files in the bucket</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- General Storage Settings -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-4">General Settings</h3>
+        <div class="bg-[#0a0a0a] p-4 rounded-lg space-y-4">
+          
+          <!-- CDN -->
+          <div class="flex items-center space-x-3">
+            <%= check_box_tag 'settings[enable_cdn]', '1', @settings[:enable_cdn],
+                class: 'w-4 h-4 text-indigo-600 bg-[#111111] border-gray-600 focus:ring-indigo-500' %>
+            <%= label_tag 'settings[enable_cdn]', 'Enable CDN', class: 'text-gray-300 cursor-pointer' %>
+          </div>
+
+          <!-- CDN URL -->
+          <div id="cdn-url" class="<%= @settings[:enable_cdn] ? '' : 'hidden' %>">
+            <%= label_tag 'settings[cdn_url]', 'CDN URL', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= url_field_tag 'settings[cdn_url]', @settings[:cdn_url],
+                placeholder: 'https://cdn.yoursite.com',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">CDN URL for serving media files</p>
+          </div>
+
+          <!-- Auto Optimize -->
+          <div class="flex items-center space-x-3">
+            <%= check_box_tag 'settings[auto_optimize_uploads]', '1', @settings[:auto_optimize_uploads],
+                class: 'w-4 h-4 text-indigo-600 bg-[#111111] border-gray-600 focus:ring-indigo-500' %>
+            <%= label_tag 'settings[auto_optimize_uploads]', 'Auto-optimize uploads', class: 'text-gray-300 cursor-pointer' %>
+          </div>
+
+          <!-- Max File Size -->
+          <div>
+            <%= label_tag 'settings[max_file_size]', 'Maximum File Size (MB)', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= number_field_tag 'settings[max_file_size]', @settings[:max_file_size],
+                min: 1, max: 100,
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Maximum file size for uploads in megabytes</p>
+          </div>
+
+          <!-- Allowed File Types -->
+          <div>
+            <%= label_tag 'settings[allowed_file_types]', 'Allowed File Types', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+            <%= text_field_tag 'settings[allowed_file_types]', @settings[:allowed_file_types],
+                placeholder: 'jpg,jpeg,png,gif,pdf,doc,docx,mp4,mp3',
+                class: 'w-full px-4 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+            <p class="mt-1 text-sm text-gray-500">Comma-separated list of allowed file extensions</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end">
+        <%= submit_tag 'Save Storage Settings', 
+            class: 'px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors' %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Show/hide storage configurations based on storage type selection
+  const storageTypeRadios = document.querySelectorAll('input[name="storage_type"]');
+  const s3Config = document.getElementById('s3-config');
+  const localConfig = document.getElementById('local-config');
+  
+  storageTypeRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.value === 's3') {
+        s3Config.classList.remove('hidden');
+        localConfig.classList.add('hidden');
+      } else {
+        s3Config.classList.add('hidden');
+        localConfig.classList.remove('hidden');
+      }
+    });
+  });
+
+  // Show/hide CDN URL based on CDN checkbox
+  const cdnCheckbox = document.querySelector('input[name="settings[enable_cdn]"]');
+  const cdnUrl = document.getElementById('cdn-url');
+  
+  cdnCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+      cdnUrl.classList.remove('hidden');
+    } else {
+      cdnUrl.classList.add('hidden');
+    }
+  });
+});
+</script>

@@ -1,0 +1,44 @@
+{
+  "name": "Divider",
+  "description": "Visual separator between sections",
+  "category": "Layout",
+  "settings": {
+    "style": {
+      "type": "select",
+      "label": "Style",
+      "default": "line",
+      "options": [
+        {"value": "line", "label": "Line"},
+        {"value": "dotted", "label": "Dotted"},
+        {"value": "dashed", "label": "Dashed"},
+        {"value": "thick", "label": "Thick Line"}
+      ]
+    },
+    "color": {
+      "type": "color",
+      "label": "Color",
+      "default": "#e0e0e0"
+    },
+    "thickness": {
+      "type": "select",
+      "label": "Thickness",
+      "default": "1px",
+      "options": [
+        {"value": "1px", "label": "1px"},
+        {"value": "2px", "label": "2px"},
+        {"value": "3px", "label": "3px"},
+        {"value": "4px", "label": "4px"}
+      ]
+    },
+    "spacing": {
+      "type": "select",
+      "label": "Spacing",
+      "default": "medium",
+      "options": [
+        {"value": "small", "label": "Small"},
+        {"value": "medium", "label": "Medium"},
+        {"value": "large", "label": "Large"}
+      ]
+    }
+  }
+}

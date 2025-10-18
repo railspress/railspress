@@ -98,11 +98,22 @@ class UploadSecurity < ApplicationRecord
   def file_allowed?(file)
     return false if file.nil?
     
-    # Check file size
-    return false if file.size > max_file_size
+    # Get storage settings for validation
+    storage_settings = get_storage_settings
+    
+    # Check file size against storage settings first, then fallback to upload security
+    max_size_from_storage = storage_settings[:max_file_size] * 1024 * 1024 # Convert MB to bytes
+    effective_max_size = [max_file_size, max_size_from_storage].min
+    return false if file.size > effective_max_size
     
     # Get file extension
     extension = File.extname(file.original_filename).downcase.gsub('.', '')
+    
+    # Check against storage settings allowed file types
+    if storage_settings[:allowed_file_types].present?
+      allowed_types = storage_settings[:allowed_file_types].split(',').map(&:strip).map(&:downcase)
+      return false unless allowed_types.include?(extension)
+    end
     
     # Check blocked extensions first (more restrictive)
     return false if Array(blocked_extensions).include?(extension)
@@ -147,6 +158,19 @@ class UploadSecurity < ApplicationRecord
     false
   end
   
+  # Get current storage settings
+  def get_storage_settings
+    {
+      max_file_size: SiteSetting.get('max_file_size', 10).to_i,
+      allowed_file_types: SiteSetting.get('allowed_file_types', 'jpg,jpeg,png,gif,pdf,doc,docx,mp4,mp3'),
+      storage_type: SiteSetting.get('storage_type', 'local'),
+      local_storage_path: SiteSetting.get('local_storage_path', Rails.root.join('storage').to_s),
+      enable_cdn: SiteSetting.get('enable_cdn', false),
+      cdn_url: SiteSetting.get('cdn_url', ''),
+      auto_optimize_uploads: SiteSetting.get('auto_optimize_uploads', true)
+    }
+  end
+
   private
   
   def set_defaults

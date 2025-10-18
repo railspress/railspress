@@ -11,6 +11,9 @@ module Railspress
 
       # Load the active theme from database
       def load_active_theme
+        # Skip loading theme if database tables don't exist yet (e.g., during migrations)
+        return unless ActiveRecord::Base.connection.table_exists?('themes')
+        
         active_theme = Theme.active.first
         if active_theme
           @current_theme = active_theme.name.underscore

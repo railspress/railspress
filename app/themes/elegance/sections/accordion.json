@@ -1,0 +1,71 @@
+{
+  "name": "Accordion",
+  "description": "Collapsible content sections with expandable items",
+  "category": "Content",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Frequently Asked Questions"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Find answers to common questions"
+    },
+    "style": {
+      "type": "select",
+      "label": "Style",
+      "default": "default",
+      "options": [
+        {"value": "default", "label": "Default"},
+        {"value": "minimal", "label": "Minimal"},
+        {"value": "bordered", "label": "Bordered"}
+      ]
+    },
+    "background_color": {
+      "type": "color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    }
+  },
+  "blocks": [
+    {
+      "type": "accordion_item",
+      "name": "Accordion Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Accordion Item Title"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Add your content here...</p>"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "default": {
+    "blocks": [
+      {
+        "type": "accordion_item",
+        "settings": {
+          "title": "What is this?",
+          "content": "<p>This is a sample accordion item.</p>"
+        }
+      },
+      {
+        "type": "accordion_item",
+        "settings": {
+          "title": "How does it work?",
+          "content": "<p>Click to expand and see more content.</p>"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+{% comment %}
+  Header with Menu Section
+  
+  This section demonstrates how to use context data requested in the schema.
+  The context_requests in the JSON schema will provide @menus and @pages data.
+{% endcomment %}
+
+<header class="header-with-menu {% if section.settings.sticky_header %}sticky top-0 z-50{% endif %} bg-white shadow-sm">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      
+      <!-- Logo -->
+      <div class="flex-shrink-0">
+        {% if section.settings.logo %}
+          <img src="{{ section.settings.logo | image_url }}" 
+               alt="{{ shop.name }}" 
+               width="{{ section.settings.logo_width }}"
+               class="h-auto">
+        {% else %}
+          <h1 class="text-xl font-bold text-gray-900">{{ shop.name }}</h1>
+        {% endif %}
+      </div>
+      
+      <!-- Navigation Menu -->
+      <nav class="flex-1 {% case section.settings.menu_alignment %}{% when 'left' %}justify-start{% when 'right' %}justify-end{% else %}justify-center{% endcase %}">
+        {% if section.settings.selected_menu and @menus %}
+          {% assign selected_menu = @menus | where: 'id', section.settings.selected_menu | first %}
+          {% if selected_menu %}
+            <ul class="flex space-x-8">
+              {% for menu_item in selected_menu.menu_items %}
+                <li>
+                  <a href="{{ menu_item.url }}" 
+                     class="text-gray-700 hover:text-blue-600 transition-colors">
+                    {{ menu_item.title }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-gray-500">Menu not found</p>
+          {% endif %}
+        {% else %}
+          <ul class="flex space-x-8">
+            <li><a href="/" class="text-gray-700 hover:text-blue-600">Home</a></li>
+            <li><a href="/about" class="text-gray-700 hover:text-blue-600">About</a></li>
+            <li><a href="/contact" class="text-gray-700 hover:text-blue-600">Contact</a></li>
+          </ul>
+        {% endif %}
+      </nav>
+      
+      <!-- Right side actions -->
+      <div class="flex items-center space-x-4">
+        {% if section.settings.show_search %}
+          <button class="text-gray-700 hover:text-blue-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        {% endif %}
+        
+        {% if section.settings.show_cart %}
+          <button class="text-gray-700 hover:text-blue-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"></path>
+            </svg>
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+.header-with-menu {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-with-menu.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+  .header-with-menu nav ul {
+    flex-direction: column;
+    space-x: 0;
+    space-y: 4;
+  }
+}
+</style>

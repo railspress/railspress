@@ -30,42 +30,107 @@
         <h2 class="text-lg font-semibold text-white mb-4">Active Plugins (<%= active_plugins.count %>)</h2>
         <div class="space-y-4">
           <% active_plugins.each do |plugin| %>
-            <div class="bg-[#111111] border-l-4 border-emerald-500 rounded-r-xl overflow-hidden group">
-              <div class="p-6">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
+            <div class="bg-[#111111] border-l-4 border-emerald-500 rounded-r-xl overflow-hidden group hover:bg-[#1a1a1a] transition">
+              <div class="p-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1 min-w-0">
                     <div class="flex items-center space-x-3 mb-2">
-                      <h3 class="text-lg font-bold text-white"><%= plugin.name %></h3>
+                      <%= link_to settings_admin_plugin_path(plugin), class: "text-lg font-bold text-white hover:text-emerald-400 transition cursor-pointer" do %>
+                        <%= plugin.name %>
+                      <% end %>
                       <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-md text-xs font-semibold">
                         Active
                       </span>
                     </div>
-                    <p class="text-gray-300 mb-3"><%= plugin.description %></p>
-                    <div class="flex items-center space-x-4 text-sm text-gray-500">
-                      <span>Version <%= plugin.version %></span>
+                    <p class="text-gray-300 mb-2 text-sm"><%= plugin.description %></p>
+                    <div class="flex items-center space-x-4 text-xs text-gray-500">
+                      <span>v<%= plugin.version %></span>
                       <span>•</span>
-                      <span>By <%= plugin.author %></span>
+                      <span><%= plugin.author %></span>
                     </div>
                   </div>
                   
-                  <div class="flex items-center space-x-2 ml-4">
-                    <% plugin_instance = Railspress::PluginSystem.get_plugin(plugin.name.underscore) %>
+                  <div class="flex items-center space-x-1 ml-4">
+                    <% 
+                      # Try to get plugin instance to check for settings
+                      plugin_instance = nil
+                      begin
+                        # Dynamic plugin discovery - find the plugin directory that matches this plugin
+                        directory_name = nil
+                        plugin_instance = nil
+                        
+                        # Scan all plugin directories to find a match
+                        plugins_dir = Rails.root.join('lib', 'plugins')
+                        if Dir.exist?(plugins_dir)
+                          Dir.glob(File.join(plugins_dir, '*')).each do |plugin_dir|
+                            next unless File.directory?(plugin_dir)
+                            
+                            candidate_name = File.basename(plugin_dir)
+                            plugin_file = File.join(plugin_dir, "#{candidate_name}.rb")
+                            
+                            next unless File.exist?(plugin_file)
+                            
+                            # Load the plugin file to check if it matches our plugin
+                            begin
+                              load plugin_file
+                              plugin_class_name = candidate_name.classify
+                              plugin_class = plugin_class_name.constantize rescue nil
+                              
+                              if plugin_class && plugin_class.ancestors.include?(Railspress::PluginBase)
+                                # Create a temporary instance to check the name
+                                temp_instance = plugin_class.new
+                                if temp_instance.name == plugin.name
+                                  directory_name = candidate_name
+                                  plugin_instance = temp_instance
+                                  break
+                                end
+                              end
+                            rescue => e
+                              # Continue to next plugin if this one fails
+                              next
+                            end
+                          end
+                        end
+                      rescue => e
+                        # Plugin instance creation failed, continue without it
+                      end
+                    %>
                     <% if plugin_instance&.has_admin_pages? %>
                       <% plugin_instance.admin_pages.each do |page| %>
-                        <%= link_to page[:menu_title] || page[:title], 
-                            admin_plugin_page_path(plugin_identifier: plugin.name.underscore, page_slug: page[:slug]),
-                            class: "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm" %>
+                        <%= link_to admin_plugin_page_path(plugin_identifier: plugin.name.underscore, page_slug: page[:slug]),
+                            class: "p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-xs",
+                            title: page[:menu_title] || page[:title] do %>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          </svg>
+                        <% end %>
                       <% end %>
-                    <% elsif plugin.settings.present? %>
-                      <%= link_to "Settings", settings_admin_plugin_path(plugin), class: "px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition text-sm" %>
+                    <% elsif plugin_instance&.has_settings? || plugin.settings.present? %>
+                      <%= link_to settings_admin_plugin_path(plugin), 
+                          class: "p-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition text-xs",
+                          title: "Settings" do %>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                      <% end %>
                     <% end %>
-                    <%= button_to "Deactivate", deactivate_admin_plugin_path(plugin), 
+                    <%= button_to deactivate_admin_plugin_path(plugin), 
                         method: :patch,
-                        class: "px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition text-sm cursor-pointer" %>
+                        class: "p-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition text-xs cursor-pointer",
+                        title: "Deactivate" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
+                      </svg>
+                    <% end %>
                     <%= link_to admin_plugin_path(plugin), 
                         data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete #{plugin.name}?" },
-                        class: "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm" do %>
-                      Delete
+                        class: "p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-xs",
+                        title: "Delete" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
                     <% end %>
                   </div>
                 </div>
@@ -83,27 +148,42 @@
         <h2 class="text-lg font-semibold text-white mb-4">Inactive Plugins (<%= inactive_plugins.count %>)</h2>
         <div class="space-y-4">
           <% inactive_plugins.each do |plugin| %>
-            <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl hover:border-[#3a3a3a] transition overflow-hidden">
-              <div class="p-6">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h3 class="text-lg font-bold text-white mb-2"><%= plugin.name %></h3>
-                    <p class="text-gray-400 mb-3"><%= plugin.description %></p>
-                    <div class="flex items-center space-x-4 text-sm text-gray-500">
-                      <span>Version <%= plugin.version %></span>
+            <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl hover:border-[#3a3a3a] hover:bg-[#1a1a1a] transition overflow-hidden">
+              <div class="p-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-3 mb-2">
+                      <%= link_to settings_admin_plugin_path(plugin), class: "text-lg font-bold text-white hover:text-indigo-400 transition cursor-pointer" do %>
+                        <%= plugin.name %>
+                      <% end %>
+                      <span class="px-2 py-1 bg-gray-500/10 text-gray-400 rounded-md text-xs font-semibold">
+                        Inactive
+                      </span>
+                    </div>
+                    <p class="text-gray-400 mb-2 text-sm"><%= plugin.description %></p>
+                    <div class="flex items-center space-x-4 text-xs text-gray-500">
+                      <span>v<%= plugin.version %></span>
                       <span>•</span>
-                      <span>By <%= plugin.author %></span>
+                      <span><%= plugin.author %></span>
                     </div>
                   </div>
                   
-                  <div class="flex items-center space-x-2 ml-4">
-                    <%= button_to "Activate", activate_admin_plugin_path(plugin), 
+                  <div class="flex items-center space-x-1 ml-4">
+                    <%= button_to activate_admin_plugin_path(plugin), 
                         method: :patch,
-                        class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-sm cursor-pointer" %>
+                        class: "p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition text-xs cursor-pointer",
+                        title: "Activate" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    <% end %>
                     <%= link_to admin_plugin_path(plugin), 
                         data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete #{plugin.name}?" },
-                        class: "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm" do %>
-                      Delete
+                        class: "p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-xs",
+                        title: "Delete" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
                     <% end %>
                   </div>
                 </div>

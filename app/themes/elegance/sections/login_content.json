@@ -1,0 +1,41 @@
+{
+  "name": "Login Content",
+  "description": "Login form and authentication content",
+  "category": "Authentication",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Welcome Back"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Sign in to your account"
+    },
+    "show_register_link": {
+      "type": "checkbox",
+      "label": "Show Register Link",
+      "default": true
+    },
+    "show_forgot_password": {
+      "type": "checkbox",
+      "label": "Show Forgot Password Link",
+      "default": true
+    },
+    "background_image": {
+      "type": "image",
+      "label": "Background Image"
+    },
+    "form_style": {
+      "type": "select",
+      "label": "Form Style",
+      "default": "default",
+      "options": [
+        {"value": "default", "label": "Default"},
+        {"value": "minimal", "label": "Minimal"},
+        {"value": "card", "label": "Card Style"}
+      ]
+    }
+  }
+}

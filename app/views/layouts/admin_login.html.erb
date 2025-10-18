@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><%= content_for?(:page_title) ? "#{content_for(:page_title)} - RailsPress Admin" : "RailsPress Admin" %></title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS - Use Rails asset pipeline in production -->
+    <% if Rails.env.development? %>
+      <script src="https://cdn.tailwindcss.com"></script>
+    <% else %>
+      <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <% end %>
     
     <!-- Custom Admin Styles -->
     <style>
@@ -82,6 +86,27 @@
     
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <!-- Error handling for JavaScript -->
+    <script>
+      // Prevent JavaScript errors from breaking the login page
+      window.addEventListener('error', function(e) {
+        console.warn('JavaScript error caught:', e.error);
+        return false; // Prevent the error from being thrown
+      });
+      
+      // Handle null element access gracefully
+      function safeGetElement(selector) {
+        try {
+          return document.querySelector(selector);
+        } catch (e) {
+          console.warn('Element not found:', selector);
+          return null;
+        }
+      }
+    </script>
   </head>
 
   <body class="font-sans antialiased">

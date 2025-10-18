@@ -55,8 +55,8 @@ module Railspress
               id: resource.user&.id,
               email: resource.user&.email
             },
-            categories: resource.categories.map { |c| { id: c.id, name: c.name, slug: c.slug } },
-            tags: resource.tags.map { |t| { id: t.id, name: t.name, slug: t.slug } },
+            categories: resource.category.map { |c| { id: c.id, name: c.name, slug: c.slug } },
+            tags: resource.post_tag.map { |t| { id: t.id, name: t.name, slug: t.slug } },
             created_at: resource.created_at.iso8601,
             updated_at: resource.updated_at.iso8601
           }

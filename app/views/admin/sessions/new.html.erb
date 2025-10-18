@@ -15,6 +15,9 @@
   </div>
 <% end %>
 
+<!-- OAuth Buttons -->
+<%= render 'shared/oauth_buttons', resource_name: resource_name %>
+
 <%= form_for(resource, as: resource_name, url: admin_user_session_path, html: { class: "space-y-6", id: "admin-login-form", "data-turbo": "false" }) do |f| %>
 
   <div class="space-y-4">

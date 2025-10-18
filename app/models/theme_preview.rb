@@ -52,17 +52,31 @@ class ThemePreview < ApplicationRecord
     section_order = []
     
     ordered_sections.each do |section|
-      sections_data[section.section_id] = {
+      section_data = {
         'type' => section.section_type,
         'settings' => section.settings
       }
+      
+      # Add blocks if the section has them
+      if section.blocks.any?
+        section_data['blocks'] = section.blocks.map do |block|
+          {
+            'id' => block.block_id,
+            'type' => block.block_type,
+            'settings' => block.settings
+          }
+        end
+      end
+      
+      sections_data[section.section_id] = section_data
       section_order << section.section_id
     end
     
     {
       'name' => template_name.humanize,
       'sections' => sections_data,
-      'order' => section_order
+      'order' => section_order,
+      'theme_settings' => self.theme_settings_json || {}
     }
   end
 

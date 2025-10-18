@@ -1,0 +1,64 @@
+{
+  "name": "Header with Menu",
+  "description": "Header section with customizable navigation menu",
+  "category": "Navigation",
+  "context_requests": {
+    "menus": {
+      "type": "collection",
+      "model": "Menu",
+      "description": "Available navigation menus for selection"
+    },
+    "pages": {
+      "type": "collection", 
+      "model": "Page",
+      "description": "Available pages for menu items"
+    }
+  },
+  "settings": {
+    "logo": {
+      "type": "image",
+      "label": "Logo",
+      "description": "Upload your site logo"
+    },
+    "logo_width": {
+      "type": "number",
+      "label": "Logo Width",
+      "default": 150,
+      "min": 50,
+      "max": 300
+    },
+    "selected_menu": {
+      "type": "select",
+      "label": "Navigation Menu",
+      "description": "Choose which menu to display in the header",
+      "options_source": "@menus",
+      "option_value": "id",
+      "option_label": "name"
+    },
+    "menu_alignment": {
+      "type": "select",
+      "label": "Menu Alignment",
+      "default": "center",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"}
+      ]
+    },
+    "show_search": {
+      "type": "checkbox",
+      "label": "Show Search",
+      "default": true
+    },
+    "show_cart": {
+      "type": "checkbox", 
+      "label": "Show Shopping Cart",
+      "default": false
+    },
+    "sticky_header": {
+      "type": "checkbox",
+      "label": "Sticky Header",
+      "default": true
+    }
+  }
+}

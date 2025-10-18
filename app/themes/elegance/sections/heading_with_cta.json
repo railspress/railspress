@@ -1,0 +1,47 @@
+{
+  "name": "Heading with CTA",
+  "description": "Heading section with call-to-action button",
+  "category": "Marketing",
+  "settings": {
+    "heading": {
+      "type": "text",
+      "label": "Heading",
+      "default": "Ready to Get Started?"
+    },
+    "subheading": {
+      "type": "textarea",
+      "label": "Subheading",
+      "default": "Join thousands of satisfied customers"
+    },
+    "button_text": {
+      "type": "text",
+      "label": "Button Text",
+      "default": "Get Started"
+    },
+    "button_url": {
+      "type": "url",
+      "label": "Button URL",
+      "default": "#"
+    },
+    "button_style": {
+      "type": "select",
+      "label": "Button Style",
+      "default": "primary",
+      "options": [
+        {"value": "primary", "label": "Primary"},
+        {"value": "secondary", "label": "Secondary"},
+        {"value": "outline", "label": "Outline"}
+      ]
+    },
+    "alignment": {
+      "type": "select",
+      "label": "Alignment",
+      "default": "center",
+      "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "center", "label": "Center"},
+        {"value": "right", "label": "Right"}
+      ]
+    }
+  }
+}

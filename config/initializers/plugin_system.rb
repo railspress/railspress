@@ -17,12 +17,13 @@ Rails.application.config.after_initialize do
   Rails.logger.info "Plugin system initialized. Loaded plugins: #{Railspress::PluginSystem.loaded_plugins.join(', ')}"
 end
 
-# Reload plugins in development
-if Rails.env.development?
-  Rails.application.config.to_prepare do
-    Railspress::PluginSystem.load_plugins
-  end
-end
+# Reload plugins in development (disabled to prevent multiple instances)
+# Use Railspress::PluginSystem.reload_plugins manually when needed
+# if Rails.env.development?
+#   Rails.application.config.to_prepare do
+#     Railspress::PluginSystem.reload_plugins
+#   end
+# end
 
 
 
