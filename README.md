@@ -1046,9 +1046,9 @@ RailsPress is more than just a CMS - it's a platform for innovation and collabor
 
 **Ready to contribute?** We'd love to hear from you!
 
-- **Email**: hello@railspress.com
-- **Discord**: [Join our community](https://discord.gg/railspress)
-- **GitHub**: [Contribute to the project](https://github.com/your-username/railspress)
+- **Email**: railspress@gmail.com
+- **Discord**: [Join our community](https://discord.gg/7UxssdBRs)
+- **GitHub**: [Contribute to the project](https://github.com/railspress/railspress)
 
 ---
 
