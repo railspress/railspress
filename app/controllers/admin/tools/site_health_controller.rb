@@ -77,15 +77,30 @@ class Admin::Tools::SiteHealthController < Admin::BaseController
   end
   
   def check_redis
-    {
-      name: 'Redis Connection',
-      category: 'recommended',
-      status: Redis.new.ping == 'PONG' ? 'pass' : 'fail',
-      message: Redis.new.ping == 'PONG' ? 'Redis is running' : 'Redis connection failed',
-      details: { url: ENV['REDIS_URL'] || 'redis://localhost:6379' }
-    }
-  rescue => e
-    { name: 'Redis Connection', category: 'recommended', status: 'warning', message: "Redis not available: #{e.message}" }
+    begin
+      # Use Rails cache to check Redis instead of hardcoding Redis.new
+      if Rails.cache.respond_to?(:redis)
+        redis = Rails.cache.redis
+        ping_result = redis.ping
+        
+        {
+          name: 'Redis Connection',
+          category: 'recommended',
+          status: ping_result == 'PONG' ? 'pass' : 'fail',
+          message: ping_result == 'PONG' ? 'Redis is running' : 'Redis connection failed',
+          details: { url: ENV['REDIS_URL'] || 'redis://localhost:6379' }
+        }
+      else
+        {
+          name: 'Redis Connection',
+          category: 'recommended',
+          status: 'warning',
+          message: 'Redis not configured or not available through Rails cache'
+        }
+      end
+    rescue => e
+      { name: 'Redis Connection', category: 'recommended', status: 'warning', message: "Redis not available: #{e.message}" }
+    end
   end
   
   def check_file_permissions

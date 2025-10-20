@@ -148,7 +148,7 @@ gem "secure_headers"
 gem "loofah", "~> 2.21"  # HTML sanitization
 
 # Observability
-gem "lograge"
+gem "lograge", group: :production
 gem "sentry-ruby"
 gem "sentry-rails"
 

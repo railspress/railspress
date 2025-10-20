@@ -27,11 +27,12 @@ print_help() {
     echo "Usage: ./railspress [command]"
     echo ""
     echo "Commands:"
+    echo "  start            Start Redis (if needed) and Rails server"
     echo "  runtests         Run the full test suite"
     echo "  test [file]      Run specific test file"
     echo "  server           Start the Rails server"
     echo "  restart          Restart the Rails server"
-    echo "  stop             Stop the Rails server"
+    echo "  stop             Stop the Rails server and Redis (if running)"
     echo "  console          Open Rails console"
     echo "  db:setup         Setup database"
     echo "  db:migrate       Run migrations"
@@ -74,6 +75,44 @@ run_specific_test() {
     rails test "$test_file"
 }
 
+redis_running() {
+    if command -v redis-cli &> /dev/null; then
+        redis-cli ping >/dev/null 2>&1 && return 0
+    fi
+    return 1
+}
+
+start_redis() {
+    echo -e "${YELLOW}Ensuring Redis is running...${NC}"
+    if redis_running; then
+        echo -e "${GREEN}Redis already running.${NC}"
+        return 0
+    fi
+
+    if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &> /dev/null; then
+        echo -e "${YELLOW}Starting Redis via Homebrew...${NC}"
+        brew services start redis >/dev/null 2>&1 || true
+    elif command -v redis-server &> /dev/null; then
+        echo -e "${YELLOW}Starting Redis with redis-server --daemonize yes...${NC}"
+        redis-server --daemonize yes >/dev/null 2>&1 || true
+    else
+        echo -e "${RED}Redis not installed. Please install Redis (brew install redis)${NC}"
+        return 1
+    fi
+
+    # Wait up to 10s for Redis to come up
+    for i in {1..20}; do
+        if redis_running; then
+            echo -e "${GREEN}Redis is up.${NC}"
+            return 0
+        fi
+        sleep 0.5
+    done
+
+    echo -e "${RED}Redis failed to start.${NC}"
+    return 1
+}
+
 start_server() {
     echo -e "${GREEN}Starting Rails server...${NC}"
     rails server
@@ -93,16 +132,45 @@ stop_server() {
         pkill -9 -f "rails server" 2>/dev/null || true
         echo -e "${GREEN}Done.${NC}"
     fi
+
+    # Also stop Redis if running
+    stop_redis || true
 }
 
 restart_server() {
     echo -e "${YELLOW}Restarting Rails server...${NC}"
     stop_server
     sleep 2
-    echo -e "${GREEN}Starting server...${NC}"
+    echo -e "${GREEN}Starting Redis and server...${NC}"
+    start_redis || true
     rails assets:precompile RAILS_ENV=development
     rails server -d -p 3000
     echo -e "${GREEN}Server restarted on http://localhost:3000${NC}"
+}
+
+start_stack() {
+    echo -e "${GREEN}Starting RailsPress stack...${NC}"
+    start_redis || true
+    rails assets:precompile RAILS_ENV=development
+    rails server -d -p 3000
+    echo -e "${GREEN}Server started on http://localhost:3000${NC}"
+}
+
+stop_redis() {
+    echo -e "${YELLOW}Stopping Redis (if running)...${NC}"
+    if command -v redis-cli &> /dev/null; then
+        if redis-cli ping >/dev/null 2>&1; then
+            # Try Homebrew services first on macOS
+            if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &> /dev/null; then
+                brew services stop redis >/dev/null 2>&1 || true
+            fi
+            # Attempt a clean shutdown
+            redis-cli shutdown >/dev/null 2>&1 || true
+        fi
+    fi
+    # Fallback: kill process if still running
+    pkill -f "redis-server" 2>/dev/null || true
+    echo -e "${GREEN}Redis stop attempted.${NC}"
 }
 
 open_console() {
@@ -174,6 +242,9 @@ print_header
 COMMAND="${1:-help}"
 
 case "$COMMAND" in
+    start)
+        start_stack
+        ;;
     runtests)
         run_tests
         ;;

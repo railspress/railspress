@@ -13,10 +13,20 @@ class SiteSetting < ApplicationRecord
   
   # Class methods for easy access
   def self.get(key, default = nil)
-    connection_pool.with_connection do |conn|
-      setting = ActsAsTenant.current_tenant ? 
-        where(tenant: ActsAsTenant.current_tenant).find_by(key: key) :
-        find_by(key: key)
+    # Use Rails cache to avoid repeated database calls
+    tenant = ActsAsTenant.current_tenant
+    tenant_id = tenant.is_a?(Tenant) ? tenant.id : 'global'
+    cache_key = "site_setting:#{tenant_id}:#{key}"
+    
+    # Get cache expiration from settings or use default
+    cache_expires_in = get_cache_expiration
+    
+    Rails.cache.fetch(cache_key, expires_in: cache_expires_in) do
+      if tenant.is_a?(Tenant)
+        setting = where(tenant: tenant).find_by(key: key)
+      else
+        setting = find_by(key: key)
+      end
       setting ? setting.typed_value : default
     end
   rescue ActiveRecord::ConnectionTimeoutError => e
@@ -28,13 +38,68 @@ class SiteSetting < ApplicationRecord
   end
   
   def self.set(key, value, setting_type = 'string')
-    setting = ActsAsTenant.current_tenant ?
-      where(tenant: ActsAsTenant.current_tenant).find_or_initialize_by(key: key) :
+    tenant = ActsAsTenant.current_tenant
+    setting = if tenant.is_a?(Tenant)
+      where(tenant: tenant).find_or_initialize_by(key: key)
+    else
       find_or_initialize_by(key: key)
+    end
     setting.value = value.to_s
     setting.setting_type = setting_type
-    setting.tenant = ActsAsTenant.current_tenant if ActsAsTenant.current_tenant
-    setting.save
+    setting.tenant = tenant if tenant.is_a?(Tenant)
+    
+    if setting.save
+      # Clear cache when setting is updated
+      clear_cache_for_key(key)
+      true
+    else
+      false
+    end
+  end
+
+  # Clear cache for a specific key
+  def self.clear_cache_for_key(key)
+    tenant = ActsAsTenant.current_tenant
+    tenant_id = tenant.is_a?(Tenant) ? tenant.id : 'global'
+    cache_key = "site_setting:#{tenant_id}:#{key}"
+    Rails.cache.delete(cache_key)
+  end
+
+  # Clear all site setting caches for current tenant
+  def self.clear_all_caches
+    tenant = ActsAsTenant.current_tenant
+    tenant_id = tenant.is_a?(Tenant) ? tenant.id : 'global'
+    # This is a simple approach - in production you might want to use cache versioning
+    Rails.cache.delete_matched("site_setting:#{tenant_id}:*")
+  end
+
+  # Get cache expiration time from settings
+  def self.get_cache_expiration
+    # Try to get from settings first, but avoid infinite recursion
+    begin
+      # Use a shorter cache for this specific setting to avoid recursion
+      cache_key = "site_setting_cache_expiration"
+      Rails.cache.fetch(cache_key, expires_in: 1.minute) do
+        # Get from database without using our cached get method to avoid recursion
+        tenant = ActsAsTenant.current_tenant
+        setting = if tenant.is_a?(Tenant)
+          where(tenant: tenant).find_by(key: 'site_setting_cache_expires_in')
+        else
+          find_by(key: 'site_setting_cache_expires_in')
+        end
+        
+        if setting
+          setting.typed_value.minutes
+        else
+          # Default to 5 minutes if not set
+          5.minutes
+        end
+      end
+    rescue => e
+      Rails.logger.error("Error getting cache expiration: #{e.message}")
+      # Fallback to default
+      5.minutes
+    end
   end
   
   # Instance methods

@@ -7,7 +7,7 @@ module Railspress
   class UpdateChecker
     GITHUB_REPO = ENV['RAILSPRESS_GITHUB_REPO'] || 'railspress/railspress'
     GITHUB_API_URL = "https://api.github.com/repos/#{GITHUB_REPO}/releases/latest"
-    CURRENT_VERSION = '2.0.0'
+    CURRENT_VERSION = ::Railspress::VERSION
     
     class << self
       def check_for_updates

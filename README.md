@@ -490,75 +490,93 @@ rails db:create db:migrate db:seed
 
 ---
 
+## 📺 **Content Channels System**
+
+Deliver optimized content per device and medium using out-of-the-box channels and per-resource overrides.
+
+### **Default Channels**
+- **Web (`web`)**: Desktop/laptop optimized, large layout, high-quality images, sidebar/nav visible
+- **Mobile (`mobile`)**: Touch-first UI, hamburger navigation, infinite scroll, compressed images
+- **Newsletter (`newsletter`)**: Email-optimized 600px width, no animations, simplified layout
+
+Each channel has its own `settings` (layout, pagination, image quality, navigation, features) and `metadata` (device type, user agent hints, performance target). You can add overrides per post/page/media and exclude content by channel. Admin UI at `Admin → System → Channels`.
+
+GraphQL and REST expose channel-aware content; server auto-detects device or you can force a channel via slug.
+
+### **Overrides & Exclusions**
+- **Overrides (kind: `override`)**: Change any JSON field for a specific resource on a specific channel using a dot-path (e.g., `seo.title`, `content.hero.heading`).
+- **Exclusions (kind: `exclude`)**: Hide a resource from a specific channel (e.g., exclude a post from `newsletter`).
+- **Admin**: `Admin → System → Channels → [Channel] → Overrides`
+  - Create/edit overrides with: `resource_type`, `resource_id`, `kind`, `path`, `data`, `enabled`
+  - Bulk actions: copy overrides from another channel; export (JSON/YAML); import (JSON/YAML)
+- **Runtime behavior**:
+  - Overrides are merged into the rendered JSON payload for that channel only
+  - Exclusions short-circuit visibility for that `(resource, channel)` pair
+  - Optional provenance tracking is supported when applying overrides (for debugging/audits)
+
+---
+
+## 🎨 **Built-in Themes (Default)**
+
+RailsPress ships with three production-ready themes:
+
+- **Nordic**: Minimal, content-focused blog/news theme
+- **TwentyTwentyFive**: Modern, general-purpose theme with rich sections
+- **Elegance**: Polished marketing theme with hero, features, testimonials, CTA
+
+Switch themes in `Admin → Themes`. Files live under `app/themes/`. Theme versions are tracked with rollback and a visual builder for section-based editing.
+
+---
+
 ## 📸 **Screenshots**
 
 ### **Admin Interface**
 
 #### **Dashboard & Management**
 ![Admin Dashboard](docs/screenshots/admin-dashboard.png)
-*Modern admin dashboard with comprehensive overview*
 
 ![Posts Management](docs/screenshots/admin-posts-management.png)
-*Advanced post management with bulk actions and filtering*
 
 ![Pages Management](docs/screenshots/admin-pages-management.png)
-*Page management with hierarchical structure*
 
 ![Media Library](docs/screenshots/admin-media-library.png)
-*Powerful media library with drag-and-drop uploads*
 
 #### **Theme & Customization**
 ![Theme Customizer](docs/screenshots/admin-theme-customizer.png)
-*Custom visual builder with drag-and-drop sections*
 
 ![Page Builder](docs/screenshots/pagebuilder.png)
-*Advanced page builder with real-time preview*
 
 #### **Advanced Features**
 ![Analytics Dashboard](docs/screenshots/admin-analytics-dashboard.png)
-*Comprehensive analytics with real-time tracking*
 
 ![GDPR Compliance](docs/screenshots/admin-gdpr-compliance.png)
-*Complete GDPR compliance management*
 
 ![Consent Management](docs/screenshots/admin-consent-management.png)
-*Enterprise-grade consent management system*
 
 ![MCP Settings](docs/screenshots/admin-mcp-settings.png)
-*Model Context Protocol configuration*
 
 ![Content Channels](docs/screenshots/admin-content-channels.png)
-*Multi-platform content distribution channels*
 
 ![Distraction-Free Editor](docs/screenshots/admin-distraction-free-editor.png)
-*Notion-style writing experience*
 
 #### **System Management**
 ![Plugin Marketplace](docs/screenshots/admin-plugin-marketplace.png)
-*Plugin marketplace with installation management*
 
 ![Webhook Management](docs/screenshots/admin-webhook-management.png)
-*Webhook configuration and monitoring*
 
 ![Email System](docs/screenshots/admin-email-system.png)
-*Advanced email management and templates*
 
 ![User Management](docs/screenshots/admin-user-management.png)
-*User roles and permissions management*
 
 ![Settings Panel](docs/screenshots/admin-settings-panel.png)
-*Comprehensive system settings*
 
 ### **Frontend Experience**
 
 ![Homepage](docs/screenshots/frontend-homepage.png)
-*Beautiful, responsive homepage design*
 
 ![Blog Page](docs/screenshots/frontend-blog-page.png)
-*Clean blog layout with modern typography*
 
 ![Responsive Design](docs/screenshots/frontend-responsive-design.png)
-*Mobile-first responsive design*
 
 ---
 
@@ -1085,6 +1103,6 @@ Built with ❤️ using Ruby on Rails and powered by:
 
 ---
 
-*Made with ❤️ by the RailsPress team*
+*Made with ❤️ by the RailsPress team* · Fun extra: the built-in plugin **“Hello Tupac!”** drops a random Tupac quote in the admin topbar to keep spirits high while you build.
 
 </div>

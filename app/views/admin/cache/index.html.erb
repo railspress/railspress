@@ -146,14 +146,14 @@
               <div>
                 <p class="text-white font-medium">Redis Connection</p>
                 <p class="text-sm text-gray-400">
-                  <%= @redis_connected ? 'Connected' : 'Not Available' %>
+                  <%= (@cache_stats.present? && @cache_stats[:store_type] == 'redis' && !@cache_stats[:error]) ? 'Connected' : 'Not Available' %>
                 </p>
               </div>
             </div>
             <div class="flex items-center space-x-2">
-              <div class="w-3 h-3 rounded-full <%= @redis_connected ? 'bg-emerald-500' : 'bg-red-500' %>"></div>
-              <span class="text-sm <%= @redis_connected ? 'text-emerald-400' : 'text-red-400' %>">
-                <%= @redis_connected ? 'Connected' : 'Disconnected' %>
+              <div class="w-3 h-3 rounded-full <%= (@cache_stats.present? && @cache_stats[:store_type] == 'redis' && !@cache_stats[:error]) ? 'bg-emerald-500' : 'bg-red-500' %>"></div>
+              <span class="text-sm <%= (@cache_stats.present? && @cache_stats[:store_type] == 'redis' && !@cache_stats[:error]) ? 'text-emerald-400' : 'text-red-400' %>">
+                <%= (@cache_stats.present? && @cache_stats[:store_type] == 'redis' && !@cache_stats[:error]) ? 'Connected' : 'Disconnected' %>
               </span>
             </div>
           </div>
@@ -161,21 +161,21 @@
           <!-- Memory Usage -->
           <div class="p-4 bg-[#0a0a0a] rounded-lg">
             <p class="text-gray-400 text-sm mb-1">Memory Usage</p>
-            <p class="text-xl font-bold text-white"><%= @redis_stats[:memory_usage] || 'Unknown' %></p>
+            <p class="text-xl font-bold text-white"><%= @cache_stats[:memory_usage] || 'Unknown' %></p>
           </div>
 
           <!-- Connected Clients -->
           <div class="p-4 bg-[#0a0a0a] rounded-lg">
             <p class="text-gray-400 text-sm mb-1">Connected Clients</p>
-            <p class="text-xl font-bold text-white"><%= @redis_stats[:connected_clients] || '0' %></p>
+            <p class="text-xl font-bold text-white"><%= @cache_stats[:connected_clients] || '0' %></p>
           </div>
 
           <!-- Cache Hit Rate -->
           <div class="p-4 bg-[#0a0a0a] rounded-lg">
             <p class="text-gray-400 text-sm mb-1">Cache Hit Rate</p>
             <p class="text-xl font-bold text-white">
-              <% if @redis_stats[:hit_rate] %>
-                <%= "#{(@redis_stats[:hit_rate].to_f * 100).round(1)}%" %>
+              <% if @cache_stats[:hit_rate] %>
+                <%= "#{(@cache_stats[:hit_rate].to_f * 100).round(1)}%" %>
               <% else %>
                 0%
               <% end %>
@@ -219,26 +219,26 @@
       </div>
 
       <!-- Cache Statistics -->
-      <% if @redis_connected && @redis_stats.present? %>
+      <% if @cache_stats.present? && @cache_stats[:store_type] == 'redis' %>
         <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
           <h2 class="text-lg font-semibold text-white mb-4">Cache Statistics</h2>
           
           <div class="space-y-3">
             <div class="flex justify-between items-center py-2 border-b border-[#2a2a2a]">
               <span class="text-gray-400">Total Keys</span>
-              <span class="text-white font-medium"><%= @redis_stats[:db_size] || '0' %></span>
+              <span class="text-white font-medium"><%= @cache_stats[:total_keys] || '0' %></span>
             </div>
             
             <div class="flex justify-between items-center py-2 border-b border-[#2a2a2a]">
               <span class="text-gray-400">Cache Size</span>
-              <span class="text-white font-medium"><%= @redis_stats[:memory_usage] || '0' %></span>
+              <span class="text-white font-medium"><%= @cache_stats[:memory_usage] || '0' %></span>
             </div>
             
             <div class="flex justify-between items-center py-2 border-b border-[#2a2a2a]">
               <span class="text-gray-400">Hit Rate</span>
               <span class="text-white font-medium">
-                <% if @redis_stats[:hit_rate] %>
-                  <%= "#{(@redis_stats[:hit_rate].to_f * 100).round(1)}%" %>
+                <% if @cache_stats[:hit_rate] %>
+                  <%= "#{(@cache_stats[:hit_rate].to_f * 100).round(1)}%" %>
                 <% else %>
                   0%
                 <% end %>
@@ -248,8 +248,8 @@
             <div class="flex justify-between items-center py-2">
               <span class="text-gray-400">Uptime</span>
               <span class="text-white font-medium">
-                <% if @redis_stats[:uptime] %>
-                  <% uptime_seconds = @redis_stats[:uptime].to_i %>
+                <% if @cache_stats[:uptime] %>
+                  <% uptime_seconds = @cache_stats[:uptime].to_i %>
                   <%= "#{uptime_seconds / 3600}h #{(uptime_seconds % 3600) / 60}m" %>
                 <% else %>
                   0h 0m
