@@ -87,6 +87,7 @@ Rails.application.configure do
     Rails.root.join("app/assets/stylesheets"),
     Rails.root.join("app/assets/javascripts"),
     Rails.root.join("app/javascript"),
-    Rails.root.join("app/views")
+    Rails.root.join("app/views"),
+    Rails.root.join("app/assets/builds")
   ]
 end

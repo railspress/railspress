@@ -1,13 +1,27 @@
 FactoryBot.define do
   factory :webhook_delivery do
-    webhook { nil }
-    event_type { "MyString" }
-    payload { "" }
-    status { "MyString" }
-    response_code { 1 }
-    response_body { "MyText" }
-    error_message { "MyText" }
-    delivered_at { "2025-10-11 21:49:53" }
-    retry_count { 1 }
+    association :webhook
+    event_type { "post.created" }
+    payload { { "id" => 1, "title" => "Test Post" } }
+    status { "pending" }
+    response_code { nil }
+    response_body { nil }
+    error_message { nil }
+    delivered_at { nil }
+    retry_count { 0 }
+    request_id { SecureRandom.uuid }
+    
+    trait :successful do
+      status { "success" }
+      response_code { 200 }
+      response_body { "OK" }
+      delivered_at { Time.current }
+    end
+    
+    trait :failed do
+      status { "failed" }
+      error_message { "Connection timeout" }
+      retry_count { 1 }
+    end
   end
 end

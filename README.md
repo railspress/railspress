@@ -35,12 +35,55 @@ RailsPress combines the **familiarity of WordPress** with the **power and elegan
 
 ### 🎨 **Modern Theming**
 - Liquid templating engine (Shopify-style)
-- Visual template customizer with GrapesJS
+- Custom visual builder system (replaced GrapesJS)
 - Responsive design with auto dark mode
+- Advanced theme versioning and rollback
+
+## 🆕 **Major Updates & New Features**
+
+### **🔒 GDPR Compliance System**
+RailsPress now includes a comprehensive GDPR compliance system that rivals enterprise solutions:
+
+- **Complete Data Subject Rights** - All 8 GDPR rights implemented
+- **Admin Interface** - Full compliance management at `/admin/gdpr`
+- **Data Export/Import** - Machine-readable JSON exports
+- **Data Erasure** - Complete data deletion with audit trails
+- **Privacy by Design** - Built-in privacy protection
+
+### **🍪 Enterprise Consent Management**
+OneTrust-level consent management system with advanced features:
+
+- **Geolocation-Based Rules** - Automatic region detection (EU, US, UK, Canada)
+- **Pixel Management** - Consent-aware loading for 15+ tracking pixels
+- **Customizable Banner** - Themes, colors, and positioning options
+- **Liquid Integration** - Seamless template integration with `{% consent_assets %}`
+- **Admin Dashboard** - Complete consent analytics and management
+
+### **🤖 Model Context Protocol (MCP)**
+OpenAI 3.1 compatible MCP server for AI model integration:
+
+- **JSON-RPC 2.0 Protocol** - Full specification compliance
+- **Tool Management** - Comprehensive tool schemas and execution
+- **Resource Access** - Content browsing and management
+- **Prompt Templates** - AI interaction templates
+- **Admin Settings** - Complete configuration interface
+- **Rate Limiting** - Security and performance controls
+
+### **✍️ Distraction-Free Writing Experience**
+Notion-style editor with Editor.js integration for beautiful content creation:
+
+- **Full-Screen Mode** - Distraction-free writing environment
+- **Block-Based Editor** - 15+ block types (headers, lists, quotes, code, images, tables)
+- **Auto-Save** - Content saves as you type with visual confirmation
+- **Keyboard Shortcuts** - Power user productivity with ⌘+S save, ⌘+Enter publish
+- **Clean Interface** - Large title input, centered canvas, sticky toolbar
+- **Dark Mode** - Automatic system preference detection
+- **Media Support** - Images, files, YouTube, Vimeo embeds
+- **Mobile Responsive** - Beautiful writing experience on all devices
 
 ---
 
-## 🌟 **Features**
+---
 
 ### 🔌 **Comprehensive APIs**
 
@@ -96,10 +139,12 @@ RailsPress combines the **familiarity of WordPress** with the **power and elegan
 - ✅ **Template inheritance** and partials
 - ✅ **Auto dark mode** support
 
-#### **Visual Template Customizer**
-- ✅ **Drag-and-drop interface** powered by GrapesJS
+#### **Custom Visual Builder System**
+- ✅ **Native drag-and-drop interface** (replaced GrapesJS)
 - ✅ **13+ template types** (homepage, blog, pages, archives, etc.)
 - ✅ **Real-time preview** with device testing
+- ✅ **Advanced section management** with live editing
+- ✅ **Theme versioning** with rollback capabilities
 - ✅ **Custom HTML/CSS/JS** support
 - ✅ **WordPress-style template tags**
 
@@ -126,7 +171,116 @@ RailsPress combines the **familiarity of WordPress** with the **power and elegan
 - ✅ **Performance Booster** - Caching and optimization
 - ✅ **Analytics Pro** - Advanced tracking and reports
 
-### 🔗 **Webhook System**
+### 🔒 **GDPR Compliance System**
+
+#### **Complete Privacy Compliance**
+- ✅ **Full GDPR compliance** with all data subject rights
+- ✅ **Data export functionality** (Article 20 - Right to Data Portability)
+- ✅ **Data erasure system** (Article 17 - Right to be Forgotten)
+- ✅ **Consent management** (Article 7 - Consent)
+- ✅ **Privacy by design** architecture (Article 25)
+- ✅ **Audit trails** for all data processing activities
+- ✅ **Admin interface** for compliance management
+
+#### **Data Subject Rights Implementation**
+- ✅ **Right to be Informed** - Comprehensive privacy notices
+- ✅ **Right of Access** - Complete data export functionality
+- ✅ **Right to Rectification** - Data correction mechanisms
+- ✅ **Right to Erasure** - Full data deletion capabilities
+- ✅ **Right to Restrict Processing** - Processing controls
+- ✅ **Right to Data Portability** - Machine-readable exports
+- ✅ **Right to Object** - Processing objection handling
+- ✅ **Automated Decision Rights** - Human oversight controls
+
+### 🍪 **Consent Management System**
+
+#### **Enterprise-Grade Consent Management**
+- ✅ **OneTrust-level functionality** with comprehensive features
+- ✅ **GDPR/CCPA compliance** with region-specific rules
+- ✅ **Geolocation-based consent** with automatic region detection
+- ✅ **Pixel management** with consent-aware loading
+- ✅ **Customizable consent banner** with themes and colors
+- ✅ **Liquid template integration** for seamless implementation
+- ✅ **Admin interface** for complete consent management
+- ✅ **API endpoints** for programmatic consent handling
+
+#### **Consent Categories & Features**
+- ✅ **Necessary Cookies** (always required)
+- ✅ **Analytics Cookies** (Google Analytics, Clarity, Hotjar)
+- ✅ **Marketing Cookies** (Facebook, TikTok, LinkedIn, Twitter, Pinterest, Snapchat, Reddit)
+- ✅ **Functional Cookies** (Mixpanel, Segment, Heap)
+- ✅ **Granular consent controls** with individual category management
+- ✅ **Consent analytics** and compliance reporting
+- ✅ **Consent withdrawal** and modification capabilities
+
+### ✍️ **Distraction-Free Writing Experience**
+
+#### **Notion-Style Editor**
+- ✅ **Full-screen writing mode** with minimal interface
+- ✅ **Editor.js integration** for block-based content creation
+- ✅ **15+ block types** (headers, lists, quotes, code, images, tables)
+- ✅ **Auto-save functionality** as you type
+- ✅ **Keyboard shortcuts** for power users
+- ✅ **Clean JSON output** perfect for APIs
+- ✅ **Dark mode support** with automatic detection
+- ✅ **Media support** (images, files, YouTube, Vimeo embeds)
+- ✅ **Inline formatting** (bold, italic, underline, code, highlight)
+
+#### **Writing Features**
+- ✅ **Large title input** (40px font, bold weight)
+- ✅ **Clean canvas** with centered 700px max-width
+- ✅ **Sticky toolbar** with glassmorphism effect
+- ✅ **Floating save indicator** with green confirmation
+- ✅ **Status badges** (Draft/Published) with minimal design
+- ✅ **Real-time collaboration** ready
+- ✅ **Mobile-responsive** writing interface
+- ✅ **Accessibility features** built-in
+
+---
+
+#### **Multi-Platform Content Distribution**
+- ✅ **Device-specific channels** (Web, Mobile, Tablet, Smart TV, Email)
+- ✅ **Automatic channel detection** based on user agent
+- ✅ **Content overrides** for channel-specific customization
+- ✅ **Channel exclusions** to hide content from specific channels
+- ✅ **Multi-domain support** with locale management
+- ✅ **AI-powered content optimization** for each channel
+- ✅ **GraphQL API** for channel management
+- ✅ **Admin interface** for complete channel control
+
+#### **Channel Types & Features**
+- ✅ **Web Channel** - Desktop and standard web content
+- ✅ **Mobile Channel** - Mobile-optimized content and layouts
+- ✅ **Tablet Channel** - Tablet-specific content adaptations
+- ✅ **Smart TV Channel** - TV-optimized content for streaming devices
+- ✅ **Newsletter Channel** - Email-specific content formatting
+- ✅ **Custom Channels** - User-defined channels for specific platforms
+- ✅ **Channel Overrides** - Granular content customization per channel
+- ✅ **Content Exclusions** - Hide specific content from channels
+- ✅ **Multi-locale Support** - Language-specific channel configurations
+
+---
+
+#### **AI Integration Platform**
+- ✅ **OpenAI 3.1 compatible** MCP server implementation
+- ✅ **JSON-RPC 2.0 protocol** with full specification support
+- ✅ **Complete API endpoints** for AI model integration
+- ✅ **Tool management** with comprehensive schemas
+- ✅ **Resource access** for content management
+- ✅ **Prompt templates** for AI interactions
+- ✅ **Admin settings interface** for configuration
+- ✅ **Rate limiting** and security controls
+
+#### **MCP Capabilities**
+- ✅ **Session management** with handshake protocol
+- ✅ **Tool execution** with parameter validation
+- ✅ **Resource browsing** and content access
+- ✅ **Prompt execution** with template support
+- ✅ **Real-time streaming** with Server-Sent Events
+- ✅ **Authentication** with API key management
+- ✅ **Comprehensive documentation** and testing guides
+
+---
 
 #### **Real-time Integrations**
 - ✅ **13+ webhook events** (post.created, user.updated, etc.)
@@ -525,7 +679,7 @@ end
 - **Liquid Templates** - Theme system
 - **Tailwind CSS** - Admin styling
 - **Hotwire** (Turbo & Stimulus) - Modern Rails UX
-- **GrapesJS** - Visual template builder
+- **Custom Visual Builder** - Native drag-and-drop system
 - **Tabulator.js** - Data tables
 - **Vanilla JavaScript** - Theme interactions
 
@@ -548,6 +702,9 @@ end
 - 🔌 **[API Documentation](docs/api/)** - REST & GraphQL APIs
 - 🤖 **[AI Agents Guide](docs/features/ai-agents.md)** - AI integration
 - 🔗 **[Webhooks Guide](docs/features/webhooks.md)** - Real-time integrations
+- 🔒 **[GDPR Compliance Guide](docs/GDPR_COMPLIANCE_GUIDE.md)** - Privacy compliance
+- 🍪 **[Consent Management](docs/consent/CONSENT_MANAGEMENT_SYSTEM.md)** - OneTrust-level features
+- 🤖 **[MCP Implementation](docs/MCP_IMPLEMENTATION.md)** - Model Context Protocol
 
 ### **Quick References**
 - 📋 **[API Quick Reference](docs/api/quick-reference.md)**
@@ -674,7 +831,7 @@ bundle exec rspec
 
 ### **What's Working**
 - ✅ **All page types** (homepage, blog, pages, archives)
-- ✅ **Theme system** with Nordic theme
+- ✅ **Custom visual builder** with native drag-and-drop
 - ✅ **Admin panel** with responsive design
 - ✅ **API system** (REST + GraphQL)
 - ✅ **AI agents** with multiple providers
@@ -683,6 +840,11 @@ bundle exec rspec
 - ✅ **Email system** with multiple providers
 - ✅ **User management** with roles
 - ✅ **Content management** with rich editing
+- ✅ **GDPR compliance** with full data subject rights
+- ✅ **Consent management** with OneTrust-level features
+- ✅ **MCP integration** for AI model connectivity
+- ✅ **Content channels** for multi-platform distribution
+- ✅ **Distraction-free writing** with Notion-style editor
 
 ---
 
@@ -695,6 +857,9 @@ bundle exec rspec
 - 🔧 **Extensible** plugin architecture
 - 🧪 **95% test coverage** for reliability
 - 📚 **Comprehensive documentation**
+- 🤖 **MCP integration** for AI connectivity
+- 🔒 **GDPR compliance** built-in
+- 📺 **Content channels** for multi-platform distribution
 
 ### **For Content Creators**
 - ✍️ **Rich text editing** with Trix
@@ -703,6 +868,10 @@ bundle exec rspec
 - 🎯 **SEO optimization** built-in
 - 📊 **Analytics integration** ready
 - 🔒 **Secure** and reliable
+- 🎨 **Custom visual builder** for easy design
+- 🍪 **Consent management** for compliance
+- 📺 **Multi-platform** content distribution
+- ✍️ **Distraction-free writing** with Notion-style editor
 
 ### **For Businesses**
 - 🏢 **Enterprise-ready** with multi-tenancy
@@ -711,6 +880,9 @@ bundle exec rspec
 - 🛡️ **Security features** and compliance
 - 📈 **Scalable** architecture
 - 💰 **Cost-effective** hosting options
+- 🔒 **GDPR compliance** out of the box
+- 🍪 **OneTrust-level** consent management
+- 📺 **Omnichannel** content delivery
 
 ---
 
@@ -724,7 +896,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 Built with ❤️ using Ruby on Rails and powered by:
 
-- **GrapesJS** - Visual template builder
+- **Custom Visual Builder** - Native drag-and-drop system
 - **Tailwind CSS** - Admin styling
 - **Trix** - Rich text editor
 - **Liquid** - Templating engine

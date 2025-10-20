@@ -86,11 +86,6 @@ class WebhookDelivery < ApplicationRecord
     }
   end
   
-  # Check if delivery was successful
-  def success_status?
-    success?
-  end
-  
   private
   
   def schedule_delivery
