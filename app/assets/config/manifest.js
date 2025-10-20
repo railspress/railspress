@@ -1,10 +1,6 @@
 //= link_tree ../images
 //= link_directory ../stylesheets .css
-//= link application.js
-//= link admin_table_columns.js
-//= link railspress-analytics.js
-//= link railspress-analytics-helpers.js
-//= link railspress-analytics-examples.js
+//= link_tree ../../javascript .js
 //= link_tree ../../../vendor/javascript .js
 //= link_tree ../builds
 //= link graphiql/rails/application.css

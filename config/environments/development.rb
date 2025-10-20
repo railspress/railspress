@@ -63,7 +63,7 @@ Rails.application.configure do
   # Simple asset configuration for development
   config.assets.compile = true
   config.assets.debug = true
-  config.assets.digest = false
+  config.assets.digest = true
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
