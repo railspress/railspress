@@ -1103,6 +1103,7 @@ Built with ❤️ using Ruby on Rails and powered by:
 
 ---
 
-*Made with ❤️ by the RailsPress team* · Fun extra: the built-in plugin **“Hello Tupac!”** drops a random Tupac quote in the admin topbar to keep spirits high while you build.
+*Made with ❤️ by the RailsPress team* · 
+Fun extra: the built-in plugin **“Hello Tupac!”** drops a random Tupac quote in the admin topbar to keep spirits high while you build.
 
 </div>
