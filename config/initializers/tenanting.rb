@@ -12,7 +12,10 @@ end
 # Set acts_as_tenant config
 ActsAsTenant.configure do |config|
   config.require_tenant = false # Allow requests without tenant (for admin/auth)
-  config.pkey = :tenant_id
+  # Use the tenant model primary key (default: :id). Setting this incorrectly to
+  # :tenant_id causes `acts_as_tenant` to call `current_tenant.tenant_id`, which
+  # is not defined on `Tenant` and triggers errors in queries.
+  config.pkey = :id
 end
 
 Rails.application.config.after_initialize do
