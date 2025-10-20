@@ -465,7 +465,7 @@ Privacy-first analytics that rivals Plausible and Fathom:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/railspress.git
+git clone https://github.com/railspress/railspress.git
 cd railspress
 
 # Install dependencies
@@ -897,7 +897,7 @@ We welcome contributions! Here's how you can help:
 
 ```bash
 # Fork and clone the repository
-git clone https://github.com/your-username/railspress.git
+git clone https://github.com/railspress/railspress.git
 cd railspress
 
 # Install dependencies
@@ -1094,12 +1094,12 @@ Built with ❤️ using Ruby on Rails and powered by:
 
 ## 🌟 **Ready to Get Started?**
 
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/your-username/railspress)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/railspress/railspress)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 **RailsPress** - Bringing WordPress-like simplicity to Rails development.
 
-[⭐ **Star us on GitHub**](https://github.com/your-username/railspress) • [🐛 **Report Issues**](https://github.com/your-username/railspress/issues) • [💬 **Join Discussions**](https://github.com/your-username/railspress/discussions)
+[⭐ **Star us on GitHub**](https://github.com/railspress/railspress) • [🐛 **Report Issues**](https://github.com/railspress/railspress/issues) • [💬 **Join Discussions**](https://github.com/railspress/railspress/discussions)
 
 ---
 
