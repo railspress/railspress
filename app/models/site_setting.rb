@@ -13,10 +13,18 @@ class SiteSetting < ApplicationRecord
   
   # Class methods for easy access
   def self.get(key, default = nil)
-    setting = ActsAsTenant.current_tenant ? 
-      where(tenant: ActsAsTenant.current_tenant).find_by(key: key) :
-      find_by(key: key)
-    setting ? setting.typed_value : default
+    connection_pool.with_connection do |conn|
+      setting = ActsAsTenant.current_tenant ? 
+        where(tenant: ActsAsTenant.current_tenant).find_by(key: key) :
+        find_by(key: key)
+      setting ? setting.typed_value : default
+    end
+  rescue ActiveRecord::ConnectionTimeoutError => e
+    Rails.logger.error("SiteSetting.get connection timeout for key '#{key}': #{e.message}")
+    default
+  rescue => e
+    Rails.logger.error("SiteSetting.get error for key '#{key}': #{e.message}")
+    default
   end
   
   def self.set(key, value, setting_type = 'string')

@@ -676,7 +676,7 @@ Rails.application.routes.draw do
     # Update Management
     resources :updates, only: [:index] do
       collection do
-        post :check
+        get :check
         get :release_notes
       end
     end
@@ -699,11 +699,11 @@ Rails.application.routes.draw do
       post 'site_health/run_tests', to: 'site_health#run_tests'
       
       get 'export_personal_data', to: 'export_personal_data#index', as: 'export_personal_data'
-      post 'export_personal_data/request', to: 'export_personal_data#request'
+      post 'export_personal_data/request', to: 'export_personal_data#create_request'
       get 'export_personal_data/download/:token', to: 'export_personal_data#download', as: 'download_personal_data'
       
       get 'erase_personal_data', to: 'erase_personal_data#index', as: 'erase_personal_data'
-      post 'erase_personal_data/request', to: 'erase_personal_data#request'
+      post 'erase_personal_data/request', to: 'erase_personal_data#create_request'
       post 'erase_personal_data/confirm/:token', to: 'erase_personal_data#confirm', as: 'confirm_erase_personal_data'
       
       # Shortcuts Management

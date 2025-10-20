@@ -5,7 +5,7 @@ class Admin::Tools::ErasePersonalDataController < Admin::BaseController
   end
   
   # POST /admin/tools/erase_personal_data/request
-  def request
+  def create_request
     email = params[:email]
     reason = params[:reason]
     
@@ -39,7 +39,11 @@ class Admin::Tools::ErasePersonalDataController < Admin::BaseController
       metadata: {
         user_posts_count: user.posts.count,
         user_comments_count: Comment.where(author_email: email).count,
-        user_media_count: Medium.where(user_id: user.id).count rescue 0
+        user_media_count: begin
+          Medium.where(user_id: user.id).count
+        rescue
+          0
+        end
       }
     )
     

@@ -8,6 +8,7 @@ class Admin::UpdatesController < Admin::BaseController
     # Force a fresh check (bypass cache)
     Rails.cache.delete('railspress:update_check')
     @update_info = Railspress::UpdateChecker.check_for_updates
+    @release_notes = Railspress::UpdateChecker.fetch_release_notes if @update_info[:update_available]
     
     if @update_info[:update_available]
       flash[:success] = "New version available: #{@update_info[:latest_version]}"

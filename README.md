@@ -492,19 +492,73 @@ rails db:create db:migrate db:seed
 
 ## 📸 **Screenshots**
 
-### **Admin Panel Overview**
-![RailsPress Admin Panel - Posts Management](docs/screenshots/admin-posts.png)
-*Modern dark-themed admin interface with comprehensive post management, filtering, and bulk actions*
+### **Admin Interface**
 
-### **More Screenshots Coming Soon**
-- 🎨 **Theme Customizer** - Visual template editing with GrapesJS
-- 🤖 **AI Agents** - AI-powered content generation and optimization
-- 🔌 **Plugin Marketplace** - Browse and manage plugins
-- 📊 **Analytics Dashboard** - Content performance and user insights
-- 🔗 **Webhook Management** - Real-time integrations and delivery tracking
-- 📧 **Email System** - Transactional email configuration and logs
-- 🎛️ **Settings Panel** - Comprehensive site configuration
-- 📱 **Mobile Admin** - Responsive admin interface on mobile devices
+#### **Dashboard & Management**
+![Admin Dashboard](docs/screenshots/admin-dashboard.png)
+*Modern admin dashboard with comprehensive overview*
+
+![Posts Management](docs/screenshots/admin-posts-management.png)
+*Advanced post management with bulk actions and filtering*
+
+![Pages Management](docs/screenshots/admin-pages-management.png)
+*Page management with hierarchical structure*
+
+![Media Library](docs/screenshots/admin-media-library.png)
+*Powerful media library with drag-and-drop uploads*
+
+#### **Theme & Customization**
+![Theme Customizer](docs/screenshots/admin-theme-customizer.png)
+*Custom visual builder with drag-and-drop sections*
+
+![Page Builder](docs/screenshots/pagebuilder.png)
+*Advanced page builder with real-time preview*
+
+#### **Advanced Features**
+![Analytics Dashboard](docs/screenshots/admin-analytics-dashboard.png)
+*Comprehensive analytics with real-time tracking*
+
+![GDPR Compliance](docs/screenshots/admin-gdpr-compliance.png)
+*Complete GDPR compliance management*
+
+![Consent Management](docs/screenshots/admin-consent-management.png)
+*Enterprise-grade consent management system*
+
+![MCP Settings](docs/screenshots/admin-mcp-settings.png)
+*Model Context Protocol configuration*
+
+![Content Channels](docs/screenshots/admin-content-channels.png)
+*Multi-platform content distribution channels*
+
+![Distraction-Free Editor](docs/screenshots/admin-distraction-free-editor.png)
+*Notion-style writing experience*
+
+#### **System Management**
+![Plugin Marketplace](docs/screenshots/admin-plugin-marketplace.png)
+*Plugin marketplace with installation management*
+
+![Webhook Management](docs/screenshots/admin-webhook-management.png)
+*Webhook configuration and monitoring*
+
+![Email System](docs/screenshots/admin-email-system.png)
+*Advanced email management and templates*
+
+![User Management](docs/screenshots/admin-user-management.png)
+*User roles and permissions management*
+
+![Settings Panel](docs/screenshots/admin-settings-panel.png)
+*Comprehensive system settings*
+
+### **Frontend Experience**
+
+![Homepage](docs/screenshots/frontend-homepage.png)
+*Beautiful, responsive homepage design*
+
+![Blog Page](docs/screenshots/frontend-blog-page.png)
+*Clean blog layout with modern typography*
+
+![Responsive Design](docs/screenshots/frontend-responsive-design.png)
+*Mobile-first responsive design*
 
 ---
 
@@ -919,6 +973,82 @@ bundle exec rspec
 - 🍪 **OneTrust-level** consent management
 - 📺 **Omnichannel** content delivery
 - 📊 **GDPR-compliant analytics** for privacy-conscious businesses
+
+---
+
+## 🚀 **We Are Looking For You!**
+
+### **Join the RailsPress Community**
+
+RailsPress is more than just a CMS - it's a platform for innovation and collaboration. We're actively seeking talented individuals to help shape the future of Rails-based content management.
+
+### **🎨 Theme Developers**
+
+**What We Need:**
+- **Modern, responsive themes** using Liquid templating
+- **Custom visual builder** integrations
+- **Mobile-first designs** with Tailwind CSS
+- **Accessibility-compliant** interfaces
+- **Performance-optimized** layouts
+
+**What You Get:**
+- 🏆 **Featured placement** in our theme marketplace
+- 💰 **Revenue sharing** for premium themes
+- 🛠️ **Developer tools** and documentation
+- 🌟 **Community recognition** and support
+- 📚 **Comprehensive guides** and examples
+
+**Get Started:** Check out our [Theme Development Guide](docs/themes/THEME_DEVELOPMENT_GUIDE.md)
+
+### **🔌 Plugin Developers**
+
+**What We Need:**
+- **Functional plugins** extending RailsPress capabilities
+- **API integrations** with popular services
+- **E-commerce solutions** and payment gateways
+- **SEO tools** and optimization plugins
+- **Analytics integrations** and reporting tools
+
+**What You Get:**
+- 🏪 **Marketplace listing** with promotion
+- 💵 **Monetization options** for premium plugins
+- 🔧 **Plugin API** access and documentation
+- 🧪 **Testing framework** and CI/CD support
+- 🤝 **Technical support** from our team
+
+**Get Started:** Explore our [Plugin Developer Guide](docs/PLUGIN_DEVELOPER_GUIDE.md)
+
+### **🔗 Integrators & Consultants**
+
+**What We Need:**
+- **Custom implementations** for enterprise clients
+- **Migration services** from WordPress/Drupal
+- **Performance optimization** specialists
+- **Security auditing** and compliance experts
+- **Training and support** providers
+
+**What You Get:**
+- 🤝 **Partner program** with benefits
+- 📋 **Certification program** for expertise
+- 💼 **Lead generation** and referrals
+- 🎓 **Training materials** and resources
+- 🌐 **Global network** of RailsPress professionals
+
+**Get Started:** Contact us at **partners@railspress.com**
+
+### **🎯 How to Get Involved**
+
+1. **🌟 Star our repository** and follow for updates
+2. **📖 Read our documentation** and guides
+3. **🛠️ Build something amazing** with RailsPress
+4. **💬 Join our community** discussions
+5. **📧 Reach out** to discuss opportunities
+
+**Ready to contribute?** We'd love to hear from you!
+
+- **Email**: hello@railspress.com
+- **Discord**: [Join our community](https://discord.gg/railspress)
+- **GitHub**: [Contribute to the project](https://github.com/your-username/railspress)
 
 ---
 

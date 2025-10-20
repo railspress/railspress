@@ -5,7 +5,7 @@ class Admin::Tools::ExportPersonalDataController < Admin::BaseController
   end
   
   # POST /admin/tools/export_personal_data/request
-  def request
+  def create_request
     email = params[:email]
     
     unless email.present?

@@ -5,9 +5,9 @@ require 'json'
 
 module Railspress
   class UpdateChecker
-    GITHUB_REPO = ENV['RAILSPRESS_GITHUB_REPO'] || 'username/railspress'
+    GITHUB_REPO = ENV['RAILSPRESS_GITHUB_REPO'] || 'railspress/railspress'
     GITHUB_API_URL = "https://api.github.com/repos/#{GITHUB_REPO}/releases/latest"
-    CURRENT_VERSION = '1.0.0'
+    CURRENT_VERSION = '2.0.0'
     
     class << self
       def check_for_updates
@@ -29,13 +29,26 @@ module Railspress
           result
         rescue => e
           Rails.logger.error("Update check failed: #{e.message}")
-          {
-            current_version: CURRENT_VERSION,
-            latest_version: nil,
-            update_available: false,
-            error: e.message,
-            checked_at: Time.current
-          }
+          
+          # If it's a 404 error, it means no releases exist yet - this is not really an error
+          if e.message.include?('404')
+            {
+              current_version: CURRENT_VERSION,
+              latest_version: nil,
+              update_available: false,
+              no_releases_yet: true,
+              checked_at: Time.current,
+              message: "No releases published yet"
+            }
+          else
+            {
+              current_version: CURRENT_VERSION,
+              latest_version: nil,
+              update_available: false,
+              error: e.message,
+              checked_at: Time.current
+            }
+          end
         end
       end
       
