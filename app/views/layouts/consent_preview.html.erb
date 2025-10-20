@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consent Banner Preview</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      min-height: 100vh;
+    }
+    
+    /* Consent banner styles will be injected here */
+    <%= raw @preview_config.generate_banner_css %>
+    
+    /* Override for preview mode */
+    .consent-banner {
+      position: relative !important;
+      transform: none !important;
+      display: block !important;
+      margin: 20px;
+      border-radius: 8px;
+    }
+    
+    .consent-preferences-modal {
+      position: relative !important;
+      display: block !important;
+      background: rgba(0,0,0,0.5);
+      padding: 20px;
+      margin: 20px;
+      border-radius: 8px;
+    }
+    
+    .consent-modal-content {
+      background: white;
+      border-radius: 8px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Consent Banner HTML (includes preferences modal) -->
+  <%= raw @preview_config.generate_banner_html %>
+  
+  <script>
+    // Mock ConsentManager for preview
+    window.ConsentManager = {
+      hideBanner: function() {
+        document.getElementById('consent-banner').style.display = 'none';
+      },
+      hidePreferencesModal: function() {
+        document.getElementById('consent-preferences-modal').style.display = 'none';
+      },
+      showPreferencesModal: function() {
+        document.getElementById('consent-preferences-modal').style.display = 'block';
+      },
+      savePreferences: function() {
+        alert('Preferences saved! (Preview mode)');
+        this.hidePreferencesModal();
+      },
+      acceptAll: function() {
+        alert('All cookies accepted! (Preview mode)');
+        this.hideBanner();
+      },
+      rejectAll: function() {
+        alert('All cookies rejected! (Preview mode)');
+        this.hideBanner();
+      },
+      necessaryOnly: function() {
+        alert('Only necessary cookies accepted! (Preview mode)');
+        this.hideBanner();
+      }
+    };
+    
+    // Show banner after page load
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const banner = document.getElementById('consent-banner');
+        if (banner) {
+          banner.classList.add('show');
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

@@ -29,6 +29,11 @@ class User < ApplicationRecord
   has_many :ai_usages, dependent: :destroy
   has_many :oauth_accounts, dependent: :destroy
   
+  # GDPR-related associations
+  has_many :personal_data_export_requests, dependent: :destroy
+  has_many :personal_data_erasure_requests, dependent: :destroy
+  has_many :user_consents, dependent: :destroy
+  
   # Meta fields for plugin extensibility
   has_many :meta_fields, as: :metable, dependent: :destroy
   include Metable

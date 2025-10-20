@@ -1,17 +1,9 @@
+# frozen_string_literal: true
+
 module Types
   module NodeType
     include Types::BaseInterface
-    
-    description "An object with an ID"
-    
-    field :id, ID, null: false, description: "ID of the object"
+    # Add the `id` field
+    include GraphQL::Types::Relay::NodeBehaviors
   end
 end
-
-
-
-
-
-
-
-

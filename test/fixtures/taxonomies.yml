@@ -1,62 +1,37 @@
-# Default taxonomies matching WordPress structure
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 category:
-  name: Category
-  singular_name: Category
-  plural_name: Categories
-  slug: category
-  description: Organize posts into categories
+  id: 1
+  name: "Category"
+  slug: "category"
+  description: "Organize posts into categories"
   hierarchical: true
   object_types: ["Post"]
-  settings: 
-    show_in_menu: true
-    show_in_api: true
-    show_ui: true
-    public: true
+  settings: {"show_in_menu": true, "show_in_api": true, "show_ui": true, "public": true}
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
 
-tag:
-  name: Tag
-  singular_name: Tag
-  plural_name: Tags
-  slug: tag
-  description: Tag your posts with keywords
+post_tag:
+  id: 2
+  name: "Post Tag"
+  slug: "post_tag"
+  description: "Organize posts with tags"
   hierarchical: false
   object_types: ["Post"]
-  settings:
-    show_in_menu: true
-    show_in_api: true
-    show_ui: true
-    public: true
+  settings: {"show_in_menu": true, "show_in_api": true, "show_ui": true, "public": true}
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
 
-post_format:
-  name: Post Format
-  singular_name: Format
-  plural_name: Formats
-  slug: post_format
-  description: Post format types (video, audio, gallery, etc.)
-  hierarchical: false
-  object_types: ["Post"]
-  settings:
-    show_in_menu: false
-    show_in_api: true
-    show_ui: true
-    public: false
-
-# Custom test taxonomy
-topics:
-  name: Topics
-  singular_name: Topic
-  plural_name: Topics
-  slug: topics
-  description: Content topics
+custom_taxonomy:
+  id: 3
+  name: "Custom Taxonomy"
+  slug: "custom_taxonomy"
+  description: "A custom taxonomy for testing"
   hierarchical: true
   object_types: ["Post", "Page"]
-  settings:
-    show_in_menu: true
-    public: true
-
-
-
-
-
-
+  settings: {"show_in_menu": true, "show_in_api": true, "show_ui": true, "public": true}
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>

@@ -1,0 +1,476 @@
+<% content_for :page_title, "MCP Settings" %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white mb-2">MCP Settings</h1>
+    <p class="text-gray-400">Configure Model Context Protocol (MCP) API settings and capabilities.</p>
+  </div>
+
+  <!-- Status Card -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <% if @mcp_settings[:enabled] %>
+            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+          <% else %>
+            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+          <% end %>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm font-medium text-white">
+            MCP API is <%= @mcp_settings[:enabled] ? 'enabled' : 'disabled' %>
+          </p>
+          <p class="text-sm text-gray-400">
+            <%= @mcp_settings[:enabled] ? 'API endpoints are active and accepting requests' : 'API endpoints are disabled' %>
+          </p>
+        </div>
+      </div>
+      <div class="flex space-x-3">
+        <button type="button" id="test-connection-btn" class="inline-flex items-center px-3 py-2 border border-[#2a2a2a] shadow-sm text-sm leading-4 font-medium rounded-md text-gray-300 bg-[#111111] hover:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Test Connection
+        </button>
+        <button type="button" id="generate-api-key-btn" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+          </svg>
+          Generate API Key
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <%= form_with url: admin_mcp_settings_path, method: :patch, class: "space-y-6" do |form| %>
+    <!-- Basic Settings -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-2">Basic Settings</h2>
+        <p class="text-sm text-gray-400">Core MCP API configuration options.</p>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable MCP API</label>
+            <p class="text-sm text-gray-400">Enable or disable the MCP API endpoints</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enabled]", checked: @mcp_settings[:enabled], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div>
+          <label for="api_key" class="block text-sm font-medium text-white mb-2">API Key</label>
+          <div class="flex rounded-md shadow-sm">
+            <%= form.text_field :mcp_settings, { name: "mcp_settings[api_key]", value: @mcp_settings[:api_key], class: "flex-1 min-w-0 block w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-l-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "Enter API key or leave blank to generate automatically" } %>
+            <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-[#2a2a2a] bg-[#0a0a0a] text-gray-400 text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div>
+            <label for="max_requests_per_minute" class="block text-sm font-medium text-white mb-2">Max Requests/Minute</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[max_requests_per_minute]", value: @mcp_settings[:max_requests_per_minute], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+          <div>
+            <label for="max_requests_per_hour" class="block text-sm font-medium text-white mb-2">Max Requests/Hour</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[max_requests_per_hour]", value: @mcp_settings[:max_requests_per_hour], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+          <div>
+            <label for="max_requests_per_day" class="block text-sm font-medium text-white mb-2">Max Requests/Day</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[max_requests_per_day]", value: @mcp_settings[:max_requests_per_day], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Access Control -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-2">Access Control</h2>
+        <p class="text-sm text-gray-400">Configure which tools, resources, and prompts are accessible.</p>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <label for="allowed_tools" class="block text-sm font-medium text-white mb-2">Allowed Tools</label>
+          <%= form.select :mcp_settings, options_for_select([['All', 'all'], ['Posts Only', 'posts'], ['Pages Only', 'pages'], ['Taxonomies Only', 'taxonomies'], ['Custom', 'custom']], @mcp_settings[:allowed_tools]), { name: "mcp_settings[allowed_tools]" }, { class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+        </div>
+
+        <div>
+          <label for="allowed_resources" class="block text-sm font-medium text-white mb-2">Allowed Resources</label>
+          <%= form.select :mcp_settings, options_for_select([['All', 'all'], ['Posts Only', 'posts'], ['Pages Only', 'pages'], ['Media Only', 'media'], ['Custom', 'custom']], @mcp_settings[:allowed_resources]), { name: "mcp_settings[allowed_resources]" }, { class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+        </div>
+
+        <div>
+          <label for="allowed_prompts" class="block text-sm font-medium text-white mb-2">Allowed Prompts</label>
+          <%= form.select :mcp_settings, options_for_select([['All', 'all'], ['SEO Only', 'seo'], ['Content Only', 'content'], ['Analytics Only', 'analytics'], ['Custom', 'custom']], @mcp_settings[:allowed_prompts]), { name: "mcp_settings[allowed_prompts]" }, { class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Require Authentication</label>
+            <p class="text-sm text-gray-400">Require API key authentication for all requests</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[require_authentication]", checked: @mcp_settings[:require_authentication], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Required</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rate Limiting -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-2">Rate Limiting</h2>
+        <p class="text-sm text-gray-400">Configure rate limiting behavior and policies.</p>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Rate Limit by IP</label>
+            <p class="text-sm text-gray-400">Apply rate limits based on client IP address</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[rate_limit_by_ip]", checked: @mcp_settings[:rate_limit_by_ip], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Rate Limit by User</label>
+            <p class="text-sm text-gray-400">Apply rate limits based on authenticated user</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[rate_limit_by_user]", checked: @mcp_settings[:rate_limit_by_user], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logging & Monitoring -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-2">Logging & Monitoring</h2>
+        <p class="text-sm text-gray-400">Configure logging, monitoring, and analytics settings.</p>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Log Requests</label>
+            <p class="text-sm text-gray-400">Log all incoming API requests</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[log_requests]", checked: @mcp_settings[:log_requests], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Log Responses</label>
+            <p class="text-sm text-gray-400">Log API response data (may contain sensitive information)</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[log_responses]", checked: @mcp_settings[:log_responses], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable Analytics</label>
+            <p class="text-sm text-gray-400">Track API usage and performance metrics</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_analytics]", checked: @mcp_settings[:enable_analytics], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <label for="analytics_retention_days" class="block text-sm font-medium text-white mb-2">Analytics Retention (Days)</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[analytics_retention_days]", value: @mcp_settings[:analytics_retention_days], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+          <div>
+            <label for="debug_log_level" class="block text-sm font-medium text-white mb-2">Debug Log Level</label>
+            <%= form.select :mcp_settings, options_for_select([['Debug', 'debug'], ['Info', 'info'], ['Warn', 'warn'], ['Error', 'error']], @mcp_settings[:debug_log_level]), { name: "mcp_settings[debug_log_level]" }, { class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Features -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-2">Advanced Features</h2>
+        <p class="text-sm text-gray-400">Configure advanced MCP API features and capabilities.</p>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable Streaming</label>
+            <p class="text-sm text-gray-400">Enable Server-Sent Events for real-time updates</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_streaming]", checked: @mcp_settings[:enable_streaming], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable CORS</label>
+            <p class="text-sm text-gray-400">Enable Cross-Origin Resource Sharing</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_cors]", checked: @mcp_settings[:enable_cors], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable Caching</label>
+            <p class="text-sm text-gray-400">Cache API responses for improved performance</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_caching]", checked: @mcp_settings[:enable_caching], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <label for="max_stream_duration" class="block text-sm font-medium text-white mb-2">Max Stream Duration (seconds)</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[max_stream_duration]", value: @mcp_settings[:max_stream_duration], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+          <div>
+            <label for="cache_ttl" class="block text-sm font-medium text-white mb-2">Cache TTL (seconds)</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[cache_ttl]", value: @mcp_settings[:cache_ttl], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+        </div>
+
+        <div>
+          <label for="cors_origins" class="block text-sm font-medium text-white mb-2">CORS Origins</label>
+          <p class="text-sm text-gray-400 mb-2">Comma-separated list of allowed origins (leave blank for all)</p>
+          <%= form.text_field :mcp_settings, { name: "mcp_settings[cors_origins]", value: @mcp_settings[:cors_origins], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "https://example.com, https://app.example.com" } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-2">Security Settings</h2>
+        <p class="text-sm text-gray-400">Configure security-related settings and policies.</p>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable Security Headers</label>
+            <p class="text-sm text-gray-400">Add security headers to API responses</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_security_headers]", checked: @mcp_settings[:enable_security_headers], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable Encryption</label>
+            <p class="text-sm text-gray-400">Encrypt sensitive data in API responses</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_encryption]", checked: @mcp_settings[:enable_encryption], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable SSL</label>
+            <p class="text-sm text-gray-400">Require SSL/TLS for API connections</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_ssl]", checked: @mcp_settings[:enable_ssl], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <label for="max_request_size" class="block text-sm font-medium text-white mb-2">Max Request Size (bytes)</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[max_request_size]", value: @mcp_settings[:max_request_size], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+          <div>
+            <label for="timeout_seconds" class="block text-sm font-medium text-white mb-2">Request Timeout (seconds)</label>
+            <%= form.number_field :mcp_settings, { name: "mcp_settings[timeout_seconds]", value: @mcp_settings[:timeout_seconds], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Webhooks -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-white mb-2">Webhooks</h2>
+        <p class="text-sm text-gray-400">Configure webhook notifications for API events.</p>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-white">Enable Webhooks</label>
+            <p class="text-sm text-gray-400">Send webhook notifications for API events</p>
+          </div>
+          <label class="flex items-center space-x-2 cursor-pointer">
+            <%= form.check_box :mcp_settings, { name: "mcp_settings[enable_webhooks]", checked: @mcp_settings[:enable_webhooks], class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500" }, "1", "0" %>
+            <span class="text-gray-300">Enabled</span>
+          </label>
+        </div>
+
+        <div>
+          <label for="webhook_url" class="block text-sm font-medium text-white mb-2">Webhook URL</label>
+          <%= form.url_field :mcp_settings, { name: "mcp_settings[webhook_url]", value: @mcp_settings[:webhook_url], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "https://example.com/webhook" } %>
+        </div>
+
+        <div>
+          <label for="webhook_secret" class="block text-sm font-medium text-white mb-2">Webhook Secret</label>
+          <%= form.password_field :mcp_settings, { name: "mcp_settings[webhook_secret]", value: @mcp_settings[:webhook_secret], class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "Enter webhook secret for verification" } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex justify-end">
+      <%= form.submit "Save Settings", class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+    </div>
+  <% end %>
+</div>
+
+<!-- Test Connection Modal -->
+<div id="test-connection-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-[#111111] border-[#2a2a2a]">
+    <div class="mt-3 text-center">
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-900">
+        <svg class="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-white mt-2">Testing Connection</h3>
+      <div class="mt-2 px-7 py-3">
+        <p class="text-sm text-gray-400">Testing MCP API connection...</p>
+        <div class="mt-4">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Generate API Key Modal -->
+<div id="generate-api-key-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-[#111111] border-[#2a2a2a]">
+    <div class="mt-3 text-center">
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-900">
+        <svg class="h-6 w-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-white mt-2">Generate New API Key</h3>
+      <div class="mt-2 px-7 py-3">
+        <p class="text-sm text-gray-400">This will generate a new API key and invalidate the current one.</p>
+        <div class="mt-4">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Test Connection functionality
+  const testConnectionBtn = document.getElementById('test-connection-btn');
+  const testConnectionModal = document.getElementById('test-connection-modal');
+  
+  testConnectionBtn.addEventListener('click', function() {
+    testConnectionModal.classList.remove('hidden');
+    
+    fetch('<%= admin_test_mcp_connection_path %>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      testConnectionModal.classList.add('hidden');
+      
+      if (data.success) {
+        alert('✅ Connection successful!\n\n' + 
+              'Protocol Version: ' + data.details.protocol_version + '\n' +
+              'Capabilities: ' + data.details.capabilities.join(', ') + '\n' +
+              'Server: ' + data.details.server_info.name + ' v' + data.details.server_info.version);
+      } else {
+        alert('❌ Connection failed!\n\nError: ' + data.error);
+      }
+    })
+    .catch(error => {
+      testConnectionModal.classList.add('hidden');
+      alert('❌ Connection test failed!\n\nError: ' + error.message);
+    });
+  });
+
+  // Generate API Key functionality
+  const generateApiKeyBtn = document.getElementById('generate-api-key-btn');
+  const generateApiKeyModal = document.getElementById('generate-api-key-modal');
+  
+  generateApiKeyBtn.addEventListener('click', function() {
+    if (confirm('This will generate a new API key and invalidate the current one. Continue?')) {
+      generateApiKeyModal.classList.remove('hidden');
+      
+      fetch('<%= admin_generate_mcp_api_key_path %>', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        generateApiKeyModal.classList.add('hidden');
+        
+        if (data.success) {
+          alert('✅ New API key generated!\n\nAPI Key: ' + data.api_key + '\n\nPlease save this key securely. It will not be shown again.');
+          
+          // Update the API key field
+          const apiKeyField = document.querySelector('input[name="mcp_settings[api_key]"]');
+          if (apiKeyField) {
+            apiKeyField.value = data.api_key;
+          }
+        } else {
+          alert('❌ Failed to generate API key!\n\nError: ' + data.error);
+        }
+      })
+      .catch(error => {
+        generateApiKeyModal.classList.add('hidden');
+        alert('❌ API key generation failed!\n\nError: ' + error.message);
+      });
+    }
+  });
+});
+</script>

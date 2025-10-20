@@ -5,7 +5,7 @@ module Api
       
       # GET /api/v1/posts
       def index
-        posts = Post.includes(:user, :categories, :tags, :comments)
+        posts = Post.all
         
         # Filter by status
         posts = posts.where(status: params[:status]) if params[:status].present?
@@ -15,6 +15,42 @@ module Api
         
         # Filter by tag
         posts = posts.by_tag(params[:tag]) if params[:tag].present?
+        
+        # Filter by channel
+        if params[:channel].present?
+          channel = Channel.find_by(slug: params[:channel])
+          if channel
+            # Get posts assigned to this channel or global posts (no channel assignment)
+            posts = posts.left_joins(:channels)
+                         .where('channels.id = ? OR channels.id IS NULL', channel.id)
+            
+            # Apply channel exclusions
+            excluded_post_ids = channel.channel_overrides
+                                       .exclusions
+                                       .enabled
+                                       .where(resource_type: 'Post')
+                                       .pluck(:resource_id)
+            posts = posts.where.not(id: excluded_post_ids) if excluded_post_ids.any?
+            
+            @current_channel = channel
+          end
+        elsif params[:auto_channel].present?
+          # Use auto-detected channel from middleware
+          channel = Channel.find_by(slug: params[:auto_channel])
+          if channel
+            posts = posts.left_joins(:channels)
+                         .where('channels.id = ? OR channels.id IS NULL', channel.id)
+            
+            excluded_post_ids = channel.channel_overrides
+                                       .exclusions
+                                       .enabled
+                                       .where(resource_type: 'Post')
+                                       .pluck(:resource_id)
+            posts = posts.where.not(id: excluded_post_ids) if excluded_post_ids.any?
+            
+            @current_channel = channel
+          end
+        end
         
         # Search
         posts = posts.search(params[:q]) if params[:q].present?
@@ -35,6 +71,14 @@ module Api
       
       # GET /api/v1/posts/:id
       def show
+        # Set current channel if channel parameter is provided
+        if params[:channel].present?
+          @current_channel = Channel.find_by(slug: params[:channel])
+        elsif params[:auto_channel].present?
+          # Use auto-detected channel from middleware
+          @current_channel = Channel.find_by(slug: params[:auto_channel])
+        end
+        
         render_success(post_serializer(@post, detailed: true))
       end
       
@@ -96,46 +140,49 @@ module Api
       end
       
       def post_serializer(post, detailed: false)
-        data = {
+        # Get channel slugs for this post
+        channel_slugs = post.channels.pluck(:slug)
+        
+        # Start with basic post data
+        post_data = {
           id: post.id,
           title: post.title,
           slug: post.slug,
-          excerpt: post.excerpt,
           status: post.status,
-          published_at: post.published_at,
-          created_at: post.created_at,
-          updated_at: post.updated_at,
-          content_type: post.content_type ? {
-            id: post.content_type.id,
-            ident: post.content_type.ident,
-            label: post.content_type.label,
-            singular: post.content_type.singular,
-            plural: post.content_type.plural
-          } : nil,
-          post_type_ident: post.post_type_ident,
-          author: {
-            id: post.user.id,
-            name: post.author_name,
-            email: post.user.email
-          },
-          categories: post.terms_for_taxonomy('category').map { |c| { id: c.id, name: c.name, slug: c.slug } },
-          tags: post.terms_for_taxonomy('post_tag').map { |t| { id: t.id, name: t.name, slug: t.slug } },
-          comments_count: post.comments.where(status: 'approved').count,
-          meta: {
-            description: post.meta_description,
-            keywords: post.meta_keywords
-          },
-          url: blog_post_url(post.slug)
+          channels: channel_slugs,
+          channel_context: @current_channel&.slug
         }
         
+        # Add detailed fields if requested
         if detailed
-          data.merge!(
-            content: post.content.to_s,
-            featured_image: post.featured_image_file.attached? ? url_for(post.featured_image_file) : nil
-          )
+          post_data.merge!({
+            content: post.content,
+            excerpt: post.excerpt,
+            published_at: post.published_at,
+            created_at: post.created_at,
+            updated_at: post.updated_at,
+            url: Rails.application.routes.url_helpers.blog_post_url(post, host: request.host)
+          })
         end
         
-        data
+        # Apply channel overrides if current channel is set
+        if @current_channel
+          original_data = post_data.dup
+          overridden_data, provenance = @current_channel.apply_overrides_to_data(
+            original_data, 
+            'Post', 
+            post.id, 
+            true
+          )
+          
+          # Merge overridden data
+          post_data.merge!(overridden_data)
+          
+          # Add provenance information
+          post_data[:provenance] = provenance if provenance.present?
+        end
+        
+        post_data
       end
       
       def filter_meta
@@ -143,7 +190,8 @@ module Api
           status: params[:status],
           category: params[:category],
           tag: params[:tag],
-          search: params[:q]
+          search: params[:q],
+          channel: params[:channel] || params[:auto_channel]
         }
       end
     end

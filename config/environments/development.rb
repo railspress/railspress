@@ -59,6 +59,11 @@ Rails.application.configure do
 
   # Suppress logger output for asset requests.
   config.assets.quiet = true
+  
+  # Simple asset configuration for development
+  config.assets.compile = true
+  config.assets.debug = true
+  config.assets.digest = false
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
@@ -71,4 +76,14 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = false
+  
+  # Hot reloading for CSS/JS changes
+  config.middleware.insert_after ActionDispatch::Static, Hotwire::Livereload::Middleware
+  config.hotwire_livereload.reload_method = :turbo_stream
+  config.hotwire_livereload.listen_paths += [
+    Rails.root.join("app/assets/stylesheets"),
+    Rails.root.join("app/assets/javascripts"),
+    Rails.root.join("app/javascript"),
+    Rails.root.join("app/views")
+  ]
 end

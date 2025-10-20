@@ -1,0 +1,233 @@
+<% content_for :page_title, "Post Analytics: #{@post.title}" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="max-w-7xl mx-auto" 
+     data-controller="analytics"
+     data-analytics-views-data-value="<%= raw @views_chart_data.to_json %>"
+     data-analytics-hourly-data-value="<%= raw @hourly_chart_data.to_json %>"
+     data-analytics-country-data-value="<%= raw @country_chart_data.to_json %>"
+     data-analytics-device-data-value="<%= raw @device_chart_data.to_json %>">
+  
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <div class="flex items-center gap-3 mb-2">
+        <%= link_to admin_analytics_path, class: "text-gray-400 hover:text-white transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        <% end %>
+        <h1 class="text-2xl font-bold text-white">Post Analytics</h1>
+      </div>
+      <h2 class="text-lg text-gray-300"><%= @post.title %></h2>
+      <p class="text-sm text-gray-400">Published <%= time_ago_in_words(@post.published_at) %> ago</p>
+    </div>
+    
+    <!-- Period Selector -->
+    <div class="flex items-center gap-2">
+      <%= link_to admin_content_analytics_post_path(@post, period: 'week'), 
+                  class: "px-3 py-1 rounded #{'bg-indigo-600 text-white' if @period == 'week'}" do %>
+        Week
+      <% end %>
+      <%= link_to admin_content_analytics_post_path(@post, period: 'month'), 
+                  class: "px-3 py-1 rounded #{'bg-indigo-600 text-white' if @period == 'month'}" do %>
+        Month
+      <% end %>
+      <%= link_to admin_content_analytics_post_path(@post, period: 'year'), 
+                  class: "px-3 py-1 rounded #{'bg-indigo-600 text-white' if @period == 'year'}" do %>
+        Year
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Views -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-medium text-gray-400">Total Views</h3>
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold text-white mb-1"><%= format_number(@analytics[:total_views]) %></div>
+      <p class="text-sm text-gray-400">All time views</p>
+    </div>
+
+    <!-- Unique Readers -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-medium text-gray-400">Unique Readers</h3>
+        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold text-white mb-1"><%= format_number(@analytics[:unique_readers]) %></div>
+      <p class="text-sm text-gray-400">Individual readers</p>
+    </div>
+
+    <!-- Average Reading Time -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-medium text-gray-400">Avg Reading Time</h3>
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold text-white mb-1"><%= @analytics[:avg_reading_time] %>s</div>
+      <p class="text-sm text-gray-400">Time spent reading</p>
+    </div>
+
+    <!-- Completion Rate -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-medium text-gray-400">Completion Rate</h3>
+        <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="text-3xl font-bold text-white mb-1"><%= (@analytics[:avg_completion_rate] * 100).round(1) %>%</div>
+      <p class="text-sm text-gray-400">Readers who finished</p>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Views Over Time -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h3 class="text-lg font-semibold text-white mb-4">Views Over Time</h3>
+      <div class="h-64" data-analytics-target="viewsChart"></div>
+    </div>
+
+    <!-- Views by Hour -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h3 class="text-lg font-semibold text-white mb-4">Views by Hour</h3>
+      <div class="h-64" data-analytics-target="hourlyChart"></div>
+    </div>
+  </div>
+
+  <!-- Reader Demographics -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Readers by Country -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h3 class="text-lg font-semibold text-white mb-4">Readers by Country</h3>
+      <div class="space-y-3">
+        <% @analytics[:readers_by_country].first(10).each do |country, count| %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg"><%= flag_for_country(country) %></span>
+              <span class="text-gray-300"><%= country_name(country) %></span>
+            </div>
+            <span class="text-white font-semibold"><%= format_number(count) %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Readers by Device -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+      <h3 class="text-lg font-semibold text-white mb-4">Readers by Device</h3>
+      <div class="space-y-3">
+        <% @analytics[:readers_by_device].each do |device, count| %>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-lg"><%= device_icon(device) %></span>
+              <span class="text-gray-300"><%= device.humanize %></span>
+            </div>
+            <span class="text-white font-semibold"><%= format_number(count) %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Engagement Metrics -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+    <h3 class="text-lg font-semibold text-white mb-6">Reader Engagement</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Reading Behavior -->
+      <div>
+        <h4 class="text-sm font-medium text-gray-400 mb-3">Reading Behavior</h4>
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-300">Read to bottom</span>
+            <span class="text-white font-semibold"><%= format_number(@analytics[:readers_who_scrolled_to_bottom]) %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">Spent time reading</span>
+            <span class="text-white font-semibold"><%= format_number(@analytics[:readers_who_spent_time]) %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">Exit intent detected</span>
+            <span class="text-white font-semibold"><%= format_number(@analytics[:readers_with_exit_intent]) %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Traffic Sources -->
+      <div>
+        <h4 class="text-sm font-medium text-gray-400 mb-3">Top Traffic Sources</h4>
+        <div class="space-y-2">
+          <% @analytics[:traffic_sources].first(5).each do |source, count| %>
+            <div class="flex justify-between">
+              <span class="text-gray-300 text-sm truncate"><%= source_domain(source) %></span>
+              <span class="text-white font-semibold text-sm"><%= format_number(count) %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Content Performance -->
+      <div>
+        <h4 class="text-sm font-medium text-gray-400 mb-3">Content Performance</h4>
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-300">Estimated reading time</span>
+            <span class="text-white font-semibold"><%= @analytics[:reading_time_estimate] %> min</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">Engagement score</span>
+            <span class="text-white font-semibold"><%= @analytics[:engagement_score] %>/100</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-300">Word count</span>
+            <span class="text-white font-semibold"><%= format_number(@analytics[:post][:word_count]) %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <%= link_to @post, class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+        </svg>
+        View Post
+      <% end %>
+      
+      <%= link_to edit_admin_post_path(@post), class: "flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Edit Post
+      <% end %>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <%= link_to admin_content_analytics_export_path(content_type: 'posts', period: @period), 
+                  class: "flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Export Data
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,277 @@
+<% content_for :page_title, "Content Performance Analytics" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <div class="flex items-center gap-3 mb-2">
+        <%= link_to admin_analytics_path, class: "text-gray-400 hover:text-white transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        <% end %>
+        <h1 class="text-2xl font-bold text-white">Content Performance</h1>
+      </div>
+      <p class="text-gray-400">Top performing posts and pages</p>
+    </div>
+    
+    <!-- Period Selector -->
+    <div class="flex items-center gap-2">
+      <%= link_to admin_content_analytics_performance_path(period: 'week'), 
+                  class: "px-3 py-1 rounded #{'bg-indigo-600 text-white' if @period == 'week'}" do %>
+        Week
+      <% end %>
+      <%= link_to admin_content_analytics_performance_path(period: 'month'), 
+                  class: "px-3 py-1 rounded #{'bg-indigo-600 text-white' if @period == 'month'}" do %>
+        Month
+      <% end %>
+      <%= link_to admin_content_analytics_performance_path(period: 'year'), 
+                  class: "px-3 py-1 rounded #{'bg-indigo-600 text-white' if @period == 'year'}" do %>
+        Year
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Top Posts -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold text-white">Top Performing Posts</h2>
+      <%= link_to admin_posts_path, class: "text-indigo-400 hover:text-indigo-300 text-sm" do %>
+        View all posts →
+      <% end %>
+    </div>
+    
+    <div class="space-y-4">
+      <% @performance_data[:top_posts].each_with_index do |post, index| %>
+        <div class="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a]">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full text-sm font-semibold">
+              <%= index + 1 %>
+            </div>
+            <div>
+              <h3 class="text-white font-medium mb-1">
+                <%= link_to post[:title], admin_content_analytics_post_path(post[:id]), 
+                           class: "hover:text-indigo-400 transition" %>
+              </h3>
+              <p class="text-gray-400 text-sm">
+                Published <%= time_ago_in_words(post[:published_at]) %> ago
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-8">
+            <!-- Views -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= format_number(post[:views]) %></div>
+              <div class="text-gray-400 text-xs">Views</div>
+            </div>
+            
+            <!-- Unique Readers -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= format_number(post[:unique_readers]) %></div>
+              <div class="text-gray-400 text-xs">Readers</div>
+            </div>
+            
+            <!-- Reading Time -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= post[:avg_reading_time] %>s</div>
+              <div class="text-gray-400 text-xs">Avg Time</div>
+            </div>
+            
+            <!-- Completion Rate -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= (post[:avg_completion_rate] * 100).round(1) %>%</div>
+              <div class="text-gray-400 text-xs">Complete</div>
+            </div>
+            
+            <!-- Engagement Score -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= post[:engagement_score] %></div>
+              <div class="text-gray-400 text-xs">Engagement</div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+              <%= link_to post[:url], target: "_blank", 
+                         class: "p-2 text-gray-400 hover:text-white transition" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+              <% end %>
+              
+              <%= link_to admin_content_analytics_post_path(post[:id]), 
+                         class: "p-2 text-gray-400 hover:text-indigo-400 transition" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Top Pages -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold text-white">Top Performing Pages</h2>
+      <%= link_to admin_pages_path, class: "text-indigo-400 hover:text-indigo-300 text-sm" do %>
+        View all pages →
+      <% end %>
+    </div>
+    
+    <div class="space-y-4">
+      <% @performance_data[:top_pages].each_with_index do |page, index| %>
+        <div class="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg border border-[#2a2a2a]">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full text-sm font-semibold">
+              <%= index + 1 %>
+            </div>
+            <div>
+              <h3 class="text-white font-medium mb-1">
+                <%= link_to page[:title], admin_content_analytics_page_path(page[:id]), 
+                           class: "hover:text-indigo-400 transition" %>
+              </h3>
+              <p class="text-gray-400 text-sm">
+                Published <%= time_ago_in_words(page[:published_at]) %> ago
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-8">
+            <!-- Views -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= format_number(page[:views]) %></div>
+              <div class="text-gray-400 text-xs">Views</div>
+            </div>
+            
+            <!-- Unique Visitors -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= format_number(page[:unique_visitors]) %></div>
+              <div class="text-gray-400 text-xs">Visitors</div>
+            </div>
+            
+            <!-- Reading Time -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= page[:avg_reading_time] %>s</div>
+              <div class="text-gray-400 text-xs">Avg Time</div>
+            </div>
+            
+            <!-- Completion Rate -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= (page[:avg_completion_rate] * 100).round(1) %>%</div>
+              <div class="text-gray-400 text-xs">Complete</div>
+            </div>
+            
+            <!-- Engagement Score -->
+            <div class="text-center">
+              <div class="text-white font-semibold"><%= page[:engagement_score] %></div>
+              <div class="text-gray-400 text-xs">Engagement</div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+              <%= link_to page[:url], target: "_blank", 
+                         class: "p-2 text-gray-400 hover:text-white transition" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+              <% end %>
+              
+              <%= link_to admin_content_analytics_page_path(page[:id]), 
+                         class: "p-2 text-gray-400 hover:text-indigo-400 transition" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Performance Insights -->
+  <div class="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-500/30 rounded-xl p-6 mb-8">
+    <div class="flex items-center gap-3 mb-4">
+      <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+      </svg>
+      <h2 class="text-lg font-semibold text-white">Performance Insights</h2>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Best Performing Post -->
+      <% if @performance_data[:top_posts].any? %>
+        <% best_post = @performance_data[:top_posts].first %>
+        <div class="bg-[#0a0a0a]/50 border border-[#2a2a2a] rounded-lg p-4">
+          <h3 class="text-white font-medium mb-2">🏆 Best Performing Post</h3>
+          <p class="text-gray-300 text-sm mb-2"><%= best_post[:title] %></p>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-400"><%= format_number(best_post[:views]) %> views</span>
+            <span class="text-green-400"><%= best_post[:engagement_score] %> engagement</span>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Best Performing Page -->
+      <% if @performance_data[:top_pages].any? %>
+        <% best_page = @performance_data[:top_pages].first %>
+        <div class="bg-[#0a0a0a]/50 border border-[#2a2a2a] rounded-lg p-4">
+          <h3 class="text-white font-medium mb-2">📄 Best Performing Page</h3>
+          <p class="text-gray-300 text-sm mb-2"><%= best_page[:title] %></p>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-400"><%= format_number(best_page[:views]) %> views</span>
+            <span class="text-green-400"><%= best_page[:engagement_score] %> engagement</span>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Performance Summary -->
+      <div class="bg-[#0a0a0a]/50 border border-[#2a2a2a] rounded-lg p-4">
+        <h3 class="text-white font-medium mb-2">📊 Performance Summary</h3>
+        <div class="space-y-1 text-xs">
+          <div class="flex justify-between">
+            <span class="text-gray-400">Total posts analyzed</span>
+            <span class="text-white"><%= @performance_data[:top_posts].length %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Total pages analyzed</span>
+            <span class="text-white"><%= @performance_data[:top_pages].length %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Period</span>
+            <span class="text-white"><%= @performance_data[:period] %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <%= link_to admin_content_analytics_engagement_path(period: @period), 
+                  class: "flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+        </svg>
+        Reader Engagement
+      <% end %>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <%= link_to admin_content_analytics_export_path(content_type: 'all', period: @period), 
+                  class: "flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Export All Data
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+/* Pixel Code Preview Styles */
+
+.pixel-preview-body {
+  font-family: 'Monaco', 'Courier New', monospace;
+  background: #0a0a0a;
+  color: #e5e5e5;
+  padding: 20px;
+  margin: 0;
+}
+
+.pixel-preview-header {
+  border-bottom: 2px solid #374151;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.pixel-preview-title {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.pixel-preview-meta {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.pixel-preview-code-block {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.pixel-preview-code {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.pixel-preview-warning {
+  background: #451a03;
+  border: 1px solid #92400e;
+  color: #fbbf24;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 15px 0;
+  font-size: 13px;
+}
+
+
+
+

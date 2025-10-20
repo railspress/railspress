@@ -88,6 +88,78 @@ Authorization: Bearer your-api-token-here
 
 ## Endpoints
 
+### Image Optimization
+
+The Image Optimization API provides comprehensive endpoints for managing image optimization, analytics, and bulk operations.
+
+#### Analytics Overview
+```
+GET /api/v1/image_optimization/analytics
+```
+Returns comprehensive optimization statistics including total optimizations, success rates, and performance metrics.
+
+#### Detailed Report
+```
+GET /api/v1/image_optimization/report
+```
+Returns detailed optimization report with optional date filtering.
+
+#### Failed Optimizations
+```
+GET /api/v1/image_optimization/failed
+```
+Returns list of failed optimizations with pagination.
+
+#### Top Savings
+```
+GET /api/v1/image_optimization/top_savings
+```
+Returns images with the highest optimization savings.
+
+#### User Statistics
+```
+GET /api/v1/image_optimization/user_stats
+```
+Returns optimization statistics by user.
+
+#### Compression Levels
+```
+GET /api/v1/image_optimization/compression_levels
+```
+Returns available compression levels and their usage statistics.
+
+#### Performance Metrics
+```
+GET /api/v1/image_optimization/performance
+```
+Returns detailed performance metrics.
+
+#### Bulk Optimization
+```
+POST /api/v1/image_optimization/bulk_optimize
+```
+Starts bulk optimization of unoptimized images.
+
+#### Regenerate Variants
+```
+POST /api/v1/image_optimization/regenerate_variants
+```
+Regenerates variants for a specific image.
+
+#### Clear Logs
+```
+DELETE /api/v1/image_optimization/clear_logs
+```
+Clears all optimization logs (requires confirmation).
+
+#### Export Data
+```
+GET /api/v1/image_optimization/export
+```
+Exports optimization data as CSV.
+
+**For detailed documentation, see [Image Optimization API](IMAGE_OPTIMIZATION_API.md)**
+
 ### Authentication
 
 #### Login

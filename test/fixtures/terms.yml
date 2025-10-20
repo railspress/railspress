@@ -1,78 +1,52 @@
-# Default terms matching WordPress structure
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 uncategorized:
-  taxonomy: category
-  name: Uncategorized
-  slug: uncategorized
-  description: Posts without a specific category
-  count: 0
-  parent: null
+  id: 1
+  name: "Uncategorized"
+  slug: "uncategorized"
+  description: "Default category for posts"
+  taxonomy_id: 1
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
 
-# Test category terms
 technology:
-  taxonomy: category
-  name: Technology
-  slug: technology
-  description: Technology related posts
-  count: 0
-  parent: null
+  id: 2
+  name: "Technology"
+  slug: "technology"
+  description: "Posts about technology"
+  taxonomy_id: 1
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
 
 programming:
-  taxonomy: category
-  name: Programming
-  slug: programming
-  description: Programming tutorials
-  count: 0
-  parent: technology
+  id: 3
+  name: "Programming"
+  slug: "programming"
+  description: "Posts about programming"
+  taxonomy_id: 1
+  parent_id: 2
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
 
-ruby:
-  taxonomy: category
-  name: Ruby
-  slug: ruby
-  description: Ruby programming
-  count: 0
-  parent: programming
+ruby_tag:
+  id: 4
+  name: "Ruby"
+  slug: "ruby"
+  description: "Posts tagged with Ruby"
+  taxonomy_id: 2
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
 
-# Test tag terms
 rails_tag:
-  taxonomy: tag
-  name: rails
-  slug: rails
-  description: Ruby on Rails
-  count: 0
-  parent: null
-
-webdev_tag:
-  taxonomy: tag
-  name: webdev
-  slug: webdev
-  description: Web development
-  count: 0
-  parent: null
-
-tutorial_tag:
-  taxonomy: tag
-  name: tutorial
-  slug: tutorial
-  description: Tutorial posts
-  count: 0
-  parent: null
-
-# Test topic terms (custom taxonomy)
-design_topic:
-  taxonomy: topics
-  name: Design
-  slug: design
-  description: Design topics
-  count: 0
-  parent: null
-
-development_topic:
-  taxonomy: topics
-  name: Development
-  slug: development
-  description: Development topics
-  count: 0
-  parent: null
-
-
+  id: 5
+  name: "Rails"
+  slug: "rails"
+  description: "Posts tagged with Rails"
+  taxonomy_id: 2
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>

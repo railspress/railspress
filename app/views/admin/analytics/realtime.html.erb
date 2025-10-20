@@ -1,0 +1,220 @@
+<% content_for :page_title, "Real-time Analytics" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="max-w-7xl mx-auto space-y-6" data-controller="realtime-page">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-white">Real-time Analytics</h1>
+      <p class="text-gray-400 mt-1">Live visitor activity and geographic insights</p>
+    </div>
+    
+    <div class="flex items-center space-x-3">
+      <%= link_to "← Back to Analytics", admin_analytics_path, 
+          class: "px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors" %>
+      <div class="flex items-center space-x-2">
+        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <span class="text-sm text-green-400 font-medium">Live</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time Overview -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-green-100 text-sm font-medium mb-1">Active Users Now</p>
+          <p class="text-3xl font-bold text-white" data-realtime-analytics-target="activeUsers">
+            <%= @current_pageviews || 0 %>
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-blue-100 text-sm font-medium mb-1">Pageviews (Live)</p>
+          <p class="text-3xl font-bold text-white" data-realtime-analytics-target="pageviewsHour">
+            <%= Pageview.where(created_at: 10.minutes.ago..Time.current).count %>
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-purple-100 text-sm font-medium mb-1">Unique Sessions</p>
+          <p class="text-3xl font-bold text-white" data-realtime-analytics-target="uniqueSessions">
+            <%= Pageview.where(created_at: 10.minutes.ago..Time.current).distinct.count(:session_id) %>
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-orange-100 text-sm font-medium mb-1">Countries Active</p>
+          <p class="text-3xl font-bold text-white" data-realtime-analytics-target="activeCountries">
+            <%= Pageview.where(created_at: 10.minutes.ago..Time.current).where.not(country_name: [nil, '']).distinct.count(:country_name) %>
+          </p>
+        </div>
+        <div class="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Geographic Map and Live Activity -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- World Map -->
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Geographic Distribution</h3>
+        <span class="text-sm text-gray-400">Live visitors</span>
+      </div>
+      <div class="h-80 bg-gray-700/30 rounded-lg flex items-center justify-center">
+        <div class="text-center">
+          <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-gray-400">Interactive world map</p>
+          <p class="text-sm text-gray-500 mt-1">Showing live visitor locations</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Activity Feed -->
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Live Activity</h3>
+        <span class="text-sm text-gray-400">Live (Last 10 min)</span>
+      </div>
+      <div class="space-y-3 max-h-80 overflow-y-auto" data-realtime-analytics-target="activityFeed">
+        <% if @recent_pageviews&.any? %>
+          <% @recent_pageviews.limit(10).each do |pageview| %>
+            <div class="flex items-center space-x-3 py-2 px-3 bg-gray-700/30 rounded-lg">
+              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-200 truncate">
+                  <%= pageview.path.present? ? pageview.path : 'Homepage' %>
+                </p>
+                <p class="text-xs text-gray-400">
+                  <%= pageview.country_name.present? ? pageview.country_name : 'Unknown location' %> • 
+                  <%= time_ago_in_words(pageview.created_at) %> ago
+                </p>
+              </div>
+              <div class="text-right">
+                <p class="text-xs text-gray-400"><%= pageview.browser.present? ? pageview.browser : 'Unknown' %></p>
+                <p class="text-xs text-gray-500"><%= pageview.device.present? ? pageview.device : 'Unknown' %></p>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-8">
+            <p class="text-gray-400">No recent activity</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Top Pages Right Now -->
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Top Pages (Now)</h3>
+        <span class="text-sm text-gray-400">Live (Last 10 min)</span>
+      </div>
+      <div class="space-y-3">
+        <% Pageview.where(created_at: 10.minutes.ago..Time.current).group(:path).count.sort_by { |_, count| -count }.first(5).each_with_index do |(path, count), index| %>
+          <div class="flex items-center justify-between py-2 px-3 bg-gray-700/30 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <span class="text-xs font-medium text-gray-400 bg-gray-600 px-2 py-1 rounded">#<%= index + 1 %></span>
+              <span class="text-sm text-gray-200 truncate max-w-xs" title="<%= path %>">
+                <%= path.present? ? (path.length > 30 ? "#{path[0..27]}..." : path) : 'Homepage' %>
+              </span>
+            </div>
+            <span class="text-sm font-semibold text-white"><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Active Countries -->
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Active Countries</h3>
+        <span class="text-sm text-gray-400">Live (Last 10 min)</span>
+      </div>
+      <div class="space-y-3">
+        <% Pageview.where(created_at: 10.minutes.ago..Time.current).where.not(country_name: [nil, '']).group(:country_name).count.sort_by { |_, count| -count }.first(5).each_with_index do |(country, count), index| %>
+          <div class="flex items-center justify-between py-2 px-3 bg-gray-700/30 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <span class="text-xs font-medium text-gray-400 bg-gray-600 px-2 py-1 rounded">#<%= index + 1 %></span>
+              <span class="text-sm text-gray-200"><%= country %></span>
+            </div>
+            <span class="text-sm font-semibold text-white"><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Device & Browser Stats -->
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white">Technology (Live)</h3>
+        <span class="text-sm text-gray-400">Live (Last 10 min)</span>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <h4 class="text-sm font-medium text-gray-300 mb-2">Browsers</h4>
+          <div class="space-y-2">
+            <% Pageview.where(created_at: 10.minutes.ago..Time.current).where.not(browser: [nil, '']).group(:browser).count.sort_by { |_, count| -count }.first(3).each do |browser, count| %>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400"><%= browser %></span>
+                <span class="text-xs text-gray-300"><%= count %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-sm font-medium text-gray-300 mb-2">Devices</h4>
+          <div class="space-y-2">
+            <% Pageview.where(created_at: 10.minutes.ago..Time.current).where.not(device: [nil, '']).group(:device).count.sort_by { |_, count| -count }.each do |device, count| %>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400"><%= device %></span>
+                <span class="text-xs text-gray-300"><%= count %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

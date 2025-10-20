@@ -130,12 +130,17 @@ class Admin::PostsController < Admin::BaseController
   # POST /admin/posts or /admin/posts.json
   def create
     @post = current_user.posts.build(post_params)
+    
+    # Handle unique slug generation for untitled posts
+    if params[:post][:generate_unique_slug] == 'true' && @post.slug == 'untitled'
+      @post.slug = generate_unique_untitled_slug
+    end
 
     respond_to do |format|
       if @post.save
         if params[:autosave] == 'true'
           # Autosave response - redirect to edit page for continued editing
-          format.json { render json: { status: 'success', id: @post.id, edit_url: admin_post_path(@post) } }
+          format.json { render json: { status: 'success', id: @post.id, edit_url: admin_post_path(@post), slug: @post.slug } }
         else
           format.html { redirect_to [:admin, @post], notice: "Post was successfully created." }
           format.json { render :show, status: :created, location: @post }
@@ -159,7 +164,7 @@ class Admin::PostsController < Admin::BaseController
       if @post.update(post_params)
         if params[:autosave] == 'true'
           # Autosave response - just return success
-          format.json { render json: { status: 'success', updated_at: @post.updated_at } }
+          format.json { render json: { status: 'success', updated_at: @post.updated_at, slug: @post.slug } }
         else
           format.html { redirect_to [:admin, @post], notice: "Post was successfully updated.", status: :see_other }
           format.json { render :show, status: :ok, location: @post }
@@ -257,6 +262,30 @@ class Admin::PostsController < Admin::BaseController
         :featured_image_file, :password, :password_hint,
         category_ids: [], tag_ids: []
       )
+    end
+    
+    def generate_unique_untitled_slug
+      base_slug = 'untitled'
+      counter = 1
+      
+      loop do
+        candidate_slug = counter == 1 ? base_slug : "#{base_slug}-#{counter}"
+        
+        # Check if slug exists (considering tenant scope if using multi-tenancy)
+        existing_post = current_user.posts.where(slug: candidate_slug).first
+        
+        unless existing_post
+          return candidate_slug
+        end
+        
+        counter += 1
+        
+        # Prevent infinite loop
+        break if counter > 1000
+      end
+      
+      # Fallback to timestamp-based slug if we hit the limit
+      "#{base_slug}-#{Time.current.to_i}"
     end
     
     def posts_json

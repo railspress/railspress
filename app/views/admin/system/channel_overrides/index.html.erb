@@ -1,0 +1,289 @@
+<% content_for :page_title, "#{@channel.name} - Overrides" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2"><%= @channel.name %> - Overrides</h1>
+      <p class="text-gray-400">Manage content overrides and exclusions for this channel</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <%= link_to admin_system_channel_path(@channel), class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Back to Channel
+      <% end %>
+      <%= link_to new_admin_system_channel_channel_override_path(@channel), class: "flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add Override
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Total Overrides</p>
+          <p class="text-2xl font-bold text-white"><%= @overrides.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Active Overrides</p>
+          <p class="text-2xl font-bold text-white"><%= @overrides.enabled.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Data Overrides</p>
+          <p class="text-2xl font-bold text-white"><%= @overrides.overrides.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-400 text-sm">Exclusions</p>
+          <p class="text-2xl font-bold text-white"><%= @overrides.exclusions.count %></p>
+        </div>
+        <div class="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions Bar -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-4 mb-6">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <select id="filter-resource-type" class="px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="">All Resource Types</option>
+          <option value="Post">Posts</option>
+          <option value="Page">Pages</option>
+          <option value="Medium">Media</option>
+          <option value="Setting">Settings</option>
+        </select>
+
+        <select id="filter-kind" class="px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="">All Kinds</option>
+          <option value="override">Overrides</option>
+          <option value="exclude">Exclusions</option>
+        </select>
+
+        <select id="filter-status" class="px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="">All Status</option>
+          <option value="enabled">Active</option>
+          <option value="disabled">Disabled</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <%= form_with url: copy_from_channel_admin_system_channel_channel_overrides_path(@channel), method: :post, local: true, class: "flex items-center gap-2" do |form| %>
+          <%= form.select :source_channel_id, 
+              options_from_collection_for_select(Channel.where.not(id: @channel.id), :id, :name),
+              { prompt: "Copy from channel..." },
+              class: "px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white text-sm" %>
+          <%= form.submit "Copy", class: "px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm" %>
+        <% end %>
+
+        <%= link_to export_admin_system_channel_channel_overrides_path(@channel, format: :json), 
+            class: "flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition text-sm" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Export
+        <% end %>
+
+        <%= form_with url: import_admin_system_channel_channel_overrides_path(@channel), method: :post, local: true, multipart: true, class: "flex items-center gap-2" do |form| %>
+          <%= form.file_field :file, accept: ".json,.yml,.yaml", class: "hidden", id: "import-file" %>
+          <label for="import-file" class="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition text-sm cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            Import
+          </label>
+          <%= form.submit "Upload", class: "hidden", id: "import-submit" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overrides Table -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <% if @overrides.any? %>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-[#2a2a2a]">
+              <th class="text-left text-gray-400 text-sm font-medium py-3 px-4">Resource</th>
+              <th class="text-left text-gray-400 text-sm font-medium py-3">Type</th>
+              <th class="text-left text-gray-400 text-sm font-medium py-3">Path</th>
+              <th class="text-left text-gray-400 text-sm font-medium py-3">Kind</th>
+              <th class="text-left text-gray-400 text-sm font-medium py-3">Data</th>
+              <th class="text-left text-gray-400 text-sm font-medium py-3">Status</th>
+              <th class="text-left text-gray-400 text-sm font-medium py-3">Updated</th>
+              <th class="text-left text-gray-400 text-sm font-medium py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @overrides.each do |override| %>
+              <tr class="border-b border-[#2a2a2a]/50 hover:bg-[#0a0a0a]/50" data-resource-type="<%= override.resource_type %>" data-kind="<%= override.kind %>" data-status="<%= override.enabled? ? 'enabled' : 'disabled' %>">
+                <td class="py-3 px-4">
+                  <div class="text-white text-sm">
+                    <%= override.resource_name %>
+                  </div>
+                  <div class="text-gray-500 text-xs">
+                    ID: <%= override.resource_id %>
+                  </div>
+                </td>
+                <td class="py-3">
+                  <span class="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded">
+                    <%= override.resource_type %>
+                  </span>
+                </td>
+                <td class="py-3">
+                  <code class="text-gray-300 text-sm"><%= override.path %></code>
+                </td>
+                <td class="py-3">
+                  <% if override.is_override? %>
+                    <span class="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded">Override</span>
+                  <% else %>
+                    <span class="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded">Exclude</span>
+                  <% end %>
+                </td>
+                <td class="py-3">
+                  <% if override.is_override? && override.data.present? %>
+                    <div class="max-w-xs">
+                      <pre class="text-gray-300 text-xs bg-[#0a0a0a] border border-[#2a2a2a] rounded p-2 overflow-x-auto"><%= JSON.pretty_generate(override.data) %></pre>
+                    </div>
+                  <% else %>
+                    <span class="text-gray-500 text-sm">-</span>
+                  <% end %>
+                </td>
+                <td class="py-3">
+                  <% if override.enabled? %>
+                    <span class="px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded">Active</span>
+                  <% else %>
+                    <span class="px-2 py-1 bg-gray-500/10 text-gray-400 text-xs rounded">Disabled</span>
+                  <% end %>
+                </td>
+                <td class="py-3 text-gray-400 text-sm">
+                  <%= time_ago_in_words(override.updated_at) %> ago
+                </td>
+                <td class="py-3">
+                  <div class="flex items-center gap-2">
+                    <%= link_to edit_admin_system_channel_channel_override_path(@channel, override), class: "text-blue-400 hover:text-blue-300 text-sm" do %>
+                      Edit
+                    <% end %>
+                    <%= link_to admin_system_channel_channel_override_path(@channel, override), 
+                        method: :delete, 
+                        data: { turbo_confirm: "Are you sure?" },
+                        class: "text-red-400 hover:text-red-300 text-sm" do %>
+                      Delete
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <div class="w-16 h-16 bg-gray-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">No Overrides Yet</h3>
+        <p class="text-gray-400 mb-6">Create your first override to customize content for this channel.</p>
+        <%= link_to new_admin_system_channel_channel_override_path(@channel), class: "inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Create First Override
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const resourceTypeFilter = document.getElementById('filter-resource-type');
+    const kindFilter = document.getElementById('filter-kind');
+    const statusFilter = document.getElementById('filter-status');
+    const rows = document.querySelectorAll('tbody tr');
+
+    function applyFilters() {
+      const resourceType = resourceTypeFilter.value;
+      const kind = kindFilter.value;
+      const status = statusFilter.value;
+
+      rows.forEach(row => {
+        const rowResourceType = row.dataset.resourceType;
+        const rowKind = row.dataset.kind;
+        const rowStatus = row.dataset.status;
+
+        const showRow = (!resourceType || rowResourceType === resourceType) &&
+                       (!kind || rowKind === kind) &&
+                       (!status || rowStatus === status);
+
+        row.style.display = showRow ? '' : 'none';
+      });
+    }
+
+    resourceTypeFilter.addEventListener('change', applyFilters);
+    kindFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+
+    // Import file handling
+    const importFile = document.getElementById('import-file');
+    const importSubmit = document.getElementById('import-submit');
+    
+    if (importFile && importSubmit) {
+      importFile.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          importSubmit.click();
+        }
+      });
+    }
+  });
+</script>
+

@@ -1,0 +1,358 @@
+<% content_for :title, "GDPR Compliance Report" %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-white">GDPR Compliance Report</h1>
+        <p class="mt-2 text-gray-400">Comprehensive compliance status and legal requirements verification</p>
+      </div>
+      <div class="flex space-x-3">
+        <%= link_to admin_gdpr_index_path, class: "bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span>Back to Dashboard</span>
+        <% end %>
+        <%= link_to admin_gdpr_settings_path, class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Settings</span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compliance Status Overview -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <h2 class="text-xl font-semibold text-white mb-6">GDPR Compliance Status</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @gdpr_requirements.each do |requirement, implemented| %>
+        <div class="flex items-center space-x-3 p-4 bg-gray-700 rounded-lg">
+          <div class="flex-shrink-0">
+            <% if implemented %>
+              <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+            <% else %>
+              <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </div>
+            <% end %>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-white"><%= requirement.to_s.humanize %></p>
+            <p class="text-xs text-gray-400">
+              <%= implemented ? 'Fully Implemented' : 'Not Implemented' %>
+            </p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- GDPR Articles Compliance -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <h2 class="text-xl font-semibold text-white mb-6">GDPR Articles Compliance</h2>
+    <div class="space-y-6">
+      <!-- Article 7 - Conditions for consent -->
+      <div class="border-l-4 border-green-500 pl-4">
+        <h3 class="text-lg font-semibold text-white">Article 7 - Conditions for consent</h3>
+        <p class="text-gray-400 mb-2">Implementation: Comprehensive consent management system</p>
+        <ul class="text-sm text-gray-300 space-y-1">
+          <li>✅ Granular consent types (data_processing, marketing, analytics, cookies)</li>
+          <li>✅ Explicit consent recording with timestamps</li>
+          <li>✅ Easy withdrawal mechanism</li>
+          <li>✅ Consent text and context preservation</li>
+          <li>✅ IP address and user agent logging for audit</li>
+        </ul>
+      </div>
+
+      <!-- Article 17 - Right to erasure -->
+      <div class="border-l-4 border-green-500 pl-4">
+        <h3 class="text-lg font-semibold text-white">Article 17 - Right to erasure ('right to be forgotten')</h3>
+        <p class="text-gray-400 mb-2">Implementation: Complete data erasure workflow</p>
+        <ul class="text-sm text-gray-300 space-y-1">
+          <li>✅ Two-step confirmation process for safety</li>
+          <li>✅ Comprehensive data anonymization and deletion</li>
+          <li>✅ Admin account protection</li>
+          <li>✅ Audit trail preservation</li>
+          <li>✅ Backup creation before erasure</li>
+          <li>✅ Background processing for large datasets</li>
+        </ul>
+      </div>
+
+      <!-- Article 20 - Right to data portability -->
+      <div class="border-l-4 border-green-500 pl-4">
+        <h3 class="text-lg font-semibold text-white">Article 20 - Right to data portability</h3>
+        <p class="text-gray-400 mb-2">Implementation: Complete data export system</p>
+        <ul class="text-sm text-gray-300 space-y-1">
+          <li>✅ Machine-readable JSON format</li>
+          <li>✅ Complete user data export</li>
+          <li>✅ Secure token-based download</li>
+          <li>✅ Comprehensive data categories</li>
+          <li>✅ Metadata and audit information</li>
+          <li>✅ Automatic file cleanup after 7 days</li>
+        </ul>
+      </div>
+
+      <!-- Article 25 - Data protection by design and by default -->
+      <div class="border-l-4 border-green-500 pl-4">
+        <h3 class="text-lg font-semibold text-white">Article 25 - Data protection by design and by default</h3>
+        <p class="text-gray-400 mb-2">Implementation: Privacy-first architecture</p>
+        <ul class="text-sm text-gray-300 space-y-1">
+          <li>✅ Built-in privacy controls</li>
+          <li>✅ Default privacy-friendly settings</li>
+          <li>✅ Data minimization principles</li>
+          <li>✅ Security by design architecture</li>
+          <li>✅ Automated compliance features</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Dashboard -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Total Users</p>
+          <p class="text-2xl font-semibold text-white"><%= @compliance_stats[:total_users] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Users with Consent</p>
+          <p class="text-2xl font-semibold text-white"><%= @compliance_stats[:users_with_consent] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Pending Requests</p>
+          <p class="text-2xl font-semibold text-white"><%= @compliance_stats[:pending_requests] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Completed Requests</p>
+          <p class="text-2xl font-semibold text-white"><%= @compliance_stats[:completed_requests] %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consent Types Breakdown -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <h3 class="text-lg font-semibold text-white mb-4">Consent Types Distribution</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <% @compliance_stats[:consent_types].each do |consent_type, count| %>
+        <div class="bg-gray-700 rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-white"><%= consent_type.titleize %></p>
+              <p class="text-2xl font-semibold text-blue-400"><%= count %></p>
+            </div>
+            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <h3 class="text-lg font-semibold text-white mb-4">Recent GDPR Activity (Last 7 Days)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-white">Export Requests</p>
+            <p class="text-xl font-semibold text-blue-400"><%= @compliance_stats[:recent_activity][:exports_last_7_days] %></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-white">Erasure Requests</p>
+            <p class="text-xl font-semibold text-red-400"><%= @compliance_stats[:recent_activity][:erasures_last_7_days] %></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-700 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-white">Consent Changes</p>
+            <p class="text-xl font-semibold text-green-400"><%= @compliance_stats[:recent_activity][:consent_changes_last_7_days] %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legal Compliance Checklist -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <h3 class="text-lg font-semibold text-white mb-4">Legal Compliance Checklist</h3>
+    <div class="space-y-4">
+      <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">Data Subject Rights Implementation</p>
+          <p class="text-xs text-gray-400">Right to access, rectification, erasure, portability, and objection</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">Consent Management System</p>
+          <p class="text-xs text-gray-400">Granular consent types with easy withdrawal mechanism</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">Data Protection by Design</p>
+          <p class="text-xs text-gray-400">Privacy-first architecture with built-in controls</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">Audit Trail and Logging</p>
+          <p class="text-xs text-gray-400">Complete audit trail for all GDPR operations</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
+        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">API Endpoints for Automation</p>
+          <p class="text-xs text-gray-400">REST and GraphQL APIs for automated compliance</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Format Compliance -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+    <h3 class="text-lg font-semibold text-white mb-4">Export Format Compliance</h3>
+    <div class="bg-gray-700 rounded-lg p-4 mb-4">
+      <h4 class="text-sm font-medium text-white mb-2">✅ Machine-Readable Format (Article 20)</h4>
+      <p class="text-xs text-gray-400 mb-3">All exports are provided in structured JSON format for easy processing and portability.</p>
+      <div class="bg-gray-800 rounded p-3">
+        <pre class="text-xs text-gray-300"><code>{
+  "request_info": {
+    "requested_at": "2024-01-15T10:30:00Z",
+    "email": "user@example.com",
+    "export_date": "2024-01-15T10:30:00Z"
+  },
+  "user_profile": { ... },
+  "posts": [ ... ],
+  "comments": [ ... ],
+  "metadata": { ... }
+}</code></pre>
+      </div>
+    </div>
+    
+    <div class="bg-gray-700 rounded-lg p-4">
+      <h4 class="text-sm font-medium text-white mb-2">✅ Complete Data Categories</h4>
+      <p class="text-xs text-gray-400">Exports include all personal data categories as required by GDPR:</p>
+      <ul class="text-xs text-gray-300 mt-2 space-y-1">
+        <li>• User profile and account information</li>
+        <li>• Content data (posts, pages, comments)</li>
+        <li>• Communication data (email interactions)</li>
+        <li>• Analytics and usage data</li>
+        <li>• Consent records and preferences</li>
+        <li>• GDPR request history</li>
+      </ul>
+    </div>
+  </div>
+</div>

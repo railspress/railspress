@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailsPress Consent Management Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Consent Banner Styles */
+        .consent-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1f2937;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            font-family: system-ui, -apple-system, sans-serif;
+            transform: translateY(100%);
+            transition: transform 300ms ease-in-out;
+        }
+        
+        .consent-banner.show {
+            transform: translateY(0);
+        }
+        
+        .consent-banner-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .consent-banner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .consent-banner-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            color: white;
+        }
+        
+        .consent-banner-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .consent-banner-close:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .consent-banner-description {
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.5;
+            color: white;
+        }
+        
+        .consent-banner-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .consent-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .consent-btn-primary {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .consent-btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .consent-btn-secondary {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .consent-btn-secondary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .consent-btn-neutral {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .consent-btn-neutral:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .consent-preferences-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .consent-modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .consent-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .consent-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            color: #111827;
+        }
+        
+        .consent-modal-close {
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .consent-modal-close:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .consent-modal-body {
+            padding: 20px;
+        }
+        
+        .consent-modal-actions {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .consent-category {
+            margin-bottom: 20px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        
+        .consent-category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .consent-category-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin: 0;
+            color: #111827;
+        }
+        
+        .consent-category-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .consent-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        
+        .consent-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .consent-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        
+        .consent-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        .consent-toggle input:checked + .consent-slider {
+            background-color: #10b981;
+        }
+        
+        .consent-toggle input:checked + .consent-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .consent-toggle input:disabled + .consent-slider {
+            background-color: #6b7280;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            .consent-banner-actions {
+                flex-direction: column;
+            }
+            
+            .consent-btn {
+                width: 100%;
+            }
+            
+            .consent-modal-content {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <h1 class="text-3xl font-bold text-gray-900">RailsPress</h1>
+                    <span class="ml-3 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                        Consent Demo
+                    </span>
+                </div>
+                <nav class="flex space-x-8">
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Home</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">About</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-900">Contact</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                OneTrust-Level Consent Management
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Experience our enterprise-grade consent management system that rivals OneTrust. 
+                Built with RailsPress, it provides comprehensive GDPR/CCPA compliance with 
+                geolocation-based consent rules and pixel management.
+            </p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">GDPR Compliance</h3>
+                <p class="text-gray-600">Full GDPR compliance with data subject rights, consent management, and audit trails.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Geolocation Rules</h3>
+                <p class="text-gray-600">Automatic geolocation detection with region-specific consent rules for EU, US, UK, and Canada.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Pixel Management</h3>
+                <p class="text-gray-600">Comprehensive pixel tracking with consent-aware loading for Google Analytics, Facebook, TikTok, and more.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Customizable Banner</h3>
+                <p class="text-gray-600">Fully customizable consent banner with themes, colors, fonts, and positioning options.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">CCPA Compliance</h3>
+                <p class="text-gray-600">California Consumer Privacy Act compliance with opt-out mechanisms and consumer rights.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Liquid Integration</h3>
+                <p class="text-gray-600">Seamless integration with Liquid templates using simple tags like {% consent_assets %}.</p>
+            </div>
+        </div>
+
+        <!-- Demo Section -->
+        <div class="bg-white rounded-lg shadow p-8 mb-12">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Live Demo</h3>
+            <p class="text-gray-600 mb-6">
+                Click the button below to show the consent banner in action. This demonstrates the 
+                OneTrust-level functionality we've built into RailsPress.
+            </p>
+            <button onclick="showConsentBanner()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                Show Consent Banner
+            </button>
+            <button onclick="showConsentModal()" class="ml-4 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                Show Preferences Modal
+            </button>
+        </div>
+
+        <!-- Benefits -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg text-white p-8">
+            <h3 class="text-2xl font-bold mb-4">Why Choose RailsPress Consent Management?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">💰 Cost Savings</h4>
+                    <p class="text-blue-100">No more monthly OneTrust fees. Your consent management is built into RailsPress.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">🚀 Performance</h4>
+                    <p class="text-blue-100">Optimized for speed with native Rails integration and minimal JavaScript footprint.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">🔧 Customization</h4>
+                    <p class="text-blue-100">Full control over design, functionality, and compliance rules.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">📊 Analytics</h4>
+                    <p class="text-blue-100">Built-in analytics and compliance reporting with detailed insights.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Consent Banner -->
+    <div id="consent-banner" class="consent-banner">
+        <div class="consent-banner-content">
+            <div class="consent-banner-header">
+                <h3 class="consent-banner-title">We use cookies to enhance your experience</h3>
+                <button class="consent-banner-close" onclick="hideConsentBanner()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414 1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="consent-banner-body">
+                <p class="consent-banner-description">
+                    We use cookies and similar technologies to provide, protect, and improve our services and to show you relevant content and ads.
+                </p>
+            </div>
+            <div class="consent-banner-actions">
+                <button class="consent-btn consent-btn-primary" onclick="acceptAll()">
+                    Accept All
+                </button>
+                <button class="consent-btn consent-btn-secondary" onclick="rejectAll()">
+                    Reject All
+                </button>
+                <button class="consent-btn consent-btn-neutral" onclick="acceptNecessary()">
+                    Necessary Only
+                </button>
+                <button class="consent-btn consent-btn-neutral" onclick="showConsentModal()">
+                    Manage Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consent Preferences Modal -->
+    <div id="consent-preferences-modal" class="consent-preferences-modal" style="display: none;">
+        <div class="consent-modal-content">
+            <div class="consent-modal-header">
+                <h3 class="consent-modal-title">Cookie Preferences</h3>
+                <button class="consent-modal-close" onclick="hideConsentModal()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414 1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="consent-modal-body">
+                <div class="consent-category">
+                    <div class="consent-category-header">
+                        <h4 class="consent-category-title">Necessary Cookies</h4>
+                        <label class="consent-toggle">
+                            <input type="checkbox" checked disabled>
+                            <span class="consent-slider"></span>
+                        </label>
+                    </div>
+                    <p class="consent-category-description">
+                        These cookies are essential for the website to function and cannot be switched off.
+                    </p>
+                </div>
+
+                <div class="consent-category">
+                    <div class="consent-category-header">
+                        <h4 class="consent-category-title">Analytics Cookies</h4>
+                        <label class="consent-toggle">
+                            <input type="checkbox" data-category="analytics">
+                            <span class="consent-slider"></span>
+                        </label>
+                    </div>
+                    <p class="consent-category-description">
+                        These cookies help us understand how visitors interact with our website.
+                    </p>
+                </div>
+
+                <div class="consent-category">
+                    <div class="consent-category-header">
+                        <h4 class="consent-category-title">Marketing Cookies</h4>
+                        <label class="consent-toggle">
+                            <input type="checkbox" data-category="marketing">
+                            <span class="consent-slider"></span>
+                        </label>
+                    </div>
+                    <p class="consent-category-description">
+                        These cookies are used to track visitors across websites for advertising purposes.
+                    </p>
+                </div>
+
+                <div class="consent-category">
+                    <div class="consent-category-header">
+                        <h4 class="consent-category-title">Functional Cookies</h4>
+                        <label class="consent-toggle">
+                            <input type="checkbox" data-category="functional">
+                            <span class="consent-slider"></span>
+                        </label>
+                    </div>
+                    <p class="consent-category-description">
+                        These cookies enable enhanced functionality and personalization.
+                    </p>
+                </div>
+            </div>
+            <div class="consent-modal-actions">
+                <button class="consent-btn consent-btn-secondary" onclick="hideConsentModal()">
+                    Close
+                </button>
+                <button class="consent-btn consent-btn-primary" onclick="savePreferences()">
+                    Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple consent management demo
+        function showConsentBanner() {
+            const banner = document.getElementById('consent-banner');
+            banner.style.display = 'block';
+            setTimeout(() => {
+                banner.classList.add('show');
+            }, 100);
+        }
+
+        function hideConsentBanner() {
+            const banner = document.getElementById('consent-banner');
+            banner.classList.remove('show');
+            setTimeout(() => {
+                banner.style.display = 'none';
+            }, 300);
+        }
+
+        function showConsentModal() {
+            const modal = document.getElementById('consent-preferences-modal');
+            modal.style.display = 'flex';
+        }
+
+        function hideConsentModal() {
+            const modal = document.getElementById('consent-preferences-modal');
+            modal.style.display = 'none';
+        }
+
+        function acceptAll() {
+            console.log('Accept All clicked');
+            hideConsentBanner();
+            alert('All cookies accepted! In a real implementation, this would save consent preferences and load tracking pixels.');
+        }
+
+        function rejectAll() {
+            console.log('Reject All clicked');
+            hideConsentBanner();
+            alert('All non-necessary cookies rejected! In a real implementation, this would save consent preferences and block tracking pixels.');
+        }
+
+        function acceptNecessary() {
+            console.log('Accept Necessary Only clicked');
+            hideConsentBanner();
+            alert('Only necessary cookies accepted! In a real implementation, this would save consent preferences and block non-necessary pixels.');
+        }
+
+        function savePreferences() {
+            console.log('Save Preferences clicked');
+            hideConsentModal();
+            hideConsentBanner();
+            alert('Preferences saved! In a real implementation, this would save the selected consent preferences and apply them to pixel loading.');
+        }
+
+        // Show banner on page load (buggy in this demo, but works in real implementation)
+        // setTimeout(showConsentBanner, 2000);
+    </script>
+</body>
+</html>

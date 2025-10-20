@@ -7,8 +7,8 @@ class AddTenantIdToModels < ActiveRecord::Migration[7.1]
     add_reference :comments, :tenant, foreign_key: true, index: true
     
     # Add tenant_id to taxonomy models
-    add_reference :categories, :tenant, foreign_key: true, index: true
-    add_reference :tags, :tenant, foreign_key: true, index: true
+    add_reference :categories, :tenant, foreign_key: true, index: true if table_exists?(:categories)
+    add_reference :tags, :tenant, foreign_key: true, index: true if table_exists?(:tags)
     add_reference :taxonomies, :tenant, foreign_key: true, index: true
     add_reference :terms, :tenant, foreign_key: true, index: true
     

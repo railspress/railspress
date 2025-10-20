@@ -1,0 +1,220 @@
+<% content_for :title, "GDPR Audit Log" %>
+
+<div class="min-h-screen bg-gray-900">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-white">GDPR Audit Log</h1>
+          <p class="mt-2 text-gray-400">Track all GDPR-related activities and compliance actions</p>
+        </div>
+        <div class="flex space-x-3">
+          <%= link_to admin_gdpr_users_path, class: "bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors" do %>
+            <i class="fas fa-users mr-2"></i>
+            Manage Users
+          <% end %>
+          <%= link_to admin_gdpr_compliance_path, class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" do %>
+            <i class="fas fa-shield-alt mr-2"></i>
+            Compliance
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-gray-800 rounded-lg p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Action Filter</label>
+          <%= form_with url: admin_gdpr_audit_path, method: :get, local: true, class: "flex" do |form| %>
+            <%= form.select :action_filter, 
+                options_for_select([
+                  ['All Actions', ''],
+                  ['Data Export', 'export'],
+                  ['Data Erasure', 'erasure'],
+                  ['Consent Changes', 'consent'],
+                  ['User Access', 'access']
+                ], params[:action_filter]),
+                {},
+                { class: "bg-gray-700 text-white border-gray-600 rounded-lg px-3 py-2 w-full" } %>
+            <%= form.submit "Filter", class: "ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" %>
+          <% end %>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">User Search</label>
+          <%= form_with url: admin_gdpr_audit_path, method: :get, local: true, class: "flex" do |form| %>
+            <%= form.text_field :user_search, 
+                value: params[:user_search],
+                placeholder: "Search by email...",
+                class: "bg-gray-700 text-white border-gray-600 rounded-lg px-3 py-2 w-full" %>
+            <%= form.submit "Search", class: "ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" %>
+          <% end %>
+        </div>
+        
+        <div class="flex items-end">
+          <%= link_to admin_gdpr_audit_path, class: "bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors" do %>
+            <i class="fas fa-refresh mr-2"></i>
+            Clear Filters
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audit Log -->
+    <div class="bg-gray-800 rounded-lg">
+      <div class="px-6 py-4 border-b border-gray-700">
+        <h2 class="text-xl font-semibold text-white">Audit Entries</h2>
+        <p class="text-gray-400">Recent GDPR-related activities</p>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Timestamp</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">User</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Action</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Details</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">IP Address</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody class="bg-gray-800 divide-y divide-gray-700">
+            <% if @audit_entries.any? %>
+              <% @audit_entries.each do |entry| %>
+                <tr class="hover:bg-gray-700">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <%= entry[:timestamp]&.strftime("%Y-%m-%d %H:%M:%S") || "-" %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-white"><%= entry[:user_email] %></div>
+                    <div class="text-sm text-gray-400"><%= entry[:user_name] %></div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                      <%= case entry[:action]
+                          when /export/i then 'bg-blue-100 text-blue-800'
+                          when /erasure/i then 'bg-red-100 text-red-800'
+                          when /consent/i then 'bg-green-100 text-green-800'
+                          when /access/i then 'bg-purple-100 text-purple-800'
+                          else 'bg-gray-100 text-gray-800'
+                          end %>">
+                      <%= entry[:action] %>
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-300">
+                    <%= truncate(entry[:details], length: 100) if entry[:details] %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <%= entry[:ip_address] %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                      <%= case entry[:status]
+                          when 'success' then 'bg-green-100 text-green-800'
+                          when 'failed' then 'bg-red-100 text-red-800'
+                          when 'pending' then 'bg-yellow-100 text-yellow-800'
+                          else 'bg-gray-100 text-gray-800'
+                          end %>">
+                      <%= entry[:status]&.humanize || "-" %>
+                    </span>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="6" class="px-6 py-4 text-center text-gray-400">
+                  No audit entries found
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="px-6 py-4 border-t border-gray-700">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-400">
+            Showing <%= @audit_entries.length %> entries
+          </div>
+          <div class="flex space-x-2">
+            <% if params[:page].to_i > 1 %>
+              <%= link_to admin_gdpr_audit_path(page: params[:page].to_i - 1), 
+                  class: "bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition-colors" do %>
+                <i class="fas fa-chevron-left"></i> Previous
+              <% end %>
+            <% end %>
+            <% if @audit_entries.length >= 50 %>
+              <%= link_to admin_gdpr_audit_path(page: (params[:page] || 1).to_i + 1), 
+                  class: "bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition-colors" do %>
+                Next <i class="fas fa-chevron-right"></i>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+      <div class="bg-gray-800 rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i class="fas fa-download text-blue-400 text-2xl"></i>
+          </div>
+          <div class="ml-4">
+            <div class="text-sm font-medium text-gray-400">Total Exports</div>
+            <div class="text-2xl font-semibold text-white">
+              <%= @audit_stats[:total_exports] %>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-800 rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i class="fas fa-trash text-red-400 text-2xl"></i>
+          </div>
+          <div class="ml-4">
+            <div class="text-sm font-medium text-gray-400">Total Erasures</div>
+            <div class="text-2xl font-semibold text-white">
+              <%= @audit_stats[:total_erasures] %>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-800 rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i class="fas fa-check-circle text-green-400 text-2xl"></i>
+          </div>
+          <div class="ml-4">
+            <div class="text-sm font-medium text-gray-400">Consent Records</div>
+            <div class="text-2xl font-semibold text-white">
+              <%= @audit_stats[:total_consents] %>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-gray-800 rounded-lg p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <i class="fas fa-clock text-yellow-400 text-2xl"></i>
+          </div>
+          <div class="ml-4">
+            <div class="text-sm font-medium text-gray-400">Pending Requests</div>
+            <div class="text-2xl font-semibold text-white">
+              <%= @audit_stats[:pending_requests] %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

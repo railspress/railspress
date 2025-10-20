@@ -1,16 +1,16 @@
 FactoryBot.define do
   factory :ai_agent do
-    name { "MyString" }
-    description { "MyText" }
-    agent_type { "MyString" }
-    prompt { "MyText" }
-    content { "MyText" }
-    guidelines { "MyText" }
-    rules { "MyText" }
-    tasks { "MyText" }
-    master_prompt { "MyText" }
-    ai_provider { nil }
-    active { false }
+    name { "Content Summarizer" }
+    description { "Summarizes content" }
+    agent_type { "content_summarizer" }
+    prompt { "Summarize the following content:" }
+    content { "Content guidelines" }
+    guidelines { "Guidelines for summarization" }
+    rules { "Rules for summarization" }
+    tasks { "Tasks for summarization" }
+    master_prompt { "Master prompt" }
+    association :ai_provider
+    active { true }
     position { 1 }
   end
 end

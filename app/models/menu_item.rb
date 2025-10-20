@@ -23,6 +23,7 @@ class MenuItem < ApplicationRecord
   private
   
   def set_position
+    return unless menu.present?
     self.position ||= (menu.menu_items.maximum(:position) || 0) + 1
   end
 end

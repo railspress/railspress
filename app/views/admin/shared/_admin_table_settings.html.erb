@@ -3,7 +3,18 @@
 {
   "adminTable": {
     "tableType": "<%= table_type %>",
-    "url": "<%= send("admin_#{table_type.pluralize}_path") %>",
+    "url": "<%= case table_type
+      when 'channel'
+        admin_system_channels_path
+      when 'channel_override'
+        admin_system_channel_channel_overrides_path(@channel || Channel.first)
+      else
+        begin
+          send("admin_#{table_type.pluralize}_path")
+        rescue NoMethodError
+          '#'
+        end
+      end %>",
     "columns": <%= raw columns.to_json %>,
     "data": <%= raw data.to_json %>,
     "searchPlaceholder": "<%= search_placeholder || "Search #{table_type.pluralize}..." %>",

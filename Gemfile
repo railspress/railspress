@@ -49,6 +49,16 @@ gem "ferrum"
 # Use Redis adapter to run Action Cable in production
 gem "redis", ">= 4.0.1"
 
+# Geolocation services
+gem "maxminddb"
+gem "geocoder"
+gem "http"
+
+# Chart.js for analytics
+gem "chartjs-rails"
+
+# Background job processing
+
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 gem "kredis"
 
@@ -75,6 +85,10 @@ gem "bootsnap", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
+
+# Image optimization gems
+gem "image_optim", "~> 0.31"  # For lossless compression
+gem "mini_magick", "~> 4.12"  # Alternative image processor
 
 # Soft deletes
 gem "discard"
@@ -154,6 +168,7 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "faker"
   gem "capybara"
+  gem "shoulda-matchers"
   
   # Security auditing
   gem "brakeman"
@@ -182,5 +197,8 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+  
+  # Hot reloading for CSS/JS changes without asset recompilation
+  gem "hotwire-livereload"
 end
 

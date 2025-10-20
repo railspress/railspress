@@ -29,9 +29,19 @@ require_relative '../app/middleware/redirect_handler'
 require_relative '../app/middleware/analytics_tracker'
 require_relative '../app/middleware/headless_mode_handler'
 require_relative '../app/middleware/allow_iframe_for_logs'
+require_relative '../app/middleware/channel_detection_middleware'
 
 module Railspress
   class Application < Rails::Application
+    config.active_record.query_log_tags_enabled = true
+    config.active_record.query_log_tags = [
+      # Rails query log tags:
+      :application, :controller, :action, :job,
+      # GraphQL-Ruby query log tags:
+      current_graphql_operation: -> { GraphQL::Current.operation_name },
+      current_graphql_field: -> { GraphQL::Current.field&.path },
+      current_dataloader_source: -> { GraphQL::Current.dataloader_source_class },
+    ]
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
 
@@ -65,6 +75,9 @@ module Railspress
     
     # Middleware for Analytics Tracking
     config.middleware.use AnalyticsTracker
+    
+    # Middleware for Channel Detection (auto-detect device and set channel)
+    config.middleware.use Railspress::ChannelDetectionMiddleware
     
     # Middleware for Logster iframe support
     config.middleware.use AllowIframeForLogs

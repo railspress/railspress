@@ -5,7 +5,7 @@ module Api
       
       # GET /api/v1/pages
       def index
-        pages = Page.includes(:user, :children)
+        pages = Page.all
         
         # Filter by status
         pages = pages.where(status: params[:status]) if params[:status].present?
@@ -15,6 +15,26 @@ module Api
         
         # Root pages only
         pages = pages.root_pages if params[:root_only] == 'true'
+        
+        # Filter by channel
+        if params[:channel].present?
+          channel = Channel.find_by(slug: params[:channel])
+          if channel
+            # Get pages assigned to this channel or global pages (no channel assignment)
+            pages = pages.left_joins(:channels)
+                         .where('channels.id = ? OR channels.id IS NULL', channel.id)
+            
+            # Apply channel exclusions
+            excluded_page_ids = channel.channel_overrides
+                                       .exclusions
+                                       .enabled
+                                       .where(resource_type: 'Page')
+                                       .pluck(:resource_id)
+            pages = pages.where.not(id: excluded_page_ids) if excluded_page_ids.any?
+            
+            @current_channel = channel
+          end
+        end
         
         # Only published for non-authenticated or non-admin users
         unless current_api_user&.can_edit_others_posts?
@@ -32,6 +52,11 @@ module Api
       
       # GET /api/v1/pages/:id
       def show
+        # Set current channel if channel parameter is provided
+        if params[:channel].present?
+          @current_channel = Channel.find_by(slug: params[:channel])
+        end
+        
         render_success(page_serializer(@page, detailed: true))
       end
       
@@ -92,45 +117,59 @@ module Api
       end
       
       def page_serializer(page, detailed: false)
-        data = {
+        # Get channel slugs for this page
+        channel_slugs = page.channels.pluck(:slug)
+        
+        # Start with basic page data
+        page_data = {
           id: page.id,
           title: page.title,
           slug: page.slug,
           status: page.status,
-          order: page.order,
-          template: page.template,
-          published_at: page.published_at,
-          created_at: page.created_at,
-          updated_at: page.updated_at,
-          author: {
-            id: page.user.id,
-            email: page.user.email
-          },
-          parent: page.parent ? { id: page.parent.id, title: page.parent.title, slug: page.parent.slug } : nil,
-          children_count: page.children.count,
-          breadcrumbs: page.breadcrumbs.map { |b| { title: b.title, slug: b.slug } },
-          meta: {
-            description: page.meta_description,
-            keywords: page.meta_keywords
-          },
-          url: page_url(page.slug)
+          channels: channel_slugs,
+          channel_context: @current_channel&.slug
         }
         
+        # Add detailed fields if requested
         if detailed
-          data.merge!(
-            content: page.content.to_s,
-            children: page.children.map { |c| { id: c.id, title: c.title, slug: c.slug } }
-          )
+          page_data.merge!({
+            content: page.content,
+            published_at: page.published_at,
+            parent_id: page.parent_id,
+            order: page.order,
+            template: page.template,
+            created_at: page.created_at,
+            updated_at: page.updated_at,
+            url: Rails.application.routes.url_helpers.page_url(page, host: request.host)
+          })
         end
         
-        data
+        # Apply channel overrides if current channel is set
+        if @current_channel
+          original_data = page_data.dup
+          overridden_data, provenance = @current_channel.apply_overrides_to_data(
+            original_data, 
+            'Page', 
+            page.id, 
+            true
+          )
+          
+          # Merge overridden data
+          page_data.merge!(overridden_data)
+          
+          # Add provenance information
+          page_data[:provenance] = provenance if provenance.present?
+        end
+        
+        page_data
       end
       
       def filter_meta
         {
           status: params[:status],
           parent_id: params[:parent_id],
-          root_only: params[:root_only]
+          root_only: params[:root_only],
+          channel: params[:channel]
         }
       end
     end

@@ -1,4 +1,6 @@
 class Admin::PluginsController < Admin::BaseController
+  include PluginSettingsHelper
+  
   before_action :ensure_admin
   before_action :set_plugin, only: [:show, :edit, :update, :destroy, :activate, :deactivate, :settings]
 
@@ -147,13 +149,13 @@ class Admin::PluginsController < Admin::BaseController
 
   # GET /admin/plugins/1/settings
   def settings
-    # Get saved settings from database
-    saved_settings = @plugin.settings || {}
-    
     # Try to load plugin instance to get schema and defaults
     @plugin_instance = load_plugin_instance(@plugin)
     
     if @plugin_instance&.has_settings?
+      # Get saved settings from PluginSetting model
+      saved_settings = @plugin_instance.get_all_settings
+      
       # Get default values from schema
       default_settings = {}
       @plugin_instance.settings_schema.each do |setting|
@@ -164,7 +166,8 @@ class Admin::PluginsController < Admin::BaseController
       @plugin_settings = default_settings.merge(saved_settings)
       @schema = @plugin_instance.settings_schema
     else
-      # Fallback: just use saved settings
+      # Fallback: get settings from plugin's settings attribute
+      saved_settings = @plugin.settings || {}
       @plugin_settings = saved_settings
       @schema = nil
     end
@@ -179,15 +182,24 @@ class Admin::PluginsController < Admin::BaseController
     @plugin_instance = load_plugin_instance(@plugin)
     
     if @plugin_instance&.has_settings?
-      # Validate settings against schema if available
-      # For now, we'll just save the settings
-      # In a more advanced implementation, we could validate types, required fields, etc.
-    end
-    
-    if @plugin.update(settings: new_settings)
-      redirect_to admin_plugins_path, notice: "Plugin settings updated successfully."
+      # Save settings using the plugin's settings system
+      begin
+        new_settings.each do |key, value|
+          @plugin_instance.set_setting(key, value)
+        end
+        
+        redirect_to settings_admin_plugin_path(@plugin), notice: "Plugin settings updated successfully."
+      rescue => e
+        Rails.logger.error "Failed to update plugin settings: #{e.message}"
+        redirect_to settings_admin_plugin_path(@plugin), alert: "Failed to update plugin settings: #{e.message}"
+      end
     else
-      redirect_to settings_admin_plugin_path(@plugin), alert: "Failed to update plugin settings."
+      # Fallback: save to plugin's settings attribute for plugins without schema
+      if @plugin.update(settings: new_settings)
+        redirect_to settings_admin_plugin_path(@plugin), notice: "Plugin settings updated successfully."
+      else
+        redirect_to settings_admin_plugin_path(@plugin), alert: "Failed to update plugin settings."
+      end
     end
   end
 

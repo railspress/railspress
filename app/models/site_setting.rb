@@ -13,14 +13,19 @@ class SiteSetting < ApplicationRecord
   
   # Class methods for easy access
   def self.get(key, default = nil)
-    setting = find_by(key: key)
+    setting = ActsAsTenant.current_tenant ? 
+      where(tenant: ActsAsTenant.current_tenant).find_by(key: key) :
+      find_by(key: key)
     setting ? setting.typed_value : default
   end
   
   def self.set(key, value, setting_type = 'string')
-    setting = find_or_initialize_by(key: key)
+    setting = ActsAsTenant.current_tenant ?
+      where(tenant: ActsAsTenant.current_tenant).find_or_initialize_by(key: key) :
+      find_or_initialize_by(key: key)
     setting.value = value.to_s
     setting.setting_type = setting_type
+    setting.tenant = ActsAsTenant.current_tenant if ActsAsTenant.current_tenant
     setting.save
   end
   

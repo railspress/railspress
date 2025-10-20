@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  if Rails.env.development?
+    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+  end
+  # Mount ActionCable for WebSocket connections
+  mount ActionCable.server => '/cable'
+  
   # Theme assets
   get '/themes/:theme/assets/*path', to: 'theme_assets#show', constraints: { theme: /[a-zA-Z0-9_-]+/ }, format: false
   
@@ -77,12 +83,40 @@ Rails.application.routes.draw do
           post :reject
         end
       end
-      resources :media, only: [:index, :show, :create, :update, :destroy] do
-        member do
-          post :approve
-          post :reject
-        end
+    resources :media, only: [:index, :show, :create, :update, :destroy] do
+      member do
+        post :approve
+        post :reject
       end
+      collection do
+        get :bulk_optimization
+        post :bulk_optimize
+        get :bulk_optimize_status
+        post :regenerate_variants
+        delete :clear_variants
+        get :optimization_report
+      end
+    end
+    
+    # Image Optimization API
+    resources :image_optimization, only: [] do
+      collection do
+        get :analytics
+        get :report
+        get :failed
+        get :top_savings
+        get :user_stats
+        get :compression_levels
+        get :performance
+        post :bulk_optimize
+        post :regenerate_variants
+        delete :clear_logs
+        get :export
+      end
+    end
+    
+    # Content Channels API
+    resources :channels, only: [:index, :show, :create, :update, :destroy]
       
       # Meta Fields API - Must be before other resources to avoid route conflicts
       constraints metable_type: /(posts|pages|users|ai_agents)/ do
@@ -125,7 +159,8 @@ Rails.application.routes.draw do
         end
       end
       
-      resources :media, only: [:index, :show, :create, :update, :destroy]
+        # Simple test route
+        get 'simple', to: 'simple#index'
       
       # User Management
       resources :users do
@@ -183,6 +218,49 @@ Rails.application.routes.draw do
           get 'stats', to: 'subscribers#stats'
         end
       end
+      
+      # GDPR Compliance API
+      namespace :gdpr do
+        get 'data-export/:user_id', to: 'gdpr#export_data', as: :export_data
+        get 'data-export/download/:token', to: 'gdpr#download_export', as: :download_export
+        post 'data-erasure/:user_id', to: 'gdpr#request_erasure', as: :request_erasure
+        post 'data-erasure/confirm/:token', to: 'gdpr#confirm_erasure', as: :confirm_erasure
+        get 'data-portability/:user_id', to: 'gdpr#data_portability', as: :data_portability
+        get 'requests', to: 'gdpr#requests'
+        get 'status/:user_id', to: 'gdpr#status'
+        post 'consent/:user_id', to: 'gdpr#record_consent'
+        delete 'consent/:user_id', to: 'gdpr#withdraw_consent'
+        get 'audit-log', to: 'gdpr#audit_log'
+      end
+      
+      # Consent Management API
+      namespace :consent do
+        get 'configuration', to: 'consent#configuration'
+        get 'region', to: 'consent#region'
+        post '', to: 'consent#create'
+        patch '', to: 'consent#update'
+        delete ':consent_type', to: 'consent#withdraw'
+        get 'status', to: 'consent#status'
+        get 'pixels', to: 'consent#pixels'
+      end
+      
+      # Analytics API
+      namespace :analytics do
+        get 'posts', to: 'analytics#posts_analytics'
+        get 'posts/:id', to: 'analytics#post_analytics'
+        get 'pages', to: 'analytics#pages_analytics'
+        get 'pages/:id', to: 'analytics#page_analytics'
+        get 'overview', to: 'analytics#overview'
+        get 'realtime', to: 'analytics#realtime'
+      end
+      
+      # MCP (Model Context Protocol) API
+      post 'mcp/session/handshake', to: 'mcp#handshake'
+      get 'mcp/tools/list', to: 'mcp#tools_list'
+      post 'mcp/tools/call', to: 'mcp#tools_call'
+      get 'mcp/tools/stream', to: 'mcp#tools_stream'
+      get 'mcp/resources/list', to: 'mcp#resources_list'
+      get 'mcp/prompts/list', to: 'mcp#prompts_list'
     end
   end
   
@@ -203,18 +281,6 @@ Rails.application.routes.draw do
   get '/admin', to: 'admin/dashboard#index'
   
   namespace :admin do
-    get 'terms/index'
-    get 'terms/new'
-    get 'terms/create'
-    get 'terms/edit'
-    get 'terms/update'
-    get 'terms/destroy'
-    get 'taxonomies/index'
-    get 'taxonomies/new'
-    get 'taxonomies/create'
-    get 'taxonomies/edit'
-    get 'taxonomies/update'
-    get 'taxonomies/destroy'
     root 'dashboard#index'
     get 'dashboard', to: 'dashboard#index'
     
@@ -270,6 +336,27 @@ Rails.application.routes.draw do
     resources :media, except: [:show] do
       collection do
         post :bulk_upload
+        get :bulk_optimization
+        post :bulk_optimize
+        get :bulk_optimize_status
+        post :regenerate_variants
+        delete :clear_variants
+        get :optimization_report
+      end
+    end
+    
+    # Image Optimization Analytics
+    resources :image_optimization_analytics, path: 'media/optimization_analytics', only: [:index] do
+      collection do
+        get :report
+        get :failed
+        get :top_savings
+        get :user_stats
+        get :tenant_stats
+        get :compression_levels
+        get :performance
+        delete :clear_logs
+        get :export
       end
     end
     resources :menus do
@@ -431,6 +518,12 @@ Rails.application.routes.draw do
     patch 'settings/storage', to: 'settings#update_storage'
     resources :storage_providers, path: 'settings/storage_providers'
     
+    # MCP Settings
+    get 'settings/mcp', to: 'mcp_settings#show', as: 'mcp_settings'
+    patch 'settings/mcp', to: 'mcp_settings#update'
+    post 'settings/mcp/test_connection', to: 'mcp_settings#test_connection', as: 'test_mcp_connection'
+    post 'settings/mcp/generate_api_key', to: 'mcp_settings#generate_api_key', as: 'generate_mcp_api_key'
+    
     # OAuth settings
     get 'settings/oauth', to: 'oauth#index', as: 'oauth_settings'
     patch 'settings/oauth', to: 'oauth#update'
@@ -441,6 +534,16 @@ Rails.application.routes.draw do
       get 'upload_security', to: 'upload_security#show', as: 'upload_security'
       patch 'upload_security', to: 'upload_security#update'
     end
+
+    # Geolocation Settings
+    get 'settings/geolocation', to: 'geolocation_settings#show', as: 'geolocation_settings'
+    patch 'settings/geolocation', to: 'geolocation_settings#update'
+    post 'settings/geolocation/test_lookup', to: 'geolocation_settings#test_lookup'
+    post 'settings/geolocation/update_maxmind', to: 'geolocation_settings#update_maxmind'
+    post 'settings/geolocation/test_connection', to: 'geolocation_settings#test_connection'
+    post 'settings/geolocation/schedule_auto_update', to: 'geolocation_settings#schedule_auto_update'
+    delete 'settings/geolocation/disable_auto_update', to: 'geolocation_settings#disable_auto_update'
+    get 'settings/geolocation/schedule_status', to: 'geolocation_settings#schedule_status'
     
     # Trash management
     get 'trash', to: 'trash#index', as: 'trash_index'
@@ -496,6 +599,7 @@ Rails.application.routes.draw do
     # Analytics
     get 'analytics', to: 'analytics#index', as: 'analytics'
     get 'analytics/realtime', to: 'analytics#realtime', as: 'analytics_realtime'
+    get 'analytics/insights', to: 'analytics#insights', as: 'analytics_insights'
     get 'analytics/posts', to: 'analytics#posts', as: 'analytics_posts'
     get 'analytics/pages', to: 'analytics#pages', as: 'analytics_pages'
     get 'analytics/countries', to: 'analytics#countries', as: 'analytics_countries'
@@ -503,6 +607,13 @@ Rails.application.routes.draw do
     get 'analytics/referrers', to: 'analytics#referrers', as: 'analytics_referrers'
     get 'analytics/export', to: 'analytics#export', as: 'analytics_export'
     post 'analytics/purge', to: 'analytics#purge', as: 'analytics_purge'
+    
+    # Content Analytics (Medium-like)
+    get 'analytics/posts/:id', to: 'content_analytics#post', as: 'content_analytics_post'
+    get 'analytics/pages/:id', to: 'content_analytics#page', as: 'content_analytics_page'
+    get 'analytics/content/performance', to: 'content_analytics#performance', as: 'content_analytics_performance'
+    get 'analytics/content/engagement', to: 'content_analytics#engagement', as: 'content_analytics_engagement'
+    get 'analytics/content/export', to: 'content_analytics#export', as: 'content_analytics_export'
     
     # Custom Fields (ACF-style)
     resources :field_groups do
@@ -658,6 +769,17 @@ Rails.application.routes.draw do
       patch 'headless', to: 'headless#update'
       post 'headless/test_cors', to: 'headless#test_cors', as: 'test_cors'
       
+      # Content Channels
+      resources :channels do
+        resources :channel_overrides do
+          collection do
+            post :copy_from_channel
+            get :export
+            post :import
+          end
+        end
+      end
+      
       # API Tokens
       resources :api_tokens do
         member do
@@ -666,6 +788,75 @@ Rails.application.routes.draw do
         end
       end
     end
+    
+    # GDPR Compliance Management
+    namespace :gdpr do
+      root 'gdpr#index'
+      get 'index', to: 'gdpr#index'
+      
+      # User management
+      get 'users', to: 'gdpr#users'
+      get 'users/:id', to: 'gdpr#user_data', as: 'user_data'
+      post 'users/:id/export', to: 'gdpr#export_user_data', as: 'export_user_data'
+      post 'users/:id/erase', to: 'gdpr#erase_user_data', as: 'erase_user_data'
+      
+      # Consent management
+      get 'users/:id/consent', to: 'gdpr#user_consent_history', as: 'user_consent_history'
+      post 'users/:id/consent', to: 'gdpr#record_consent'
+      delete 'users/:id/consent/:consent_type', to: 'gdpr#withdraw_consent', as: 'withdraw_consent'
+      
+      # Request management
+      get 'requests', to: 'gdpr#requests'
+      get 'exports/:id/download', to: 'gdpr#download_export', as: 'download_export'
+      post 'erasures/:id/confirm', to: 'gdpr#confirm_erasure', as: 'confirm_erasure'
+      
+      # Audit and compliance
+      get 'audit', to: 'gdpr#audit'
+      get 'compliance', to: 'gdpr#compliance'
+      
+      # Settings
+      get 'settings', to: 'gdpr#settings'
+      patch 'settings', to: 'gdpr#update_settings'
+      
+      # Bulk operations
+      post 'bulk_export', to: 'gdpr#bulk_export'
+      
+        # Export template
+        get 'export_template', to: 'gdpr#export_template'
+      end
+      
+      # Consent Management (Admin)
+      namespace :consent do
+        root 'consent#index'
+        get 'index', to: 'consent#index'
+        
+        # Configuration management
+        resources :consent_configurations, path: 'configurations' do
+          member do
+            get 'preview'
+            get 'test_banner', to: 'consent#test_banner'
+          end
+        end
+        
+        # Pixel consent management
+        get 'pixels', to: 'consent#pixels'
+        get 'pixels/:id/consent_settings', to: 'consent#pixel_consent_settings', as: 'pixel_consent_settings'
+        patch 'pixels/:id/update_consent_mapping', to: 'consent#update_pixel_consent_mapping', as: 'update_pixel_consent_mapping'
+        
+        # User consent management
+        get 'users', to: 'consent#users'
+        get 'users/:id', to: 'consent#user_consents', as: 'user_consents'
+        post 'users/:id/export_data', to: 'consent#export_user_data', as: 'export_user_data'
+        delete 'users/:id/consent/:consent_type', to: 'consent#withdraw_user_consent', as: 'withdraw_user_consent'
+        
+        # Analytics and compliance
+        get 'analytics', to: 'consent#analytics'
+        get 'compliance', to: 'consent#compliance'
+        
+        # Settings
+        get 'settings', to: 'consent#settings'
+        patch 'settings', to: 'consent#update_settings'
+      end
     
     # API Documentation
     resources :api_docs, only: [:index] do
@@ -698,6 +889,24 @@ Rails.application.routes.draw do
   # Analytics tracking (public)
   post 'analytics/track', to: 'analytics#track'
   post 'analytics/duration', to: 'analytics#duration'
+  post 'analytics/reading', to: 'analytics#reading'
+  post 'analytics/events', to: 'admin/analytics#track_event'
+  
+  # Analytics API documentation
+  get 'analytics/api-docs', to: 'analytics#api_docs', as: :analytics_api_docs
+  
+  # Analytics API examples
+  get 'analytics/examples', to: 'analytics#examples', as: :analytics_examples
+  
+  # GDPR Compliance routes
+  get 'gdpr/privacy-policy', to: 'gdpr#privacy_policy', as: :gdpr_privacy_policy
+  post 'gdpr/consent', to: 'gdpr#update_consent', as: :gdpr_update_consent
+  post 'gdpr/data-access', to: 'gdpr#data_access', as: :gdpr_data_access
+  post 'gdpr/data-deletion', to: 'gdpr#data_deletion', as: :gdpr_data_deletion
+  post 'gdpr/data-portability', to: 'gdpr#data_portability', as: :gdpr_data_portability
+  get 'gdpr/download/:session_id', to: 'gdpr#download_data', as: :gdpr_download
+  post 'gdpr/contact-dpo', to: 'gdpr#contact_dpo', as: :gdpr_contact_dpo
+  get 'gdpr/consent-status', to: 'gdpr#consent_status', as: :gdpr_consent_status
   
   # RSS Feeds
   get 'feed', to: 'feeds#posts', defaults: { format: 'rss' }, as: 'feed'
@@ -749,6 +958,6 @@ Rails.application.routes.draw do
   
   get '*path', to: 'pages#show', as: 'page', constraints: lambda { |req|
     # Only match if not starting with admin, assets, etc.
-    !req.path.start_with?('/admin', '/assets', '/rails', '/auth', '/csp-violation-report')
+    !req.path.start_with?('/admin', '/assets', '/rails', '/auth', '/api', '/csp-violation-report')
   }
 end

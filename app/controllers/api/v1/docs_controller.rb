@@ -111,6 +111,22 @@ module Api
               { method: 'GET', path: '/api/v1/system/info', description: 'Get API information' },
               { method: 'GET', path: '/api/v1/system/stats', description: 'Get system statistics', auth: true, admin: true }
             ]
+          },
+          gdpr: {
+            name: 'GDPR Compliance',
+            description: 'GDPR compliance endpoints for data export, erasure, and consent management',
+            endpoints: [
+              { method: 'GET', path: '/api/v1/gdpr/data-export/:user_id', description: 'Request personal data export (Article 20)', auth: true },
+              { method: 'GET', path: '/api/v1/gdpr/data-export/download/:token', description: 'Download exported personal data', auth: true },
+              { method: 'POST', path: '/api/v1/gdpr/data-erasure/:user_id', description: 'Request personal data erasure (Article 17)', auth: true },
+              { method: 'POST', path: '/api/v1/gdpr/data-erasure/confirm/:token', description: 'Confirm data erasure request', auth: true },
+              { method: 'GET', path: '/api/v1/gdpr/data-portability/:user_id', description: 'Get data portability information (Article 20)', auth: true },
+              { method: 'GET', path: '/api/v1/gdpr/requests', description: 'List GDPR requests for user', auth: true },
+              { method: 'GET', path: '/api/v1/gdpr/status/:user_id', description: 'Get GDPR compliance status', auth: true },
+              { method: 'POST', path: '/api/v1/gdpr/consent/:user_id', description: 'Record user consent (Article 7)', auth: true },
+              { method: 'DELETE', path: '/api/v1/gdpr/consent/:user_id', description: 'Withdraw user consent', auth: true },
+              { method: 'GET', path: '/api/v1/gdpr/audit-log', description: 'Get GDPR audit log (admin only)', auth: true, admin: true }
+            ]
           }
         }
       end

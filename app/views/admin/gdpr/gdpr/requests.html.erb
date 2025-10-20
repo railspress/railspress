@@ -1,0 +1,228 @@
+<% content_for :title, "GDPR Requests" %>
+
+<div class="min-h-screen bg-gray-900">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-white">GDPR Requests</h1>
+          <p class="mt-2 text-gray-400">Manage data export and erasure requests</p>
+        </div>
+        <div class="flex space-x-3">
+          <%= link_to admin_gdpr_users_path, class: "bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors" do %>
+            <i class="fas fa-users mr-2"></i>
+            Manage Users
+          <% end %>
+          <%= link_to admin_gdpr_compliance_path, class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" do %>
+            <i class="fas fa-shield-alt mr-2"></i>
+            Compliance
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-gray-800 rounded-lg p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Status Filter</label>
+          <%= form_with url: admin_gdpr_requests_path, method: :get, local: true, class: "flex" do |form| %>
+            <%= form.select :status, 
+                options_for_select([
+                  ['All Statuses', ''],
+                  ['Pending', 'pending'],
+                  ['Processing', 'processing'],
+                  ['Completed', 'completed'],
+                  ['Failed', 'failed']
+                ], params[:status]),
+                {},
+                { class: "bg-gray-700 text-white border-gray-600 rounded-lg px-3 py-2 w-full" } %>
+            <%= form.submit "Filter", class: "ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" %>
+          <% end %>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">User Search</label>
+          <%= form_with url: admin_gdpr_requests_path, method: :get, local: true, class: "flex" do |form| %>
+            <%= form.text_field :user_search, 
+                value: params[:user_search],
+                placeholder: "Search by email...",
+                class: "bg-gray-700 text-white border-gray-600 rounded-lg px-3 py-2 w-full" %>
+            <%= form.submit "Search", class: "ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" %>
+          <% end %>
+        </div>
+        
+        <div class="flex items-end">
+          <%= link_to admin_gdpr_requests_path, class: "bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors" do %>
+            <i class="fas fa-refresh mr-2"></i>
+            Clear Filters
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Requests -->
+    <div class="bg-gray-800 rounded-lg mb-6">
+      <div class="px-6 py-4 border-b border-gray-700">
+        <h2 class="text-xl font-semibold text-white">Data Export Requests</h2>
+        <p class="text-gray-400">Requests for personal data export</p>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">User</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Requested</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Completed</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-gray-800 divide-y divide-gray-700">
+            <% if @export_requests.any? %>
+              <% @export_requests.each do |request| %>
+                <tr class="hover:bg-gray-700">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-white"><%= request.user.email %></div>
+                        <div class="text-sm text-gray-400"><%= request.user.name %></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                      <%= case request.status
+                          when 'pending' then 'bg-yellow-100 text-yellow-800'
+                          when 'processing' then 'bg-blue-100 text-blue-800'
+                          when 'completed' then 'bg-green-100 text-green-800'
+                          when 'failed' then 'bg-red-100 text-red-800'
+                          else 'bg-gray-100 text-gray-800'
+                          end %>">
+                      <%= request.status.humanize %>
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <%= request.created_at.strftime("%Y-%m-%d %H:%M") %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <%= request.completed_at&.strftime("%Y-%m-%d %H:%M") || "-" %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <% if request.completed? %>
+                      <%= link_to admin_gdpr_download_export_path(request), 
+                          class: "text-blue-400 hover:text-blue-300 mr-3" do %>
+                        <i class="fas fa-download"></i> Download
+                      <% end %>
+                    <% end %>
+                    <%= link_to admin_gdpr_user_data_path(request.user), 
+                        class: "text-gray-400 hover:text-gray-300" do %>
+                      <i class="fas fa-eye"></i> View User
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-400">
+                  No export requests found
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <% if @export_requests.respond_to?(:current_page) %>
+        <div class="px-6 py-4 border-t border-gray-700">
+          <%= paginate @export_requests, param_name: :export_page %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Erasure Requests -->
+    <div class="bg-gray-800 rounded-lg">
+      <div class="px-6 py-4 border-b border-gray-700">
+        <h2 class="text-xl font-semibold text-white">Data Erasure Requests</h2>
+        <p class="text-gray-400">Requests for personal data deletion</p>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">User</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Requested</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Reason</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-gray-800 divide-y divide-gray-700">
+            <% if @erasure_requests.any? %>
+              <% @erasure_requests.each do |request| %>
+                <tr class="hover:bg-gray-700">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-white"><%= request.user.email %></div>
+                        <div class="text-sm text-gray-400"><%= request.user.name %></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                      <%= case request.status
+                          when 'pending_confirmation' then 'bg-yellow-100 text-yellow-800'
+                          when 'processing' then 'bg-blue-100 text-blue-800'
+                          when 'completed' then 'bg-green-100 text-green-800'
+                          when 'failed' then 'bg-red-100 text-red-800'
+                          when 'cancelled' then 'bg-gray-100 text-gray-800'
+                          else 'bg-gray-100 text-gray-800'
+                          end %>">
+                      <%= request.status.humanize %>
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <%= request.created_at.strftime("%Y-%m-%d %H:%M") %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    <%= truncate(request.reason, length: 50) if request.reason.present? %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <% if request.pending_confirmation? %>
+                      <%= link_to admin_gdpr_confirm_erasure_path(request), 
+                          method: :post,
+                          class: "text-red-400 hover:text-red-300 mr-3",
+                          data: { confirm: "Are you sure you want to confirm this erasure request? This action cannot be undone." } do %>
+                        <i class="fas fa-check"></i> Confirm
+                      <% end %>
+                    <% end %>
+                    <%= link_to admin_gdpr_user_data_path(request.user), 
+                        class: "text-gray-400 hover:text-gray-300" do %>
+                      <i class="fas fa-eye"></i> View User
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-400">
+                  No erasure requests found
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <% if @erasure_requests.respond_to?(:current_page) %>
+        <div class="px-6 py-4 border-t border-gray-700">
+          <%= paginate @erasure_requests, param_name: :erasure_page %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

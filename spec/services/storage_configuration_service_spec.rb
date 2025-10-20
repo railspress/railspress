@@ -12,6 +12,10 @@ RSpec.describe StorageConfigurationService, type: :service do
 
     it 'uses current tenant when no tenant provided' do
       ActsAsTenant.with_tenant(tenant) do
+        # Create site settings for the tenant
+        SiteSetting.create!(key: 'storage_type', value: 'local', setting_type: 'string', tenant: tenant)
+        SiteSetting.create!(key: 'local_storage_path', value: '/custom/path', setting_type: 'string', tenant: tenant)
+        
         service = described_class.new
         expect(service.storage_settings).to be_a(Hash)
       end
@@ -20,12 +24,12 @@ RSpec.describe StorageConfigurationService, type: :service do
 
   describe '#storage_settings' do
     before do
-      SiteSetting.set('storage_type', 'local', 'string')
-      SiteSetting.set('local_storage_path', '/custom/path', 'string')
-      SiteSetting.set('max_file_size', 25, 'integer')
-      SiteSetting.set('allowed_file_types', 'jpg,png,pdf', 'string')
-      SiteSetting.set('enable_cdn', true, 'boolean')
-      SiteSetting.set('cdn_url', 'https://cdn.example.com', 'string')
+      SiteSetting.create!(key: 'storage_type', value: 'local', setting_type: 'string', tenant: tenant)
+      SiteSetting.create!(key: 'local_storage_path', value: '/custom/path', setting_type: 'string', tenant: tenant)
+      SiteSetting.create!(key: 'max_file_size', value: '25', setting_type: 'integer', tenant: tenant)
+      SiteSetting.create!(key: 'allowed_file_types', value: 'jpg,png,pdf', setting_type: 'string', tenant: tenant)
+      SiteSetting.create!(key: 'enable_cdn', value: 'true', setting_type: 'boolean', tenant: tenant)
+      SiteSetting.create!(key: 'cdn_url', value: 'https://cdn.example.com', setting_type: 'string', tenant: tenant)
     end
 
     it 'returns correct storage settings' do

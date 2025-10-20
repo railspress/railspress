@@ -142,6 +142,7 @@ class Tenant < ApplicationRecord
       site_settings.find_or_create_by!(key: key) do |setting|
         setting.value = value.to_s
         setting.setting_type = value.is_a?(TrueClass) || value.is_a?(FalseClass) ? 'boolean' : 'string'
+        setting.tenant = self
       end
     end
   end

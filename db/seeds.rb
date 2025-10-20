@@ -258,7 +258,203 @@ load Rails.root.join('db', 'seeds', 'upload_security.rb')
 load Rails.root.join('db', 'seeds', 'trash_settings.rb')
 
 # ============================================
-# 12. AI AGENTS
+# 12. CONTENT CHANNELS - OUT OF THE BOX DEFAULTS
+# ============================================
+puts "📺 Creating default content channels with optimized settings..."
+
+# Web Channel - Desktop/Laptop optimized
+Channel.find_or_create_by!(slug: 'web') do |channel|
+  channel.name = 'Web'
+  channel.domain = 'www.example.com'
+  channel.locale = 'en'
+  channel.enabled = true
+  channel.metadata = {
+    description: 'Main website channel for desktop and laptop users',
+    target_audience: 'general',
+    device_type: 'desktop',
+    screen_resolution: '1920x1080+',
+    input_method: 'mouse_keyboard',
+    user_agent_patterns: ['Windows', 'Macintosh', 'Linux'],
+    performance_target: 'high',
+    seo_optimized: true
+  }
+  channel.settings = {
+    theme_variant: 'default',
+    show_comments: true,
+    show_sidebar: true,
+    max_content_width: '1200px',
+    font_size: '16px',
+    line_height: '1.6',
+    navigation_type: 'horizontal',
+    show_breadcrumbs: true,
+    enable_animations: true,
+    lazy_loading: true,
+    image_quality: 'high',
+    video_autoplay: false,
+    show_social_sharing: true,
+    enable_search: true,
+    show_related_posts: true,
+    pagination_type: 'numbered',
+    ads_enabled: true,
+    analytics_tracking: true
+  }
+end
+
+# Mobile Channel - Smartphone/Tablet optimized
+Channel.find_or_create_by!(slug: 'mobile') do |channel|
+  channel.name = 'Mobile'
+  channel.domain = 'm.example.com'
+  channel.locale = 'en'
+  channel.enabled = true
+  channel.metadata = {
+    description: 'Mobile-optimized channel for smartphones and tablets',
+    target_audience: 'mobile_users',
+    device_type: 'mobile',
+    screen_resolution: '375x667-414x896',
+    input_method: 'touch',
+    user_agent_patterns: ['iPhone', 'Android', 'Mobile', 'Tablet'],
+    performance_target: 'optimized',
+    seo_optimized: true,
+    pwa_ready: true
+  }
+  channel.settings = {
+    theme_variant: 'mobile',
+    show_comments: false,
+    show_sidebar: false,
+    max_content_width: '100%',
+    font_size: '18px',
+    line_height: '1.5',
+    navigation_type: 'hamburger',
+    show_breadcrumbs: false,
+    enable_animations: false,
+    lazy_loading: true,
+    image_quality: 'medium',
+    video_autoplay: false,
+    show_social_sharing: true,
+    enable_search: true,
+    show_related_posts: false,
+    pagination_type: 'infinite_scroll',
+    ads_enabled: false,
+    analytics_tracking: true,
+    touch_friendly: true,
+    swipe_navigation: true,
+    pull_to_refresh: true,
+    offline_support: true,
+    fast_loading: true,
+    compressed_images: true,
+    minimal_js: true
+  }
+end
+
+# Newsletter Channel - Email optimized
+Channel.find_or_create_by!(slug: 'newsletter') do |channel|
+  channel.name = 'Newsletter'
+  channel.domain = 'newsletter.example.com'
+  channel.locale = 'en'
+  channel.enabled = true
+  channel.metadata = {
+    description: 'Email newsletter channel for subscribers',
+    target_audience: 'subscribers',
+    device_type: 'email',
+    screen_resolution: '600px',
+    input_method: 'email_client',
+    user_agent_patterns: ['Outlook', 'Gmail', 'Apple Mail', 'Thunderbird'],
+    performance_target: 'email_optimized',
+    seo_optimized: false,
+    email_client_compatible: true
+  }
+  channel.settings = {
+    theme_variant: 'newsletter',
+    show_comments: false,
+    show_sidebar: false,
+    max_content_width: '600px',
+    font_size: '16px',
+    line_height: '1.4',
+    navigation_type: 'none',
+    show_breadcrumbs: false,
+    enable_animations: false,
+    lazy_loading: false,
+    image_quality: 'low',
+    video_autoplay: false,
+    show_social_sharing: true,
+    enable_search: false,
+    show_related_posts: false,
+    pagination_type: 'single_page',
+    ads_enabled: false,
+    analytics_tracking: true,
+    email_optimized: true,
+    inline_css: true,
+    table_layout: true,
+    fallback_fonts: true,
+    dark_mode_support: true,
+    unsubscribe_link: true,
+    sender_info: true,
+    preview_text: true,
+    responsive_images: true,
+    web_safe_colors: true
+  }
+end
+
+# Smart TV Channel - Large screen optimized
+Channel.find_or_create_by!(slug: 'smarttv') do |channel|
+  channel.name = 'Smart TV'
+  channel.domain = 'tv.example.com'
+  channel.locale = 'en'
+  channel.enabled = true
+  channel.metadata = {
+    description: 'Smart TV channel for large screen viewing',
+    target_audience: 'tv_users',
+    device_type: 'smart_tv',
+    screen_resolution: '1920x1080-3840x2160',
+    input_method: 'remote_control',
+    user_agent_patterns: ['SmartTV', 'TV', 'Roku', 'AppleTV', 'AndroidTV', 'WebOS'],
+    performance_target: 'tv_optimized',
+    seo_optimized: false,
+    tv_navigation: true
+  }
+  channel.settings = {
+    theme_variant: 'tv',
+    show_comments: false,
+    show_sidebar: false,
+    max_content_width: '1920px',
+    font_size: '24px',
+    line_height: '1.4',
+    navigation_type: 'grid',
+    show_breadcrumbs: true,
+    enable_animations: true,
+    lazy_loading: true,
+    image_quality: 'ultra_high',
+    video_autoplay: true,
+    show_social_sharing: false,
+    enable_search: true,
+    show_related_posts: true,
+    pagination_type: 'grid_navigation',
+    ads_enabled: true,
+    analytics_tracking: true,
+    large_text: true,
+    remote_friendly: true,
+    focus_navigation: true,
+    high_contrast: true,
+    minimal_scrolling: true,
+    auto_advance: true,
+    fullscreen_support: true,
+    hd_video: true,
+    surround_sound: true,
+    parental_controls: true,
+    voice_search: true,
+    gesture_control: true
+  }
+end
+
+puts "  ✅ Web Channel - Desktop optimized (1200px, horizontal nav, high quality)"
+puts "  ✅ Mobile Channel - Touch optimized (100% width, hamburger nav, fast loading)"
+puts "  ✅ Newsletter Channel - Email optimized (600px, inline CSS, web safe colors)"
+puts "  ✅ Smart TV Channel - Large screen optimized (1920px, grid nav, remote friendly)"
+
+puts ""
+
+# ============================================
+# 13. AI AGENTS
 # ============================================
 puts "🤖 Creating default AI agents..."
 
@@ -359,6 +555,7 @@ puts "  • Comments: 1"
 puts "  • Taxonomies: 3 (category, tag, post_format)"
 puts "  • Terms: 1 (Uncategorized)"
 puts "  • Menus: 1 (Primary with 2 items)"
+puts "  • Channels: 4 (Web, Mobile, Newsletter, Smart TV)"
 puts "  • AI Providers: 5 (OpenAI, Anthropic, Google, Cohere)"
 puts ""
 puts "🔐 Login Credentials:"

@@ -1,0 +1,208 @@
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white">Consent Management</h1>
+    <p class="mt-2 text-gray-400">Enterprise-grade consent management system that rivals OneTrust</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-gray-800 rounded-lg shadow p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-medium text-white">Total Configurations</h3>
+          <p class="text-2xl font-bold text-blue-400"><%= @stats[:total_configs] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg shadow p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-medium text-white">Active Configurations</h3>
+          <p class="text-2xl font-bold text-green-400"><%= @stats[:active_configs] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg shadow p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-medium text-white">Total Consents</h3>
+          <p class="text-2xl font-bold text-purple-400"><%= @stats[:total_consents] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg shadow p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
+            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <h3 class="text-lg font-medium text-white">Granted Consents</h3>
+          <p class="text-2xl font-bold text-yellow-400"><%= @stats[:granted_consents] %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="bg-gray-800 rounded-lg shadow mb-8 border border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-700">
+      <h2 class="text-lg font-medium text-white">Quick Actions</h2>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <%= link_to admin_consent_consent_configurations_path, class: "flex items-center p-4 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors" do %>
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-white">Manage Configurations</h3>
+            <p class="text-sm text-gray-400">Configure consent settings</p>
+          </div>
+        <% end %>
+
+        <%= link_to admin_consent_pixels_path, class: "flex items-center p-4 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors" do %>
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-white">Pixel Management</h3>
+            <p class="text-sm text-gray-400">Manage pixel consent requirements</p>
+          </div>
+        <% end %>
+
+        <%= link_to admin_consent_users_path, class: "flex items-center p-4 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors" do %>
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-white">User Consents</h3>
+            <p class="text-sm text-gray-400">Manage user consent data</p>
+          </div>
+        <% end %>
+
+        <%= link_to admin_consent_compliance_path, class: "flex items-center p-4 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors" do %>
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-sm font-medium text-white">Compliance Report</h3>
+            <p class="text-sm text-gray-400">View compliance status</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="bg-gray-800 rounded-lg shadow border border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-700">
+      <h2 class="text-lg font-medium text-white">Recent Activity</h2>
+    </div>
+    <div class="p-6">
+      <% if @consent_configs.any? %>
+        <div class="space-y-4">
+          <% @consent_configs.each do |config| %>
+            <div class="flex items-center justify-between p-4 border border-gray-600 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-sm font-medium text-white"><%= config.name %></h3>
+                  <p class="text-sm text-gray-400">
+                    <%= config.banner_type.humanize %> • <%= config.consent_mode.humanize %>
+                    <% if config.active? %>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 ml-2">
+                        Active
+                      </span>
+                    <% else %>
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 ml-2">
+                        Inactive
+                      </span>
+                    <% end %>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <%= link_to admin_consent_consent_configuration_path(config), class: "text-blue-400 hover:text-blue-300 text-sm font-medium" do %>
+                  View
+                <% end %>
+                <%= link_to edit_admin_consent_consent_configuration_path(config), class: "text-gray-400 hover:text-gray-300 text-sm font-medium" do %>
+                  Edit
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-8">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-white">No consent configurations</h3>
+          <p class="mt-1 text-sm text-gray-400">Get started by creating your first consent configuration.</p>
+          <div class="mt-6">
+            <%= link_to new_admin_consent_consent_configuration_path, class: "inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" do %>
+              <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Create Configuration
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

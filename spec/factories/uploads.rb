@@ -1,87 +1,42 @@
 FactoryBot.define do
   factory :upload do
-    tenant
-    user
-    title { Faker::Lorem.word }
-    description { Faker::Lorem.sentence }
-    alt_text { Faker::Lorem.sentence }
-    quarantined { false }
-    quarantine_reason { nil }
+    filename { "test_file.jpg" }
+    content_type { "image/jpeg" }
+    file_size { 1024 }
+    file_url { "https://example.com/test_file.jpg" }
+    file_type { "image" }
+    status { "ready" }
+    association :user
+    association :tenant
+  end
 
-    # Create a simple text file for basic uploads
-    after(:build) do |upload|
-      upload.file.attach(
-        io: StringIO.new("test file content"),
-        filename: "#{Faker::File.file_name}.txt",
-        content_type: 'text/plain'
-      )
-    end
+  trait :image_file do
+    filename { "image.jpg" }
+    content_type { "image/jpeg" }
+    file_type { "image" }
+  end
 
-    trait :with_image do
-      after(:build) do |upload|
-        # Create a simple image file (1x1 pixel PNG)
-        image_data = Base64.decode64("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")
-        upload.file.attach(
-          io: StringIO.new(image_data),
-          filename: "#{Faker::File.file_name}.jpg",
-          content_type: 'image/jpeg'
-        )
-      end
-    end
+  trait :video_file do
+    filename { "video.mp4" }
+    content_type { "video/mp4" }
+    file_type { "video" }
+  end
 
-    trait :with_video do
-      after(:build) do |upload|
-        # Create a minimal video file (just a placeholder)
-        video_data = "fake video content for testing"
-        upload.file.attach(
-          io: StringIO.new(video_data),
-          filename: "#{Faker::File.file_name}.mp4",
-          content_type: 'video/mp4'
-        )
-      end
-    end
+  trait :document_file do
+    filename { "document.pdf" }
+    content_type { "application/pdf" }
+    file_type { "document" }
+  end
 
-    trait :with_document do
-      after(:build) do |upload|
-        # Create a simple PDF-like file
-        pdf_data = "%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n"
-        upload.file.attach(
-          io: StringIO.new(pdf_data),
-          filename: "#{Faker::File.file_name}.pdf",
-          content_type: 'application/pdf'
-        )
-      end
-    end
+  trait :ready do
+    status { "ready" }
+  end
 
-    trait :quarantined do
-      quarantined { true }
-      quarantine_reason { 'Suspicious file pattern detected' }
-    end
+  trait :processing do
+    status { "processing" }
+  end
 
-    trait :large_file do
-      after(:build) do |upload|
-        # Create a large file (simulate large file)
-        large_data = "x" * (5 * 1024 * 1024) # 5MB
-        upload.file.attach(
-          io: StringIO.new(large_data),
-          filename: "#{Faker::File.file_name}.txt",
-          content_type: 'text/plain'
-        )
-      end
-    end
-
-    trait :with_storage_provider do
-      association :storage_provider, factory: :storage_provider
-    end
-
-    trait :approved do
-      quarantined { false }
-      quarantine_reason { nil }
-    end
-
-    trait :rejected do
-      quarantined { true }
-      quarantine_reason { 'File type not allowed' }
-    end
+  trait :failed do
+    status { "failed" }
   end
 end

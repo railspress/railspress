@@ -56,6 +56,7 @@ export default class extends Controller {
       selectable: true,
       selectableRangeMode: "click",
       tooltips: true,
+      height: "600px",
       rowFormatter: this.rowFormatter.bind(this),
       cellClick: this.cellClick.bind(this),
       rowSelectionChanged: this.rowSelectionChanged.bind(this)
@@ -86,6 +87,14 @@ export default class extends Controller {
       const url = this.settings.tableType === 'webhooks' ? data.show_url : (data.edit_url || data.show_url)
       if (url) {
         window.location.href = url
+      }
+    }
+    
+    // Handle name and email clicks for users
+    if ((cell.getColumn().getField() === 'name' || cell.getColumn().getField() === 'email') && this.settings.tableType === 'users') {
+      if (data.edit_url) {
+        e.preventDefault()
+        window.location.href = data.edit_url
       }
     }
   }
@@ -134,13 +143,65 @@ export default class extends Controller {
     if (this.hasApplyButtonTarget) {
       this.applyButtonTarget.addEventListener('click', this.handleBulkAction.bind(this))
     }
+
+    // Custom checkbox handling for users table
+    if (this.settings.tableType === 'users') {
+      this.setupCustomCheckboxes()
+    }
+  }
+
+  setupCustomCheckboxes() {
+    // Handle select all checkbox
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('select-all')) {
+        const checkboxes = this.tableTarget.querySelectorAll('.row-checkbox')
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = e.target.checked
+        })
+        this.updateCustomBulkActions()
+      }
+      
+      // Handle individual row checkboxes
+      if (e.target.classList.contains('row-checkbox')) {
+        this.updateCustomBulkActions()
+      }
+    })
+  }
+
+  updateCustomBulkActions() {
+    const checkedBoxes = this.tableTarget.querySelectorAll('.row-checkbox:checked')
+    const hasSelection = checkedBoxes.length > 0
+    
+    if (this.hasBulkActionTarget) {
+      this.bulkActionTarget.disabled = !hasSelection
+      this.bulkActionTarget.classList.toggle('opacity-50', !hasSelection)
+      this.bulkActionTarget.classList.toggle('cursor-not-allowed', !hasSelection)
+    }
+    
+    if (this.hasApplyButtonTarget) {
+      this.applyButtonTarget.disabled = !hasSelection
+      this.applyButtonTarget.classList.toggle('opacity-50', !hasSelection)
+      this.applyButtonTarget.classList.toggle('cursor-not-allowed', !hasSelection)
+    }
   }
 
   handleBulkAction() {
     const action = this.bulkActionTarget.value
-    if (!action || !this.selectedRows || this.selectedRows.length === 0) return
+    if (!action) return
 
-    const selectedIds = this.selectedRows.map(row => row.getData().id)
+    let selectedIds = []
+    
+    // For users table with custom checkboxes
+    if (this.settings.tableType === 'users') {
+      const checkedBoxes = this.tableTarget.querySelectorAll('.row-checkbox:checked')
+      selectedIds = Array.from(checkedBoxes).map(checkbox => checkbox.dataset.rowId)
+    } else {
+      // For other tables with Tabulator row selection
+      if (!this.selectedRows || this.selectedRows.length === 0) return
+      selectedIds = this.selectedRows.map(row => row.getData().id)
+    }
+    
+    if (selectedIds.length === 0) return
     
     // Show confirmation for destructive actions
     if (['trash', 'delete'].includes(action)) {

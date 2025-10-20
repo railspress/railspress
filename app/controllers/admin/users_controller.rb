@@ -7,7 +7,87 @@ class Admin::UsersController < Admin::BaseController
     @users = User.all.order(created_at: :desc)
     
     respond_to do |format|
-      format.html
+      format.html do
+        @users_data = users_json
+        @stats = {
+          total: User.count,
+          administrator: User.administrator.count,
+          editor: User.editor.count,
+          author: User.author.count
+        }
+        @bulk_actions = [
+          { value: 'delete', label: 'Delete Selected' },
+          { value: 'change_role', label: 'Change Role' }
+        ]
+        @role_options = [
+          { value: 'administrator', label: 'Administrator' },
+          { value: 'editor', label: 'Editor' },
+          { value: 'author', label: 'Author' },
+          { value: 'contributor', label: 'Contributor' },
+          { value: 'subscriber', label: 'Subscriber' }
+        ]
+        @columns = [
+          {
+            title: "",
+            formatter: "rowSelection",
+            titleFormatter: "rowSelection",
+            width: 50,
+            headerSort: false
+          },
+          {
+            title: "Name",
+            field: "name",
+            minWidth: 150,
+            formatter: "html",
+            formatterParams: {
+              target: "_self"
+            },
+            cellClick: "function(e, cell) { const data = cell.getRow().getData(); window.location.href = data.edit_url; }"
+          },
+          {
+            title: "Email",
+            field: "email",
+            minWidth: 200
+          },
+          {
+            title: "Role",
+            field: "role_badge",
+            width: 130,
+            formatter: "html",
+            hozAlign: "center"
+          },
+          {
+            title: "Posts",
+            field: "posts_count",
+            width: 80,
+            hozAlign: "center"
+          },
+          {
+            title: "Pages",
+            field: "pages_count",
+            width: 80,
+            hozAlign: "center"
+          },
+          {
+            title: "Last Updated",
+            field: "last_sign_in",
+            width: 150
+          },
+          {
+            title: "Joined",
+            field: "created_at",
+            width: 120
+          },
+          {
+            title: "Actions",
+            field: "actions",
+            width: 120,
+            headerSort: false,
+            formatter: "html",
+            hozAlign: "center"
+          }
+        ]
+      end
       format.json { render json: users_json }
     end
   end
@@ -172,14 +252,17 @@ class Admin::UsersController < Admin::BaseController
       {
         id: user.id,
         email: user.email,
-        name: user.name || 'N/A',
+        name: "<a href='#{edit_admin_user_path(user)}' style='color: #6366f1 !important; text-decoration: none !important; font-weight: 500 !important;'>#{user.name || 'N/A'}</a>",
         role: user.role.titleize,
         role_badge: role_badge(user.role),
         posts_count: user.posts.count,
         pages_count: user.pages.count,
         created_at: user.created_at.strftime('%b %d, %Y'),
-        last_sign_in: user.last_sign_in_at&.strftime('%b %d, %Y %H:%M') || 'Never',
-        actions: user_actions(user)
+        last_sign_in: user.updated_at.strftime('%b %d, %Y %H:%M'),
+        edit_url: edit_admin_user_path(user),
+        show_url: admin_user_path(user),
+        delete_url: admin_user_path(user),
+        actions: user_actions_html(user)
       }
     end
   end
@@ -203,6 +286,16 @@ class Admin::UsersController < Admin::BaseController
     actions << { label: 'View', url: admin_user_path(user), class: 'text-gray-600' }
     actions << { label: 'Delete', url: admin_user_path(user), method: 'delete', class: 'text-red-600' } unless user.id == current_user.id
     actions
+  end
+
+  def user_actions_html(user)
+    actions_html = []
+    actions_html << "<a href=\"#{edit_admin_user_path(user)}\" class=\"text-blue-600 hover:text-blue-900 mr-2\" title=\"Edit\"><svg class=\"w-4 h-4 inline\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z\"></path></svg></a>"
+    actions_html << "<a href=\"#{admin_user_path(user)}\" class=\"text-gray-600 hover:text-gray-900 mr-2\" title=\"View\"><svg class=\"w-4 h-4 inline\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 12a3 3 0 11-6 0 3 3 0 016 0z\"></path><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z\"></path></svg></a>"
+    unless user.id == current_user.id
+      actions_html << "<a href=\"#{admin_user_path(user)}\" data-turbo-method=\"delete\" data-turbo-confirm=\"Are you sure?\" class=\"text-red-600 hover:text-red-900\" title=\"Delete\"><svg class=\"w-4 h-4 inline\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16\"></path></svg></a>"
+    end
+    actions_html.join('')
   end
 
   def bulk_delete(user_ids)

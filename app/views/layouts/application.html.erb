@@ -7,7 +7,14 @@
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+    <%= javascript_importmap_tags "data-turbo-track": "reload" %>
+    
+    <!-- Analytics Privacy Settings -->
+    <meta name="analytics-enabled" content="<%= analytics_enabled? %>">
+    <meta name="analytics-require-consent" content="<%= analytics_require_consent? %>">
+    <meta name="analytics-consent-message" content="<%= analytics_consent_message %>">
+    <meta name="analytics-anonymize-ip" content="<%= analytics_anonymize_ip? %>">
+    <meta name="analytics-track-bots" content="<%= analytics_track_bots? %>">
     
     <!-- RSS Feed Links -->
     <%= auto_discovery_link_tag(:rss, feed_url, title: "#{SiteSetting.get('site_title', 'RailsPress')} RSS Feed") %>

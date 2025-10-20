@@ -1,7 +1,165 @@
 <% content_for :page_title, "Dashboard" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
 
-<div class="max-w-7xl mx-auto">
-  <!-- Statistics Cards -->
+<div class="max-w-7xl mx-auto" data-controller="dashboard">
+  <!-- Period Selector -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-white">Dashboard</h1>
+      <p class="text-gray-400 mt-1">Comprehensive analytics and content overview</p>
+    </div>
+    
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center bg-gray-800 rounded-lg p-1">
+        <% %w[today week month year].each do |period| %>
+          <%= link_to period.titleize, admin_dashboard_path(period: period), 
+              class: "px-3 py-2 text-sm font-medium rounded-md transition-colors #{'bg-indigo-600 text-white' if @period == period} #{'text-gray-400 hover:text-white' if @period != period}" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <% if @analytics_enabled %>
+    <!-- Real-time Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-gradient-to-br from-green-500/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-green-100 text-sm font-medium mb-1">Active Users Now</p>
+            <p class="text-3xl font-bold text-white mb-1"><%= number_with_delimiter(@active_users) %></p>
+            <p class="text-green-200 text-xs">Real-time visitors</p>
+          </div>
+          <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-blue-500/20 to-indigo-600/20 border border-blue-500/30 rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-blue-100 text-sm font-medium mb-1">Pageviews Today</p>
+            <p class="text-3xl font-bold text-white mb-1"><%= number_with_delimiter(@analytics_stats[:total_pageviews]) %></p>
+            <div class="flex items-center text-xs">
+              <% if @growth_metrics[:pageviews_growth] > 0 %>
+                <span class="text-green-400">↗ +<%= @growth_metrics[:pageviews_growth] %>%</span>
+              <% elsif @growth_metrics[:pageviews_growth] < 0 %>
+                <span class="text-red-400">↘ <%= @growth_metrics[:pageviews_growth] %>%</span>
+              <% else %>
+                <span class="text-gray-400">→ 0%</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-purple-500/20 to-pink-600/20 border border-purple-500/30 rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-purple-100 text-sm font-medium mb-1">Unique Visitors</p>
+            <p class="text-3xl font-bold text-white mb-1"><%= number_with_delimiter(@analytics_stats[:unique_visitors]) %></p>
+            <div class="flex items-center text-xs">
+              <% if @growth_metrics[:users_growth] > 0 %>
+                <span class="text-green-400">↗ +<%= @growth_metrics[:users_growth] %>%</span>
+              <% elsif @growth_metrics[:users_growth] < 0 %>
+                <span class="text-red-400">↘ <%= @growth_metrics[:users_growth] %>%</span>
+              <% else %>
+                <span class="text-gray-400">→ 0%</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H2v-2a4 4 0 014-4h12.356M17 20v-9a2 2 0 00-2-2H7a2 2 0 00-2 2v9m4-11h2m-2 11h2m-10-9h2m-2 11h2M13 7h1m-1 4h1"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-orange-500/20 to-red-600/20 border border-orange-500/30 rounded-xl p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-orange-100 text-sm font-medium mb-1">Conversion Rate</p>
+            <p class="text-3xl font-bold text-white mb-1"><%= @conversion_rate %>%</p>
+            <p class="text-orange-200 text-xs">Goal completions</p>
+          </div>
+          <div class="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Engagement Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-3">
+          <div class="bg-indigo-500/10 p-3 rounded-lg">
+            <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-gray-400 text-sm font-medium mb-1">Avg. Session Duration</p>
+        <p class="text-2xl font-bold text-white mb-1"><%= format_duration(@engagement_metrics[:avg_session_duration]) %></p>
+        <p class="text-sm text-gray-500">Time on site</p>
+      </div>
+
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-3">
+          <div class="bg-red-500/10 p-3 rounded-lg">
+            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-gray-400 text-sm font-medium mb-1">Bounce Rate</p>
+        <p class="text-2xl font-bold text-white mb-1"><%= @engagement_metrics[:bounce_rate] %>%</p>
+        <p class="text-sm text-gray-500">Single-page sessions</p>
+      </div>
+
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-3">
+          <div class="bg-green-500/10 p-3 rounded-lg">
+            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-gray-400 text-sm font-medium mb-1">Pages per Session</p>
+        <p class="text-2xl font-bold text-white mb-1"><%= @engagement_metrics[:pages_per_session].round(1) %></p>
+        <p class="text-sm text-gray-500">Avg. pages viewed</p>
+      </div>
+
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-3">
+          <div class="bg-purple-500/10 p-3 rounded-lg">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-gray-400 text-sm font-medium mb-1">Completion Rate</p>
+        <p class="text-2xl font-bold text-white mb-1"><%= @engagement_metrics[:completion_rate] %>%</p>
+        <p class="text-sm text-gray-500">Content engagement</p>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Content Overview -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
     <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 hover:border-indigo-500/50 transition-all group">
       <div class="flex items-center justify-between mb-3">
@@ -57,6 +215,156 @@
       </div>
     </div>
   </div>
+
+  <% if @analytics_enabled %>
+    <!-- Analytics Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Traffic Trend Chart -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-white">Traffic Trends</h2>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-400">Last 7 days</span>
+          </div>
+        </div>
+        <canvas data-dashboard-target="trafficChart" width="400" height="200"></canvas>
+      </div>
+
+      <!-- Top Referrers Chart -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-white">Top Referrers</h2>
+          <span class="text-sm text-gray-400">This <%= @period %></span>
+        </div>
+        <canvas data-dashboard-target="referrersChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Real-time Activity Feed -->
+    <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-semibold text-white">Real-time Activity</h2>
+        <div class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <span class="text-sm text-gray-400">Live</span>
+        </div>
+      </div>
+      <div data-dashboard-target="activityFeed" class="space-y-3 max-h-64 overflow-y-auto">
+        <!-- Activity items will be loaded here -->
+        <div class="text-center text-gray-500 py-4">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-400 mx-auto mb-2"></div>
+          Loading real-time activity...
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Charts and Insights -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Traffic Sources -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-white">Traffic Sources</h2>
+          <%= link_to "View Details →", admin_analytics_path, class: "text-indigo-400 hover:text-indigo-300 text-sm font-medium" %>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg">
+            <div class="flex items-center space-x-3">
+              <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+              <span class="text-white text-sm">Direct Traffic</span>
+            </div>
+            <span class="text-indigo-400 font-semibold"><%= @direct_traffic %>%</span>
+          </div>
+          
+          <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg">
+            <div class="flex items-center space-x-3">
+              <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
+              <span class="text-white text-sm">Organic Search</span>
+            </div>
+            <span class="text-indigo-400 font-semibold"><%= @organic_traffic %>%</span>
+          </div>
+          
+          <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg">
+            <div class="flex items-center space-x-3">
+              <div class="w-3 h-3 bg-purple-400 rounded-full"></div>
+              <span class="text-white text-sm">Social Media</span>
+            </div>
+            <span class="text-indigo-400 font-semibold"><%= @social_traffic %>%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Countries -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-white">Top Countries</h2>
+          <span class="text-gray-400 text-sm">This <%= @period %></span>
+        </div>
+        
+        <div class="space-y-3">
+          <% @top_countries.first(5).each_with_index do |country, index| %>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="text-gray-400 text-sm w-6">#<%= index + 1 %></span>
+                <span class="text-white text-sm"><%= country_name(country[:country_code]) %></span>
+              </div>
+              <span class="text-indigo-400 font-semibold"><%= number_with_delimiter(country[:count]) %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Performing Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Top Posts -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-white">Top Performing Posts</h2>
+          <%= link_to "View All →", admin_analytics_path, class: "text-indigo-400 hover:text-indigo-300 text-sm font-medium" %>
+        </div>
+        
+        <div class="space-y-3">
+          <% @top_posts.each_with_index do |post_data, index| %>
+            <div class="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-lg hover:bg-[#1a1a1a] transition-colors">
+              <div class="flex-1 min-w-0">
+                <p class="text-white text-sm font-medium truncate">#<%= index + 1 %> <%= post_data[:post].title %></p>
+                <p class="text-gray-500 text-xs"><%= post_data[:views] %> views</p>
+              </div>
+              <div class="ml-4 text-right">
+                <p class="text-indigo-400 font-semibold text-sm"><%= post_data[:avg_duration] %>s</p>
+                <p class="text-gray-500 text-xs">avg. time</p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Device Breakdown -->
+      <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-lg font-semibold text-white">Device Breakdown</h2>
+          <span class="text-gray-400 text-sm">This <%= @period %></span>
+        </div>
+        
+        <div class="space-y-4">
+          <% @device_breakdown.each do |device, count| %>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="text-white text-sm"><%= device_icon(device) %> <%= device.titleize %></span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="w-20 bg-gray-700 rounded-full h-2">
+                  <div class="bg-indigo-400 h-2 rounded-full" style="width: <%= (count.to_f / @analytics_stats[:total_pageviews] * 100).round(1) %>%"></div>
+                </div>
+                <span class="text-indigo-400 font-semibold text-sm"><%= (count.to_f / @analytics_stats[:total_pageviews] * 100).round(1) %>%</span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
 
   <!-- Recent Content -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

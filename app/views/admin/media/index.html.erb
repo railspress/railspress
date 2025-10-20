@@ -20,23 +20,44 @@
   </div>
 
   <!-- Upload Area -->
-  <div id="upload-area" 
-       class="hidden border-2 border-dashed border-gray-600 rounded-lg p-12 text-center bg-gray-800/50"
+  <div data-media-library-target="uploadArea" 
+       class="hidden border-2 border-dashed border-gray-600 rounded-xl p-16 text-center bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm"
        data-action="dragover->media-library#dragOver dragleave->media-library#dragLeave drop->media-library#drop">
-    <div class="relative">
-      <button data-action="click->media-library#closeUploadArea" class="absolute top-0 right-0 text-gray-400 hover:text-white">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="relative max-w-md mx-auto">
+      <button data-action="click->media-library#closeUploadArea" class="absolute -top-4 -right-4 w-8 h-8 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-full flex items-center justify-center transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
       
+      <!-- Upload Icon -->
+      <div class="mb-6">
+        <svg class="w-16 h-16 mx-auto text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+      </div>
+      
       <div class="space-y-4">
-        <div class="text-lg font-medium text-white">Drop files to upload</div>
-        <div class="text-gray-400">or</div>
-        <button data-action="click->media-library#selectFiles" class="px-6 py-3 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-          Select Files
+        <div class="text-xl font-semibold text-white">Drop files to upload</div>
+        <div class="text-gray-400 text-sm">Drag and drop your files here, or</div>
+        <button data-action="click->media-library#selectFiles" class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Choose Files
         </button>
-        <div class="text-sm text-gray-500">Maximum upload file size: 2 MB.</div>
+        <div class="text-xs text-gray-500">
+          <div>Maximum upload file size: 100 MB</div>
+          <div class="mt-1">Supported formats: Images, Videos, Documents</div>
+        </div>
+      </div>
+      
+      <!-- Progress Bar (hidden by default) -->
+      <div data-media-library-target="uploadProgress" class="hidden mt-6">
+        <div class="bg-gray-700 rounded-full h-2 mb-2">
+          <div data-media-library-target="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <div data-media-library-target="progressText" class="text-sm text-gray-400">Uploading...</div>
       </div>
     </div>
   </div>

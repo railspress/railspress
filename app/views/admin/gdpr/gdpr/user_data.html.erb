@@ -1,0 +1,367 @@
+<% content_for :title, "User Data: #{@user.email}" %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-white">User Data Management</h1>
+        <p class="mt-2 text-gray-400">Manage data exports, erasures, and consent for <%= @user.email %></p>
+      </div>
+      <div class="flex space-x-3">
+        <%= link_to admin_gdpr_users_path, class: "bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span>Back to Users</span>
+        <% end %>
+        <%= link_to admin_gdpr_user_consent_history_path(@user), class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Consent History</span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Info Card -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <div class="flex items-center space-x-6">
+      <div class="flex-shrink-0">
+        <div class="h-16 w-16 rounded-full bg-gray-600 flex items-center justify-center">
+          <span class="text-2xl font-bold text-white"><%= @user.email.first.upcase %></span>
+        </div>
+      </div>
+      <div class="flex-1">
+        <h2 class="text-xl font-semibold text-white"><%= @user.email %></h2>
+        <p class="text-gray-400"><%= @user.name.present? ? @user.name : 'No name provided' %></p>
+        <p class="text-sm text-gray-500">Joined <%= @user.created_at.strftime("%B %d, %Y") %> • Role: <%= @user.role.titleize %></p>
+      </div>
+      <div class="flex space-x-3">
+        <%= link_to admin_gdpr_export_user_data_path(@user), method: :post, class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span>Export Data</span>
+        <% end %>
+        <% unless @user.administrator? %>
+          <%= link_to admin_gdpr_erase_user_data_path(@user), method: :post, 
+              class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2",
+              data: { confirm: "Are you sure you want to request data erasure for this user? This will require confirmation before processing." } do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            <span>Request Erasure</span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Summary -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Posts</p>
+          <p class="text-2xl font-semibold text-white"><%= @data_summary[:posts] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Comments</p>
+          <p class="text-2xl font-semibold text-white"><%= @data_summary[:comments] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Media Files</p>
+          <p class="text-2xl font-semibold text-white"><%= @data_summary[:media] %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+      <div class="flex items-center">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="ml-4">
+          <p class="text-sm font-medium text-gray-400">Page Views</p>
+          <p class="text-2xl font-semibold text-white"><%= @data_summary[:pageviews] %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GDPR Status -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <h3 class="text-lg font-semibold text-white mb-4">GDPR Compliance Status</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div>
+        <h4 class="text-sm font-medium text-gray-400 mb-2">Consent Status</h4>
+        <div class="space-y-2">
+          <% @gdpr_status[:compliance_status].each do |consent_type, status| %>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-300"><%= consent_type.humanize %></span>
+              <span class="px-2 py-1 text-xs rounded-full <%= case status
+                when 'granted' then 'bg-green-600 text-white'
+                when 'withdrawn' then 'bg-red-600 text-white'
+                else 'bg-gray-600 text-white'
+              end %>">
+                <%= status.humanize %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-medium text-gray-400 mb-2">Data Categories</h4>
+        <div class="space-y-2">
+          <% @gdpr_status[:data_categories].each do |category, present| %>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-300"><%= category.humanize %></span>
+              <span class="px-2 py-1 text-xs rounded-full <%= present ? 'bg-green-600 text-white' : 'bg-gray-600 text-white' %>">
+                <%= present ? 'Present' : 'None' %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-medium text-gray-400 mb-2">Legal Basis</h4>
+        <div class="space-y-2">
+          <% @gdpr_status[:legal_basis].each do |basis, applicable| %>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-300"><%= basis.humanize %></span>
+              <span class="px-2 py-1 text-xs rounded-full <%= applicable ? 'bg-green-600 text-white' : 'bg-gray-600 text-white' %>">
+                <%= applicable ? 'Yes' : 'No' %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Requests -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-white">Export Requests</h3>
+      <%= link_to admin_gdpr_export_user_data_path(@user), method: :post, class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        <span>New Export</span>
+      <% end %>
+    </div>
+    
+    <% if @export_requests.any? %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Requested</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Completed</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-gray-800 divide-y divide-gray-700">
+            <% @export_requests.each do |request| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 text-xs rounded-full <%= case request.status
+                    when 'completed' then 'bg-green-600 text-white'
+                    when 'processing' then 'bg-yellow-600 text-white'
+                    when 'pending' then 'bg-blue-600 text-white'
+                    else 'bg-gray-600 text-white'
+                  end %>">
+                    <%= request.status.titleize %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= request.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= request.completed_at&.strftime("%B %d, %Y at %I:%M %p") || '-' %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <% if request.completed? %>
+                    <%= link_to admin_gdpr_download_export_path(request.id), class: "text-blue-400 hover:text-blue-300" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                    <% end %>
+                  <% else %>
+                    <span class="text-gray-500">Processing...</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-gray-400 text-center py-8">No export requests found</p>
+    <% end %>
+  </div>
+
+  <!-- Erasure Requests -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-white">Erasure Requests</h3>
+      <% unless @user.administrator? %>
+        <%= link_to admin_gdpr_erase_user_data_path(@user), method: :post, 
+            class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2",
+            data: { confirm: "Are you sure you want to request data erasure for this user?" } do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          <span>New Erasure</span>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <% if @erasure_requests.any? %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Requested</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Confirmed</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Reason</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-gray-800 divide-y divide-gray-700">
+            <% @erasure_requests.each do |request| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 text-xs rounded-full <%= case request.status
+                    when 'completed' then 'bg-green-600 text-white'
+                    when 'processing' then 'bg-yellow-600 text-white'
+                    when 'pending_confirmation' then 'bg-red-600 text-white'
+                    else 'bg-gray-600 text-white'
+                  end %>">
+                    <%= request.status.humanize %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= request.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= request.confirmed_at&.strftime("%B %d, %Y at %I:%M %p") || '-' %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= request.reason.present? ? truncate(request.reason, length: 50) : '-' %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <% if request.pending_confirmation? %>
+                    <%= link_to admin_gdpr_confirm_erasure_path(request.id), 
+                        method: :post,
+                        class: "text-red-400 hover:text-red-300",
+                        data: { confirm: "Are you sure you want to confirm this data erasure? This action cannot be undone." } do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                    <% end %>
+                  <% elsif request.completed? %>
+                    <span class="text-green-400">Completed</span>
+                  <% else %>
+                    <span class="text-gray-500">Processing...</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-gray-400 text-center py-8">No erasure requests found</p>
+    <% end %>
+  </div>
+
+  <!-- Consent Records -->
+  <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-white">Consent Records</h3>
+      <%= link_to admin_gdpr_user_consent_history_path(@user), class: "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <span>Manage Consent</span>
+      <% end %>
+    </div>
+    
+    <% if @consent_records.any? %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Granted</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Withdrawn</th>
+            </tr>
+          </thead>
+          <tbody class="bg-gray-800 divide-y divide-gray-700">
+            <% @consent_records.each do |consent| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= consent.consent_type.titleize %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 text-xs rounded-full <%= consent.granted? ? 'bg-green-600 text-white' : 'bg-red-600 text-white' %>">
+                    <%= consent.granted? ? 'Granted' : 'Withdrawn' %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= consent.granted_at&.strftime("%B %d, %Y at %I:%M %p") || '-' %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <%= consent.withdrawn_at&.strftime("%B %d, %Y at %I:%M %p") || '-' %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-gray-400 text-center py-8">No consent records found</p>
+    <% end %>
+  </div>
+</div>

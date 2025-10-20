@@ -26,6 +26,9 @@
     
     <!-- Luxon for Tabulator datetime formatter -->
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    
+    <!-- Tabulator JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
     <style>
       /* CSS Variables for Tabulator Theme */
       :root {
@@ -425,6 +428,7 @@
           <span class="sidebar-text">Analytics</span>
         <% end %>
         
+        
         <%= link_to admin_subscribers_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"/>
@@ -654,6 +658,27 @@
           </svg>
           <span class="sidebar-text">Users</span>
         <% end %>
+
+        <%= link_to admin_system_headless_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">Headless</span>
+        <% end %>
+        
+        <%= link_to admin_mcp_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white #{'bg-indigo-600 text-white' if current_page?(admin_mcp_settings_path)}" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          <span class="sidebar-text">MCP</span>
+        <% end %>
+        
+        <%= link_to admin_system_channels_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v18a1 1 0 01-1 1H4a1 1 0 01-1-1V1a1 1 0 011-1h2a1 1 0 011 1v3m0 0h8m-8 0H5a1 1 0 00-1 1v14a1 1 0 001 1h14a1 1 0 001-1V5a1 1 0 00-1-1h-2M7 4h8"/>
+          </svg>
+          <span class="sidebar-text">Content Channels</span>
+        <% end %>
         
         
         <%= link_to admin_integrations_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
@@ -663,18 +688,27 @@
           <span class="sidebar-text">Integrations</span>
         <% end %>
         
-        <%= link_to admin_system_headless_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <span class="sidebar-text">Headless</span>
-        <% end %>
+        
         
         <%= link_to admin_system_api_tokens_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
           </svg>
           <span class="sidebar-text">API Tokens</span>
+        <% end %>
+        
+        <%= link_to admin_gdpr_index_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span class="sidebar-text">GDPR Compliance</span>
+        <% end %>
+        
+        <%= link_to admin_consent_index_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span class="sidebar-text">Consent Management</span>
         <% end %>
         
         <%= link_to admin_trash_index_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
@@ -825,6 +859,14 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
           </svg>
           <span class="sidebar-text">Privacy</span>
+        <% end %>
+
+        <%= link_to admin_geolocation_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_geolocation_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span class="sidebar-text">Geolocation</span>
         <% end %>
         
         <%= link_to admin_email_settings_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg #{current_page?(admin_email_settings_path) ? 'bg-indigo-600 text-white' : 'hover:bg-[#1a1a1a] text-gray-300 hover:text-white'} transition" do %>
@@ -1366,6 +1408,8 @@
           targetSection = 'plugins';
         } else if (currentPath.includes('/admin/ai_agents') || currentPath.includes('/admin/ai_providers')) {
           targetSection = 'ai';
+        } else if (currentPath.includes('/admin/settings/mcp')) {
+          targetSection = 'system';
         } else if (currentPath.includes('/admin/settings/') || 
                    currentPath.includes('/admin/pixels') ||
                    currentPath.includes('/admin/storage_providers') ||
@@ -1373,7 +1417,9 @@
           targetSection = 'settings';
         } else if (currentPath.includes('/admin/users') || 
                    currentPath.includes('/admin/integrations') || 
-                   currentPath.includes('/admin/system/')) {
+                   currentPath.includes('/admin/system/') ||
+                   currentPath.includes('/admin/gdpr') ||
+                   currentPath.includes('/admin/consent')) {
           targetSection = 'system';
         } else if (currentPath.includes('/admin/tools') || currentPath.includes('/admin/import') || 
                    currentPath.includes('/admin/export') || currentPath.includes('/admin/site_health') ||

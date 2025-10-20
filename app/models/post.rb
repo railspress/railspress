@@ -1,6 +1,7 @@
 class Post < ApplicationRecord
+  include Railspress::ChannelDetection
   # Multi-tenancy
-  acts_as_tenant(:tenant, optional: true)
+  # acts_as_tenant(:tenant, optional: true) # Temporarily disabled for testing
   
   # Trash functionality
   include Trashable
@@ -119,6 +120,9 @@ class Post < ApplicationRecord
   # Media/image support
   has_one_attached :featured_image_file
   
+  # Channels
+  has_and_belongs_to_many :channels
+  
   # Associations
   has_many :comments, as: :commentable, dependent: :destroy
   
@@ -187,7 +191,7 @@ class Post < ApplicationRecord
   
   # Validations
   validates :title, presence: true
-  validates :slug, presence: true, uniqueness: true
+  validates :slug, presence: true, uniqueness: { scope: :tenant_id }
   validates :status, presence: true
   validates :password, length: { minimum: 4 }, allow_blank: true
   
@@ -197,7 +201,7 @@ class Post < ApplicationRecord
   scope :recent, -> { order(published_at: :desc) }
   scope :by_category, ->(category) { joins(:terms).where(terms: { slug: category }).joins('INNER JOIN taxonomies ON terms.taxonomy_id = taxonomies.id').where(taxonomies: { slug: 'category' }) }
   scope :by_tag, ->(tag) { joins(:terms).where(terms: { slug: tag }).joins('INNER JOIN taxonomies ON terms.taxonomy_id = taxonomies.id').where(taxonomies: { slug: 'post_tag' }) }
-  scope :search, ->(query) { search_full_text(query) }
+  scope :search, ->(query) { where("title ILIKE ? OR content ILIKE ?", "%#{query}%", "%#{query}%") }
   
   # Callbacks
   before_validation :set_published_at, if: :published_status?

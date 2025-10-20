@@ -1,0 +1,160 @@
+<% content_for :page_title, "New Override" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white mb-2">New Override</h1>
+      <p class="text-gray-400">Create a new content override for <%= @channel.name %></p>
+    </div>
+    <%= link_to admin_system_channel_channel_overrides_path(@channel), class: "flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] hover:border-indigo-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Back to Overrides
+    <% end %>
+  </div>
+
+  <!-- Form -->
+  <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
+    <%= form_with model: [:admin, :system, @channel, @channel_override], local: true, class: "space-y-6" do |form| %>
+      <% if @channel_override.errors.any? %>
+        <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="text-red-400 font-medium">Please fix the following errors:</h3>
+          </div>
+          <ul class="text-red-300 text-sm space-y-1">
+            <% @channel_override.errors.full_messages.each do |message| %>
+              <li>• <%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Basic Information -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold text-white mb-4">Override Configuration</h3>
+          
+          <div>
+            <%= form.label :resource_type, class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.select :resource_type, 
+                options_for_select(@resource_types.map { |type| [type, type] }, @channel_override.resource_type),
+                { prompt: "Select resource type..." },
+                class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="text-xs text-gray-500 mt-1">The type of resource to override</p>
+          </div>
+
+          <div>
+            <%= form.label :resource_id, class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.number_field :resource_id, 
+                class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                placeholder: "e.g., 123" %>
+            <p class="text-xs text-gray-500 mt-1">The ID of the specific resource to override</p>
+          </div>
+
+          <div>
+            <%= form.label :kind, class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.select :kind, 
+                options_for_select([
+                  ['Override - Replace data', 'override'],
+                  ['Exclude - Hide resource', 'exclude']
+                ], @channel_override.kind),
+                { prompt: "Select override type..." },
+                class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="text-xs text-gray-500 mt-1">Whether to override data or exclude the resource</p>
+          </div>
+
+          <div>
+            <%= form.label :path, class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.text_field :path, 
+                class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                placeholder: "e.g., title, settings.theme.color, meta.description" %>
+            <p class="text-xs text-gray-500 mt-1">Dot-separated path to the field to override (e.g., title, settings.theme.color)</p>
+          </div>
+
+          <div class="flex items-center">
+            <%= form.check_box :enabled, 
+                class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500 focus:ring-2" %>
+            <%= form.label :enabled, "Enable this override", class: "ml-2 text-sm text-gray-300" %>
+          </div>
+        </div>
+
+        <!-- Data Configuration -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-semibold text-white mb-4">Override Data</h3>
+          
+          <div>
+            <%= form.label :data, "Override Data (JSON)", class: "block text-sm font-medium text-gray-300 mb-2" %>
+            <%= form.text_area :data, 
+                value: @channel_override.data.present? ? JSON.pretty_generate(@channel_override.data) : '{}',
+                rows: 12,
+                class: "w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm" %>
+            <p class="text-xs text-gray-500 mt-1">The data to use for the override (must be valid JSON). For exclusions, this can be empty.</p>
+          </div>
+
+          <!-- Quick Examples -->
+          <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg p-4">
+            <h4 class="text-sm font-medium text-gray-300 mb-3">Quick Examples</h4>
+            <div class="space-y-2 text-xs">
+              <div>
+                <button type="button" class="text-indigo-400 hover:text-indigo-300" onclick="setExample('title', '{\"title\": \"New Title\"}')">
+                  Override title: {"title": "New Title"}
+                </button>
+              </div>
+              <div>
+                <button type="button" class="text-indigo-400 hover:text-indigo-300" onclick="setExample('settings.theme.color', '{\"settings\": {\"theme\": {\"color\": \"#ff0000\"}}}')">
+                  Override theme color: {"settings": {"theme": {"color": "#ff0000"}}}
+                </button>
+              </div>
+              <div>
+                <button type="button" class="text-indigo-400 hover:text-indigo-300" onclick="setExample('meta.description', '{\"meta\": {\"description\": \"New description\"}}')">
+                  Override meta description: {"meta": {"description": "New description"}}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-end gap-3 pt-6 border-t border-[#2a2a2a]">
+        <%= link_to admin_system_channel_channel_overrides_path(@channel), class: "px-4 py-2 border border-[#2a2a2a] hover:border-gray-500 text-gray-300 hover:text-white rounded-lg transition" do %>
+          Cancel
+        <% end %>
+        <%= form.submit "Create Override", 
+            class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function setExample(path, data) {
+    document.querySelector('input[name="channel_override[path]"]').value = path;
+    document.querySelector('textarea[name="channel_override[data]"]').value = data;
+  }
+
+  // Auto-format JSON
+  document.addEventListener('DOMContentLoaded', function() {
+    const dataTextarea = document.querySelector('textarea[name="channel_override[data]"]');
+    
+    if (dataTextarea) {
+      dataTextarea.addEventListener('blur', function() {
+        try {
+          const parsed = JSON.parse(this.value);
+          this.value = JSON.pretty_generate(parsed);
+        } catch (e) {
+          // Invalid JSON, don't format
+        }
+      });
+    }
+  });
+</script>
+

@@ -326,6 +326,13 @@ class Admin::SettingsController < Admin::BaseController
       large_width: SiteSetting.get('large_width', 1024),
       large_height: SiteSetting.get('large_height', 1024),
       auto_optimize_images: SiteSetting.get('auto_optimize_images', false),
+      # System-wide compression level settings
+      image_compression_level: SiteSetting.get('image_compression_level', 'lossy'),
+      image_quality: SiteSetting.get('image_quality', 85),
+      image_compression_level_value: SiteSetting.get('image_compression_level_value', 6),
+      strip_image_metadata: SiteSetting.get('strip_image_metadata', true),
+      enable_webp_variants: SiteSetting.get('enable_webp_variants', true),
+      enable_avif_variants: SiteSetting.get('enable_avif_variants', true),
       allowed_file_types: SiteSetting.get('allowed_file_types', 'jpg,jpeg,png,gif,pdf,doc,docx'),
       max_upload_size: SiteSetting.get('max_upload_size', 10)
     }
@@ -359,7 +366,18 @@ class Admin::SettingsController < Admin::BaseController
       cookie_consent_required: SiteSetting.get('cookie_consent_required', false),
       privacy_policy_page_id: SiteSetting.get('privacy_policy_page_id', ''),
       allow_user_registration: SiteSetting.get('allow_user_registration', true),
-      default_user_role: SiteSetting.get('default_user_role', 'subscriber')
+      default_user_role: SiteSetting.get('default_user_role', 'subscriber'),
+      # Analytics Privacy Settings
+      analytics_enabled: SiteSetting.get('analytics_enabled', true),
+      analytics_require_consent: SiteSetting.get('analytics_require_consent', true),
+      analytics_anonymize_ip: SiteSetting.get('analytics_anonymize_ip', true),
+      analytics_track_bots: SiteSetting.get('analytics_track_bots', false),
+      analytics_data_retention_days: SiteSetting.get('analytics_data_retention_days', 365),
+      analytics_consent_message: SiteSetting.get('analytics_consent_message', 'We use privacy-friendly analytics to understand how you use our site. No personal data is collected.'),
+      # High-Volume Performance Settings
+      analytics_high_volume_mode: SiteSetting.get('analytics_high_volume_mode', false),
+      analytics_archive_enabled: SiteSetting.get('analytics_archive_enabled', true),
+      analytics_batch_size: SiteSetting.get('analytics_batch_size', 1000)
     }
   end
 
@@ -475,7 +493,9 @@ class Admin::SettingsController < Admin::BaseController
       auto_redirect_old_urls comments_enabled comments_moderation 
       comment_registration_required show_avatars gdpr_compliance_enabled
       cookie_consent_required allow_user_registration email_logging_enabled
-      hide_branding enable_cdn auto_optimize_uploads
+      hide_branding enable_cdn auto_optimize_uploads strip_image_metadata
+      enable_webp_variants enable_avif_variants analytics_enabled
+      analytics_require_consent analytics_anonymize_ip analytics_track_bots
     ]
     
     integer_settings = %w[
@@ -483,7 +503,8 @@ class Admin::SettingsController < Admin::BaseController
       image_max_width image_max_height thumbnail_width thumbnail_height
       medium_width medium_height large_width large_height max_upload_size
       close_comments_after_days excerpt_length smtp_port smtp_timeout
-      max_file_size
+      max_file_size image_quality image_compression_level_value
+      analytics_data_retention_days
     ]
     
     if boolean_settings.include?(key)

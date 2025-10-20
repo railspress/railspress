@@ -1,25 +1,31 @@
-admin:
-  email: admin@example.com
-  encrypted_password: <%= User.new.send(:password_digest, 'password123') %>
-  name: Admin User
-  role: administrator
-  created_at: <%= 1.month.ago %>
-  updated_at: <%= 1.month.ago %>
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-user:
-  email: user@example.com
-  encrypted_password: <%= User.new.send(:password_digest, 'password123') %>
-  name: Regular User
-  role: subscriber
+admin:
+  id: 1
+  email: "admin@example.com"
+  encrypted_password: <%= User.new.send(:password_digest, "password") %>
+  name: "Admin User"
+  role: "administrator"
+  tenant_id: 1
   created_at: <%= 1.week.ago %>
   updated_at: <%= 1.week.ago %>
 
-author:
-  email: author@example.com
-  encrypted_password: <%= User.new.send(:password_digest, 'password123') %>
-  name: Content Author
-  role: author
-  created_at: <%= 2.weeks.ago %>
-  updated_at: <%= 2.weeks.ago %>
+regular:
+  id: 2
+  email: "user@example.com"
+  encrypted_password: <%= User.new.send(:password_digest, "password") %>
+  name: "Regular User"
+  role: "author"
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>
 
-
+editor:
+  id: 3
+  email: "editor@example.com"
+  encrypted_password: <%= User.new.send(:password_digest, "password") %>
+  name: "Editor User"
+  role: "editor"
+  tenant_id: 1
+  created_at: <%= 1.week.ago %>
+  updated_at: <%= 1.week.ago %>

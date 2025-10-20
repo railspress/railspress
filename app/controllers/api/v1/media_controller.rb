@@ -1,194 +1,161 @@
-class Api::V1::MediaController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_medium, only: %i[show update destroy approve reject]
-  before_action :validate_media_permissions
-  
-  # GET /api/v1/media
-  def index
-    @media = Medium.with_file_info.includes(:upload, :user, upload: :storage_provider)
-    
-    # Filter by type
-    if params[:type].present?
-      @media = @media.by_type(params[:type])
-    end
-    
-    # Filter by user
-    if params[:user_id].present?
-      @media = @media.where(user_id: params[:user_id])
-    end
-    
-    # Filter by quarantine status
-    if params[:quarantined].present?
-      @media = params[:quarantined] == 'true' ? @media.quarantined : @media.approved
-    end
-    
-    # Search
-    if params[:search].present?
-      @media = @media.where("media.title ILIKE ? OR media.description ILIKE ?", 
-                           "%#{params[:search]}%", "%#{params[:search]}%")
-    end
-    
-    # Pagination
-    @media = @media.page(params[:page]).per(params[:per_page] || 20)
-    
-    render json: {
-      media: @media.map(&:api_attributes),
-      pagination: {
-        current_page: @media.current_page,
-        total_pages: @media.total_pages,
-        total_count: @media.total_count,
-        per_page: @media.limit_value
-      },
-      stats: {
-        total: Medium.count,
-        images: Medium.images.count,
-        videos: Medium.videos.count,
-        documents: Medium.documents.count,
-        quarantined: Medium.quarantined.count
-      }
-    }
-  end
-  
-  # GET /api/v1/media/:id
-  def show
-    render json: @medium.api_attributes
-  end
-  
-  # POST /api/v1/media
-  def create
-    # Check if we're creating from an existing upload
-    if params[:upload_id].present?
-      upload = current_user.uploads.find(params[:upload_id])
+module Api
+  module V1
+    class MediaController < BaseController
+      before_action :set_medium, only: [:show, :update, :destroy]
       
-      @medium = Medium.new(medium_params.except(:file))
-      @medium.user = current_user
-      @medium.upload = upload
-      
-      if @medium.save
-        render json: @medium.api_attributes, status: :created
-      else
-        render json: { 
-          error: 'Media creation failed', 
-          details: @medium.errors.full_messages 
-        }, status: :unprocessable_entity
-      end
-    else
-      # Create new upload and media together
-      if params[:medium][:file].present?
-        # Create upload first
-        upload = current_user.uploads.build(
-          title: params[:medium][:title] || params[:medium][:file].original_filename,
-          description: params[:medium][:description],
-          alt_text: params[:medium][:alt_text]
+      # GET /api/v1/media
+      def index
+        media = Medium.all
+        
+        # Filter by type
+        # media = media.by_type(params[:type]) if params[:type].present? # Temporarily disabled
+        
+        # Filter by channel
+        if params[:channel].present?
+          channel = Channel.find_by(slug: params[:channel])
+          if channel
+            # Get media assigned to this channel or global media (no channel assignment)
+            media = media.left_joins(:channels)
+                         .where('channels.id = ? OR channels.id IS NULL', channel.id)
+            
+            # Apply channel exclusions
+            excluded_media_ids = channel.channel_overrides
+                                       .exclusions
+                                       .enabled
+                                       .where(resource_type: 'Medium')
+                                       .pluck(:resource_id)
+            media = media.where.not(id: excluded_media_ids) if excluded_media_ids.any?
+            
+            @current_channel = channel
+          end
+        end
+        
+        # Only published for non-authenticated or non-admin users
+        # unless current_api_user&.can_edit_others_posts?
+        #   media = media.where(status: 'approved')
+        # end
+        
+        # Paginate
+        @media = paginate(media.order(created_at: :desc))
+        
+        render_success(
+          @media.map { |medium| medium_serializer(medium) },
+          { filters: filter_meta }
         )
-        upload.file.attach(params[:medium][:file])
-        upload.storage_provider = StorageProvider.active.first
-        
-        # Security validation
-        security = UploadSecurity.current
-        unless security.file_allowed?(params[:medium][:file])
-          render json: { 
-            error: 'File not allowed', 
-            details: 'File type, size, or extension is not permitted' 
-          }, status: :forbidden
-          return
+      end
+      
+      # GET /api/v1/media/:id
+      def show
+        # Set current channel if channel parameter is provided
+        if params[:channel].present?
+          @current_channel = Channel.find_by(slug: params[:channel])
         end
         
-        # Check for suspicious files
-        if security.file_suspicious?(params[:medium][:file])
-          if security.quarantine_suspicious?
-            upload.quarantined = true
-            upload.quarantine_reason = 'Suspicious file pattern detected'
-          else
-            render json: { 
-              error: 'File rejected', 
-              details: 'File appears to be suspicious and has been blocked' 
-            }, status: :forbidden
-            return
-          end
+        render_success(medium_serializer(@medium, detailed: true))
+      end
+      
+      # POST /api/v1/media
+      def create
+        unless current_api_user&.can_edit_others_posts?
+          return render_error('You do not have permission to create media', :forbidden)
         end
         
-        if upload.save
-          # Create media record
-          @medium = Medium.new(medium_params.except(:file))
-          @medium.user = current_user
-          @medium.upload = upload
-          
-          if @medium.save
-            render json: @medium.api_attributes, status: :created
-          else
-            upload.destroy # Clean up upload if media creation fails
-            render json: { 
-              error: 'Media creation failed', 
-              details: @medium.errors.full_messages 
-            }, status: :unprocessable_entity
-          end
+        @medium = current_api_user.media.build(medium_params)
+        
+        if @medium.save
+          render_success(medium_serializer(@medium), {}, :created)
         else
-          render json: { 
-            error: 'Upload failed', 
-            details: upload.errors.full_messages 
-          }, status: :unprocessable_entity
+          render_error(@medium.errors.full_messages.join(', '))
         end
-      else
-        render json: { 
-          error: 'No file provided', 
-          details: 'Either file or upload_id must be provided' 
-        }, status: :bad_request
+      end
+      
+      # PATCH/PUT /api/v1/media/:id
+      def update
+        unless current_api_user&.can_edit_others_posts?
+          return render_error('You do not have permission to edit media', :forbidden)
+        end
+        
+        if @medium.update(medium_params)
+          render_success(medium_serializer(@medium))
+        else
+          render_error(@medium.errors.full_messages.join(', '))
+        end
+      end
+      
+      # DELETE /api/v1/media/:id
+      def destroy
+        unless current_api_user&.can_edit_others_posts?
+          return render_error('You do not have permission to delete media', :forbidden)
+        end
+        
+        @medium.destroy
+        render_success({ message: 'Media deleted successfully' })
+      end
+      
+      private
+      
+      def set_medium
+        @medium = Medium.find(params[:id])
+      end
+      
+      def medium_params
+        params.require(:medium).permit(
+          :title, :description, :file, :alt_text, :status
+        )
+      end
+      
+      def medium_serializer(medium, detailed: false)
+        # Get channel slugs for this medium
+        channel_slugs = medium.channels.pluck(:slug)
+        
+        # Start with basic medium data
+        medium_data = {
+          id: medium.id,
+          title: medium.title,
+          file_name: medium.file_name,
+          file_type: medium.file_type,
+          channels: channel_slugs,
+          channel_context: @current_channel&.slug
+        }
+        
+        # Add detailed fields if requested
+        if detailed
+          medium_data.merge!({
+            description: medium.description,
+            alt_text: medium.alt_text,
+            file_size: medium.file_size,
+            created_at: medium.created_at,
+            updated_at: medium.updated_at,
+            url: medium.file_url if medium.respond_to?(:file_url)
+          })
+        end
+        
+        # Apply channel overrides if current channel is set
+        if @current_channel
+          original_data = medium_data.dup
+          overridden_data, provenance = @current_channel.apply_overrides_to_data(
+            original_data, 
+            'Medium', 
+            medium.id, 
+            true
+          )
+          
+          # Merge overridden data
+          medium_data.merge!(overridden_data)
+          
+          # Add provenance information
+          medium_data[:provenance] = provenance if provenance.present?
+        end
+        
+        medium_data
+      end
+      
+      def filter_meta
+        {
+          type: params[:type],
+          channel: params[:channel]
+        }
       end
     end
-  end
-  
-  # PATCH/PUT /api/v1/media/:id
-  def update
-    if @medium.update(medium_params.except(:file))
-      render json: @medium.api_attributes
-    else
-      render json: { 
-        error: 'Update failed', 
-        details: @medium.errors.full_messages 
-      }, status: :unprocessable_entity
-    end
-  end
-  
-  # DELETE /api/v1/media/:id
-  def destroy
-    @medium.destroy!
-    head :no_content
-  end
-  
-  # POST /api/v1/media/:id/approve
-  def approve
-    if @medium.quarantined?
-      @medium.upload.approve!
-      render json: { message: 'Media approved and released from quarantine' }
-    else
-      render json: { error: 'Media is not quarantined' }, status: :bad_request
-    end
-  end
-  
-  # POST /api/v1/media/:id/reject
-  def reject
-    if @medium.quarantined?
-      @medium.destroy!
-      render json: { message: 'Media rejected and deleted' }
-    else
-      render json: { error: 'Media is not quarantined' }, status: :bad_request
-    end
-  end
-  
-  private
-  
-  def set_medium
-    @medium = current_user.media.find(params[:id])
-  end
-  
-  def validate_media_permissions
-    unless current_user.can_upload_media?
-      render json: { error: 'Insufficient permissions' }, status: :forbidden
-    end
-  end
-  
-  def medium_params
-    params.require(:medium).permit(:title, :description, :alt_text, :file, :upload_id)
   end
 end

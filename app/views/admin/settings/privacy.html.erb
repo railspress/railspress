@@ -59,6 +59,53 @@
             </div>
           </div>
 
+          <!-- Analytics Privacy -->
+          <div>
+            <h3 class="text-lg font-semibold text-white mb-4">Analytics & Tracking Privacy</h3>
+            
+            <div class="space-y-4">
+              <%= label_tag 'settings[analytics_enabled]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[analytics_enabled]', '1', @settings[:analytics_enabled],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300">Enable privacy-friendly analytics</span>
+              <% end %>
+
+              <%= label_tag 'settings[analytics_require_consent]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[analytics_require_consent]', '1', @settings[:analytics_require_consent],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300">Require explicit consent for analytics</span>
+              <% end %>
+
+              <%= label_tag 'settings[analytics_anonymize_ip]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[analytics_anonymize_ip]', '1', @settings[:analytics_anonymize_ip],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300">Anonymize IP addresses (GDPR compliant)</span>
+              <% end %>
+
+              <%= label_tag 'settings[analytics_track_bots]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[analytics_track_bots]', '1', @settings[:analytics_track_bots],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300">Track bot traffic (not recommended for privacy)</span>
+              <% end %>
+
+              <div>
+                <%= label_tag 'settings[analytics_data_retention_days]', 'Data Retention Period (days)', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+                <%= number_field_tag 'settings[analytics_data_retention_days]', @settings[:analytics_data_retention_days],
+                    min: 1, max: 3650, step: 1,
+                    class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                <p class="mt-1 text-sm text-gray-500">How long to keep analytics data (GDPR recommends minimal retention)</p>
+              </div>
+
+              <div>
+                <%= label_tag 'settings[analytics_consent_message]', 'Analytics Consent Message', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+                <%= text_area_tag 'settings[analytics_consent_message]', @settings[:analytics_consent_message],
+                    rows: 3, placeholder: 'We use privacy-friendly analytics to understand how you use our site. No personal data is collected.',
+                    class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                <p class="mt-1 text-sm text-gray-500">Customize the consent message shown to users</p>
+              </div>
+            </div>
+          </div>
+
           <!-- Data Privacy Info -->
           <div class="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
             <div class="flex items-start space-x-3">
@@ -68,6 +115,35 @@
               <div class="text-sm text-purple-300">
                 <p class="font-semibold mb-1">Privacy & Data Protection</p>
                 <p>These settings help ensure compliance with privacy regulations like GDPR. Enable cookie consent and privacy policy to meet legal requirements.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- High-Volume Performance Settings -->
+          <div class="pt-6 border-t border-[#2a2a2a]">
+            <h3 class="text-lg font-medium text-white mb-4">High-Volume Performance</h3>
+            
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-md font-medium text-white">High-Volume Mode</h4>
+                  <p class="text-gray-400 text-sm">Enable for sites with high traffic (10k+ pageviews/day)</p>
+                </div>
+                <%= check_box_tag 'settings[analytics_high_volume_mode]', '1', @settings[:analytics_high_volume_mode], class: 'w-4 h-4 text-indigo-600 bg-[#1a1a1a] border-gray-600 rounded focus:ring-indigo-500' %>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-md font-medium text-white">Archive Old Data</h4>
+                  <p class="text-gray-400 text-sm">Archive old analytics data instead of deleting</p>
+                </div>
+                <%= check_box_tag 'settings[analytics_archive_enabled]', '1', @settings[:analytics_archive_enabled], class: 'w-4 h-4 text-indigo-600 bg-[#1a1a1a] border-gray-600 rounded focus:ring-indigo-500' %>
+              </div>
+              
+              <div>
+                <%= label_tag 'settings[analytics_batch_size]', 'Batch Size for Processing', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+                <%= number_field_tag 'settings[analytics_batch_size]', @settings[:analytics_batch_size], class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                <p class="mt-1 text-sm text-gray-500">Number of records to process in each batch (higher = faster but uses more memory)</p>
               </div>
             </div>
           </div>

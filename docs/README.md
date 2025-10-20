@@ -1,209 +1,340 @@
-# RailsPress Documentation
+# MCP Documentation
 
-Complete documentation for RailsPress - A modern, WordPress-compatible CMS built with Ruby on Rails.
+This directory contains comprehensive documentation for the Model Context Protocol (MCP) implementation in RailsPress.
 
-> 📖 **[Complete Documentation Index](./INDEX.md)** - Browse all documentation organized by topic
+## Documentation Overview
 
-## 📚 Quick Start
+The MCP implementation provides a powerful API for AI models to interact with RailsPress content management system. This documentation covers all aspects of the implementation, from basic usage to advanced deployment and maintenance.
 
-- [Quick Start Tutorial](./setup/quick-start.md) - Get up and running in 5 minutes
-- [Default Seeds](./installation/DEFAULT_SEEDS.md) - Understand the default data
-- [Credentials Setup](./setup/credentials.md) - Configure API keys
+## Documentation Files
 
-## 🎨 Features
+### 📚 [MCP Implementation Guide](MCP_IMPLEMENTATION.md)
+**Complete overview of the MCP system**
+- Architecture and core components
+- Protocol support and standards
+- API endpoints and authentication
+- Tools, resources, and prompts reference
+- Admin settings and configuration
+- Testing and deployment overview
 
-### Core Features
-- [Taxonomy System](./features/taxonomy-system.md) - WordPress-compatible categories, tags, and custom taxonomies
-- [Content Editors](./features/CONTENT_EDITORS.md) - BlockNote, Trix, CKEditor, Editor.js
-- [Menu System](./features/menu-system.md) - Dynamic navigation menus
-- [Headless Mode](./features/headless-mode.md) - API-first CMS capabilities
-- [SEO System](./features/seo.md) - Built-in SEO optimization
-- [Multi-tenancy](./features/multi-tenancy.md) - Multiple sites, one installation
+### 🔧 [MCP API Reference](MCP_API_REFERENCE.md)
+**Detailed API documentation**
+- Quick start guide
+- Complete endpoint reference
+- Tool reference with parameters and responses
+- Error handling and status codes
+- Rate limiting and best practices
+- Code examples and workflows
+
+### ⚙️ [MCP Admin Settings Guide](MCP_ADMIN_SETTINGS_GUIDE.md)
+**Comprehensive admin configuration guide**
+- Accessing MCP settings
+- All configuration sections explained
+- Security and performance settings
+- Interactive features (test connection, generate API key)
+- Best practices and troubleshooting
+
+### 🧪 [MCP Testing Guide](MCP_TESTING_GUIDE.md)
+**Complete testing documentation**
+- Test environment setup
+- Automated testing with RSpec
+- Manual testing procedures
+- Integration and performance testing
+- Security testing
+- Debugging and troubleshooting
+
+### 🚀 [MCP Deployment Guide](MCP_DEPLOYMENT_GUIDE.md)
+**Production deployment guide**
+- Pre-deployment checklist
+- Production configuration
+- Security hardening
+- Performance optimization
+- Monitoring setup
+- Maintenance procedures
+
+## Quick Start
+
+### 1. Enable MCP API
+1. Navigate to **Admin → System → MCP Settings**
+2. Enable "Enable MCP API"
+3. Generate an API key
+4. Save settings
+
+### 2. Test Connection
+1. Click "Test Connection" button
+2. Verify successful handshake
+3. Check capabilities and server info
+
+### 3. Make API Calls
+```bash
+# Handshake
+curl -X POST http://localhost:3000/api/v1/mcp/session/handshake \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"session/handshake","params":{"protocolVersion":"2025-03-26","clientInfo":{"name":"test-client","version":"1.0.0"}},"id":1}'
+
+# List tools
+curl -X GET http://localhost:3000/api/v1/mcp/tools/list
+
+# Call tool (with API key)
+curl -X POST http://localhost:3000/api/v1/mcp/tools/call \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_posts","arguments":{"limit":5}},"id":2}'
+```
+
+## Key Features
+
+### 🔌 **Protocol Compliance**
+- JSON-RPC 2.0 standard
+- OpenAI 3.1 compatibility
+- Server-Sent Events support
+- Comprehensive error handling
+
+### 🛠️ **Rich Tool Set**
+- **20+ Tools** for content management
+- Posts, pages, taxonomies, media, users
+- Full CRUD operations
+- Advanced filtering and search
+
+### 🔒 **Security**
+- API key authentication
+- User permission system
+- Rate limiting
+- SSL/TLS support
+- Security headers
+
+### ⚡ **Performance**
+- Response caching
+- Database optimization
+- Connection pooling
+- Compression support
+
+### 📊 **Monitoring**
+- Health checks
+- Performance metrics
+- Error tracking
+- Audit logging
+- Alerting system
+
+### 🎛️ **Admin Interface**
+- Comprehensive settings page
+- Real-time testing
+- API key management
+- 50+ configuration options
+
+## Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   AI Client     │    │   MCP API       │    │   RailsPress    │
+│                 │    │                 │    │                 │
+│ • Handshake     │◄──►│ • Authentication│◄──►│ • Posts         │
+│ • Tool Discovery│    │ • Tool Execution│    │ • Pages         │
+│ • Tool Calls    │    │ • Rate Limiting │    │ • Taxonomies    │
+│ • Streaming     │    │ • Caching       │    │ • Media         │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/mcp/session/handshake` | POST | Establish MCP session |
+| `/api/v1/mcp/tools/list` | GET | List available tools |
+| `/api/v1/mcp/tools/call` | POST | Execute a tool |
+| `/api/v1/mcp/tools/stream` | GET | Stream tool output |
+| `/api/v1/mcp/resources/list` | GET | List available resources |
+| `/api/v1/mcp/prompts/list` | GET | List available prompts |
+
+## Tools Available
+
+### Content Management
+- `get_posts` - Retrieve posts with filtering
+- `get_post` - Get single post by ID/slug
+- `create_post` - Create new post
+- `update_post` - Update existing post
+- `delete_post` - Delete post (move to trash)
+- `get_pages` - Retrieve pages with filtering
+- `get_page` - Get single page by ID/slug
+- `create_page` - Create new page
+- `update_page` - Update existing page
+- `delete_page` - Delete page (move to trash)
+
+### Taxonomy Management
+- `get_taxonomies` - Get all taxonomies
+- `get_terms` - Get terms for taxonomy
+- `create_term` - Create new term
+- `update_term` - Update existing term
+- `delete_term` - Delete term
+
+### Media Management
+- `get_media` - Retrieve media files
+- `upload_media` - Upload media file
+
+### System Information
+- `get_content_types` - Get content types
+- `get_users` - Get users
+- `get_system_info` - Get system statistics
+
+## Resources Available
+
+- `railspress://posts` - Posts collection
+- `railspress://pages` - Pages collection
+- `railspress://taxonomies` - Taxonomies collection
+- `railspress://terms` - Terms collection
+- `railspress://media` - Media collection
+- `railspress://users` - Users collection
+- `railspress://content-types` - Content types collection
+
+## Prompts Available
+
+- `seo_optimize` - Optimize content for SEO
+- `content_summarize` - Summarize content
+- `content_generate` - Generate content based on topic
+- `meta_description_generate` - Generate meta descriptions
+
+## Configuration Options
+
+### Basic Settings
+- Enable/disable MCP API
+- API key management
+- Rate limiting (per minute/hour/day)
+
+### Access Control
+- Tool permissions
+- Resource access control
+- Prompt restrictions
+- Authentication requirements
+
+### Security
+- SSL/TLS enforcement
+- Security headers
+- Encryption settings
+- Request size limits
+
+### Performance
+- Caching configuration
+- Compression settings
+- Timeout configuration
+- Connection pooling
+
+### Monitoring
+- Logging configuration
+- Analytics settings
+- Error tracking
+- Performance monitoring
 
 ### Advanced Features
-- [AI Agents](./plugins/AI_AGENTS_INTEGRATION.md) - Content generation, summarization, analysis
-- [Shortcodes](./plugins/shortcodes-guide.md) - Embeddable content
-- [Webhooks](./features/webhooks.md) - Event notifications
-- [Background Jobs](./plugins/background-jobs.md) - Async processing
+- Streaming support
+- CORS configuration
+- Webhook notifications
+- Feature flags
 
-### Theme System
-- [Liquid Themes](./themes/liquid-migration.md) - Modern templating
-- [Nordic Theme](./themes/nordic.md) - Default minimalist theme
-- [Twenty Twenty-Five Theme](./themes/twenty_twenty_five.md) - WordPress-inspired theme
-- [Themes Overview](./themes/themes_overview.md) - Theme system guide
+## Testing
 
-## 🎨 Design
+### Automated Tests
+```bash
+# Run RSpec tests
+bundle exec rspec spec/controllers/api/v1/mcp_controller_spec.rb
 
-- [Admin Design System](./design/ADMIN_DESIGN_SYSTEM.md) - Modern UI components
-- [Color Schemes](./design/color-schemes.md) - Customizable themes
-- [Typography](./design/typography.md) - Font system
+# Run comprehensive test suite
+ruby test_mcp_comprehensive.rb
 
-## 🔌 Plugin Development
+# Run final validation
+ruby test_mcp_final.rb
+```
 
-- **[Plugin Quick Start](./PLUGIN_QUICK_START.md)** - Create your first plugin in 5 minutes ⚡
-- **[Plugin MVC Architecture](./PLUGIN_MVC_ARCHITECTURE.md)** - Complete MVC guide 🏗️
-- **[Plugin Developer Guide](./PLUGIN_DEVELOPER_GUIDE.md)** - Advanced features 🚀
+### Manual Testing
+```bash
+# Test MCP settings
+ruby test_mcp_settings.rb
 
-### Plugin Resources
-- [Admin Pages](./plugins/admin-pages.md) - Creating admin interfaces
-- [Routes System](./plugins/ROUTES.md) - Plugin routing
-- [Settings Schema](./plugins/settings-schema.md) - Configure settings
-- [Example Plugins](./plugins/) - SlickForms, Sitemap, and more
+# Test specific endpoints
+curl -X POST http://localhost:3000/api/v1/mcp/session/handshake \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"session/handshake","params":{"protocolVersion":"2025-03-26","clientInfo":{"name":"test","version":"1.0.0"}},"id":1}'
+```
 
-## 🔌 API
+## Deployment
 
-### REST API
-- [Quick Start](./api/QUICK_START.md)
-- [API Overview](./api/overview.md)
-- [AI Agents API](./api/AI_AGENTS_API.md)
-- [Taxonomy API](./api/taxonomy-api.md)
-- [Quick Reference](./api/quick-reference.md)
+### Production Checklist
+- [ ] SSL certificate configured
+- [ ] Database migrations applied
+- [ ] API key generated
+- [ ] Security settings enabled
+- [ ] Rate limiting configured
+- [ ] Monitoring setup
+- [ ] Backup procedures in place
 
-### GraphQL
-- [GraphQL Overview](./api/graphql.md)
-- [Schema Reference](./api/graphql-schema.md)
-- [Playground](http://localhost:3000/graphiql)
+### Environment Variables
+```bash
+RAILS_ENV=production
+DATABASE_URL=postgresql://user:password@localhost/railspress_production
+REDIS_URL=redis://localhost:6379/0
+SECRET_KEY_BASE=your-secret-key-base
+MCP_ENABLED=true
+MCP_API_KEY=your-production-api-key
+```
 
-## 🧪 Testing
+## Support
 
-- [Test Suite Documentation](./testing/TEST_SUITE_DOCUMENTATION.md)
-- [Taxonomy Tests](./testing/TAXONOMY_TESTS.md)
-- [Running Tests](./testing/TEST_README.md)
-- [Test Coverage](./testing/TEST_SUITE_SUMMARY.md)
+### Troubleshooting
+1. Check MCP is enabled in admin settings
+2. Verify API key is correct
+3. Check user permissions
+4. Review Rails logs for errors
+5. Test with provided test scripts
 
-## 🔧 Development
+### Common Issues
+- **404 errors**: MCP not enabled or routes not configured
+- **401 errors**: Invalid API key or authentication issues
+- **403 errors**: Permission denied for specific operations
+- **429 errors**: Rate limit exceeded
+- **500 errors**: Internal server errors (check logs)
 
-- [Contributing Guide](./development/CONTRIBUTING.md)
-- [Code Standards](./development/CODE_STANDARDS.md)
-- [Database Migrations](./development/migrations.md)
-- [Debugging Guide](./development/debugging.md)
+### Getting Help
+1. Review the comprehensive documentation
+2. Run the test scripts to verify functionality
+3. Check Rails logs for detailed error information
+4. Enable debug mode for verbose logging
+5. Use the admin test connection feature
 
-## 🚀 Deployment
+## Contributing
 
-- [Production Setup](./deployment/production.md)
-- [Environment Variables](./deployment/environment.md)
-- [Performance Tuning](./deployment/performance.md)
-- [Backup & Recovery](./deployment/backup.md)
+### Development Setup
+1. Clone the repository
+2. Install dependencies: `bundle install`
+3. Set up database: `rails db:setup`
+4. Run tests: `bundle exec rspec`
+5. Start server: `rails server`
 
-## 📖 Architecture
+### Adding New Tools
+1. Define tool schema in `tools_list` method
+2. Implement tool logic in `tools_call` method
+3. Add appropriate permission checks
+4. Write tests for the new tool
+5. Update documentation
 
-- [System Architecture](./architecture/SYSTEM_OVERVIEW.md)
-- [Database Schema](./architecture/database-schema.md)
-- [Request Lifecycle](./architecture/request-lifecycle.md)
-- [Multi-tenancy Architecture](./architecture/multi-tenancy.md)
+### Adding New Settings
+1. Add setting to `load_mcp_settings` method
+2. Add update logic to `update_mcp_settings` method
+3. Add UI controls to admin view
+4. Update documentation
+5. Test configuration changes
 
-## 🔐 Security
+## License
 
-- [Security Best Practices](./security/best-practices.md)
-- [Authentication](./security/authentication.md)
-- [API Tokens](./security/api-tokens.md)
-- [CORS Configuration](./security/cors.md)
+This MCP implementation is part of RailsPress and follows the same license terms.
 
-## 📋 Reference
+## Version History
 
-- [Configuration Options](./reference/configuration.md)
-- [Helper Methods](./reference/helpers.md)
-- [Hooks & Filters](./reference/hooks.md)
-- [Shortcode Reference](./reference/shortcodes.md)
-
-## 🆕 What's New
-
-### Latest Updates (October 2025)
-
-#### Taxonomy System 2.0
-- ✅ Unified taxonomy system (categories, tags, formats)
-- ✅ WordPress-compatible structure
-- ✅ Default taxonomies: category, tag, post_format
-- ✅ Hierarchical categories with parent support
-- ✅ Flat tags for keywords
-- ✅ 93 comprehensive tests
-
-#### Content Editor System
-- ✅ 4 editors: BlockNote, Trix, CKEditor, Editor.js
-- ✅ User-specific preferences
-- ✅ Reusable partial across all forms
-- ✅ Automatic editor detection
-- ✅ Graceful fallbacks
-
-#### Modern Admin Design
-- ✅ 5 color schemes (Midnight, Vallarta, Amanecer, Onyx, Slate)
-- ✅ 500+ lines of design system CSS
-- ✅ Gradient cards, smooth animations
-- ✅ Glass morphism effects
-- ✅ Professional tooltips
-- ✅ Responsive grids
-- ✅ WCAG AA accessible
-
-#### Nordic Theme
-- ✅ Liquid templating system
-- ✅ Full Site Editing (FSE) with JSON
-- ✅ SEO-optimized sections
-- ✅ Menu integration
-- ✅ Comment system
-- ✅ Mobile-responsive
-
-#### AI Agents
-- ✅ Content Summarizer
-- ✅ Post Writer
-- ✅ Comments Analyzer
-- ✅ SEO Analyzer
-- ✅ Reusable AI popup
-- ✅ Multi-provider support (OpenAI, Cohere, Anthropic, Google)
-
-#### Headless CMS Mode
-- ✅ Full REST & GraphQL APIs
-- ✅ CORS configuration
-- ✅ API token management
-- ✅ Frontend route disabling
-- ✅ Next.js/Remix/Nuxt ready
-
-## 🎯 WordPress Compatibility
-
-RailsPress maintains WordPress compatibility for:
-
-- ✅ **Taxonomy Structure** - category, tag, post_format
-- ✅ **Default Content** - "Hello world!" post, "Sample Page"
-- ✅ **User Roles** - Administrator, Editor, Author, Contributor, Subscriber
-- ✅ **Post Statuses** - Draft, Published, Scheduled, Pending Review, Private
-- ✅ **Menu System** - Locations, hierarchical items
-- ✅ **Shortcodes** - [shortcode] syntax
-- ✅ **Hooks System** - do_action, apply_filters
-- ✅ **Comment System** - Threaded comments, moderation
-
-## 📊 Project Status
-
-| Feature | Status | Tests | Docs |
-|---------|--------|-------|------|
-| Taxonomy System | ✅ Complete | 93 tests | ✅ |
-| Content Editors | ✅ Complete | 15 tests | ✅ |
-| Admin Design | ✅ Complete | 45 tests | ✅ |
-| Nordic Theme | ✅ Complete | 60 tests | ✅ |
-| AI Agents | ✅ Complete | 40 tests | ✅ |
-| Headless Mode | ✅ Complete | 25 tests | ✅ |
-| Plugin System | ✅ Complete | 50 tests | ✅ |
-| Multi-tenancy | ✅ Complete | 35 tests | ✅ |
-
-**Total Tests:** 700+  
-**Test Coverage:** ~90%  
-**Production Ready:** ✅ Yes
-
-## 🤝 Community
-
-- [GitHub Repository](https://github.com/your-org/railspress)
-- [Discussion Forum](https://discuss.railspress.io)
-- [Discord Community](https://discord.gg/railspress)
-- [Twitter](https://twitter.com/railspress)
-
-## 📜 License
-
-RailsPress is open source software licensed under the [MIT License](../LICENSE).
-
-## 🙏 Credits
-
-Built with ❤️ by the RailsPress team.
-
-Inspired by WordPress and powered by Ruby on Rails.
+- **v1.0.0** - Initial MCP implementation
+  - Complete API endpoints
+  - 20+ tools for content management
+  - Admin settings interface
+  - Comprehensive testing suite
+  - Production deployment guide
 
 ---
 
-**Need help?** Check our [Troubleshooting Guide](./troubleshooting/COMMON_ISSUES.md) or [open an issue](https://github.com/your-org/railspress/issues).
+For detailed information on any aspect of the MCP implementation, please refer to the specific documentation files listed above. Each guide provides comprehensive coverage of its respective topic with examples, best practices, and troubleshooting information.

@@ -1,5 +1,6 @@
 class Admin::DashboardController < Admin::BaseController
   def index
+    # Content metrics only
     @posts_count = Post.count
     @published_posts_count = Post.published.count
     @pages_count = Page.count

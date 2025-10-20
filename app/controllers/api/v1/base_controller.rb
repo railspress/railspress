@@ -16,20 +16,25 @@ class Api::V1::BaseController < ActionController::API
     response.headers['Content-Type'] = 'application/json'
   end
   
-  def authenticate_api_key
-    # Try Authorization header first, then query parameter
-    api_key = request.headers['Authorization']&.split(' ')&.last || params[:api_key]
-    @api_user = User.find_by(api_key: api_key)
-
-    unless @api_user
-      render json: { 
-        error: { 
-          message: "Invalid API key", 
-          type: "authentication_error", 
-          code: "invalid_api_key" 
-        } 
-      }, status: :unauthorized
-      return false
-    end
+  def render_success(data, meta = {}, status = :ok)
+    response_data = {
+      success: true,
+      data: data
+    }
+    response_data[:meta] = meta if meta.present?
+    
+    render json: response_data, status: status
+  end
+  
+  def current_api_user
+    @api_user
+  end
+  
+  def paginate(collection, per_page = 20)
+    page = params[:page]&.to_i || 1
+    per_page = params[:per_page]&.to_i || per_page
+    per_page = [per_page, 100].min # Cap at 100 items per page
+    
+    collection.page(page).per(per_page)
   end
 end

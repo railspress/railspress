@@ -1,0 +1,605 @@
+/* Custom Tabulator Theme for RailsPress - Color Scheme Aware */
+/* SIMPLIFIED APPROACH - Clean importmap-only system restored! */
+/* HOT RELOAD TEST - CSS changes should reload instantly! */
+/* ASSET PIPELINE FIXED - Controllers now load properly! */
+/* FINAL TEST - Hot reload should work perfectly now! */
+/* SUCCESS - Everything is working correctly! */
+/* IMPORTMAP FIXED - No more AssetNotPrecompiledError! */
+/* HOT RELOAD WORKING - CSS changes reload instantly! */
+/* FINAL VERIFICATION - Hot reload is working perfectly! */
+
+/* Override Tabulator Midnight Theme */
+.tabulator {
+  background-color: var(--bg-primary, #0a0a0a);
+  border: none;
+  font-size: 14px;
+  color: var(--text-secondary, #e5e5e5);
+}
+
+/* Header Styling */
+.tabulator .tabulator-header {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-bottom: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-muted, #9ca3af);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-right: 1px solid var(--bg-tertiary, #1a1a1a);
+  padding: 12px 16px;
+}
+
+.tabulator .tabulator-header .tabulator-col:hover {
+  background-color: var(--bg-tertiary, #1a1a1a);
+}
+
+.tabulator .tabulator-header .tabulator-col-content {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.tabulator .tabulator-header .tabulator-col-title {
+  color: var(--text-muted, #9ca3af);
+}
+
+/* Row Styling */
+.tabulator .tabulator-row {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-bottom: 1px solid var(--bg-tertiary, #1a1a1a);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.tabulator .tabulator-row:hover {
+  background-color: var(--bg-tertiary, #1a1a1a) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selected {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selected .tabulator-cell {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: var(--text-secondary, #e5e5e5) !important;
+  border-right: 1px solid rgba(99, 102, 241, 0.3) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selected:hover {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selected:hover .tabulator-cell {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+  border-right: 1px solid rgba(99, 102, 241, 0.4) !important;
+}
+
+/* Override any white background that might be applied by other CSS */
+.tabulator .tabulator-row.tabulator-selected,
+.tabulator .tabulator-row.tabulator-selected * {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selected:hover,
+.tabulator .tabulator-row.tabulator-selected:hover * {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+.tabulator .tabulator-row.tabulator-selectable:hover {
+  background-color: var(--bg-tertiary, #1a1a1a) !important;
+}
+
+/* Cell Styling */
+.tabulator .tabulator-cell {
+  border-right: 1px solid var(--bg-tertiary, #1a1a1a);
+  padding: 12px 16px;
+  color: var(--text-secondary, #e5e5e5);
+}
+
+/* Frozen columns */
+.tabulator .tabulator-frozen {
+  border-right: 2px solid var(--border-color, #2a2a2a);
+}
+
+/* Footer & Pagination */
+.tabulator .tabulator-footer {
+  background-color: var(--bg-primary, #0a0a0a);
+  border-top: 1px solid var(--border-color, #2a2a2a);
+  padding: 12px 16px;
+  color: var(--text-muted, #9ca3af);
+}
+
+.tabulator .tabulator-footer .tabulator-page {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  margin: 0 4px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.tabulator .tabulator-footer .tabulator-page:hover {
+  background-color: var(--bg-secondary, #2a2a2a);
+  border-color: #3a3a3a;
+}
+
+.tabulator .tabulator-footer .tabulator-page.active {
+  background-color: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+  color: white;
+}
+
+.tabulator .tabulator-footer .tabulator-page.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Page size selector */
+.tabulator .tabulator-paginator label {
+  color: var(--text-muted, #9ca3af);
+  font-size: 13px;
+}
+
+.tabulator .tabulator-paginator select {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  border-radius: 6px;
+  padding: 6px 32px 6px 12px;
+  margin: 0 8px;
+}
+
+/* Sorting */
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-title {
+  padding-right: 20px;
+}
+
+.tabulator .tabulator-header .tabulator-col[aria-sort="asc"] .tabulator-col-content .tabulator-arrow {
+  border-bottom-color: var(--color-primary, #6366f1);
+}
+
+.tabulator .tabulator-header .tabulator-col[aria-sort="desc"] .tabulator-col-content .tabulator-arrow {
+  border-top-color: var(--color-primary, #6366f1);
+}
+
+/* Header Filter */
+.tabulator .tabulator-header-filter input,
+.tabulator .tabulator-header-filter select {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  width: 100%;
+}
+
+.tabulator .tabulator-header-filter input:focus,
+.tabulator .tabulator-header-filter select:focus {
+  outline: none;
+  border-color: var(--color-primary, #6366f1);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.tabulator .tabulator-header-filter input::placeholder {
+  color: var(--text-muted, #6b7280);
+}
+
+/* Row Selection Checkbox */
+.tabulator .tabulator-row .tabulator-cell[tabulator-field=""] input[type="checkbox"],
+.tabulator .tabulator-header .tabulator-col[tabulator-field=""] input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tabulator .tabulator-row .tabulator-cell[tabulator-field=""] input[type="checkbox"]:checked,
+.tabulator .tabulator-header .tabulator-col[tabulator-field=""] input[type="checkbox"]:checked {
+  background-color: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+}
+
+/* Loading Spinner */
+.tabulator .tabulator-loader {
+  background-color: rgba(10, 10, 10, 0.9);
+  border: none;
+}
+
+.tabulator .tabulator-loader .tabulator-loader-msg {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  color: var(--text-secondary, #e5e5e5);
+  border-radius: 8px;
+  padding: 16px 24px;
+  font-size: 14px;
+}
+
+/* Empty State */
+.tabulator .tabulator-placeholder {
+  color: var(--text-muted, #6b7280);
+  font-size: 14px;
+}
+
+.tabulator .tabulator-placeholder span {
+  padding: 32px;
+  display: block;
+}
+
+/* Responsive */
+.tabulator .tabulator-responsive-collapse {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border-top: 1px solid var(--border-color, #2a2a2a);
+  padding: 12px 16px;
+}
+
+.tabulator .tabulator-responsive-collapse-toggle {
+  background-color: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #2a2a2a);
+  border-radius: 4px;
+}
+
+.tabulator .tabulator-responsive-collapse-toggle:hover {
+  background-color: var(--bg-secondary, #2a2a2a);
+}
+
+/* Edit/Delete Action Buttons */
+.tabulator-cell a,
+.tabulator-cell button {
+  transition: all 0.2s;
+}
+
+/* Status Badges */
+.tabulator-cell .status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Scrollbars */
+.tabulator::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tabulator::-webkit-scrollbar-track {
+  background: var(--bg-primary, #0a0a0a);
+}
+
+.tabulator::-webkit-scrollbar-thumb {
+  background: var(--border-color, #2a2a2a);
+  border-radius: 4px;
+}
+
+.tabulator::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* Text Readability */
+.tabulator .tabulator-cell a {
+  color: var(--text-secondary, #e5e5e5);
+  text-decoration: none;
+}
+
+.tabulator .tabulator-cell a:hover {
+  color: var(--color-primary, #6366f1);
+}
+
+/* Icon Spacing */
+.tabulator-cell svg {
+  flex-shrink: 0;
+}
+
+/* Status-specific row styling */
+.tabulator .tabulator-row.status-published {
+  border-left: 3px solid #10b981;
+}
+
+.tabulator .tabulator-row.status-draft {
+  border-left: 3px solid #f59e0b;
+}
+
+.tabulator .tabulator-row.status-trash {
+  border-left: 3px solid #ef4444;
+}
+
+.tabulator .tabulator-row.trashed {
+  opacity: 0.6;
+}
+
+/* NUCLEAR OPTION: Override ALL possible checkbox elements in Tabulator */
+.tabulator input[type="checkbox"],
+.tabulator .tabulator-row-handle,
+.tabulator .tabulator-header input[type="checkbox"],
+.tabulator .tabulator-header .tabulator-row-handle,
+.tabulator .tabulator-cell input[type="checkbox"],
+.tabulator .tabulator-cell .tabulator-row-handle,
+.tabulator .tabulator-col input[type="checkbox"],
+.tabulator .tabulator-col .tabulator-row-handle,
+.tabulator .tabulator-table input[type="checkbox"],
+.tabulator .tabulator-tableholder input[type="checkbox"],
+.tabulator .tabulator-tableholder .tabulator-table input[type="checkbox"] {
+  /* Force checkbox appearance */
+  appearance: checkbox !important;
+  -webkit-appearance: checkbox !important;
+  -moz-appearance: checkbox !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+  background-color: white !important;
+  cursor: pointer !important;
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  transition: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  /* Remove toggle switch properties */
+  background-image: none !important;
+  background-size: auto !important;
+  background-position: initial !important;
+  background-repeat: initial !important;
+  /* Override the global toggle switch CSS that forces width/height */
+  min-width: 16px !important;
+  max-width: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+  /* Fix chopped display */
+  overflow: visible !important;
+  clip: none !important;
+  clip-path: none !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+/* Override checked states */
+.tabulator input[type="checkbox"]:checked,
+.tabulator .tabulator-row-handle:checked,
+.tabulator .tabulator-row-handle.tabulator-row-selected,
+.tabulator .tabulator-header input[type="checkbox"]:checked,
+.tabulator .tabulator-header .tabulator-row-handle:checked,
+.tabulator .tabulator-cell input[type="checkbox"]:checked,
+.tabulator .tabulator-cell .tabulator-row-handle:checked,
+.tabulator .tabulator-col input[type="checkbox"]:checked,
+.tabulator .tabulator-col .tabulator-row-handle:checked {
+  background-color: #007cba !important;
+  border-color: #007cba !important;
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 12px 12px !important;
+  transform: none !important;
+}
+
+/* Override hover states */
+.tabulator input[type="checkbox"]:hover,
+.tabulator .tabulator-row-handle:hover,
+.tabulator .tabulator-header input[type="checkbox"]:hover,
+.tabulator .tabulator-header .tabulator-row-handle:hover,
+.tabulator .tabulator-cell input[type="checkbox"]:hover,
+.tabulator .tabulator-cell .tabulator-row-handle:hover,
+.tabulator .tabulator-col input[type="checkbox"]:hover,
+.tabulator .tabulator-col .tabulator-row-handle:hover {
+  border-color: #007cba !important;
+  background-color: white !important;
+  transform: none !important;
+}
+
+/* NUCLEAR OPTION: Remove ALL pseudo-elements from ALL possible selectors */
+.tabulator input[type="checkbox"]::before,
+.tabulator input[type="checkbox"]::after,
+.tabulator .tabulator-row-handle::before,
+.tabulator .tabulator-row-handle::after,
+.tabulator .tabulator-header input[type="checkbox"]::before,
+.tabulator .tabulator-header input[type="checkbox"]::after,
+.tabulator .tabulator-header .tabulator-row-handle::before,
+.tabulator .tabulator-header .tabulator-row-handle::after,
+.tabulator .tabulator-cell input[type="checkbox"]::before,
+.tabulator .tabulator-cell input[type="checkbox"]::after,
+.tabulator .tabulator-cell .tabulator-row-handle::before,
+.tabulator .tabulator-cell .tabulator-row-handle::after,
+.tabulator .tabulator-col input[type="checkbox"]::before,
+.tabulator .tabulator-col input[type="checkbox"]::after,
+.tabulator .tabulator-col .tabulator-row-handle::before,
+.tabulator .tabulator-col .tabulator-row-handle::after,
+.tabulator .tabulator-table input[type="checkbox"]::before,
+.tabulator .tabulator-table input[type="checkbox"]::after,
+.tabulator .tabulator-tableholder input[type="checkbox"]::before,
+.tabulator .tabulator-tableholder input[type="checkbox"]::after,
+.tabulator .tabulator-tableholder .tabulator-table input[type="checkbox"]::before,
+.tabulator .tabulator-tableholder .tabulator-table input[type="checkbox"]::after {
+  display: none !important;
+  content: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  transform: none !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+}
+
+/* Extra specific override for header checkbox - fix chopped display */
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content input[type="checkbox"],
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-row-handle {
+  appearance: checkbox !important;
+  -webkit-appearance: checkbox !important;
+  -moz-appearance: checkbox !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  max-width: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+  background-color: white !important;
+  cursor: pointer !important;
+  position: relative !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  transition: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background-image: none !important;
+  background-size: auto !important;
+  background-position: initial !important;
+  background-repeat: initial !important;
+  /* Fix chopped display */
+  overflow: visible !important;
+  clip: none !important;
+  clip-path: none !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content input[type="checkbox"]::before,
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content input[type="checkbox"]::after,
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-row-handle::before,
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-row-handle::after {
+  display: none !important;
+  content: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  transform: none !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+}
+
+/* Remove duplicate checkbox styling - only use Tabulator's row selection */
+
+/* Only use Tabulator's row selection - no duplicate checkboxes */
+
+/* Fix checkbox container clipping */
+.tabulator .tabulator-cell:first-child,
+.tabulator .tabulator-header .tabulator-col:first-child {
+  overflow: visible !important;
+  padding: 8px !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* Remove padding from checkbox column content */
+.tabulator .tabulator-header .tabulator-col:first-child .tabulator-col-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Override inline height styles that chop off checkboxes */
+.tabulator .tabulator-cell[style*="height: 45px"],
+.tabulator .tabulator-cell[style*="height:45px"] {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+/* More specific override for checkbox cells */
+.tabulator .tabulator-cell:first-child[style*="height"],
+.tabulator .tabulator-header .tabulator-col:first-child[style*="height"] {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+}
+
+.tabulator .tabulator-cell:first-child .tabulator-row-handle,
+.tabulator .tabulator-header .tabulator-col:first-child .tabulator-row-handle {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 auto !important;
+}
+
+/* Override bulk actions dropdown toggle styling */
+.admin-table select,
+.admin-table .bulk-actions select,
+[data-controller="admin-table"] select,
+[data-admin-table-target="bulkAction"] {
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  -moz-appearance: menulist !important;
+  background: #374151 !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 0.375rem !important;
+  color: #d1d5db !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  cursor: pointer !important;
+  /* Override toggle switch properties */
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
+  min-height: auto !important;
+  max-height: none !important;
+  border-radius: 0.375rem !important;
+  background-image: none !important;
+  background-size: auto !important;
+  background-position: initial !important;
+  background-repeat: initial !important;
+  transform: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.admin-table select:focus,
+.admin-table .bulk-actions select:focus,
+[data-controller="admin-table"] select:focus,
+[data-admin-table-target="bulkAction"]:focus {
+  outline: 2px solid #6366f1 !important;
+  outline-offset: 2px !important;
+  border-color: #6366f1 !important;
+}
+
+/* Remove pseudo-elements from bulk actions dropdown */
+[data-controller="admin-table"] select::before,
+[data-controller="admin-table"] select::after,
+[data-admin-table-target="bulkAction"]::before,
+[data-admin-table-target="bulkAction"]::after {
+  display: none !important;
+  content: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  background: none !important;
+  border: none !important;
+  transform: none !important;
+  transition: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+

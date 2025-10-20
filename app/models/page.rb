@@ -1,4 +1,5 @@
 class Page < ApplicationRecord
+  include Railspress::ChannelDetection
   # Multi-tenancy
   acts_as_tenant(:tenant, optional: true)
   
@@ -40,6 +41,9 @@ class Page < ApplicationRecord
   
   # Rich text content
   has_rich_text :content
+  
+  # Channels
+  has_and_belongs_to_many :channels
   
   # Hierarchical structure
   has_many :children, class_name: 'Page', foreign_key: 'parent_id', dependent: :destroy

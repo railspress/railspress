@@ -172,7 +172,13 @@
                 </div>
                 <div>
                   <span>Last Used: </span>
-                  <span class="text-white font-medium"><%= time_ago_in_words(stats[:last_used]) %> ago</span>
+                  <span class="text-white font-medium">
+                    <% if stats[:last_used].present? %>
+                      <%= time_ago_in_words(stats[:last_used]) %> ago
+                    <% else %>
+                      Never
+                    <% end %>
+                  </span>
                 </div>
               </div>
             </div>

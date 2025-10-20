@@ -92,13 +92,111 @@
                     class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
                 <span class="text-gray-300">Automatically optimize images on upload</span>
               <% end %>
+
+              <!-- System-wide Compression Level -->
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">System-wide Compression Level</label>
+                <select name="settings[image_compression_level]" class="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="lossless" <%= 'selected' if @settings[:image_compression_level] == 'lossless' %>>Lossless - Maximum quality, minimal compression (5-15% savings)</option>
+                  <option value="lossy" <%= 'selected' if @settings[:image_compression_level] == 'lossy' %>>Lossy - Balanced quality and compression (25-40% savings)</option>
+                  <option value="ultra" <%= 'selected' if @settings[:image_compression_level] == 'ultra' %>>Ultra - Maximum compression, slight quality loss (40-60% savings)</option>
+                  <option value="custom" <%= 'selected' if @settings[:image_compression_level] == 'custom' %>>Custom - User-defined settings</option>
+                </select>
+                <p class="mt-1 text-sm text-gray-500">This setting applies to all image optimizations system-wide</p>
+              </div>
+
+              <!-- Custom Quality Settings (shown when Custom is selected) -->
+              <div id="custom-quality-settings" style="<%= 'display: none;' unless @settings[:image_compression_level] == 'custom' %>">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Custom Image Quality (1-100)</label>
+                    <input type="number" name="settings[image_quality]" value="<%= @settings[:image_quality] %>" 
+                           min="1" max="100" 
+                           class="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <p class="mt-1 text-sm text-gray-500">Higher values = better quality, larger files</p>
+                  </div>
+                  
+                  <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Custom Compression Level (1-9)</label>
+                    <input type="number" name="settings[image_compression_level_value]" value="<%= @settings[:image_compression_level_value] %>" 
+                           min="1" max="9" 
+                           class="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <p class="mt-1 text-sm text-gray-500">Higher values = more compression, smaller files</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Strip Metadata -->
+              <%= label_tag 'settings[strip_image_metadata]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[strip_image_metadata]', '1', @settings[:strip_image_metadata],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300">Strip EXIF metadata from images</span>
+              <% end %>
+
+              <!-- WebP Variants -->
+              <%= label_tag 'settings[enable_webp_variants]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[enable_webp_variants]', '1', @settings[:enable_webp_variants],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300">Generate WebP variants</span>
+              <% end %>
+
+              <!-- AVIF Variants -->
+              <%= label_tag 'settings[enable_avif_variants]', class: 'flex items-center space-x-2 cursor-pointer' do %>
+                <%= check_box_tag 'settings[enable_avif_variants]', '1', @settings[:enable_avif_variants],
+                    class: 'w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-gray-600 rounded focus:ring-indigo-500' %>
+                <span class="text-gray-300">Generate AVIF variants</span>
+              <% end %>
+
+              <!-- Compression Level -->
+              <div>
+                <%= label_tag 'settings[image_compression_level]', 'Compression Level', class: 'block text-sm font-medium text-gray-300 mb-2' %>
+                <%= number_field_tag 'settings[image_compression_level]', @settings[:image_compression_level],
+                    min: 1, max: 9,
+                    class: 'w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                <p class="mt-1 text-sm text-gray-500">Compression level for lossless optimization (1-9)</p>
+              </div>
             </div>
           </div>
 
-          <div class="pt-6 border-t border-[#2a2a2a] flex items-center justify-end">
+          <div class="pt-6 border-t border-[#2a2a2a] flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <%= link_to '/admin/media/optimization_analytics', 
+                  class: "inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium" do %>
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                View Optimization Analytics
+              <% end %>
+              
+              <%= link_to '/admin/media/bulk_optimization', 
+                  class: "inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium" do %>
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                </svg>
+                Bulk Optimization
+              <% end %>
+            </div>
+            
             <%= f.submit "Save Changes", class: "px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition cursor-pointer font-medium" %>
           </div>
         <% end %>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const compressionSelect = document.querySelector('select[name="settings[image_compression_level]"]');
+  const customSettings = document.getElementById('custom-quality-settings');
+  
+  if (compressionSelect && customSettings) {
+    compressionSelect.addEventListener('change', function() {
+      if (this.value === 'custom') {
+        customSettings.style.display = 'block';
+      } else {
+        customSettings.style.display = 'none';
+      }
+    });
+  }
+});
+</script>
 

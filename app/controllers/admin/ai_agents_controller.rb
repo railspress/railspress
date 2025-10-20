@@ -40,7 +40,7 @@ class Admin::AiAgentsController < Admin::BaseController
     if @ai_agent.save
       redirect_to admin_ai_agents_path, notice: 'AI Agent created successfully.'
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
   
@@ -56,7 +56,7 @@ class Admin::AiAgentsController < Admin::BaseController
     if @ai_agent.update(ai_agent_params)
       redirect_to admin_ai_agents_path, notice: 'AI Agent updated successfully.'
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
   
@@ -89,7 +89,7 @@ class Admin::AiAgentsController < Admin::BaseController
       Rails.logger.error e.backtrace.join("\n")
       
       respond_to do |format|
-        format.json { render json: { success: false, error: e.message }, status: :unprocessable_entity }
+        format.json { render json: { success: false, error: e.message }, status: :unprocessable_content }
         format.html { redirect_to admin_ai_agent_path(@ai_agent), alert: "Test failed: #{e.message}" }
       end
     end

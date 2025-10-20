@@ -109,6 +109,15 @@ class AdminBarTag < Liquid::Tag
   end
 end
 
+# Register consent tags
+Rails.application.config.after_initialize do
+  # Load consent tags
+  require_relative Rails.root.join('lib', 'railspress', 'liquid', 'consent_tags')
+  
+  # Register consent tags with Liquid
+  Railspress::Liquid::ConsentTags.register_tags
+end
+
 Rails.logger.info "Liquid template engine loaded successfully with custom tags"
 
 # Eagerly load LiquidTemplateRenderer

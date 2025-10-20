@@ -38,7 +38,7 @@ class Admin::Tools::ErasePersonalDataController < Admin::BaseController
       token: SecureRandom.hex(32),
       metadata: {
         user_posts_count: user.posts.count,
-        user_comments_count: Comment.where(email: email).count,
+        user_comments_count: Comment.where(author_email: email).count,
         user_media_count: Medium.where(user_id: user.id).count rescue 0
       }
     )

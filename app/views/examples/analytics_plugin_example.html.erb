@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RailsPress Analytics Plugin Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .section {
+      background: white;
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .code-block {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      border-left: 4px solid #667eea;
+      margin: 10px 0;
+    }
+    .demo-button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    .demo-button:hover {
+      background: #5a67d8;
+    }
+    .demo-form {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .demo-form input, .demo-form textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    .demo-form button {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .demo-form button:hover {
+      background: #218838;
+    }
+    .console {
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 10px 0;
+    }
+    .console .timestamp {
+      color: #888;
+    }
+    .console .event {
+      color: #00ff00;
+    }
+    .console .error {
+      color: #ff0000;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚀 RailsPress Analytics Plugin Example</h1>
+    <p>Interactive demonstration of the Analytics API for developers</p>
+  </div>
+
+  <div class="section">
+    <h2>🎯 Core Tracking Examples</h2>
+    <p>Test the basic tracking functionality:</p>
+    
+    <button class="demo-button" onclick="trackCustomEvent()">Track Custom Event</button>
+    <button class="demo-button" onclick="trackPageView()">Track Page View</button>
+    <button class="demo-button" onclick="trackEngagement()">Track Engagement</button>
+    
+    <div class="code-block">
+// Track custom event
+RailsPressAnalytics.track('custom_action', {
+  action_type: 'button_click',
+  button_id: 'demo_button',
+  user_segment: 'demo'
+});
+
+// Track page view
+RailsPressAnalytics.page('Demo Page', 'Analytics Plugin Example', {
+  page_type: 'demo',
+  section: 'core_tracking'
+});
+
+// Track engagement
+RailsPressAnalytics.engage('scroll', {
+  scroll_depth: 75,
+  time_on_page: 120,
+  content_type: 'demo'
+});
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📄 Content Tracking Examples</h2>
+    <p>Test content engagement tracking:</p>
+    
+    <button class="demo-button" onclick="trackContentEngagement()">Track Content Engagement</button>
+    <button class="demo-button" onclick="trackVideoEngagement()">Track Video Engagement</button>
+    <button class="demo-button" onclick="trackSearch()">Track Search</button>
+    
+    <div class="code-block">
+// Track content engagement
+RailsPressAnalytics.contentEngagement('post', {
+  id: 'post_789',
+  title: 'Demo Post',
+  author: 'Demo Author',
+  category: 'Tutorials'
+}, {
+  type: 'read',
+  duration: 300,
+  depth: 85,
+  score: 92
+});
+
+// Track video engagement
+RailsPressAnalytics.videoEngagement({
+  id: 'video_101',
+  title: 'Demo Video',
+  duration: 600,
+  category: 'Education'
+}, {
+  type: 'play',
+  currentTime: 120,
+  duration: 600,
+  progress: 20
+});
+
+// Track search
+RailsPressAnalytics.search('demo search', {
+  count: 15,
+  type: 'posts',
+  category: 'tutorials'
+});
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>👆 User Interaction Examples</h2>
+    <p>Test user interaction tracking:</p>
+    
+    <div class="demo-form">
+      <h3>Demo Form</h3>
+      <input type="text" placeholder="Name" id="demo_name">
+      <input type="email" placeholder="Email" id="demo_email">
+      <textarea placeholder="Message" id="demo_message"></textarea>
+      <button onclick="trackFormSubmission()">Submit Form</button>
+    </div>
+    
+    <button class="demo-button" onclick="trackButtonClick()">Track Button Click</button>
+    <button class="demo-button" onclick="trackLinkClick()">Track Link Click</button>
+    
+    <div class="code-block">
+// Track form interaction
+RailsPressAnalytics.formInteraction('contact', {
+  id: 'demo_form',
+  fieldCount: 3,
+  requiredFields: 2,
+  validationErrors: 0
+}, 'submit');
+
+// Track button click
+RailsPressAnalytics.buttonClick('cta', {
+  id: 'demo_button',
+  text: 'Demo Button',
+  location: 'demo_section'
+}, {
+  page: 'demo_page',
+  section: 'interactions'
+});
+
+// Track link click
+RailsPressAnalytics.linkClick({
+  url: 'https://example.com',
+  text: 'External Link'
+}, {
+  page: 'demo_page',
+  section: 'interactions'
+});
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎯 Goals & Metrics Examples</h2>
+    <p>Test goals and custom metrics tracking:</p>
+    
+    <button class="demo-button" onclick="trackConversion()">Track Conversion</button>
+    <button class="demo-button" onclick="trackGoal()">Track Goal</button>
+    <button class="demo-button" onclick="trackCustomMetric()">Track Custom Metric</button>
+    <button class="demo-button" onclick="trackPerformance()">Track Performance</button>
+    
+    <div class="code-block">
+// Track conversion
+RailsPressAnalytics.conversion('newsletter_signup', {
+  id: 'signup_123',
+  category: 'email_marketing',
+  currency: 'USD'
+}, 0);
+
+// Track goal completion
+RailsPressAnalytics.goal('tutorial_completion', {
+  category: 'education',
+  duration: 1800,
+  steps: 10
+}, 100);
+
+// Track custom metric
+RailsPressAnalytics.metric('api_response_time', 250, {
+  unit: 'ms',
+  category: 'performance',
+  endpoint: '/api/demo'
+});
+
+// Track performance metric
+RailsPressAnalytics.performance('page_load_time', 1200, {
+  unit: 'ms',
+  page: 'demo_page',
+  component: 'demo_section'
+});
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🐛 Error Tracking Examples</h2>
+    <p>Test error tracking:</p>
+    
+    <button class="demo-button" onclick="trackError()">Track Error</button>
+    
+    <div class="code-block">
+// Track error
+RailsPressAnalytics.error('javascript_error', 'Demo error message', {
+  stack: 'TypeError: Demo error stack...',
+  url: window.location.href,
+  line: 42,
+  column: 15
+});
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔧 Utility Methods Examples</h2>
+    <p>Test utility methods:</p>
+    
+    <button class="demo-button" onclick="setUserProperties()">Set User Properties</button>
+    <button class="demo-button" onclick="setCustomParameters()">Set Custom Parameters</button>
+    <button class="demo-button" onclick="getSessionInfo()">Get Session Info</button>
+    <button class="demo-button" onclick="toggleDebugMode()">Toggle Debug Mode</button>
+    
+    <div class="code-block">
+// Set user properties
+RailsPressAnalytics.setUserProperties({
+  user_type: 'demo',
+  subscription_plan: 'free',
+  signup_date: '2024-01-15'
+});
+
+// Set custom parameters
+RailsPressAnalytics.setCustomParameters({
+  experiment_group: 'demo_variant',
+  campaign_id: 'demo_2024',
+  source: 'demo_page'
+});
+
+// Get session info
+const sessionInfo = RailsPressAnalytics.getSessionInfo();
+console.log(sessionInfo);
+
+// Toggle debug mode
+RailsPressAnalytics.setDebugMode(true);
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 Debug Console</h2>
+    <p>View tracked events in real-time:</p>
+    <div class="console" id="debugConsole">
+      <div class="timestamp">[Debug Console Ready]</div>
+    </div>
+    <button class="demo-button" onclick="clearConsole()">Clear Console</button>
+  </div>
+
+  <script>
+    // Initialize debug console
+    function logToConsole(message, type = 'event') {
+      const console = document.getElementById('debugConsole');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.className = type;
+      logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+      console.appendChild(logEntry);
+      console.scrollTop = console.scrollHeight;
+    }
+
+    // Core tracking functions
+    function trackCustomEvent() {
+      RailsPressAnalytics.track('custom_action', {
+        action_type: 'button_click',
+        button_id: 'demo_button',
+        user_segment: 'demo'
+      });
+      logToConsole('Custom event tracked: custom_action');
+    }
+
+    function trackPageView() {
+      RailsPressAnalytics.page('Demo Page', 'Analytics Plugin Example', {
+        page_type: 'demo',
+        section: 'core_tracking'
+      });
+      logToConsole('Page view tracked: Demo Page');
+    }
+
+    function trackEngagement() {
+      RailsPressAnalytics.engage('scroll', {
+        scroll_depth: 75,
+        time_on_page: 120,
+        content_type: 'demo'
+      });
+      logToConsole('Engagement tracked: scroll');
+    }
+
+    // Content tracking functions
+    function trackContentEngagement() {
+      RailsPressAnalytics.contentEngagement('post', {
+        id: 'post_789',
+        title: 'Demo Post',
+        author: 'Demo Author',
+        category: 'Tutorials'
+      }, {
+        type: 'read',
+        duration: 300,
+        depth: 85,
+        score: 92
+      });
+      logToConsole('Content engagement tracked: Demo Post');
+    }
+
+    function trackVideoEngagement() {
+      RailsPressAnalytics.videoEngagement({
+        id: 'video_101',
+        title: 'Demo Video',
+        duration: 600,
+        category: 'Education'
+      }, {
+        type: 'play',
+        currentTime: 120,
+        duration: 600,
+        progress: 20
+      });
+      logToConsole('Video engagement tracked: Demo Video');
+    }
+
+    function trackSearch() {
+      RailsPressAnalytics.search('demo search', {
+        count: 15,
+        type: 'posts',
+        category: 'tutorials'
+      });
+      logToConsole('Search tracked: demo search');
+    }
+
+    // User interaction functions
+    function trackFormSubmission() {
+      RailsPressAnalytics.formInteraction('contact', {
+        id: 'demo_form',
+        fieldCount: 3,
+        requiredFields: 2,
+        validationErrors: 0
+      }, 'submit');
+      logToConsole('Form interaction tracked: contact form submission');
+    }
+
+    function trackButtonClick() {
+      RailsPressAnalytics.buttonClick('cta', {
+        id: 'demo_button',
+        text: 'Demo Button',
+        location: 'demo_section'
+      }, {
+        page: 'demo_page',
+        section: 'interactions'
+      });
+      logToConsole('Button click tracked: Demo Button');
+    }
+
+    function trackLinkClick() {
+      RailsPressAnalytics.linkClick({
+        url: 'https://example.com',
+        text: 'External Link'
+      }, {
+        page: 'demo_page',
+        section: 'interactions'
+      });
+      logToConsole('Link click tracked: External Link');
+    }
+
+    // Conversion and metrics functions
+    function trackConversion() {
+      RailsPressAnalytics.conversion('newsletter_signup', {
+        id: 'signup_123',
+        category: 'email_marketing',
+        currency: 'USD'
+      }, 0);
+      logToConsole('Conversion tracked: newsletter_signup');
+    }
+
+    function trackGoal() {
+      RailsPressAnalytics.goal('tutorial_completion', {
+        category: 'education',
+        duration: 1800,
+        steps: 10
+      }, 100);
+      logToConsole('Goal tracked: tutorial_completion');
+    }
+
+    function trackCustomMetric() {
+      RailsPressAnalytics.metric('api_response_time', 250, {
+        unit: 'ms',
+        category: 'performance',
+        endpoint: '/api/demo'
+      });
+      logToConsole('Custom metric tracked: api_response_time');
+    }
+
+    function trackPerformance() {
+      RailsPressAnalytics.performance('page_load_time', 1200, {
+        unit: 'ms',
+        page: 'demo_page',
+        component: 'demo_section'
+      });
+      logToConsole('Performance metric tracked: page_load_time');
+    }
+
+    // Error tracking function
+    function trackError() {
+      RailsPressAnalytics.error('javascript_error', 'Demo error message', {
+        stack: 'TypeError: Demo error stack...',
+        url: window.location.href,
+        line: 42,
+        column: 15
+      });
+      logToConsole('Error tracked: javascript_error', 'error');
+    }
+
+    // Utility functions
+    function setUserProperties() {
+      RailsPressAnalytics.setUserProperties({
+        user_type: 'demo',
+        subscription_plan: 'free',
+        signup_date: '2024-01-15'
+      });
+      logToConsole('User properties set: demo user');
+    }
+
+    function setCustomParameters() {
+      RailsPressAnalytics.setCustomParameters({
+        experiment_group: 'demo_variant',
+        campaign_id: 'demo_2024',
+        source: 'demo_page'
+      });
+      logToConsole('Custom parameters set: demo_variant');
+    }
+
+    function getSessionInfo() {
+      const sessionInfo = RailsPressAnalytics.getSessionInfo();
+      logToConsole('Session info: ' + JSON.stringify(sessionInfo));
+    }
+
+    function toggleDebugMode() {
+      const currentMode = RailsPressAnalytics.debug;
+      RailsPressAnalytics.setDebugMode(!currentMode);
+      logToConsole('Debug mode: ' + (!currentMode ? 'enabled' : 'disabled'));
+    }
+
+    function clearConsole() {
+      document.getElementById('debugConsole').innerHTML = '<div class="timestamp">[Debug Console Cleared]</div>';
+    }
+
+    // Initialize the demo
+    document.addEventListener('DOMContentLoaded', function() {
+      logToConsole('RailsPress Analytics API Demo initialized');
+      logToConsole('Available methods: track, page, engage, contentEngagement, search, etc.');
+    });
+  </script>
+</body>
+</html>

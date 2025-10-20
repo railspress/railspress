@@ -1,13 +1,41 @@
 <% content_for :title, @post.persisted? ? "Edit - #{@post.title}" : "New Post" %>
 
-<div class="h-screen flex bg-white dark:bg-black" data-controller="keyboard-shortcuts">
+<style>
+.ce-block__content {
+  margin: 0 !important;
+}
+
+/* Hide sidebar initially to prevent flash */
+[data-sidebar-collapsed-value="true"] {
+  width: 0px !important;
+  overflow: hidden !important;
+}
+
+[data-sidebar-collapsed-value="true"] [data-sidebar-target="content"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* When sidebar is collapsed, expand main content to full width */
+.sidebar-collapsed .flex-1.flex.flex-col.overflow-hidden {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.sidebar-collapsed .max-w-4xl.mx-auto.px-8.py-12 {
+  max-width: 100% !important;
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
+}
+</style>
+<div class="h-screen flex sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--color-white);">
   
   <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex", data: { controller: "autosave", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_target: "form" } do |f| %>
     <!-- Left: Main Editor Area -->
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Ultra Minimal Top Bar -->
-      <div class="px-6 py-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
-        <%= link_to admin_posts_path, class: "flex items-center gap-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200" do %>
+      <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--color-gray-100);">
+        <%= link_to admin_posts_path, class: "flex items-center gap-2 transition-colors duration-200", style: "color: var(--color-gray-400);", onmouseover: "this.style.color='var(--color-gray-600)'", onmouseout: "this.style.color='var(--color-gray-400)'" do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
           </svg>
@@ -36,18 +64,34 @@
           <button type="button" 
                   data-controller="theme-toggle" 
                   data-action="click->theme-toggle#toggle"
-                  class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
-            <svg class="w-4 h-4 text-gray-500 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  class="p-1.5 rounded-lg transition-colors duration-200"
+                  style="background-color: transparent; color: var(--color-gray-500);"
+                  onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
+                  onmouseout="this.style.backgroundColor='transparent'">
+            <svg class="w-4 h-4 theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="display: none;">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
             </svg>
-            <svg class="w-4 h-4 text-gray-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <svg class="w-4 h-4 theme-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="display: block;">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
             </svg>
           </button>
           
-          <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">
-            <kbd class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">⌘S</kbd> save
+          
+          
+          <span class="text-xs font-mono" style="color: var(--color-gray-400);">
+            <kbd class="px-1.5 py-0.5 rounded text-xs" style="background-color: var(--color-gray-100); color: var(--color-gray-900);">⌘S</kbd> save
           </span>
+
+          <!-- Sidebar Toggle Button (shown when sidebar is collapsed) -->
+          <button type="button" 
+                  class="p-1.5 rounded-lg transition-colors duration-200 sidebar-toggle-topbar"
+                  style="background-color: transparent; color: var(--color-gray-500);"
+                  onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
+                  onmouseout="this.style.backgroundColor='transparent'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+            </svg>
+          </button>
         </div>
       </div>
       
@@ -87,17 +131,7 @@
     </div>
     
       <!-- Right Sidebar: Settings -->
-      <div class="w-80 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-y-auto transition-all duration-300" data-controller="sidebar" data-sidebar-collapsed-value="false">
-      <!-- Sidebar Toggle Button -->
-      <div class="absolute top-4 -left-3 z-20">
-        <button type="button" 
-                data-action="click->sidebar#toggle" 
-                class="w-6 h-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 shadow-sm hover:shadow-md">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" data-sidebar-target="toggleIcon">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
-          </svg>
-        </button>
-      </div>
+      <div class="w-80 overflow-y-auto transition-all duration-300" data-controller="sidebar" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--color-gray-200); background-color: var(--color-white);">
       
       <div class="p-6 space-y-8" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
         <!-- Publish Section -->
@@ -206,7 +240,8 @@
               <label class="block text-xs font-medium text-gray-400 mb-2">Tags</label>
               <%= f.text_field :tag_list, 
                   placeholder: "Add tags, comma separated",
-                  class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
               <p class="text-xs text-gray-600 mt-1">Separate tags with commas</p>
             </div>
           </div>
@@ -237,7 +272,8 @@
           
           <div data-collapsible-target="content">
             <%= f.file_field :featured_image, 
-                class: "w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#1a1a1a] file:text-white hover:file:bg-[#2a2a2a] file:cursor-pointer" %>
+                class: "w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:cursor-pointer",
+                style: "color: var(--color-gray-400);" %>
           </div>
         </div>
         
@@ -257,10 +293,11 @@
             </h3>
           </div>
           
-          <%= f.text_area :excerpt, 
-              rows: 3,
-              placeholder: "Brief description of your post...",
-              class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" %>
+            <%= f.text_area :excerpt, 
+                rows: 3,
+                placeholder: "Brief description of your post...",
+                class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none",
+                style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
           <p class="text-xs text-gray-600 mt-1">Optional. Will be used in previews.</p>
         </div>
         
@@ -292,7 +329,8 @@
               <label class="block text-xs font-medium text-gray-400 mb-2">Meta Title</label>
               <%= f.text_field :meta_title, 
                   placeholder: "SEO title",
-                  class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
             </div>
             
             <div class="mb-3">
@@ -300,14 +338,16 @@
               <%= f.text_area :meta_description, 
                   rows: 2,
                   placeholder: "SEO description",
-                  class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none",
+                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
             </div>
             
             <div>
               <label class="block text-xs font-medium text-gray-400 mb-2">Slug</label>
               <%= f.text_field :slug, 
                   placeholder: "post-url-slug",
-                  class: "w-full px-3 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
             </div>
           </div>
         </div>
@@ -315,7 +355,7 @@
         <!-- Post Info -->
         <% if @post.persisted? %>
           <div>
-            <h3 class="text-sm font-semibold text-white mb-4">Post Info</h3>
+            <h3 class="text-sm font-semibold mb-4" style="color: var(--color-gray-900);">Post Info</h3>
             <div class="space-y-2 text-xs text-gray-400">
               <div class="flex justify-between">
                 <span>Created:</span>

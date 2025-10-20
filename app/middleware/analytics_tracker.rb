@@ -17,8 +17,8 @@ class AnalyticsTracker
   def should_track?(env, status)
     request = Rack::Request.new(env)
     
-    # Only track successful GET requests
-    return false unless request.get? && status == 200
+    # Track successful GET and POST requests (for form submissions, etc.)
+    return false unless (request.get? || request.post?) && status == 200
     
     # Skip admin, API, assets
     return false if skip_path?(request.path)
@@ -26,6 +26,7 @@ class AnalyticsTracker
     # Skip if tracking disabled
     return false unless tracking_enabled?
     
+    # Track everything else
     true
   end
 
@@ -59,9 +60,32 @@ class AnalyticsTracker
   rescue
     true  # Default to enabled
   end
+  
+  def consent_required?
+    SiteSetting.get('analytics_require_consent', 'true') == 'true'
+  rescue
+    true
+  end
+  
+  def anonymize_ip?
+    SiteSetting.get('analytics_anonymize_ip', 'true') == 'true'
+  rescue
+    true
+  end
+  
+  def track_bots?
+    SiteSetting.get('analytics_track_bots', 'false') == 'true'
+  rescue
+    false
+  end
 
   def track_pageview(env, status)
     request = Rack::Request.new(env)
+    
+    # Skip if consent is required but not given
+    if consent_required? && !check_consent(request)
+      return
+    end
     
     # Background job for tracking (non-blocking)
     # For now, track synchronously but could use Sidekiq
@@ -71,8 +95,9 @@ class AnalyticsTracker
           title: extract_title(env),
           user_id: extract_user_id(env),
           session_id: extract_session_id(request),
-          consented: check_consent(request),
-          track_bots: SiteSetting.get('analytics_track_bots', 'false') == 'true'
+          consented: check_consent(request) || !consent_required?,
+          track_bots: track_bots?,
+          anonymize_ip: anonymize_ip?
         })
       rescue => e
         Rails.logger.error "Analytics tracking error: #{e.message}"

@@ -1,6 +1,6 @@
 class Pageview < ApplicationRecord
-  # Multi-tenancy
-  acts_as_tenant(:tenant)
+  # Multi-tenancy - make tenant optional for analytics tracking
+  acts_as_tenant(:tenant, optional: true)
   
   # Associations
   belongs_to :user, optional: true
@@ -183,27 +183,62 @@ class Pageview < ApplicationRecord
     # Get content IDs
     content_ids = extract_content_ids(request.path)
     
-    # Create pageview
-    create!(
-      path: request.path,
-      title: options[:title],
-      referrer: request.referer,
-      user_agent: request.user_agent,
-      browser: ua_data[:browser],
-      device: ua_data[:device],
-      os: ua_data[:os],
-      ip_hash: hash_ip(request.ip),
-      session_id: session_id,
-      user_id: options[:user_id],
-      post_id: content_ids[:post_id],
-      page_id: content_ids[:page_id],
-      unique_visitor: is_unique,
-      returning_visitor: is_returning,
-      bot: is_bot?(request.user_agent),
-      consented: options[:consented] || false,
-      visited_at: Time.current,
-      metadata: options[:metadata] || {}
-    )
+    # Get geolocation data
+    geolocation_data = get_geolocation_data(request.ip)
+    
+    # Resolve tenant for this request
+    tenant = resolve_tenant(request)
+    
+    # Enhanced metadata collection
+    enhanced_metadata = (options[:metadata] || {}).merge({
+      request_method: request.request_method,
+      query_string: request.query_string,
+      content_type: request.content_type,
+      accept_language: request.get_header('HTTP_ACCEPT_LANGUAGE'),
+      accept_encoding: request.get_header('HTTP_ACCEPT_ENCODING'),
+      connection: request.get_header('HTTP_CONNECTION'),
+      cache_control: request.get_header('HTTP_CACHE_CONTROL'),
+      timestamp: Time.current.iso8601
+    })
+    
+    # Create pageview with enhanced data
+        create!(
+          path: request.path,
+          title: options[:title] || extract_title_from_path(request.path),
+          referrer: request.referer,
+          user_agent: request.user_agent,
+          browser: ua_data[:browser],
+          device: ua_data[:device],
+          os: ua_data[:os],
+          ip_hash: hash_ip(request.ip),
+          session_id: session_id,
+          user_id: options[:user_id],
+          post_id: content_ids[:post_id],
+          page_id: content_ids[:page_id],
+          unique_visitor: is_unique,
+          returning_visitor: is_returning,
+          bot: is_bot?(request.user_agent),
+          consented: options[:consented] || false,
+          visited_at: Time.current,
+          metadata: enhanced_metadata,
+          tenant: tenant,
+          # Geolocation data
+          country_code: geolocation_data&.dig(:country_code),
+          country_name: geolocation_data&.dig(:country_name),
+          city: geolocation_data&.dig(:city),
+          region: geolocation_data&.dig(:region),
+          latitude: geolocation_data&.dig(:latitude),
+          longitude: geolocation_data&.dig(:longitude),
+          timezone: geolocation_data&.dig(:timezone),
+          # Medium-like reader tracking
+          is_reader: options[:is_reader] || false,
+          engagement_score: options[:engagement_score] || 0
+        )
+
+    # Broadcast real-time update via ActionCable
+    RealtimeAnalyticsService.broadcast_new_pageview(pageview) if pageview.persisted?
+    
+    pageview
   rescue => e
     Rails.logger.error "Failed to track pageview: #{e.message}"
     nil
@@ -228,6 +263,68 @@ class Pageview < ApplicationRecord
   end
   
   private
+  
+  # Get geolocation data for an IP address
+  def self.get_geolocation_data(ip_address)
+    return nil unless SiteSetting.get('geolocation_enabled', true)
+    
+    begin
+      GeolocationService.instance.lookup_ip(ip_address)
+    rescue => e
+      Rails.logger.error "Geolocation lookup failed for #{ip_address}: #{e.message}"
+      nil
+    end
+  end
+  
+  # High-volume performance optimizations
+  def self.high_volume_mode?
+    SiteSetting.get('analytics_high_volume_mode', false)
+  end
+  
+  def self.track_async(request, options)
+    # Queue pageview for background processing
+    AnalyticsProcessingJob.perform_later(
+      path: request.path,
+      referrer: request.referer,
+      user_agent: request.user_agent,
+      ip_hash: hash_ip(request.ip),
+      session_id: options[:session_id] || generate_session_id,
+      tenant_id: options[:tenant_id],
+      visited_at: Time.current,
+      bot: is_bot?(request.user_agent),
+      consented: options[:consented] || false
+    )
+  end
+  
+  def self.parse_user_agent_cached(user_agent)
+    # Simple caching for user agent parsing
+    @ua_cache ||= {}
+    @ua_cache[user_agent] ||= parse_user_agent(user_agent)
+  end
+
+  # Resolve tenant for the given request
+  def self.resolve_tenant(request)
+    # Priority 1: Find tenant by domain or subdomain
+    if request.host != 'localhost'
+      tenant = Tenant.find_by(domain: request.host) ||
+               Tenant.find_by(subdomain: request.subdomains.first)
+      return tenant if tenant
+    end
+    
+    # Priority 2: Use default tenant for localhost/frontend
+    unless request.path.start_with?('/admin')
+      tenant = Tenant.first || Tenant.create!(
+        name: 'RailsPress Default',
+        domain: 'localhost',
+        theme: 'nordic',
+        storage_type: 'local'
+      )
+      return tenant
+    end
+    
+    # Priority 3: Try to get from current acts_as_tenant context
+    ActsAsTenant.current_tenant
+  end
   
   # Hash IP address for privacy
   def self.hash_ip(ip)
@@ -306,5 +403,25 @@ class Pageview < ApplicationRecord
     end
     
     ids
+  end
+  
+  # Extract title from path for better tracking
+  def self.extract_title_from_path(path)
+    case path
+    when '/'
+      'Home Page'
+    when '/blog'
+      'Blog Index'
+    when /\/blog\/(.+)/
+      slug = $1
+      post = Post.find_by(slug: slug)
+      post&.title || "Blog Post: #{slug.humanize}"
+    when /\/page\/(.+)/, /^\/(.+)$/
+      slug = $1
+      page = Page.find_by(slug: slug)
+      page&.title || "#{slug.humanize} Page"
+    else
+      "#{path.split('/').last&.humanize || 'Page'}"
+    end
   end
 end

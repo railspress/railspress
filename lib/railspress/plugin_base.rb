@@ -113,6 +113,252 @@ module Railspress
     end
     
     # ========================================
+    # CHANNEL INTEGRATION
+    # ========================================
+    
+    # Get all available channels
+    def all_channels
+      Channel.all
+    end
+
+    # Get active channels only
+    def active_channels
+      Channel.active
+    end
+
+    # Find channel by slug
+    def find_channel(slug)
+      Channel.find_by(slug: slug)
+    end
+
+    # Get channel for specific device type
+    def channel_for_device(device_type)
+      case device_type.to_s
+      when 'mobile', 'tablet'
+        Channel.find_by(slug: 'mobile')
+      when 'smart_tv', 'tv'
+        Channel.find_by(slug: 'smarttv')
+      when 'email'
+        Channel.find_by(slug: 'newsletter')
+      else
+        Channel.find_by(slug: 'web')
+      end
+    end
+
+    # Auto-detect channel from user agent
+    def auto_detect_channel(user_agent)
+      device_type = detect_device_type(user_agent)
+      channel_for_device(device_type)
+    end
+
+    # Get content with channel overrides applied
+    def content_with_overrides(content, channel_slug, resource_type, resource_id)
+      channel = find_channel(channel_slug)
+      return content unless channel
+
+      if content.respond_to?(:apply_channel_settings)
+        content.apply_channel_settings(content, user_agent)
+      else
+        # Apply basic channel overrides
+        channel.apply_overrides_to_data(content, resource_type, resource_id)
+      end
+    end
+
+    # Get channel-specific settings
+    def channel_settings(channel_slug)
+      channel = find_channel(channel_slug)
+      return {} unless channel
+
+      channel.settings.merge(
+        'channel_name' => channel.name,
+        'channel_slug' => channel.slug,
+        'domain' => channel.domain,
+        'locale' => channel.locale
+      )
+    end
+
+    # Check if content is excluded from channel
+    def is_excluded?(resource_type, resource_id, channel_slug)
+      channel = find_channel(channel_slug)
+      return false unless channel
+
+      channel.excluded?(resource_type, resource_id)
+    end
+
+    # Get all overrides for a channel
+    def channel_overrides(channel_slug)
+      channel = find_channel(channel_slug)
+      return [] unless channel
+
+      channel.channel_overrides.includes(:resource)
+    end
+
+    # Get overrides for specific resource
+    def resource_overrides(resource_type, resource_id, channel_slug)
+      channel = find_channel(channel_slug)
+      return [] unless channel
+
+      channel.overrides_for(resource_type, resource_id)
+    end
+
+    # Create a new channel override
+    def create_override(channel_slug, resource_type, resource_id, path, data, kind = 'override')
+      channel = find_channel(channel_slug)
+      return nil unless channel
+
+      channel.channel_overrides.create!(
+        resource_type: resource_type,
+        resource_id: resource_id,
+        path: path,
+        data: data,
+        kind: kind,
+        enabled: true
+      )
+    end
+
+    # Update channel settings
+    def update_channel_settings(channel_slug, settings)
+      channel = find_channel(channel_slug)
+      return false unless channel
+
+      channel.update!(settings: channel.settings.merge(settings))
+    end
+
+    # Process content for specific channel
+    def process_content_for_channel(content, channel_slug, options = {})
+      settings = channel_settings(channel_slug)
+      processed_content = content.dup
+      
+      # Apply device-specific optimizations
+      case settings['device_type']
+      when 'mobile', 'tablet'
+        processed_content = optimize_for_mobile(processed_content, settings)
+      when 'smart_tv'
+        processed_content = optimize_for_tv(processed_content, settings)
+      when 'email'
+        processed_content = optimize_for_email(processed_content, settings)
+      else
+        processed_content = optimize_for_desktop(processed_content, settings)
+      end
+      
+      # Apply channel overrides
+      if options[:apply_overrides] != false
+        processed_content = content_with_overrides(processed_content, channel_slug, options[:resource_type], options[:resource_id])
+      end
+      
+      processed_content
+    end
+
+    # Distribute content to all channels
+    def distribute_content_to_channels(content, options = {})
+      results = {}
+      
+      Channel.active.each do |channel|
+        results[channel.slug] = process_content_for_channel(
+          content, 
+          channel.slug, 
+          options.merge(
+            resource_type: options[:resource_type],
+            resource_id: options[:resource_id]
+          )
+        )
+      end
+      
+      results
+    end
+
+    # Check if plugin has settings
+    def has_settings?
+      @settings_schema.any?
+    end
+
+    # Get all admin pages for this plugin
+    def admin_pages
+      @admin_pages
+    end
+
+    # Check if plugin has admin pages
+    def has_admin_pages?
+      @admin_pages.any?
+    end
+
+    # Get plugin setting value
+    def get_setting(key, default = nil)
+      setting = PluginSetting.find_by(plugin_name: plugin_identifier, key: key.to_s)
+      return parse_setting_value(setting.value, setting.setting_type) if setting
+      
+      # Return default from schema
+      schema_setting = @settings_schema.find { |s| s[:key] == key.to_s }
+      schema_setting&.dig(:default) || default
+    end
+
+    # Set plugin setting value
+    def set_setting(key, value)
+      # Determine setting type from schema
+      schema = @settings_schema.find { |s| s[:key] == key.to_s }
+      setting_type = schema ? map_schema_type_to_db_type(schema[:type]) : 'string'
+      
+      PluginSetting.find_or_create_by!(
+        plugin_name: plugin_identifier,
+        key: key.to_s
+      ) do |setting|
+        setting.value = value.to_s
+        setting.setting_type = setting_type
+      end.tap do |setting|
+        setting.update(value: value.to_s, setting_type: setting_type)
+      end
+    end
+
+    # Get all plugin settings as hash
+    def get_all_settings
+      hash = {}
+      @settings_schema.each do |schema|
+        hash[schema[:key]] = get_setting(schema[:key])
+      end
+      hash
+    end
+
+    # Update multiple settings at once
+    def update_settings(settings_hash)
+      settings_hash.each do |key, value|
+        set_setting(key, value)
+      end
+    end
+
+    private
+
+    def detect_device_type(user_agent)
+      return :email if user_agent.match?(/Outlook|Gmail|Apple Mail|Thunderbird|Mail|Yahoo Mail|Hotmail|AOL|Zimbra/i)
+      return :mobile if user_agent.match?(/iPhone|Android|Mobile|BlackBerry|Windows Phone|Opera Mini|IEMobile|webOS|Palm|Nokia/i)
+      return :tablet if user_agent.match?(/iPad|Android.*Tablet|Kindle|Silk|PlayBook|BB10|Tablet|Nexus 7|Nexus 10/i)
+      return :smart_tv if user_agent.match?(/SmartTV|TV|Roku|AppleTV|AndroidTV|WebOS|Tizen|NetCast|BRAVIA|Samsung|LG/i)
+      
+      :desktop
+    end
+
+    def optimize_for_mobile(content, settings)
+      content.gsub(/<iframe[^>]*>/i, '') # Remove iframes
+             .gsub(/width="\d+"/i, '') # Remove width attributes
+             .gsub(/height="\d+"/i, '') # Remove height attributes
+             .gsub(/<script[^>]*>.*?<\/script>/mi, '') if settings['minimal_js']
+    end
+
+    def optimize_for_tv(content, settings)
+      content.gsub(/<img([^>]*)>/i, '<img\1 style="max-width: 100%; height: auto;">')
+             .gsub(/font-size:\s*\d+px/i, "font-size: #{settings['font_size'] || '24px'}") # Larger text
+    end
+
+    def optimize_for_email(content, settings)
+      content.gsub(/style="[^"]*"/i, '') # Remove inline styles
+             .gsub(/<div([^>]*)>/i, '<table><tr><td\1>') # Convert divs to tables
+             .gsub(/<\/div>/i, '</td></tr></table>')
+    end
+
+    def optimize_for_desktop(content, settings)
+      content
+    end
+    
+    # ========================================
     # SETTINGS SYSTEM
     # ========================================
     
@@ -140,54 +386,6 @@ module Railspress
         rows: options[:rows], # For textarea
         group: options[:group] # For organizing settings
       }
-    end
-    
-    # Get plugin setting value
-    def get_setting(key, default = nil)
-      setting = PluginSetting.find_by(plugin_name: plugin_identifier, key: key.to_s)
-      return parse_setting_value(setting.value, setting.setting_type) if setting
-      
-      # Return default from schema
-      schema_setting = @settings_schema.find { |s| s[:key] == key.to_s }
-      schema_setting&.dig(:default) || default
-    end
-    
-    # Set plugin setting value
-    def set_setting(key, value)
-      # Determine setting type from schema
-      schema = @settings_schema.find { |s| s[:key] == key.to_s }
-      setting_type = schema ? schema[:type] : 'string'
-      
-      PluginSetting.find_or_create_by!(
-        plugin_name: plugin_identifier,
-        key: key.to_s
-      ) do |setting|
-        setting.value = value.to_s
-        setting.setting_type = setting_type
-      end.tap do |setting|
-        setting.update(value: value.to_s, setting_type: setting_type)
-      end
-    end
-    
-    # Get all plugin settings as hash
-    def get_all_settings
-      hash = {}
-      @settings_schema.each do |schema|
-        hash[schema[:key]] = get_setting(schema[:key])
-      end
-      hash
-    end
-    
-    # Update multiple settings at once
-    def update_settings(settings_hash)
-      settings_hash.each do |key, value|
-        set_setting(key, value)
-      end
-    end
-    
-    # Check if plugin has settings
-    def has_settings?
-      @settings_schema.any?
     end
     
     # ========================================
@@ -369,16 +567,6 @@ module Railspress
         save_url: "/admin/plugins/#{plugin_identifier}/settings",
         plugin_info: metadata
       }
-    end
-    
-    # Get all admin pages for this plugin
-    def admin_pages
-      @admin_pages
-    end
-    
-    # Check if plugin has admin pages
-    def has_admin_pages?
-      @admin_pages.any?
     end
     
     # ========================================
@@ -980,8 +1168,6 @@ module Railspress
     def reject_upload(upload)
       upload.reject!
     end
-    
-    private
     
     # Parse setting value based on type
     def parse_setting_value(value, type)

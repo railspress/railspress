@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RailsPress Analytics API Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .section {
+      background: white;
+      padding: 30px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .code-block {
+      background: #f4f4f4;
+      padding: 20px;
+      border-radius: 5px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      border-left: 4px solid #667eea;
+    }
+    .method {
+      background: #e8f4fd;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border-left: 4px solid #2196f3;
+    }
+    .parameter {
+      background: #fff3cd;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 3px;
+      border-left: 3px solid #ffc107;
+    }
+    .example {
+      background: #d4edda;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border-left: 4px solid #28a745;
+    }
+    h1, h2, h3 { color: #2c3e50; }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #667eea;
+      color: white;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .warning {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🚀 RailsPress Analytics API</h1>
+    <p>Comprehensive JavaScript API for tracking custom events and metrics</p>
+    <p><strong>Version 1.0.0</strong> | Similar to WooCommerce, GA4, and other e-commerce platforms</p>
+  </div>
+
+  <div class="section">
+    <h2>📋 Table of Contents</h2>
+    <ul>
+      <li><a href="#getting-started">Getting Started</a></li>
+      <li><a href="#core-tracking">Core Tracking Methods</a></li>
+      <li><a href="#ecommerce">E-commerce Tracking</a></li>
+      <li><a href="#content">Content Tracking</a></li>
+      <li><a href="#user-interactions">User Interaction Tracking</a></li>
+      <li><a href="#conversions">Conversion Tracking</a></li>
+      <li><a href="#custom-metrics">Custom Metrics</a></li>
+      <li><a href="#error-tracking">Error Tracking</a></li>
+      <li><a href="#utility-methods">Utility Methods</a></li>
+      <li><a href="#examples">Real-world Examples</a></li>
+    </ul>
+  </div>
+
+  <div class="section" id="getting-started">
+    <h2>🚀 Getting Started</h2>
+    <p>The RailsPress Analytics API is automatically available in your templates and plugins. Simply use the global <code>RailsPressAnalytics</code> object.</p>
+    
+    <div class="code-block">
+// The API is automatically initialized and available globally
+console.log(RailsPressAnalytics); // Available in all templates
+
+// Enable debug mode for development
+RailsPressAnalytics.setDebugMode(true);
+    </div>
+
+    <div class="warning">
+      <strong>Note:</strong> The API respects GDPR settings and will only track events when consent is given (if consent is required).
+    </div>
+  </div>
+
+  <div class="section" id="core-tracking">
+    <h2>🎯 Core Tracking Methods</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.track(eventName, parameters, options)</h3>
+      <p>Track any custom event with parameters and options.</p>
+      
+      <div class="parameter">
+        <strong>Parameters:</strong>
+        <ul>
+          <li><code>eventName</code> (string): Name of the event</li>
+          <li><code>parameters</code> (object): Event parameters</li>
+          <li><code>options</code> (object): Additional options</li>
+        </ul>
+      </div>
+
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track a custom event
+RailsPressAnalytics.track('custom_action', {
+  action_type: 'button_click',
+  button_id: 'newsletter_signup',
+  user_segment: 'premium'
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.page(pageName, pageTitle, customParameters)</h3>
+      <p>Track page views with custom data.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track a custom page view
+RailsPressAnalytics.page('Product Category', 'Electronics - RailsPress', {
+  category: 'electronics',
+  subcategory: 'smartphones',
+  page_type: 'category'
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.engage(engagementType, parameters)</h3>
+      <p>Track user engagement events.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track engagement
+RailsPressAnalytics.engage('scroll', {
+  scroll_depth: 75,
+  time_on_page: 120,
+  content_type: 'article'
+});
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="ecommerce">
+    <h2>🛒 E-commerce Tracking</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.viewItem(product)</h3>
+      <p>Track product views (similar to WooCommerce).</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track product view
+RailsPressAnalytics.viewItem({
+  id: 'product_123',
+  name: 'iPhone 15 Pro',
+  category: 'Electronics > Smartphones',
+  brand: 'Apple',
+  price: 999.99,
+  currency: 'USD'
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.addToCart(product, quantity)</h3>
+      <p>Track add to cart events.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track add to cart
+RailsPressAnalytics.addToCart({
+  id: 'product_123',
+  name: 'iPhone 15 Pro',
+  category: 'Electronics > Smartphones',
+  brand: 'Apple',
+  price: 999.99,
+  currency: 'USD'
+}, 2);
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.purchase(transaction)</h3>
+      <p>Track purchase completions.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track purchase
+RailsPressAnalytics.purchase({
+  id: 'txn_456',
+  currency: 'USD',
+  value: 1999.98,
+  items: [
+    {
+      item_id: 'product_123',
+      item_name: 'iPhone 15 Pro',
+      item_category: 'Electronics > Smartphones',
+      item_brand: 'Apple',
+      price: 999.99,
+      quantity: 2
+    }
+  ]
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.beginCheckout(checkout)</h3>
+      <p>Track checkout initiation.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track begin checkout
+RailsPressAnalytics.beginCheckout({
+  currency: 'USD',
+  value: 1999.98,
+  items: [
+    {
+      item_id: 'product_123',
+      item_name: 'iPhone 15 Pro',
+      price: 999.99,
+      quantity: 2
+    }
+  ]
+});
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="content">
+    <h2>📄 Content Tracking</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.contentEngagement(contentType, content, engagement)</h3>
+      <p>Track content engagement metrics.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track content engagement
+RailsPressAnalytics.contentEngagement('post', {
+  id: 'post_789',
+  title: 'How to Build a Rails App',
+  author: 'John Doe',
+  category: 'Tutorials'
+}, {
+  type: 'read',
+  duration: 300,
+  depth: 85,
+  score: 92
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.videoEngagement(video, engagement)</h3>
+      <p>Track video engagement metrics.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track video engagement
+RailsPressAnalytics.videoEngagement({
+  id: 'video_101',
+  title: 'Rails Tutorial',
+  duration: 600,
+  category: 'Education'
+}, {
+  type: 'play',
+  currentTime: 120,
+  duration: 600,
+  progress: 20
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.search(searchTerm, searchResults)</h3>
+      <p>Track search queries and results.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track search
+RailsPressAnalytics.search('Rails tutorial', {
+  count: 15,
+  type: 'posts',
+  category: 'tutorials'
+});
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="user-interactions">
+    <h2>👆 User Interaction Tracking</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.formInteraction(formType, formData, action)</h3>
+      <p>Track form interactions.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track form interaction
+RailsPressAnalytics.formInteraction('contact', {
+  id: 'contact_form',
+  fieldCount: 5,
+  requiredFields: 3,
+  validationErrors: 0
+}, 'submit');
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.buttonClick(buttonType, buttonData, context)</h3>
+      <p>Track button clicks.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track button click
+RailsPressAnalytics.buttonClick('cta', {
+  id: 'signup_button',
+  text: 'Sign Up Now',
+  location: 'hero_section'
+}, {
+  page: 'homepage',
+  section: 'hero'
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.linkClick(link, context)</h3>
+      <p>Track link clicks.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track link click
+RailsPressAnalytics.linkClick({
+  url: 'https://example.com/external-link',
+  text: 'Learn More'
+}, {
+  page: 'product_page',
+  section: 'description'
+});
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="conversions">
+    <h2>🎯 Conversion Tracking</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.conversion(conversionType, conversionData, value)</h3>
+      <p>Track conversion events.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track conversion
+RailsPressAnalytics.conversion('newsletter_signup', {
+  id: 'signup_123',
+  category: 'email_marketing',
+  currency: 'USD'
+}, 0);
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.goal(goalName, goalData, value)</h3>
+      <p>Track goal completions.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track goal completion
+RailsPressAnalytics.goal('tutorial_completion', {
+  category: 'education',
+  duration: 1800,
+  steps: 10
+}, 100);
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="custom-metrics">
+    <h2>📊 Custom Metrics</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.metric(metricName, value, metadata)</h3>
+      <p>Track custom metrics.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track custom metric
+RailsPressAnalytics.metric('api_response_time', 250, {
+  unit: 'ms',
+  category: 'performance',
+  endpoint: '/api/posts'
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.performance(performanceType, value, context)</h3>
+      <p>Track performance metrics.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track performance metric
+RailsPressAnalytics.performance('page_load_time', 1200, {
+  unit: 'ms',
+  page: 'homepage',
+  component: 'hero_section'
+});
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="error-tracking">
+    <h2>🐛 Error Tracking</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.error(errorType, errorMessage, errorContext)</h3>
+      <p>Track errors and exceptions.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Track error
+RailsPressAnalytics.error('javascript_error', 'Cannot read property of undefined', {
+  stack: 'TypeError: Cannot read property...',
+  url: 'https://example.com/page',
+  line: 42,
+  column: 15
+});
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="utility-methods">
+    <h2>🔧 Utility Methods</h2>
+    
+    <div class="method">
+      <h3>RailsPressAnalytics.setUserProperties(properties)</h3>
+      <p>Set user properties for all events.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Set user properties
+RailsPressAnalytics.setUserProperties({
+  user_type: 'premium',
+  subscription_plan: 'pro',
+  signup_date: '2024-01-15'
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.setCustomParameters(parameters)</h3>
+      <p>Set custom parameters for all events.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Set custom parameters
+RailsPressAnalytics.setCustomParameters({
+  experiment_group: 'variant_a',
+  campaign_id: 'summer_2024',
+  source: 'social_media'
+});
+        </div>
+      </div>
+    </div>
+
+    <div class="method">
+      <h3>RailsPressAnalytics.getSessionInfo()</h3>
+      <p>Get current session information.</p>
+      
+      <div class="example">
+        <strong>Example:</strong>
+        <div class="code-block">
+// Get session info
+const sessionInfo = RailsPressAnalytics.getSessionInfo();
+console.log(sessionInfo);
+// Output: { session_id: "abc123", user_id: "user456", start_time: "2024-01-15T10:30:00Z", page_views: 5 }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="examples">
+    <h2>💡 Real-world Examples</h2>
+    
+    <h3>E-commerce Plugin Example</h3>
+    <div class="code-block">
+// In your WooCommerce-like plugin
+class ProductPageController {
+  constructor() {
+    this.initializeProductTracking();
+  }
+
+  initializeProductTracking() {
+    // Track product view when page loads
+    RailsPressAnalytics.viewItem({
+      id: this.productId,
+      name: this.productName,
+      category: this.productCategory,
+      brand: this.productBrand,
+      price: this.productPrice,
+      currency: this.productCurrency
+    });
+  }
+
+  trackAddToCart(quantity) {
+    RailsPressAnalytics.addToCart({
+      id: this.productId,
+      name: this.productName,
+      category: this.productCategory,
+      brand: this.productBrand,
+      price: this.productPrice,
+      currency: this.productCurrency
+    }, quantity);
+  }
+
+  trackPurchase(transactionId, totalValue) {
+    RailsPressAnalytics.purchase({
+      id: transactionId,
+      currency: this.productCurrency,
+      value: totalValue,
+      items: this.getCartItems()
+    });
+  }
+}
+    </div>
+
+    <h3>Content Management Example</h3>
+    <div class="code-block">
+// Track content engagement
+document.addEventListener('DOMContentLoaded', function() {
+  const article = document.querySelector('.article-content');
+  
+  if (article) {
+    // Track article view
+    RailsPressAnalytics.contentEngagement('post', {
+      id: article.dataset.postId,
+      title: article.dataset.postTitle,
+      author: article.dataset.postAuthor,
+      category: article.dataset.postCategory
+    }, {
+      type: 'view',
+      duration: 0,
+      depth: 0,
+      score: 0
+    });
+
+    // Track reading progress
+    let readingStartTime = Date.now();
+    let maxScrollDepth = 0;
+
+    window.addEventListener('scroll', function() {
+      const scrollDepth = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      maxScrollDepth = Math.max(maxScrollDepth, scrollDepth);
+    });
+
+    // Track reading completion
+    window.addEventListener('beforeunload', function() {
+      const readingTime = Math.round((Date.now() - readingStartTime) / 1000);
+      
+      RailsPressAnalytics.contentEngagement('post', {
+        id: article.dataset.postId,
+        title: article.dataset.postTitle,
+        author: article.dataset.postAuthor,
+        category: article.dataset.postCategory
+      }, {
+        type: 'read',
+        duration: readingTime,
+        depth: maxScrollDepth,
+        score: Math.round((maxScrollDepth + (readingTime / 60) * 100) / 2)
+      });
+    });
+  }
+});
+    </div>
+
+    <h3>Form Tracking Example</h3>
+    <div class="code-block">
+// Track form interactions
+document.addEventListener('submit', function(event) {
+  const form = event.target;
+  
+  RailsPressAnalytics.formInteraction(form.dataset.formType || 'general', {
+    id: form.id,
+    fieldCount: form.elements.length,
+    requiredFields: form.querySelectorAll('[required]').length,
+    validationErrors: form.querySelectorAll('.error').length
+  }, 'submit');
+});
+
+// Track form field focus
+document.addEventListener('focus', function(event) {
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+    const form = event.target.closest('form');
+    
+    RailsPressAnalytics.formInteraction(form.dataset.formType || 'general', {
+      id: form.id,
+      fieldCount: form.elements.length,
+      requiredFields: form.querySelectorAll('[required]').length,
+      validationErrors: form.querySelectorAll('.error').length
+    }, 'focus');
+  }
+}, true);
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎉 Conclusion</h2>
+    <p>The RailsPress Analytics API provides a comprehensive solution for tracking custom events, similar to WooCommerce, GA4, and other professional analytics platforms. It's designed to be:</p>
+    <ul>
+      <li><strong>Easy to use:</strong> Simple, intuitive API</li>
+      <li><strong>Flexible:</strong> Track any custom event or metric</li>
+      <li><strong>GDPR-compliant:</strong> Respects user privacy settings</li>
+      <li><strong>Performance-optimized:</strong> Minimal impact on page load</li>
+      <li><strong>Developer-friendly:</strong> Comprehensive documentation and examples</li>
+    </ul>
+    
+    <div class="warning">
+      <strong>Remember:</strong> Always respect user privacy and GDPR regulations when implementing analytics tracking.
+    </div>
+  </div>
+</body>
+</html>

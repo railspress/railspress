@@ -291,3 +291,5 @@ Test your hooks in different admin pages to ensure they work correctly across th
 The RailsPress admin hook system provides powerful integration points for plugins. Use these hooks responsibly and follow the best practices outlined in this guide to create seamless admin experiences.
 
 For more information about the RailsPress plugin system, see the [Plugin Developer Guide](PLUGIN_DEVELOPER_GUIDE.md).
+
+

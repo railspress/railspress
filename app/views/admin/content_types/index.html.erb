@@ -83,9 +83,12 @@
 </div>
 
 <script>
-  async function initContentTypesTable() {
+  async   function initContentTypesTable() {
     const tableElement = document.getElementById('content-types-table');
-    if (!tableElement) return;
+    if (!tableElement) {
+      console.log('Content types table element not found, skipping initialization');
+      return;
+    }
     
     // Destroy existing table if it exists
     if (tableElement._tabulator) {
@@ -242,8 +245,18 @@
   }
   
   // Initialize on page load
-  document.addEventListener('turbo:load', initContentTypesTable);
-  document.addEventListener('DOMContentLoaded', initContentTypesTable);
+  document.addEventListener('turbo:load', function() {
+    // Check if we're on the content types page before initializing
+    if (document.getElementById('content-types-table')) {
+      initContentTypesTable();
+    }
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the content types page before initializing
+    if (document.getElementById('content-types-table')) {
+      initContentTypesTable();
+    }
+  });
   
   // Cleanup before Turbo caches the page
   document.addEventListener('turbo:before-cache', function() {

@@ -59,6 +59,43 @@ class AnalyticsController < ApplicationController
     Rails.logger.error "Duration tracking error: #{e.message}"
     head :ok
   end
+  
+  # POST /analytics/reading
+  def reading
+    data = JSON.parse(request.body.read) rescue {}
+    
+    # Find recent pageview for this path and session
+    session_id = data['session_id'] || cookies['_railspress_session_id']
+    pageview = Pageview.where(
+      path: data['path'],
+      session_id: session_id
+    ).where('visited_at >= ?', 10.minutes.ago).last
+    
+    if pageview
+      pageview.update(
+        reading_time: data['reading_time'],
+        scroll_depth: data['scroll_depth'],
+        completion_rate: data['completion_rate'],
+        time_on_page: data['reading_time'],
+        exit_intent: data['exit_intent'],
+        is_reader: data['is_reader'] || false,
+        engagement_score: data['engagement_score'] || 0
+      )
+    end
+    
+    head :ok
+  rescue => e
+    Rails.logger.error "Reading tracking error: #{e.message}"
+    head :ok
+  end
+
+  def api_docs
+    render 'analytics_api_documentation', layout: false
+  end
+
+  def examples
+    render 'examples/analytics_plugin_example', layout: false
+  end
 end
 
 

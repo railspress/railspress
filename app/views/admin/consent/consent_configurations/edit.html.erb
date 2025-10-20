@@ -1,0 +1,292 @@
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white">Edit Consent Configuration</h1>
+    <p class="mt-2 text-gray-400">Update consent banner configuration settings</p>
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Left Column: Form -->
+    <div class="space-y-6">
+      <!-- Form -->
+      <div class="bg-gray-800 rounded-lg shadow border border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-700">
+          <h2 class="text-lg font-medium text-white">Configuration Details</h2>
+        </div>
+        
+        <div class="p-6">
+          <%= form_with model: [:admin, :consent, @consent_configuration], local: true, class: "space-y-6", id: "consent-form" do |form| %>
+            <% if @consent_configuration.errors.any? %>
+              <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">There were <%= pluralize(@consent_configuration.errors.count, "error") %> with your submission:</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                      <ul class="list-disc pl-5 space-y-1">
+                        <% @consent_configuration.errors.full_messages.each do |message| %>
+                          <li><%= message %></li>
+                        <% end %>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <%= form.label :name, class: "block text-sm font-medium text-white mb-2" %>
+                <%= form.text_field :name, class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500", onchange: "updatePreview()" %>
+              </div>
+
+              <div>
+                <%= form.label :banner_type, class: "block text-sm font-medium text-white mb-2" %>
+                <%= form.select :banner_type, 
+                    options_for_select([
+                      ['Bottom Banner', 'bottom_banner'],
+                      ['Modal', 'modal'],
+                      ['Overlay', 'overlay']
+                    ], @consent_configuration.banner_type),
+                    { prompt: 'Select banner type' },
+                    { class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500", onchange: "updatePreview()" } %>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <%= form.label :consent_mode, class: "block text-sm font-medium text-white mb-2" %>
+                <%= form.select :consent_mode,
+                    options_for_select([
+                      ['Opt-in', 'opt_in'],
+                      ['Opt-out', 'opt_out'],
+                      ['Implied', 'implied']
+                    ], @consent_configuration.consent_mode),
+                    { prompt: 'Select consent mode' },
+                    { class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500", onchange: "updatePreview()" } %>
+              </div>
+
+              <div class="flex items-center">
+                <%= form.check_box :active, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700", onchange: "updatePreview()" %>
+                <%= form.label :active, "Active Configuration", class: "ml-2 block text-sm text-white" %>
+              </div>
+            </div>
+
+            <!-- Banner Settings -->
+            <div class="border-t border-gray-700 pt-6">
+              <h3 class="text-lg font-medium text-white mb-4">Banner Settings</h3>
+              
+              <div class="space-y-4">
+                <div>
+                  <%= form.label :banner_title, "Banner Title", class: "block text-sm font-medium text-white mb-2" %>
+                  <%= form.text_field :banner_title, 
+                      value: @consent_configuration.banner_settings_with_defaults['text']['title'],
+                      class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                      onchange: "updatePreview()" %>
+                </div>
+                
+                <div>
+                  <%= form.label :banner_description, "Banner Description", class: "block text-sm font-medium text-white mb-2" %>
+                  <%= form.text_area :banner_description, 
+                      value: @consent_configuration.banner_settings_with_defaults['text']['description'],
+                      rows: 3,
+                      class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                      onchange: "updatePreview()" %>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <%= form.label :accept_all_text, "Accept All Text", class: "block text-sm font-medium text-white mb-2" %>
+                    <%= form.text_field :accept_all_text, 
+                        value: @consent_configuration.banner_settings_with_defaults['text']['accept_all'],
+                        class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                        onchange: "updatePreview()" %>
+                  </div>
+                  
+                  <div>
+                    <%= form.label :reject_all_text, "Reject All Text", class: "block text-sm font-medium text-white mb-2" %>
+                    <%= form.text_field :reject_all_text, 
+                        value: @consent_configuration.banner_settings_with_defaults['text']['reject_all'],
+                        class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                        onchange: "updatePreview()" %>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Color Customization -->
+            <div class="border-t border-gray-700 pt-6">
+              <h3 class="text-lg font-medium text-white mb-4">Color Customization</h3>
+              
+              <div class="space-y-6">
+                <!-- Banner Colors -->
+                <div>
+                  <h4 class="text-md font-medium text-white mb-3">Banner Colors</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <%= form.label :banner_background_color, "Background Color", class: "block text-sm font-medium text-white mb-2" %>
+                      <%= form.color_field :banner_background_color, 
+                          value: @consent_configuration.banner_settings_with_defaults['colors']['background'],
+                          class: "w-full h-10 border border-gray-600 rounded-md shadow-sm bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                          onchange: "updatePreview()" %>
+                    </div>
+                    
+                    <div>
+                      <%= form.label :banner_text_color, "Text Color", class: "block text-sm font-medium text-white mb-2" %>
+                      <%= form.color_field :banner_text_color, 
+                          value: @consent_configuration.banner_settings_with_defaults['colors']['text'],
+                          class: "w-full h-10 border border-gray-600 rounded-md shadow-sm bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                          onchange: "updatePreview()" %>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Button Colors -->
+                <div>
+                  <h4 class="text-md font-medium text-white mb-3">Button Colors</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <%= form.label :accept_button_bg_color, "Accept Button Background", class: "block text-sm font-medium text-white mb-2" %>
+                      <%= form.color_field :accept_button_bg_color, 
+                          value: @consent_configuration.banner_settings_with_defaults['colors']['button_accept'],
+                          class: "w-full h-10 border border-gray-600 rounded-md shadow-sm bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                          onchange: "updatePreview()" %>
+                    </div>
+                    
+                    <div>
+                      <%= form.label :reject_button_bg_color, "Reject Button Background", class: "block text-sm font-medium text-white mb-2" %>
+                      <%= form.color_field :reject_button_bg_color, 
+                          value: @consent_configuration.banner_settings_with_defaults['colors']['button_reject'],
+                          class: "w-full h-10 border border-gray-600 rounded-md shadow-sm bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                          onchange: "updatePreview()" %>
+                    </div>
+                    
+                    <div>
+                      <%= form.label :neutral_button_bg_color, "Neutral Button Background", class: "block text-sm font-medium text-white mb-2" %>
+                      <%= form.color_field :neutral_button_bg_color, 
+                          value: @consent_configuration.banner_settings_with_defaults['colors']['button_neutral'],
+                          class: "w-full h-10 border border-gray-600 rounded-md shadow-sm bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                          onchange: "updatePreview()" %>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Modal Colors -->
+                <div>
+                  <h4 class="text-md font-medium text-white mb-3">Preferences Modal Colors</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <%= form.label :modal_background_color, "Modal Background", class: "block text-sm font-medium text-white mb-2" %>
+                      <%= form.color_field :modal_background_color, 
+                          value: @consent_configuration.banner_settings_with_defaults['colors']['background'],
+                          class: "w-full h-10 border border-gray-600 rounded-md shadow-sm bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                          onchange: "updatePreview()" %>
+                    </div>
+                    
+                    <div>
+                      <%= form.label :modal_text_color, "Modal Text Color", class: "block text-sm font-medium text-white mb-2" %>
+                      <%= form.color_field :modal_text_color, 
+                          value: @consent_configuration.banner_settings_with_defaults['colors']['text'],
+                          class: "w-full h-10 border border-gray-600 rounded-md shadow-sm bg-gray-700 focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                          onchange: "updatePreview()" %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-700">
+              <%= link_to admin_consent_consent_configurations_path, class: "px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" do %>
+                Cancel
+              <% end %>
+              <%= form.submit "Update Configuration", class: "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Preview -->
+    <div class="space-y-6">
+      <div class="bg-gray-800 rounded-lg shadow border border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-700 flex items-center justify-between">
+          <h2 class="text-lg font-medium text-white">Live Preview</h2>
+          <button onclick="refreshPreview()" class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+            Refresh Preview
+          </button>
+        </div>
+        
+        <div class="p-6">
+          <div class="bg-white rounded-lg overflow-hidden" style="height: 600px;">
+            <iframe id="preview-iframe" 
+                    src="<%= preview_admin_consent_consent_configuration_path(@consent_configuration) %>"
+                    style="width: 100%; height: 100%; border: none;"
+                    onload="iframeLoaded()">
+            </iframe>
+          </div>
+          
+          <div class="mt-4 text-sm text-gray-400">
+            <p>Preview updates automatically as you change the form fields above.</p>
+            <p>The preview shows how your consent banner will appear to users.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let previewTimeout;
+  
+  function updatePreview() {
+    console.log('updatePreview called');
+    // Debounce the preview update
+    clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(function() {
+      refreshPreview();
+    }, 500);
+  }
+  
+  function refreshPreview() {
+    console.log('refreshPreview called');
+    const iframe = document.getElementById('preview-iframe');
+    const form = document.getElementById('consent-form');
+    
+    if (!iframe || !form) {
+      console.error('iframe or form not found');
+      return;
+    }
+    
+    const formData = new FormData(form);
+    
+    // Convert form data to URL parameters
+    const params = new URLSearchParams();
+    for (let [key, value] of formData.entries()) {
+      console.log('Form field:', key, '=', value);
+      params.append(`consent_configuration[${key}]`, value);
+    }
+    
+    // Update iframe source with form data
+    const currentSrc = iframe.src.split('?')[0];
+    const newSrc = currentSrc + '?' + params.toString();
+    console.log('Updating iframe src to:', newSrc);
+    iframe.src = newSrc;
+  }
+  
+  function iframeLoaded() {
+    console.log('Preview iframe loaded');
+  }
+  
+  // Auto-refresh preview on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing preview');
+    setTimeout(function() {
+      refreshPreview();
+    }, 1000);
+  });
+</script>

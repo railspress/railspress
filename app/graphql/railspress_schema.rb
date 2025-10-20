@@ -1,76 +1,45 @@
+# frozen_string_literal: true
+
 class RailspressSchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Maximum query depth
-  max_depth 15
+  # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
+  use GraphQL::Dataloader
 
-  # Maximum query complexity
-  max_complexity 300
-
-  # Error handling
-  rescue_from(ActiveRecord::RecordNotFound) do |err, obj, args, ctx, field|
-    raise GraphQL::ExecutionError, "#{field.type.unwrap.graphql_name} not found"
+  # GraphQL-Ruby calls this when something goes wrong while running a query:
+  def self.type_error(err, context)
+    # if err.is_a?(GraphQL::InvalidNullError)
+    #   # report to your bug tracker here
+    #   return nil
+    # end
+    super
   end
 
-  rescue_from(ActiveRecord::RecordInvalid) do |err, obj, args, ctx, field|
-    raise GraphQL::ExecutionError, err.record.errors.full_messages.join(", ")
-  end
-
-  # Relay-style object identification
-  def self.object_from_id(node_id, ctx)
-    type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(node_id)
-    
-    case type_name
-    when "Post"
-      Post.find(item_id)
-    when "Page"
-      Page.find(item_id)
-    when "User"
-      User.find(item_id)
-    when "Category"
-      # Category is now a Term in category taxonomy
-      Taxonomy.find_by(slug: 'category')&.terms&.find(item_id)
-    when "Tag"
-      # Tag is now a Term in tag taxonomy
-      Taxonomy.find_by(slug: 'tag')&.terms&.find(item_id)
-    when "Taxonomy"
-      Taxonomy.find(item_id)
-    when "Term"
-      Term.find(item_id)
-    when "Comment"
-      Comment.find(item_id)
-    else
-      nil
-    end
-  end
-
+  # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
-    case obj
-    when Post
-      Types::PostType
-    when Page
-      Types::PageType
-    when User
-      Types::UserType
-    when Term
-      # Check if it's a category or tag term
-      if obj.taxonomy.slug == 'category'
-        Types::CategoryType
-      elsif obj.taxonomy.slug == 'post_tag'
-        Types::TagType
-      else
-        Types::TermType
-      end
-    when Taxonomy
-      Types::TaxonomyType
-    when Comment
-      Types::CommentType
-    else
-      raise("Unexpected object: #{obj}")
-    end
+    # TODO: Implement this method
+    # to return the correct GraphQL object type for `obj`
+    raise(GraphQL::RequiredImplementationMissingError)
+  end
+
+  # Limit the size of incoming queries:
+  max_query_string_tokens(5000)
+
+  # Stop validating when it encounters this many errors:
+  validate_max_errors(100)
+
+  # Relay-style Object Identification:
+
+  # Return a string UUID for `object`
+  def self.id_from_object(object, type_definition, query_ctx)
+    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
+    object.to_gid_param
+  end
+
+  # Given a string UUID, find the object
+  def self.object_from_id(global_id, query_ctx)
+    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
+    GlobalID.find(global_id)
   end
 end
-
-
-

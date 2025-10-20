@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_20_013129) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -108,6 +108,72 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.index ["user_id"], name: "index_ai_usages_on_user_id"
   end
 
+  create_table "analytics_audit_logs", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "admin_user_id"
+    t.integer "tenant_id"
+    t.string "data_type", null: false
+    t.string "action", null: false
+    t.datetime "timestamp", null: false
+    t.string "ip_address"
+    t.text "user_agent"
+    t.text "details"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action"], name: "index_analytics_audit_logs_on_action"
+    t.index ["admin_user_id"], name: "index_analytics_audit_logs_on_admin_user_id"
+    t.index ["data_type"], name: "index_analytics_audit_logs_on_data_type"
+    t.index ["tenant_id"], name: "index_analytics_audit_logs_on_tenant_id"
+    t.index ["timestamp"], name: "index_analytics_audit_logs_on_timestamp"
+    t.index ["user_id"], name: "index_analytics_audit_logs_on_user_id"
+  end
+
+  create_table "analytics_consents", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "tenant_id"
+    t.string "consent_type", null: false
+    t.boolean "granted", null: false
+    t.string "purpose"
+    t.datetime "timestamp", null: false
+    t.string "ip_address"
+    t.text "user_agent"
+    t.text "consent_details"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["consent_type"], name: "index_analytics_consents_on_consent_type"
+    t.index ["granted"], name: "index_analytics_consents_on_granted"
+    t.index ["tenant_id"], name: "index_analytics_consents_on_tenant_id"
+    t.index ["timestamp"], name: "index_analytics_consents_on_timestamp"
+    t.index ["user_id"], name: "index_analytics_consents_on_user_id"
+  end
+
+  create_table "analytics_data_deletions", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "admin_user_id"
+    t.integer "tenant_id"
+    t.text "data_types", null: false
+    t.datetime "timestamp", null: false
+    t.text "deletion_details"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["admin_user_id"], name: "index_analytics_data_deletions_on_admin_user_id"
+    t.index ["tenant_id"], name: "index_analytics_data_deletions_on_tenant_id"
+    t.index ["timestamp"], name: "index_analytics_data_deletions_on_timestamp"
+    t.index ["user_id"], name: "index_analytics_data_deletions_on_user_id"
+  end
+
+  create_table "analytics_events", force: :cascade do |t|
+    t.string "event_name"
+    t.text "properties"
+    t.string "session_id"
+    t.integer "user_id"
+    t.string "path"
+    t.integer "tenant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tenant_id"], name: "index_analytics_events_on_tenant_id"
+  end
+
   create_table "api_tokens", force: :cascade do |t|
     t.string "name", null: false
     t.string "token", null: false
@@ -124,6 +190,77 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.index ["token"], name: "index_api_tokens_on_token", unique: true
     t.index ["user_id", "name"], name: "index_api_tokens_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_api_tokens_on_user_id"
+  end
+
+  create_table "archived_analytics_events", force: :cascade do |t|
+    t.string "event_name", null: false
+    t.json "properties"
+    t.string "session_id"
+    t.integer "user_id"
+    t.integer "tenant_id", null: false
+    t.datetime "created_at"
+    t.datetime "archived_at"
+    t.string "archive_batch_id"
+    t.datetime "updated_at"
+    t.index ["archive_batch_id"], name: "index_archived_analytics_events_on_archive_batch_id"
+    t.index ["archived_at"], name: "index_archived_analytics_events_on_archived_at"
+    t.index ["created_at"], name: "index_archived_analytics_events_on_created_at"
+    t.index ["event_name"], name: "index_archived_analytics_events_on_event_name"
+    t.index ["session_id"], name: "index_archived_analytics_events_on_session_id"
+    t.index ["tenant_id"], name: "index_archived_analytics_events_on_tenant_id"
+    t.index ["user_id"], name: "index_archived_analytics_events_on_user_id"
+  end
+
+  create_table "archived_pageviews", force: :cascade do |t|
+    t.string "path"
+    t.string "title"
+    t.text "referrer"
+    t.text "user_agent"
+    t.string "browser"
+    t.string "device"
+    t.string "os"
+    t.string "ip_hash"
+    t.string "session_id"
+    t.integer "user_id"
+    t.integer "post_id"
+    t.integer "page_id"
+    t.boolean "unique_visitor", default: false
+    t.boolean "returning_visitor", default: false
+    t.boolean "bot", default: false
+    t.boolean "consented", default: false
+    t.datetime "visited_at"
+    t.json "metadata"
+    t.integer "tenant_id", null: false
+    t.integer "reading_time"
+    t.integer "scroll_depth"
+    t.decimal "completion_rate", precision: 5, scale: 2
+    t.integer "time_on_page"
+    t.boolean "exit_intent", default: false
+    t.string "country_code"
+    t.string "country_name"
+    t.string "city"
+    t.string "region"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.string "timezone"
+    t.boolean "is_reader", default: false
+    t.integer "engagement_score", default: 0
+    t.datetime "archived_at"
+    t.string "archive_batch_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["archive_batch_id"], name: "index_archived_pageviews_on_archive_batch_id"
+    t.index ["archived_at"], name: "index_archived_pageviews_on_archived_at"
+    t.index ["browser"], name: "index_archived_pageviews_on_browser"
+    t.index ["country_code"], name: "index_archived_pageviews_on_country_code"
+    t.index ["device"], name: "index_archived_pageviews_on_device"
+    t.index ["is_reader"], name: "index_archived_pageviews_on_is_reader"
+    t.index ["page_id"], name: "index_archived_pageviews_on_page_id"
+    t.index ["post_id"], name: "index_archived_pageviews_on_post_id"
+    t.index ["session_id"], name: "index_archived_pageviews_on_session_id"
+    t.index ["tenant_id"], name: "index_archived_pageviews_on_tenant_id"
+    t.index ["user_id"], name: "index_archived_pageviews_on_user_id"
+    t.index ["visited_at"], name: "index_archived_pageviews_on_visited_at"
   end
 
   create_table "builder_file_settings", force: :cascade do |t|
@@ -235,6 +372,51 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.index ["user_id"], name: "index_builder_themes_on_user_id"
   end
 
+  create_table "channel_overrides", force: :cascade do |t|
+    t.integer "channel_id", null: false
+    t.string "resource_type", null: false
+    t.integer "resource_id"
+    t.string "kind", null: false
+    t.string "path", null: false
+    t.json "data", default: {}
+    t.boolean "enabled", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["channel_id", "resource_type", "resource_id"], name: "idx_on_channel_id_resource_type_resource_id_f941b041c6"
+    t.index ["channel_id"], name: "index_channel_overrides_on_channel_id"
+    t.index ["path"], name: "index_channel_overrides_on_path"
+    t.index ["resource_type", "resource_id"], name: "index_channel_overrides_on_resource_type_and_resource_id"
+  end
+
+  create_table "channels", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.string "domain"
+    t.string "locale", default: "en"
+    t.json "metadata", default: {}
+    t.json "settings", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.index ["domain"], name: "index_channels_on_domain"
+    t.index ["slug"], name: "index_channels_on_slug", unique: true
+  end
+
+  create_table "channels_media", id: false, force: :cascade do |t|
+    t.integer "channel_id", null: false
+    t.integer "medium_id", null: false
+  end
+
+  create_table "channels_pages", id: false, force: :cascade do |t|
+    t.integer "channel_id", null: false
+    t.integer "page_id", null: false
+  end
+
+  create_table "channels_posts", id: false, force: :cascade do |t|
+    t.integer "channel_id", null: false
+    t.integer "post_id", null: false
+  end
+
   create_table "comments", force: :cascade do |t|
     t.text "content"
     t.string "author_name"
@@ -265,6 +447,21 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.index ["tenant_id"], name: "index_comments_on_tenant_id"
     t.index ["trashed_by_id"], name: "index_comments_on_trashed_by_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
+  end
+
+  create_table "consent_configurations", force: :cascade do |t|
+    t.string "name"
+    t.string "banner_type"
+    t.string "consent_mode"
+    t.text "consent_categories"
+    t.text "pixel_consent_mapping"
+    t.text "banner_settings"
+    t.text "geolocation_settings"
+    t.boolean "active"
+    t.integer "tenant_id", null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.index ["tenant_id"], name: "index_consent_configurations_on_tenant_id"
   end
 
   create_table "content_types", force: :cascade do |t|
@@ -425,6 +622,51 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
+  create_table "image_optimization_logs", force: :cascade do |t|
+    t.integer "medium_id", null: false
+    t.integer "upload_id", null: false
+    t.integer "user_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "filename"
+    t.string "content_type"
+    t.integer "original_size"
+    t.integer "optimized_size"
+    t.integer "width"
+    t.integer "height"
+    t.string "compression_level"
+    t.integer "quality"
+    t.boolean "strip_metadata"
+    t.boolean "enable_webp"
+    t.boolean "enable_avif"
+    t.decimal "processing_time", precision: 10, scale: 3
+    t.decimal "size_reduction_percentage", precision: 5, scale: 2
+    t.integer "bytes_saved"
+    t.text "variants_generated"
+    t.text "responsive_variants_generated"
+    t.string "optimization_type"
+    t.string "status"
+    t.text "error_message"
+    t.text "warnings"
+    t.string "storage_provider"
+    t.boolean "cdn_enabled"
+    t.string "user_agent"
+    t.string "ip_address"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["compression_level", "created_at"], name: "idx_on_compression_level_created_at_cd5976b03e"
+    t.index ["created_at"], name: "index_image_optimization_logs_on_created_at"
+    t.index ["medium_id", "created_at"], name: "index_image_optimization_logs_on_medium_id_and_created_at"
+    t.index ["medium_id"], name: "index_image_optimization_logs_on_medium_id"
+    t.index ["optimization_type", "created_at"], name: "idx_on_optimization_type_created_at_97990dd825"
+    t.index ["status", "created_at"], name: "index_image_optimization_logs_on_status_and_created_at"
+    t.index ["tenant_id", "created_at"], name: "index_image_optimization_logs_on_tenant_id_and_created_at"
+    t.index ["tenant_id"], name: "index_image_optimization_logs_on_tenant_id"
+    t.index ["upload_id", "created_at"], name: "index_image_optimization_logs_on_upload_id_and_created_at"
+    t.index ["upload_id"], name: "index_image_optimization_logs_on_upload_id"
+    t.index ["user_id", "created_at"], name: "index_image_optimization_logs_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_image_optimization_logs_on_user_id"
+  end
+
   create_table "import_jobs", force: :cascade do |t|
     t.string "import_type"
     t.string "file_path"
@@ -497,10 +739,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.boolean "immutable", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "tenant_id", null: false
     t.index ["immutable"], name: "index_meta_fields_on_immutable"
     t.index ["key"], name: "index_meta_fields_on_key"
     t.index ["metable_type", "metable_id", "key"], name: "index_meta_fields_on_metable_and_key", unique: true
     t.index ["metable_type", "metable_id"], name: "index_meta_fields_on_metable"
+    t.index ["tenant_id"], name: "index_meta_fields_on_tenant_id"
   end
 
   create_table "mobility_string_translations", force: :cascade do |t|
@@ -628,9 +872,24 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.datetime "visited_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "reading_time"
+    t.integer "scroll_depth"
+    t.decimal "completion_rate"
+    t.integer "time_on_page"
+    t.boolean "exit_intent"
+    t.string "country_name"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.string "timezone"
+    t.boolean "is_reader", default: false
+    t.integer "engagement_score", default: 0
     t.index ["bot"], name: "index_pageviews_on_bot"
     t.index ["consented"], name: "index_pageviews_on_consented"
     t.index ["country_code"], name: "index_pageviews_on_country_code"
+    t.index ["country_name"], name: "index_pageviews_on_country_name"
+    t.index ["engagement_score"], name: "index_pageviews_on_engagement_score"
+    t.index ["is_reader"], name: "index_pageviews_on_is_reader"
+    t.index ["latitude", "longitude"], name: "index_pageviews_on_latitude_and_longitude"
     t.index ["page_id"], name: "index_pageviews_on_page_id"
     t.index ["path", "visited_at"], name: "index_pageviews_on_path_and_visited_at"
     t.index ["path"], name: "index_pageviews_on_path"
@@ -638,6 +897,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.index ["session_id"], name: "index_pageviews_on_session_id"
     t.index ["tenant_id", "visited_at"], name: "index_pageviews_on_tenant_id_and_visited_at"
     t.index ["tenant_id"], name: "index_pageviews_on_tenant_id"
+    t.index ["timezone"], name: "index_pageviews_on_timezone"
     t.index ["user_id"], name: "index_pageviews_on_user_id"
     t.index ["visited_at"], name: "index_pageviews_on_visited_at"
   end
@@ -1129,9 +1389,24 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
     t.integer "storage_provider_id", null: false
     t.boolean "quarantined"
     t.text "quarantine_reason"
+    t.text "variants"
     t.index ["storage_provider_id"], name: "index_uploads_on_storage_provider_id"
     t.index ["tenant_id"], name: "index_uploads_on_tenant_id"
     t.index ["user_id"], name: "index_uploads_on_user_id"
+  end
+
+  create_table "user_consents", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "consent_type"
+    t.text "consent_text"
+    t.boolean "granted"
+    t.datetime "granted_at"
+    t.datetime "withdrawn_at"
+    t.string "ip_address"
+    t.text "user_agent"
+    t.integer "tenant_id", null: false
+    t.index ["tenant_id"], name: "index_user_consents_on_tenant_id"
+    t.index ["user_id"], name: "index_user_consents_on_user_id"
   end
 
   create_table "user_notifications", force: :cascade do |t|
@@ -1253,7 +1528,22 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
   add_foreign_key "ai_agents", "ai_providers"
   add_foreign_key "ai_usages", "ai_agents"
   add_foreign_key "ai_usages", "users"
+  add_foreign_key "analytics_audit_logs", "tenants"
+  add_foreign_key "analytics_audit_logs", "users"
+  add_foreign_key "analytics_audit_logs", "users", column: "admin_user_id"
+  add_foreign_key "analytics_consents", "tenants"
+  add_foreign_key "analytics_consents", "users"
+  add_foreign_key "analytics_data_deletions", "tenants"
+  add_foreign_key "analytics_data_deletions", "users"
+  add_foreign_key "analytics_data_deletions", "users", column: "admin_user_id"
+  add_foreign_key "analytics_events", "tenants"
   add_foreign_key "api_tokens", "users"
+  add_foreign_key "archived_analytics_events", "tenants"
+  add_foreign_key "archived_analytics_events", "users"
+  add_foreign_key "archived_pageviews", "pages"
+  add_foreign_key "archived_pageviews", "posts"
+  add_foreign_key "archived_pageviews", "tenants"
+  add_foreign_key "archived_pageviews", "users"
   add_foreign_key "builder_file_settings", "builder_files"
   add_foreign_key "builder_file_settings", "tenants"
   add_foreign_key "builder_page_sections", "builder_pages"
@@ -1269,10 +1559,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
   add_foreign_key "builder_theme_snapshots", "users"
   add_foreign_key "builder_themes", "tenants"
   add_foreign_key "builder_themes", "users"
+  add_foreign_key "channel_overrides", "channels"
   add_foreign_key "comments", "comments", column: "comment_parent_id"
   add_foreign_key "comments", "tenants"
   add_foreign_key "comments", "users"
   add_foreign_key "comments", "users", column: "trashed_by_id"
+  add_foreign_key "consent_configurations", "tenants"
   add_foreign_key "content_types", "tenants"
   add_foreign_key "custom_field_values", "custom_fields"
   add_foreign_key "custom_field_values", "pages"
@@ -1284,6 +1576,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
   add_foreign_key "export_jobs", "tenants"
   add_foreign_key "export_jobs", "users"
   add_foreign_key "field_groups", "tenants"
+  add_foreign_key "image_optimization_logs", "media"
+  add_foreign_key "image_optimization_logs", "tenants"
+  add_foreign_key "image_optimization_logs", "uploads"
+  add_foreign_key "image_optimization_logs", "users"
   add_foreign_key "import_jobs", "tenants"
   add_foreign_key "import_jobs", "users"
   add_foreign_key "media", "tenants"
@@ -1293,6 +1589,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
   add_foreign_key "menu_items", "menus"
   add_foreign_key "menu_items", "tenants"
   add_foreign_key "menus", "tenants"
+  add_foreign_key "meta_fields", "tenants"
   add_foreign_key "oauth_accounts", "tenants"
   add_foreign_key "oauth_accounts", "users"
   add_foreign_key "page_templates", "tenants"
@@ -1346,6 +1643,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_17_142510) do
   add_foreign_key "uploads", "storage_providers"
   add_foreign_key "uploads", "tenants"
   add_foreign_key "uploads", "users"
+  add_foreign_key "user_consents", "tenants"
+  add_foreign_key "user_consents", "users"
   add_foreign_key "user_notifications", "users"
   add_foreign_key "users", "tenants"
   add_foreign_key "webhook_deliveries", "webhooks"

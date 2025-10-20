@@ -1,4 +1,5 @@
 class Medium < ApplicationRecord
+  include Railspress::ChannelDetection
   # Multi-tenancy
   acts_as_tenant(:tenant)
   
@@ -7,6 +8,9 @@ class Medium < ApplicationRecord
   
   belongs_to :user
   belongs_to :upload
+  
+  # Channels
+  has_and_belongs_to_many :channels
   
   # Validations
   validates :title, presence: true
@@ -120,9 +124,31 @@ class Medium < ApplicationRecord
     end
   end
   
-  private
-  
   def trigger_media_uploaded_hook
+    # Trigger plugin hooks
     Railspress::PluginSystem.do_action('media_uploaded', self)
+    
+    # Core image optimization (baked into system)
+    optimize_image_if_needed
   end
+  
+  # Core image optimization method
+  def optimize_image_if_needed
+    return unless image?
+    return unless upload&.file&.attached?
+    
+    # Check if optimization is enabled in settings
+    storage_config = StorageConfigurationService.new
+    return unless storage_config.auto_optimize_enabled?
+    
+    # Check media settings
+    return unless SiteSetting.get('auto_optimize_images', false)
+    
+    # Queue optimization job
+    OptimizeImageJob.perform_later(medium_id: id)
+    
+    Rails.logger.info "Queued image optimization for medium #{id} (core system)"
+  end
+  
+  private
 end

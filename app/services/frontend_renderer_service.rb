@@ -77,7 +77,7 @@ class FrontendRendererService
       
       # Get layout file
       layout_file = @published_version.published_theme_files.find_by(file_path: 'layout/theme.liquid')
-      layout_content = layout_file&.content || default_layout
+      layout_content = layout_file&.content || FrontendRendererService.default_layout
       
       # Build page sections from template data
       page_sections = []
@@ -133,7 +133,7 @@ class FrontendRendererService
     mock_theme
   end
 
-  def default_layout
+  def self.default_layout
     <<~HTML
       <!DOCTYPE html>
       <html lang="en">

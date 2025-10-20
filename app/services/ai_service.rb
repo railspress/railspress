@@ -21,20 +21,37 @@ class AiService
   private
   
   def call_openai(prompt)
-    client = OpenAI::Client.new(access_token: @provider.api_key)
+    require 'net/http'
+    require 'json'
     
-    response = client.chat(
-      parameters: {
-        model: @provider.model_identifier,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: @provider.max_tokens,
-        temperature: @provider.temperature
-      }
-    )
+    uri = URI('https://api.openai.com/v1/chat/completions')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
     
-    response.dig("choices", 0, "message", "content")
+    request = Net::HTTP::Post.new(uri)
+    request['Authorization'] = "Bearer #{@provider.api_key}"
+    request['Content-Type'] = 'application/json'
+    
+    body = {
+      model: @provider.model_identifier,
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: @provider.max_tokens,
+      temperature: @provider.temperature
+    }
+    
+    request.body = body.to_json
+    response = http.request(request)
+    
+    if response.code == '200'
+      parsed_response = JSON.parse(response.body)
+      content = parsed_response.dig('choices', 0, 'message', 'content')
+      raise "Invalid response format: missing content" if content.nil?
+      content
+    else
+      raise "OpenAI API error: #{response.body}"
+    end
   rescue => e
-    { error: e.message }
+    raise e
   end
   
   def call_cohere(prompt)
@@ -63,10 +80,10 @@ class AiService
     if response.code == '200'
       JSON.parse(response.body)['text']
     else
-      { error: "Cohere API error: #{response.body}" }
+      raise "Cohere API error: #{response.body}"
     end
   rescue => e
-    { error: e.message }
+    raise e
   end
   
   def call_anthropic(prompt)
@@ -95,10 +112,10 @@ class AiService
     if response.code == '200'
       JSON.parse(response.body)['content'][0]['text']
     else
-      { error: "Anthropic API error: #{response.body}" }
+      raise "Anthropic API error: #{response.body}"
     end
   rescue => e
-    { error: e.message }
+    raise e
   end
   
   def call_google(prompt)
@@ -130,10 +147,10 @@ class AiService
     if response.code == '200'
       JSON.parse(response.body)['candidates'][0]['content']['parts'][0]['text']
     else
-      { error: "Google API error: #{response.body}" }
+      raise "Google API error: #{response.body}"
     end
   rescue => e
-    { error: e.message }
+    raise e
   end
 end
 

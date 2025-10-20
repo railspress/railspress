@@ -1,0 +1,35 @@
+<% content_for :title, "Content Channels" %>
+<% content_for :stylesheets do %>
+  <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "tabulator_custom", "data-turbo-track": "reload" %>
+<% end %>
+
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Content Channels</h1>
+      <p class="text-gray-400">Manage content distribution across different channels and platforms</p>
+    </div>
+    <div class="flex items-center space-x-3">
+      <%= link_to new_admin_system_channel_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add New Channel
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <%= render 'admin/shared/stats_cards', stats: @stats %>
+
+  <!-- Admin Table -->
+  <%= render 'admin/shared/admin_table', 
+      table_type: 'channels', 
+      data: @channels_data, 
+      columns: @columns,
+      bulk_actions: @bulk_actions,
+      status_options: @status_options,
+      search_placeholder: "Search channels..." %>
+</div>

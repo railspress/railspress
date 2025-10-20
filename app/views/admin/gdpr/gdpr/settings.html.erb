@@ -1,0 +1,222 @@
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-white">GDPR Settings</h1>
+    <p class="mt-2 text-gray-400">Configure GDPR compliance settings and data retention policies</p>
+  </div>
+
+  <!-- Settings Form -->
+  <div class="bg-gray-800 rounded-lg shadow border border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-700">
+      <h2 class="text-lg font-medium text-white">Data Retention & Processing Settings</h2>
+    </div>
+    
+    <div class="p-6">
+      <%= form_with url: admin_gdpr_settings_path, method: :patch, local: true, class: "space-y-6" do |form| %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <%= form.label :gdpr_settings_data_retention_days, "Data Retention Period (Days)", class: "block text-sm font-medium text-white mb-2" %>
+            <%= form.number_field :gdpr_settings_data_retention_days, 
+                value: @gdpr_settings[:data_retention_days],
+                min: 1, max: 3650,
+                class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+            <p class="mt-1 text-sm text-gray-400">How long to retain user data before automatic deletion (1-3650 days)</p>
+          </div>
+
+          <div>
+            <%= form.label :gdpr_settings_export_auto_delete_days, "Export Auto-Delete (Days)", class: "block text-sm font-medium text-white mb-2" %>
+            <%= form.number_field :gdpr_settings_export_auto_delete_days, 
+                value: @gdpr_settings[:export_auto_delete_days],
+                min: 1, max: 30,
+                class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+            <p class="mt-1 text-sm text-gray-400">Automatically delete export files after this many days (1-30 days)</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <%= form.label :gdpr_settings_audit_log_retention_days, "Audit Log Retention (Days)", class: "block text-sm font-medium text-white mb-2" %>
+            <%= form.number_field :gdpr_settings_audit_log_retention_days, 
+                value: @gdpr_settings[:audit_log_retention_days],
+                min: 30, max: 3650,
+                class: "w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+            <p class="mt-1 text-sm text-gray-400">How long to retain audit logs (30-3650 days, recommended: 2555 days = 7 years)</p>
+          </div>
+
+          <div class="flex items-center">
+            <%= form.check_box :gdpr_settings_erasure_confirmation_required, 
+                { checked: @gdpr_settings[:erasure_confirmation_required] }, 
+                class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700" %>
+            <%= form.label :gdpr_settings_erasure_confirmation_required, "Require Confirmation for Data Erasure", class: "ml-2 block text-sm text-white" %>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex items-center">
+            <%= form.check_box :gdpr_settings_consent_required_for_processing, 
+                { checked: @gdpr_settings[:consent_required_for_processing] }, 
+                class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700" %>
+            <%= form.label :gdpr_settings_consent_required_for_processing, "Require Consent for Data Processing", class: "ml-2 block text-sm text-white" %>
+          </div>
+
+          <div class="flex items-center">
+            <%= form.check_box :gdpr_settings_anonymize_ip_addresses, 
+                { checked: @gdpr_settings[:anonymize_ip_addresses] }, 
+                class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700" %>
+            <%= form.label :gdpr_settings_anonymize_ip_addresses, "Anonymize IP Addresses", class: "ml-2 block text-sm text-white" %>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-700">
+          <%= link_to admin_gdpr_root_path, class: "px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500" do %>
+            Cancel
+          <% end %>
+          <%= form.submit "Update Settings", class: "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Current Settings Summary -->
+  <div class="mt-8 bg-gray-800 rounded-lg shadow border border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-700">
+      <h2 class="text-lg font-medium text-white">Current Settings Summary</h2>
+    </div>
+    
+    <div class="p-6">
+      <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <dt class="text-sm font-medium text-gray-400">Data Retention Period</dt>
+          <dd class="mt-1 text-sm text-white"><%= @gdpr_settings[:data_retention_days] %> days</dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-400">Export Auto-Delete</dt>
+          <dd class="mt-1 text-sm text-white"><%= @gdpr_settings[:export_auto_delete_days] %> days</dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-400">Audit Log Retention</dt>
+          <dd class="mt-1 text-sm text-white"><%= @gdpr_settings[:audit_log_retention_days] %> days</dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-400">Erasure Confirmation Required</dt>
+          <dd class="mt-1">
+            <% if @gdpr_settings[:erasure_confirmation_required] %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Enabled
+              </span>
+            <% else %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                Disabled
+              </span>
+            <% end %>
+          </dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-400">Consent Required for Processing</dt>
+          <dd class="mt-1">
+            <% if @gdpr_settings[:consent_required_for_processing] %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Enabled
+              </span>
+            <% else %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                Disabled
+              </span>
+            <% end %>
+          </dd>
+        </div>
+
+        <div>
+          <dt class="text-sm font-medium text-gray-400">IP Address Anonymization</dt>
+          <dd class="mt-1">
+            <% if @gdpr_settings[:anonymize_ip_addresses] %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Enabled
+              </span>
+            <% else %>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                Disabled
+              </span>
+            <% end %>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- GDPR Compliance Information -->
+  <div class="mt-8 bg-gray-800 rounded-lg shadow border border-gray-700">
+    <div class="px-6 py-4 border-b border-gray-700">
+      <h2 class="text-lg font-medium text-white">GDPR Compliance Information</h2>
+    </div>
+    
+    <div class="p-6">
+      <div class="space-y-4">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-white">Data Retention</h3>
+            <p class="mt-1 text-sm text-gray-400">
+              Set appropriate data retention periods based on your business needs and legal requirements. 
+              Consider the principle of data minimization - only retain data as long as necessary.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-white">Consent Management</h3>
+            <p class="mt-1 text-sm text-gray-400">
+              Enable consent requirements to ensure users have given explicit permission before processing their data. 
+              This is essential for GDPR compliance.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-white">Audit Logs</h3>
+            <p class="mt-1 text-sm text-gray-400">
+              Maintain audit logs for at least 7 years (2555 days) as recommended for GDPR compliance. 
+              These logs help demonstrate compliance and track data processing activities.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-white">IP Anonymization</h3>
+            <p class="mt-1 text-sm text-gray-400">
+              Enable IP address anonymization to protect user privacy. This removes the last octet of IPv4 addresses 
+              and the last 80 bits of IPv6 addresses.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

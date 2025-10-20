@@ -36,7 +36,7 @@ class PersonalDataExportWorker
           created_at: p.created_at
         }
       },
-      comments: Comment.where(email: user.email).map { |c|
+      comments: Comment.where(author_email: user.email).map { |c|
         {
           content: c.content,
           author_name: c.author_name,
@@ -56,7 +56,7 @@ class PersonalDataExportWorker
       pageviews: Pageview.where(user_id: user.id).group(:path).count,
       metadata: {
         total_posts: user.posts.count,
-        total_comments: Comment.where(email: user.email).count,
+        total_comments: Comment.where(author_email: user.email).count,
         total_pageviews: Pageview.where(user_id: user.id).count
       }
     }
