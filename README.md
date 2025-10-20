@@ -69,17 +69,19 @@ OpenAI 3.1 compatible MCP server for AI model integration:
 - **Admin Settings** - Complete configuration interface
 - **Rate Limiting** - Security and performance controls
 
-### **✍️ Distraction-Free Writing Experience**
-Notion-style editor with Editor.js integration for beautiful content creation:
+### **📊 GDPR-Compliant Analytics System**
+Privacy-first analytics that rivals Plausible and Fathom:
 
-- **Full-Screen Mode** - Distraction-free writing environment
-- **Block-Based Editor** - 15+ block types (headers, lists, quotes, code, images, tables)
-- **Auto-Save** - Content saves as you type with visual confirmation
-- **Keyboard Shortcuts** - Power user productivity with ⌘+S save, ⌘+Enter publish
-- **Clean Interface** - Large title input, centered canvas, sticky toolbar
-- **Dark Mode** - Automatic system preference detection
-- **Media Support** - Images, files, YouTube, Vimeo embeds
-- **Mobile Responsive** - Beautiful writing experience on all devices
+- **Privacy-First Design** - No personal data, IP anonymization, consent management
+- **Real-Time Analytics** - Live visitor tracking with active visitor count
+- **GDPR Compliance** - Full compliance with data subject rights
+- **Bot Detection** - Automatically filters out automated traffic
+- **Data Anonymization** - Auto-anonymize old data (90+ days)
+- **Consent Management** - Cookie consent banner with opt-out
+- **CSV Export** - Data portability for user rights
+- **Multi-Tenant** - Isolated analytics per tenant
+
+---
 
 ---
 
@@ -213,7 +215,38 @@ Notion-style editor with Editor.js integration for beautiful content creation:
 - ✅ **Consent analytics** and compliance reporting
 - ✅ **Consent withdrawal** and modification capabilities
 
-### ✍️ **Distraction-Free Writing Experience**
+### 📊 **GDPR-Compliant Analytics System**
+
+#### **Privacy-First Analytics**
+- ✅ **GDPR compliant** with no personal data collection
+- ✅ **Real-time analytics** with live visitor tracking
+- ✅ **IP anonymization** using SHA-256 + salt (first 16 chars only)
+- ✅ **Consent management** with cookie consent banner
+- ✅ **Bot detection** to filter out automated traffic
+- ✅ **Data anonymization** for old data (90+ days)
+- ✅ **CSV export** for data portability
+- ✅ **Multi-tenant** isolated analytics per tenant
+
+#### **Analytics Features**
+- ✅ **Pageview tracking** with referrer information
+- ✅ **Geographic data** (country-level only, no city tracking)
+- ✅ **Device & browser stats** (desktop/mobile/tablet breakdown)
+- ✅ **Time on page** and engagement metrics
+- ✅ **Top content** analysis (most viewed posts and pages)
+- ✅ **Referrer tracking** to know traffic sources
+- ✅ **Hourly distribution** and daily trends
+- ✅ **Bounce rate** and returning visitor analysis
+
+#### **Privacy Protection**
+- ✅ **No personal data** (emails, names, precise location)
+- ✅ **No cross-site tracking** or fingerprinting
+- ✅ **No persistent IDs** without consent
+- ✅ **Consent-based tracking** only
+- ✅ **Auto-deletion** of non-consented data (30+ days)
+- ✅ **Data minimization** principles
+- ✅ **User rights** implementation (access, erasure, portability)
+
+---
 
 #### **Notion-Style Editor**
 - ✅ **Full-screen writing mode** with minimal interface
@@ -845,6 +878,7 @@ bundle exec rspec
 - ✅ **MCP integration** for AI model connectivity
 - ✅ **Content channels** for multi-platform distribution
 - ✅ **Distraction-free writing** with Notion-style editor
+- ✅ **GDPR-compliant analytics** with privacy-first design
 
 ---
 
@@ -872,6 +906,7 @@ bundle exec rspec
 - 🍪 **Consent management** for compliance
 - 📺 **Multi-platform** content distribution
 - ✍️ **Distraction-free writing** with Notion-style editor
+- 📊 **Privacy-first analytics** without data collection
 
 ### **For Businesses**
 - 🏢 **Enterprise-ready** with multi-tenancy
@@ -883,6 +918,7 @@ bundle exec rspec
 - 🔒 **GDPR compliance** out of the box
 - 🍪 **OneTrust-level** consent management
 - 📺 **Omnichannel** content delivery
+- 📊 **GDPR-compliant analytics** for privacy-conscious businesses
 
 ---
 
