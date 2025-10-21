@@ -1,4 +1,5 @@
 class PreviewController < ApplicationController
+  include Themeable
   skip_before_action :verify_authenticity_token
   before_action :set_published_version
   before_action :set_renderer

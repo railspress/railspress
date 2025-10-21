@@ -1,5 +1,6 @@
 class PostsController < ApplicationController
   include LiquidRenderable
+  include Themeable
   
   def index
     posts = Post.visible_to_public.recent.includes(:user, :categories, :tags).page(params[:page])

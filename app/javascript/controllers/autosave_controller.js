@@ -14,6 +14,8 @@ export default class extends Controller {
     this.hasChanges = false
     this.isSaving = false
     this.saveTimeout = null
+    // Store the original URL for new posts (before slug is generated)
+    this.originalUrl = this.urlValue
     this.setupEventListeners()
     this.startPeriodicSave()
   }
@@ -99,10 +101,15 @@ export default class extends Controller {
       formData.append('autosave', 'true')
       
       // Determine if this is a new post or existing post
+      // Check if URL ends with a number (existing post) or is the base posts path
       const isNewPost = this.urlValue.includes('posts') && !this.urlValue.match(/\/\d+$/)
       const method = isNewPost ? 'POST' : 'PATCH'
       
-      const response = await fetch(this.urlValue, {
+      // For new posts, use the original URL (base posts path) instead of the form action
+      // which might have been updated with a slug
+      const saveUrl = isNewPost ? this.originalUrl : this.urlValue
+      
+      const response = await fetch(saveUrl, {
         method: method,
         body: formData,
         headers: {

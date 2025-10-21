@@ -2,15 +2,16 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="theme-toggle"
 export default class extends Controller {
+  static targets = ["moonIcon", "sunIcon"]
+
   connect() {
-    // Check for saved theme preference or default to dark mode
+    // Initialize theme: default to dark unless user saved a preference
     const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'light') {
-      document.documentElement.classList.remove('dark')
-    } else {
-      // Default to dark mode (full black)
-      document.documentElement.classList.add('dark')
-    }
+    const shouldUseDark = savedTheme ? savedTheme === 'dark' : true
+
+    document.documentElement.classList.toggle('dark', shouldUseDark)
+    if (shouldUseDark) this.showDark(); else this.showLight()
+    console.log('[theme-toggle] connected', { savedTheme, shouldUseDark, hasDarkClass: document.documentElement.classList.contains('dark') })
   }
 
   toggle() {
@@ -20,10 +21,28 @@ export default class extends Controller {
       // Switch to light mode
       document.documentElement.classList.remove('dark')
       localStorage.setItem('theme', 'light')
+      this.showLight()
+      console.log('[theme-toggle] toggled -> light', { saved: localStorage.getItem('theme'), hasDarkClass: document.documentElement.classList.contains('dark') })
     } else {
       // Switch to dark mode
       document.documentElement.classList.add('dark')
       localStorage.setItem('theme', 'dark')
+      this.showDark()
+      console.log('[theme-toggle] toggled -> dark', { saved: localStorage.getItem('theme'), hasDarkClass: document.documentElement.classList.contains('dark') })
     }
+  }
+
+  showLight() {
+    const moon = this.element.querySelector('.theme-icon-moon')
+    const sun = this.element.querySelector('.theme-icon-sun')
+    if (moon) moon.style.display = 'block'
+    if (sun) sun.style.display = 'none'
+  }
+
+  showDark() {
+    const moon = this.element.querySelector('.theme-icon-moon')
+    const sun = this.element.querySelector('.theme-icon-sun')
+    if (moon) moon.style.display = 'none'
+    if (sun) sun.style.display = 'block'
   }
 }

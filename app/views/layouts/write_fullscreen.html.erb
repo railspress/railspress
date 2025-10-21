@@ -11,28 +11,29 @@
   <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   
-  <!-- Inter Font -->
+  <!-- Inter Font (preconnect only, defer actual loading) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
   
-  <!-- BlockNote CSS (load conditionally) -->
+  <!-- BlockNote CSS (load conditionally and deferred) -->
   <script>
-    // Load BlockNote CSS if needed
-    document.addEventListener('DOMContentLoaded', function() {
+    // Load BlockNote CSS if needed (deferred to avoid blocking render)
+    setTimeout(function() {
       if (document.querySelector('[data-controller*="blocknote"]')) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://cdn.jsdelivr.net/npm/@blocknote/mantine@0.12.4/dist/style.css';
         document.head.appendChild(link);
       }
-    });
+    }, 100);
   </script>
   
-  <!-- Editor.js Core (load conditionally) -->
+  <!-- Editor.js Core (load conditionally and deferred) -->
   <script>
-    // Only load Editor.js if the page contains an Editor.js editor
-    document.addEventListener('DOMContentLoaded', function() {
+    // Only load Editor.js if the page contains an Editor.js editor (deferred)
+    setTimeout(function() {
       if (document.querySelector('[data-controller*="editorjs"]')) {
         console.log('Loading Editor.js...');
         
@@ -49,7 +50,20 @@
         };
         document.head.appendChild(coreScript);
       }
-    });
+    }, 200);
+  </script>
+  
+  <!-- Early theme bootstrap: default dark, honor saved preference -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('theme');
+        var useDark = saved ? saved === 'dark' : true; // default to dark
+        document.documentElement.classList.toggle('dark', !!useDark);
+      } catch(e) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
   </script>
   
   <%= javascript_importmap_tags %>
@@ -60,22 +74,13 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      background: #ffffff;
-      color: #111827;
+      background: var(--admin-bg-app);
+      color: var(--admin-text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
       overflow: hidden; /* Prevent body scroll */
     }
     
-    /* Dark mode styles */
-    .dark {
-      background: #111827;
-      color: #f9fafb;
-    }
-    
-    .dark body {
-      background: #111827;
-      color: #f9fafb;
-    }
+    /* Dark mode uses CSS variables defined globally */
     
     /* BlockNote editor styles */
     .blocknote-editor {
@@ -101,15 +106,11 @@
     /* Trix editor theme */
     .trix-content {
       background: transparent !important;
-      color: #111827 !important;
+      color: var(--admin-text-primary) !important;
       border: none !important;
       outline: none !important;
       font-size: 18px;
       line-height: 1.6;
-    }
-    
-    .dark .trix-content {
-      color: #f9fafb !important;
     }
     
     .trix-content:focus {
@@ -120,29 +121,20 @@
     
     /* Trix toolbar styling */
     .trix-toolbar {
-      background: #f9fafb !important;
-      border: 1px solid #e5e7eb !important;
+      background: var(--admin-bg-secondary) !important;
+      border: 1px solid var(--admin-border) !important;
       border-radius: 0.5rem 0.5rem 0 0 !important;
-    }
-    
-    .dark .trix-toolbar {
-      background: #1f2937 !important;
-      border-color: #374151 !important;
     }
     
     /* Simple editor styles */
     .simple-editor textarea {
       background: transparent !important;
-      color: #111827 !important;
+      color: var(--admin-text-primary) !important;
       border: none !important;
       outline: none !important;
       font-size: 18px;
       line-height: 1.6;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
-    }
-    
-    .dark .simple-editor textarea {
-      color: #f9fafb !important;
     }
     
     .simple-editor textarea:focus {

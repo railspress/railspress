@@ -1,5 +1,4 @@
 class ApplicationController < ActionController::Base
-  include Themeable
   include Pundit::Authorization
   
   # Set current tenant for multi-tenancy

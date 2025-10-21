@@ -7,6 +7,8 @@ export default class extends Controller {
 
   connect() {
     console.log("Sidebar controller connected")
+    // Ensure UI reflects initial state
+    this.updateSidebar()
   }
 
   toggle() {
@@ -19,15 +21,26 @@ export default class extends Controller {
   }
 
   updateSidebar() {
+    const contentEl = this.hasContentTarget ? this.contentTarget : null
+    const toggleIconEl = this.hasToggleIconTarget ? this.toggleIconTarget : document.querySelector('[data-sidebar-target="toggleIcon"]')
+    const rootContainer = this.element.closest('.h-screen.flex')
+
     if (this.collapsedValue) {
+      if (rootContainer) {
+        rootContainer.classList.add('sidebar-collapsed')
+      }
       // Collapse sidebar - show only tiny floating circle
       this.element.style.width = '0px'
       this.element.style.overflow = 'hidden'
-      this.contentTarget.style.opacity = '0'
-      this.contentTarget.style.pointerEvents = 'none'
+      if (contentEl) {
+        contentEl.style.opacity = '0'
+        contentEl.style.pointerEvents = 'none'
+      }
       
-      // Update toggle icon - arrow points right (to expand)
-      this.toggleIconTarget.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>'
+      // Update toggle icon - when closed, show '<' (point left)
+      if (toggleIconEl) {
+        toggleIconEl.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>'
+      }
       
       // Move toggle button to top-right corner
       const toggleButton = this.element.querySelector('button')
@@ -54,14 +67,21 @@ export default class extends Controller {
         titleContainer.style.paddingRight = '3rem'
       }
     } else {
+      if (rootContainer) {
+        rootContainer.classList.remove('sidebar-collapsed')
+      }
       // Expand sidebar
       this.element.style.width = '20rem' // w-80 = 20rem
       this.element.style.overflow = 'auto'
-      this.contentTarget.style.opacity = '1'
-      this.contentTarget.style.pointerEvents = 'auto'
+      if (contentEl) {
+        contentEl.style.opacity = '1'
+        contentEl.style.pointerEvents = 'auto'
+      }
       
-      // Update toggle icon - arrow points left (to collapse)
-      this.toggleIconTarget.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>'
+      // Update toggle icon - when opened, show '>' (point right)
+      if (toggleIconEl) {
+        toggleIconEl.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>'
+      }
       
       // Restore toggle button position
       const toggleButton = this.element.querySelector('button')

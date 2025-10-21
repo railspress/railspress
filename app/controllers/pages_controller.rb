@@ -1,5 +1,6 @@
 class PagesController < ApplicationController
   include LiquidRenderable
+  include Themeable
   
   def show
     path = params[:path]

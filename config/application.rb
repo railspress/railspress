@@ -33,7 +33,7 @@ require_relative '../app/middleware/channel_detection_middleware'
 
 module Railspress
 
-  VERSION = "1.0.1"
+  VERSION = "1.0.0".freeze
 
   class Application < Rails::Application
     config.active_record.query_log_tags_enabled = true

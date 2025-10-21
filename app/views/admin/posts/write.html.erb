@@ -27,15 +27,45 @@
   padding-left: 3rem !important;
   padding-right: 3rem !important;
 }
+
+/* Theme variables (use global admin vars) */
+:root {
+  --input-bg: var(--admin-bg-primary);
+  --input-border: var(--admin-border);
+  --input-text: var(--admin-text-primary);
+}
+
+/* Unified form control styling via vars */
+.form-control {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  color: var(--input-text) !important;
+}
 </style>
-<div class="h-screen flex sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--color-white);">
+<script>
+(function() {
+  try {
+    var saved = localStorage.getItem('theme');
+    var useDark = saved ? saved === 'dark' : true; // default dark
+    if (useDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  } catch (e) {
+    // On any error, default to dark
+    document.documentElement.classList.add('dark');
+  }
+})();
+</script>
+<div class="h-screen flex sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
   
-  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex", data: { controller: "autosave", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_target: "form" } do |f| %>
+  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_target: "form", slug_generator_persisted_value: @post.persisted? } do |f| %>
     <!-- Left: Main Editor Area -->
     <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Ultra Minimal Top Bar -->
-      <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--color-gray-100);">
-        <%= link_to admin_posts_path, class: "flex items-center gap-2 transition-colors duration-200", style: "color: var(--color-gray-400);", onmouseover: "this.style.color='var(--color-gray-600)'", onmouseout: "this.style.color='var(--color-gray-400)'" do %>
+      <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
+        <%= link_to admin_posts_path, class: "flex items-center gap-2 transition-colors duration-200 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300", style: "", onmouseover: "", onmouseout: "" do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
           </svg>
@@ -79,16 +109,17 @@
           
           
           <span class="text-xs font-mono" style="color: var(--color-gray-400);">
-            <kbd class="px-1.5 py-0.5 rounded text-xs" style="background-color: var(--color-gray-100); color: var(--color-gray-900);">⌘S</kbd> save
+            <kbd class="px-1.5 py-0.5 rounded text-xs" style="background-color: transparent; color: var(--color-gray-400);">⌘S</kbd> save
           </span>
 
-          <!-- Sidebar Toggle Button (shown when sidebar is collapsed) -->
+          <!-- Sidebar Toggle Button (topbar) -->
           <button type="button" 
                   class="p-1.5 rounded-lg transition-colors duration-200 sidebar-toggle-topbar"
                   style="background-color: transparent; color: var(--color-gray-500);"
                   onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
-                  onmouseout="this.style.backgroundColor='transparent'">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  onmouseout="this.style.backgroundColor='transparent'"
+                  onclick="window.dispatchEvent(new CustomEvent('toggle-sidebar'))">
+            <svg class="w-4 h-4" data-sidebar-target="toggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
             </svg>
           </button>
@@ -103,11 +134,11 @@
               class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-6 leading-tight",
               placeholder: "Untitled",
               autofocus: !@post.persisted?,
-              data: { autosave_target: "title" } %>
+              data: { autosave_target: "title", slug_generator_target: "title", action: "input->slug-generator#generateSlug" } %>
           
           <!-- Subtle Meta -->
           <% if @post.persisted? %>
-            <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 mb-12">
+            <div class="flex items-center gap-3 text-sm" style="color: var(--admin-text-tertiary);">
               <span>Last edited <%= time_ago_in_words(@post.updated_at) %> ago</span>
               <span>•</span>
               <span><%= @post.author_name %></span>
@@ -131,7 +162,7 @@
     </div>
     
       <!-- Right Sidebar: Settings -->
-      <div class="w-80 overflow-y-auto transition-all duration-300" data-controller="sidebar" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--color-gray-200); background-color: var(--color-white);">
+      <div class="w-80 overflow-y-auto transition-all duration-300" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
       
       <div class="p-6 space-y-8" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
         <!-- Publish Section -->
@@ -161,8 +192,8 @@
           
           <!-- Status -->
           <div class="mb-4">
-            <label class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">Status</label>
-            <%= f.select :status, 
+            <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Status</label>
+              <%= f.select :status, 
                 options_for_select([
                   ['Draft', 'draft'],
                   ['Published', 'published'],
@@ -171,16 +202,16 @@
                   ['Private', 'private']
                 ], @post.status),
                 {},
-                class: "w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+                class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control" %>
           </div>
           
           <!-- Visibility -->
           <div class="mb-4">
-            <label class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">Visibility</label>
+            <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Visibility</label>
             <div class="flex items-center gap-2">
               <%= f.check_box :password_protected, 
                   class: "w-4 h-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded text-indigo-600 focus:ring-indigo-500" %>
-              <span class="text-sm text-gray-700 dark:text-gray-300">Password protected</span>
+              <span class="text-sm" style="color: var(--admin-text-secondary);">Password protected</span>
             </div>
           </div>
           
@@ -233,15 +264,15 @@
               <%= f.collection_select :category_ids, 
                   @categories, :id, :name,
                   { include_blank: 'Select categories' },
-                  { multiple: true, class: "w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" } %>
+                  { multiple: true, class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control" } %>
             </div>
             
             <div>
               <label class="block text-xs font-medium text-gray-400 mb-2">Tags</label>
               <%= f.text_field :tag_list, 
                   placeholder: "Add tags, comma separated",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control",
+                  style: "" %>
               <p class="text-xs text-gray-600 mt-1">Separate tags with commas</p>
             </div>
           </div>
@@ -272,8 +303,8 @@
           
           <div data-collapsible-target="content">
             <%= f.file_field :featured_image, 
-                class: "w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:cursor-pointer",
-                style: "color: var(--color-gray-400);" %>
+                class: "w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:cursor-pointer text-gray-400 dark:text-gray-500",
+                style: "" %>
           </div>
         </div>
         
@@ -296,8 +327,8 @@
             <%= f.text_area :excerpt, 
                 rows: 3,
                 placeholder: "Brief description of your post...",
-                class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none",
-                style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
+                class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control",
+                style: "" %>
           <p class="text-xs text-gray-600 mt-1">Optional. Will be used in previews.</p>
         </div>
         
@@ -329,8 +360,8 @@
               <label class="block text-xs font-medium text-gray-400 mb-2">Meta Title</label>
               <%= f.text_field :meta_title, 
                   placeholder: "SEO title",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control",
+                  style: "" %>
             </div>
             
             <div class="mb-3">
@@ -338,16 +369,17 @@
               <%= f.text_area :meta_description, 
                   rows: 2,
                   placeholder: "SEO description",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none",
-                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control",
+                  style: "" %>
             </div>
             
             <div>
               <label class="block text-xs font-medium text-gray-400 mb-2">Slug</label>
               <%= f.text_field :slug, 
                   placeholder: "post-url-slug",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                  style: "background-color: var(--color-gray-50); border: 1px solid var(--color-gray-200); color: var(--color-gray-900);" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control",
+                  style: "",
+                  data: { slug_generator_target: "slug" } %>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 class HomeController < ApplicationController
+  include Themeable
   
   def index
     # Get the active theme
