@@ -17,7 +17,12 @@
 }
 
 /* When sidebar is collapsed, expand main content to full width */
-.sidebar-collapsed .flex-1.flex.flex-col.overflow-hidden {
+.sidebar-collapsed [data-sidebar-collapsed-value="true"] {
+  width: 0px !important;
+  overflow: hidden !important;
+}
+
+.sidebar-collapsed .flex-1.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
   width: 100% !important;
   max-width: 100% !important;
 }
@@ -58,13 +63,12 @@
   }
 })();
 </script>
-<div class="h-screen flex sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
+<div class="h-screen flex flex-col sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
   
-  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_target: "form", slug_generator_persisted_value: @post.persisted? } do |f| %>
-    <!-- Left: Main Editor Area -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-      <!-- Ultra Minimal Top Bar -->
-      <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
+  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex flex-col", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_target: "form", slug_generator_persisted_value: @post.persisted? } do |f| %>
+    
+    <!-- Ultra Minimal Top Bar (Full Width) -->
+    <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
         <%= link_to admin_posts_path, class: "flex items-center gap-2 transition-colors duration-200 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300", style: "", onmouseover: "", onmouseout: "" do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
@@ -124,10 +128,14 @@
             </svg>
           </button>
         </div>
-      </div>
-      
-      <!-- Title + Editor Container -->
-      <div class="flex-1 overflow-y-auto">
+    </div>
+    
+    <!-- Main Content Area (Editor + Sidebar) -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- Left: Main Editor Area -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Title + Editor Container -->
+        <div class="flex-1 overflow-y-auto">
         <div class="max-w-4xl mx-auto px-8 py-12">
           <!-- Title Input -->
           <%= f.text_field :title, 
@@ -158,8 +166,8 @@
           <!-- Hidden fields -->
           <%= f.hidden_field :user_id, value: current_user.id %>
         </div>
+        </div>
       </div>
-    </div>
     
       <!-- Right Sidebar: Settings -->
       <div class="w-80 overflow-y-auto transition-all duration-300" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
@@ -463,6 +471,7 @@
           </div>
         <% end %>
       </div>
+    </div>
     </div>
   <% end %>
 </div>

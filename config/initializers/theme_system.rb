@@ -19,12 +19,12 @@ Rails.application.config.after_initialize do
   end
 end
 
-# Reload theme on changes in development (now safe since only affects frontend controllers)
-if Rails.env.development?
-  Rails.application.config.to_prepare do
-    Railspress::ThemeLoader.load_active_theme
-  end
-end
+# Reload theme on changes in development (disabled to prevent performance issues)
+# if Rails.env.development?
+#   Rails.application.config.to_prepare do
+#     Railspress::ThemeLoader.load_active_theme
+#   end
+# end
 
 
 
