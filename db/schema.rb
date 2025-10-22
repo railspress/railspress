@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_20_013129) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_21_103507) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -1006,6 +1006,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_20_013129) do
     t.datetime "deleted_at"
     t.integer "content_type_id"
     t.integer "trashed_by_id"
+    t.string "template"
+    t.string "comment_status", default: "open"
     t.index ["content_type_id"], name: "index_posts_on_content_type_id"
     t.index ["deleted_at"], name: "index_posts_on_deleted_at"
     t.index ["focus_keyphrase"], name: "index_posts_on_focus_keyphrase"

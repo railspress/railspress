@@ -46,6 +46,30 @@
   border: 1px solid var(--input-border) !important;
   color: var(--input-text) !important;
 }
+
+/* Save Button Styles - Inverted colors for light/dark themes */
+.save-button {
+  background-color: var(--color-gray-800) !important;
+  color: var(--color-gray-200) !important;
+  border: 1px solid var(--color-gray-600) !important;
+}
+
+.save-button:hover {
+  background-color: var(--color-gray-700) !important;
+  color: white !important;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .save-button {
+  background-color: var(--color-gray-100) !important;
+  color: var(--color-gray-800) !important;
+  border: 1px solid var(--color-gray-300) !important;
+}
+
+[data-theme="light"] .save-button:hover {
+  background-color: var(--color-gray-200) !important;
+  color: var(--color-gray-900) !important;
+}
 </style>
 <script>
 (function() {
@@ -112,9 +136,12 @@
           
           
           
-          <span class="text-xs font-mono" style="color: var(--color-gray-400);">
-            <kbd class="px-1.5 py-0.5 rounded text-xs" style="background-color: transparent; color: var(--color-gray-400);">⌘S</kbd> save
-          </span>
+          <!-- Small Save Button -->
+          <button type="button" 
+                  class="px-2 py-1 text-xs font-medium rounded-md transition-colors duration-200 save-button"
+                  onclick="document.querySelector('[data-controller*=\"autosave\"]').dispatchEvent(new CustomEvent('save'))">
+            Save
+          </button>
 
           <!-- Sidebar Toggle Button (topbar) -->
           <button type="button" 
@@ -170,105 +197,128 @@
       </div>
     
       <!-- Right Sidebar: Settings -->
-      <div class="w-80 overflow-y-auto transition-all duration-300" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
+      <div class="w-80 transition-all duration-300 sidebar-scroll" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: 100vh; overflow-y: auto;">
       
       <div class="p-6 space-y-8" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
-        <!-- Publish Section -->
-        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-section-type="publish">
+        
+        <!-- 1. Post Section (formerly Publish) -->
+        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="post" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="post">
           <div class="flex items-center gap-2 mb-4">
             <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
               </svg>
             </div>
             <button type="button" 
                     data-action="click->collapsible#toggle" 
                     class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Publish
-              </div>
+              Post
             </button>
-            <svg class="w-4 h-4 text-gray-400 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-            </svg>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
           </div>
           
           <div data-collapsible-target="content">
-          
-          <!-- Status -->
-          <div class="mb-4">
-            <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Status</label>
-              <%= f.select :status, 
-                options_for_select([
-                  ['Draft', 'draft'],
-                  ['Published', 'published'],
-                  ['Scheduled', 'scheduled'],
-                  ['Pending Review', 'pending_review'],
-                  ['Private', 'private']
-                ], @post.status),
-                {},
-                class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control" %>
-          </div>
-          
-          <!-- Visibility -->
-          <div class="mb-4">
-            <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Visibility</label>
-            <div class="flex items-center gap-2">
-              <%= f.check_box :password_protected, 
-                  class: "w-4 h-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded text-indigo-600 focus:ring-indigo-500" %>
-              <span class="text-sm" style="color: var(--admin-text-secondary);">Password protected</span>
+            <!-- Featured Image Preview -->
+            <div class="featured-image-preview">
+              <% if @post.featured_image_file.attached? %>
+                <%= image_tag @post.featured_image_file, class: "w-full h-full object-cover" %>
+                <div class="featured-image-overlay">
+                  <button type="button" class="featured-image-btn featured-image-btn-replace" onclick="document.querySelector('input[type=\"file\"]').click()">Replace</button>
+                  <button type="button" class="featured-image-btn featured-image-btn-remove" onclick="removeFeaturedImage()">Remove</button>
+                </div>
+              <% else %>
+                <div class="featured-image-upload-placeholder" onclick="document.querySelector('input[type=\"file\"]').click()">
+                  Click to upload featured image
+                </div>
+              <% end %>
+              <%= f.file_field :featured_image_file, class: "hidden", onchange: "previewFeaturedImage(this)" %>
             </div>
-          </div>
-          
-          <!-- Publish Date -->
-          <% if @post.persisted? && @post.published_at %>
-            <div class="mb-4">
-            <label class="block text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">Published</label>
-            <p class="text-sm text-gray-700 dark:text-gray-300"><%= @post.published_at.strftime('%B %d, %Y at %I:%M %p') %></p>
-            </div>
-          <% end %>
-          
-            <!-- Actions -->
-            <div class="flex gap-2 mt-6">
-              <%= f.submit "Save Draft", 
-                  name: "post[status]", 
-                  value: "draft",
-                  class: "flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition" %>
-              <%= f.submit @post.published_status? ? "Update" : "Publish", 
-                  class: "flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition" %>
+            
+            <!-- Two-column layout for Post settings -->
+            <div class="space-y-3">
+              <!-- Status -->
+              <div class="post-field-row">
+                <label class="post-field-label">Status</label>
+                <%= f.select :status, 
+                    options_for_select([
+                      ['Draft', 'draft'],
+                      ['Published', 'published'],
+                      ['Scheduled', 'scheduled'],
+                      ['Pending Review', 'pending_review'],
+                      ['Private', 'private']
+                    ], @post.status),
+                    {},
+                    class: "post-field-input" %>
+              </div>
+              
+              <!-- Publish Date -->
+              <div class="post-field-row">
+                <label class="post-field-label">Publish</label>
+                <%= f.datetime_local_field :published_at, 
+                    value: @post.published_at&.strftime('%Y-%m-%dT%H:%M'),
+                    class: "post-field-input" %>
+              </div>
+              
+              <!-- Slug -->
+              <div class="post-field-row">
+                <label class="post-field-label">Slug</label>
+                <%= f.text_field :slug, 
+                    class: "post-field-input",
+                    data: { slug_generator_target: "slug" } %>
+              </div>
+              
+              <!-- Author -->
+              <div class="post-field-row">
+                <label class="post-field-label">Author</label>
+                <%= f.collection_select :user_id, @users, :id, :name, 
+                    { selected: @post.user_id || current_user.id },
+                    { class: "post-field-input" } %>
+              </div>
+              
+              <!-- Template -->
+              <div class="post-field-row">
+                <label class="post-field-label">Template</label>
+                <%= f.select :template, 
+                    options_for_select(@available_templates, @post.template),
+                    { include_blank: 'Default' },
+                    { class: "post-field-input" } %>
+              </div>
+              
             </div>
           </div>
         </div>
         
-        <!-- Categories & Tags -->
-        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-section-type="categories-tags">
+        <!-- 2. Categories & Tags -->
+        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="categories-tags" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="categories-tags">
           <div class="flex items-center gap-2 mb-4">
             <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
               </svg>
             </div>
             <button type="button" 
                     data-action="click->collapsible#toggle" 
                     class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                </svg>
-                Categories & Tags
-              </div>
+              Categories & Tags
             </button>
-            <svg class="w-4 h-4 text-gray-400 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-            </svg>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
           </div>
           
           <div data-collapsible-target="content">
             <div class="mb-4">
-              <label class="block text-xs font-medium text-gray-400 mb-2">Categories</label>
+              <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Categories</label>
               <%= f.collection_select :category_ids, 
                   @categories, :id, :name,
                   { include_blank: 'Select categories' },
@@ -276,121 +326,174 @@
             </div>
             
             <div>
-              <label class="block text-xs font-medium text-gray-400 mb-2">Tags</label>
+              <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Tags</label>
               <%= f.text_field :tag_list, 
                   placeholder: "Add tags, comma separated",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control",
-                  style: "" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control" %>
               <p class="text-xs text-gray-600 mt-1">Separate tags with commas</p>
             </div>
           </div>
         </div>
         
-        <!-- Featured Image -->
-        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-section-type="featured-image">
+        <!-- 3. Content Channels -->
+        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="content-channels" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="content-channels">
           <div class="flex items-center gap-2 mb-4">
             <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
               </svg>
             </div>
             <button type="button" 
                     data-action="click->collapsible#toggle" 
                     class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Featured Image
-              </div>
+              Content Channels
             </button>
-            <svg class="w-4 h-4 text-gray-400 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-            </svg>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
           </div>
           
           <div data-collapsible-target="content">
-            <%= f.file_field :featured_image, 
-                class: "w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:cursor-pointer text-gray-400 dark:text-gray-500",
-                style: "" %>
-          </div>
-        </div>
-        
-        <!-- Excerpt -->
-        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-section-type="excerpt">
-          <div class="flex items-center gap-2 mb-4">
-            <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
-              </svg>
+            <div class="content-channels">
+              <% if @channels.any? %>
+                <% @channels.each do |channel| %>
+                  <div class="channel-option">
+                    <%= f.check_box :channel_ids, 
+                        { multiple: true, checked: @post.channels.include?(channel) }, 
+                        channel.id, 
+                        nil %>
+                    <label class="channel-label" for="post_channel_ids_<%= channel.id %>">
+                      <%= channel.name %>
+                    </label>
+                  </div>
+                <% end %>
+              <% else %>
+                <div class="channel-option">
+                  <%= f.check_box :channel_ids, 
+                      { multiple: true, checked: true }, 
+                      'web', 
+                      nil %>
+                  <label class="channel-label" for="post_channel_ids_web">
+                    Web
+                  </label>
+                </div>
+              <% end %>
             </div>
-            <h3 class="flex-1 text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/>
-              </svg>
-              Excerpt
-            </h3>
           </div>
-          
-            <%= f.text_area :excerpt, 
-                rows: 3,
-                placeholder: "Brief description of your post...",
-                class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control",
-                style: "" %>
-          <p class="text-xs text-gray-600 mt-1">Optional. Will be used in previews.</p>
         </div>
         
-        <!-- SEO -->
-        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-section-type="seo">
+        <!-- 4. SEO & Meta -->
+        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="seo-meta" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="seo-meta">
           <div class="flex items-center gap-2 mb-4">
             <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
               </svg>
             </div>
             <button type="button" 
                     data-action="click->collapsible#toggle" 
                     class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                SEO
-              </div>
+              SEO & Meta
             </button>
-            <svg class="w-4 h-4 text-gray-400 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
-            </svg>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
           </div>
           
           <div data-collapsible-target="content">
             <div class="mb-3">
-              <label class="block text-xs font-medium text-gray-400 mb-2">Meta Title</label>
+              <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Meta Title</label>
               <%= f.text_field :meta_title, 
                   placeholder: "SEO title",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control",
-                  style: "" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control" %>
             </div>
             
             <div class="mb-3">
-              <label class="block text-xs font-medium text-gray-400 mb-2">Meta Description</label>
+              <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Meta Description</label>
               <%= f.text_area :meta_description, 
                   rows: 2,
                   placeholder: "SEO description",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control",
-                  style: "" %>
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control" %>
             </div>
             
             <div>
-              <label class="block text-xs font-medium text-gray-400 mb-2">Slug</label>
-              <%= f.text_field :slug, 
-                  placeholder: "post-url-slug",
-                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control",
-                  style: "",
-                  data: { slug_generator_target: "slug" } %>
+              <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Meta Keywords</label>
+              <%= f.text_field :meta_keywords, 
+                  placeholder: "keyword1, keyword2, keyword3",
+                  class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 form-control" %>
             </div>
           </div>
         </div>
+        
+        <!-- 5. Excerpt -->
+        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="excerpt" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="excerpt">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>
+              </svg>
+            </div>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              Excerpt
+            </button>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div data-collapsible-target="content">
+            <%= f.text_area :excerpt, 
+                rows: 3,
+                placeholder: "Brief description of your post...",
+                class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control" %>
+            <p class="text-xs text-gray-600 mt-1">Optional. Will be used in previews.</p>
+          </div>
+        </div>
+        
+        <!-- 6. Plugin Blocks Added to This Page -->
+        <% if plugin_blocks_present?(:post, position: :sidebar, record: @post) %>
+        <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="plugin-blocks" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="plugin-blocks">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+              </svg>
+            </div>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              Plugin Blocks
+            </button>
+            <button type="button" 
+                    data-action="click->collapsible#toggle" 
+                    class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div data-collapsible-target="content">
+            <div class="plugin-blocks-section">
+              <%= render_plugin_blocks :post, position: :sidebar, record: @post %>
+            </div>
+          </div>
+        </div>
+        <% end %>
         
         <!-- Post Info -->
         <% if @post.persisted? %>
@@ -539,4 +642,41 @@
 </div>
 
 <!-- Keyboard shortcuts are now handled by the Stimulus controller -->
+
+<script>
+// Featured Image Preview Functions
+function previewFeaturedImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.querySelector('.featured-image-preview');
+      preview.innerHTML = `
+        <img src="${e.target.result}" class="w-full h-full object-cover" />
+        <div class="featured-image-overlay">
+          <button type="button" class="featured-image-btn featured-image-btn-replace" onclick="document.querySelector('input[type=\"file\"]').click()">Replace</button>
+          <button type="button" class="featured-image-btn featured-image-btn-remove" onclick="removeFeaturedImage()">Remove</button>
+        </div>
+      `;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeFeaturedImage() {
+  const preview = document.querySelector('.featured-image-preview');
+  const fileInput = document.querySelector('input[type="file"]');
+  
+  preview.innerHTML = `
+    <div class="featured-image-upload-placeholder" onclick="document.querySelector('input[type=\"file\"]').click()">
+      Click to upload featured image
+    </div>
+  `;
+  
+  // Clear the file input
+  fileInput.value = '';
+  
+  // Trigger change event to update form state
+  fileInput.dispatchEvent(new Event('change'));
+}
+</script>
 

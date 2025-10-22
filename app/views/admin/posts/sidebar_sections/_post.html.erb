@@ -1,0 +1,102 @@
+<div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="post" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="post">
+  <div class="flex items-center gap-2 mb-4">
+    <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+      </svg>
+    </div>
+    <button type="button" 
+            data-action="click->collapsible#toggle" 
+            class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+      Post
+    </button>
+    <button type="button" 
+            data-action="click->collapsible#toggle" 
+            class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+      <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div data-collapsible-target="content">
+    <!-- Featured Image Preview -->
+    <div class="featured-image-preview">
+      <% if @post.featured_image_file.attached? %>
+        <%= image_tag @post.featured_image_file, class: "w-full h-full object-cover" %>
+        <div class="featured-image-overlay">
+          <button type="button" class="featured-image-btn featured-image-btn-replace" onclick="document.querySelector('input[type=\"file\"]').click()">Replace</button>
+          <button type="button" class="featured-image-btn featured-image-btn-remove" onclick="removeFeaturedImage()">Remove</button>
+        </div>
+      <% else %>
+        <div class="featured-image-upload-placeholder" onclick="document.querySelector('input[type=\"file\"]').click()">
+          Click to upload featured image
+        </div>
+      <% end %>
+      <%= f.file_field :featured_image_file, class: "hidden", onchange: "previewFeaturedImage(this)" %>
+    </div>
+    
+    <!-- Two-column layout for Post settings -->
+    <div class="space-y-3">
+      <!-- Status -->
+      <div class="post-field-row">
+        <label class="post-field-label">Status</label>
+        <%= f.select :status, 
+            options_for_select([
+              ['Draft', 'draft'],
+              ['Published', 'published'],
+              ['Scheduled', 'scheduled'],
+              ['Pending Review', 'pending_review'],
+              ['Private', 'private']
+            ], @post.status),
+            {},
+            class: "post-field-input" %>
+      </div>
+      
+      <!-- Publish Date -->
+      <div class="post-field-row">
+        <label class="post-field-label">Publish</label>
+        <%= f.datetime_local_field :published_at, 
+            value: @post.published_at&.strftime('%Y-%m-%dT%H:%M'),
+            class: "post-field-input" %>
+      </div>
+      
+      <!-- Slug -->
+      <div class="post-field-row">
+        <label class="post-field-label">Slug</label>
+        <%= f.text_field :slug, 
+            class: "post-field-input",
+            data: { slug_generator_target: "slug" } %>
+      </div>
+      
+      <!-- Author -->
+      <div class="post-field-row">
+        <label class="post-field-label">Author</label>
+        <%= f.collection_select :user_id, @users, :id, :name, 
+            { selected: @post.user_id || current_user.id },
+            { class: "post-field-input" } %>
+      </div>
+      
+      <!-- Template -->
+      <div class="post-field-row">
+        <label class="post-field-label">Template</label>
+        <%= f.select :template, 
+            options_for_select(@available_templates, @post.template),
+            { include_blank: 'Default' },
+            { class: "post-field-input" } %>
+      </div>
+      
+      <!-- Discussion -->
+      <div class="post-field-row">
+        <label class="post-field-label">Discussion</label>
+        <%= f.select :comment_status, 
+            options_for_select([
+              ['Open', 'open'],
+              ['Closed', 'closed']
+            ], @post.comment_status || 'open'),
+            {},
+            { class: "post-field-input" } %>
+      </div>
+    </div>
+  </div>
+</div>

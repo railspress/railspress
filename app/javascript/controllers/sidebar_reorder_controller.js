@@ -10,8 +10,8 @@ export default class extends Controller {
 
   connect() {
     console.log("Sidebar reorder controller connected")
+    console.log("userIdValue:", this.userIdValue)
     this.initializeSortable()
-    this.loadUserPreferences()
   }
 
   disconnect() {
@@ -49,15 +49,22 @@ export default class extends Controller {
       // Add event listeners
       this.sortableInstance.on('sortable:start', (evt) => {
         console.log('Sidebar drag started')
-        evt.data.source.classList.add('dragging')
+        if (evt.data.source) {
+          evt.data.source.classList.add('dragging')
+        }
       })
 
       this.sortableInstance.on('sortable:stop', (evt) => {
         console.log('Sidebar drag ended')
-        evt.data.source.classList.remove('dragging')
-        
-        // Get new order and save to user preferences
+        if (evt.data.source) {
+          evt.data.source.classList.remove('dragging')
+        }
+      })
+
+      this.sortableInstance.on('sortable:sorted', (evt) => {
+        console.log('Sidebar sorted - DOM is clean')
         const newOrder = this.getCurrentOrder()
+        console.log('Saving order:', newOrder)
         this.saveUserPreferences(newOrder)
       })
 
@@ -68,78 +75,13 @@ export default class extends Controller {
 
   getCurrentOrder() {
     const sections = this.containerTarget.querySelectorAll('.sidebar-section')
-    return Array.from(sections).map(section => {
-      return section.dataset.sectionType
-    })
+    return Array.from(sections).map(section => section.dataset.sectionType)
   }
 
-  async loadUserPreferences() {
-    try {
-      // Try to load from server first
-      const response = await fetch('/admin/user_preferences')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.sidebar_order) {
-          this.applyOrder(data.sidebar_order)
-          return
-        }
-      }
-    } catch (error) {
-      console.log('Could not load preferences from server, using localStorage')
-    }
-    
-    // Fallback to localStorage
-    const savedOrder = localStorage.getItem(`sidebar-order-${this.userIdValue}`)
-    
-    if (savedOrder) {
-      try {
-        const order = JSON.parse(savedOrder)
-        this.applyOrder(order)
-      } catch (error) {
-        console.error('Error parsing saved sidebar order:', error)
-        this.applyDefaultOrder()
-      }
-    } else {
-      this.applyDefaultOrder()
-    }
-  }
-  
-  applyDefaultOrder() {
-    const defaultOrder = ['publish', 'featured-image', 'categories-tags', 'excerpt', 'seo']
-    this.applyOrder(defaultOrder)
-  }
-
-  applyOrder(order) {
-    const sections = this.containerTarget.querySelectorAll('.sidebar-section')
-    const sectionMap = {}
-    
-    // Create a map of sections by type
-    sections.forEach(section => {
-      const type = section.dataset.sectionType
-      sectionMap[type] = section
-    })
-
-    // Clear container
-    this.containerTarget.innerHTML = ''
-
-    // Add sections in the specified order
-    order.forEach(sectionType => {
-      if (sectionMap[sectionType]) {
-        this.containerTarget.appendChild(sectionMap[sectionType])
-      }
-    })
-
-    // Add any remaining sections that weren't in the order
-    Object.keys(sectionMap).forEach(sectionType => {
-      if (!order.includes(sectionType)) {
-        this.containerTarget.appendChild(sectionMap[sectionType])
-      }
-    })
-  }
 
   saveUserPreferences(order) {
-    // Save to localStorage
-    localStorage.setItem(`sidebar-order-${this.userIdValue}`, JSON.stringify(order))
+    const key = `sidebar-order-${this.userIdValue}`
+    localStorage.setItem(key, JSON.stringify(order))
     
     // Also save to server for persistence across devices
     this.saveToServer(order)
@@ -166,9 +108,5 @@ export default class extends Controller {
     }
   }
 
-  resetToDefault() {
-    const defaultOrder = ['publish', 'featured-image', 'categories-tags', 'excerpt', 'seo']
-    this.applyOrder(defaultOrder)
-    this.saveUserPreferences(defaultOrder)
-  }
+  // Removed resetToDefault() - not needed
 }

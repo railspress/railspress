@@ -34,7 +34,7 @@ class RedisConfig
         reconnect_delay: 0.5,
         reconnect_delay_max: 2.0,
         expires_in: 1.hour,
-        namespace: 'bow:cache'
+        namespace: 'railspress:cache'
       }
     end
   
@@ -46,7 +46,7 @@ class RedisConfig
         reconnect_attempts: 3,
         reconnect_delay: 0.5,
         reconnect_delay_max: 2.0,
-        namespace: 'bow:sessions'
+        namespace: 'railspress:sessions'
       }
     end
   

@@ -194,6 +194,7 @@ class Post < ApplicationRecord
   validates :slug, presence: true, uniqueness: { scope: :tenant_id }
   validates :status, presence: true
   validates :password, length: { minimum: 4 }, allow_blank: true
+  validates :comment_status, inclusion: { in: %w[open closed] }
   
   # Scopes
   scope :published, -> { where(status: 'published').where('published_at <= ?', Time.current) }

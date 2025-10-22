@@ -42,15 +42,7 @@ export default class extends Controller {
         toggleIconEl.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>'
       }
       
-      // Move toggle button to top-right corner
-      const toggleButton = this.element.querySelector('button')
-      if (toggleButton) {
-        toggleButton.parentElement.style.position = 'fixed'
-        toggleButton.parentElement.style.top = '1rem'
-        toggleButton.parentElement.style.right = '1rem'
-        toggleButton.parentElement.style.left = 'auto'
-        toggleButton.parentElement.style.zIndex = '50'
-      }
+      // Note: Toggle button is in the topbar, not in the sidebar element
       
       // Expand main content area to full width
       const mainContent = document.querySelector('.flex-1.flex.flex-col.overflow-hidden')
@@ -83,15 +75,7 @@ export default class extends Controller {
         toggleIconEl.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>'
       }
       
-      // Restore toggle button position
-      const toggleButton = this.element.querySelector('button')
-      if (toggleButton) {
-        toggleButton.parentElement.style.position = 'absolute'
-        toggleButton.parentElement.style.top = '1rem'
-        toggleButton.parentElement.style.right = 'auto'
-        toggleButton.parentElement.style.left = '-0.75rem'
-        toggleButton.parentElement.style.zIndex = '20'
-      }
+      // Note: Toggle button is in the topbar, not in the sidebar element
       
       // Restore main content area width
       const mainContent = document.querySelector('.flex-1.flex.flex-col.overflow-hidden')

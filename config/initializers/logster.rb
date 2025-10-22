@@ -7,8 +7,8 @@ if defined?(Logster)
       # Initialize Logster configuration
       Logster.config ||= Logster::Configuration.new
       
-      # Use Redis store for proper functionality
-      Logster.store = Logster::RedisStore.new
+      # Use memory store for development to avoid Redis dependency
+      Logster.store = Logster::RedisStore.new(RedisConfig.connection_options)
       Rails.logger.info "Logster configured with Redis store"
       
       # Disable JavaScript error reporting to stop XMLHttpRequest errors

@@ -1,0 +1,49 @@
+<div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="content-channels" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="content-channels">
+  <div class="flex items-center gap-2 mb-4">
+    <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+      </svg>
+    </div>
+    <button type="button" 
+            data-action="click->collapsible#toggle" 
+            class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+      Content Channels
+    </button>
+    <button type="button" 
+            data-action="click->collapsible#toggle" 
+            class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+      <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div data-collapsible-target="content">
+    <div class="content-channels">
+      <% if @channels.any? %>
+        <% @channels.each do |channel| %>
+          <div class="channel-option">
+            <%= f.check_box :channel_ids, 
+                { multiple: true, checked: @post.channels.include?(channel) }, 
+                channel.id, 
+                nil %>
+            <label class="channel-label" for="post_channel_ids_<%= channel.id %>">
+              <%= channel.name %>
+            </label>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="channel-option">
+          <%= f.check_box :channel_ids, 
+              { multiple: true, checked: true }, 
+              'web', 
+              nil %>
+          <label class="channel-label" for="post_channel_ids_web">
+            Web
+          </label>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -111,6 +111,10 @@ class Admin::PostsController < Admin::BaseController
     @post = current_user.posts.build(status: :draft)
     @categories = Term.for_taxonomy('category').ordered
     @tags = Term.for_taxonomy('post_tag').ordered
+    @channels = Channel.active.order(:name)
+    @users = User.order(:name)
+    @available_templates = get_available_templates
+    @sidebar_order = current_user.sidebar_order
     render :write, layout: 'write_fullscreen'
   end
   
@@ -118,6 +122,10 @@ class Admin::PostsController < Admin::BaseController
   def write
     @categories = Term.for_taxonomy('category').ordered
     @tags = Term.for_taxonomy('post_tag').ordered
+    @channels = Channel.active.order(:name)
+    @users = User.order(:name)
+    @available_templates = get_available_templates
+    @sidebar_order = current_user.sidebar_order
     render layout: 'write_fullscreen'
   end
 
@@ -259,8 +267,8 @@ class Admin::PostsController < Admin::BaseController
       params.require(:post).permit(
         :title, :slug, :content, :excerpt, :status, :published_at,
         :featured_image, :meta_description, :meta_keywords,
-        :featured_image_file, :password, :password_hint,
-        category_ids: [], tag_ids: []
+        :featured_image_file, :password, :password_hint, :user_id, :template, :comment_status,
+        category_ids: [], tag_ids: [], channel_ids: []
       )
     end
     
@@ -386,5 +394,10 @@ class Admin::PostsController < Admin::BaseController
         changes: version.changeset.keys,
         event: version.event
       }
+    end
+
+    def get_available_templates
+      # Simple fallback for now
+      [['Default', 'post']]
     end
 end

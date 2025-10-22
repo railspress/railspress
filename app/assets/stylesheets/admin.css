@@ -884,6 +884,269 @@
 }
 
 /* ============================================
+   POST WRITE SIDEBAR STYLES
+   ============================================ */
+
+/* Two-column layout for Post section */
+.post-field-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.post-field-row:last-child {
+  margin-bottom: 0;
+}
+
+.post-field-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--admin-text-muted);
+  text-align: right;
+  padding-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.post-field-input {
+  background-color: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-primary);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--admin-radius);
+  font-size: 0.875rem;
+  transition: var(--admin-transition);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.post-field-input:focus {
+  outline: none;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px var(--admin-primary-light);
+}
+
+/* Force text colors in light theme - ensure visibility */
+:root .post-field-label {
+  color: #6b7280 !important; /* --admin-text-muted */
+}
+
+:root .post-field-input {
+  color: #0f172a !important; /* --admin-text-primary */
+  background-color: #f9fafb !important; /* --admin-bg-secondary */
+  border-color: #e5e7eb !important; /* --admin-border */
+}
+
+/* Dark theme overrides */
+.dark .post-field-label {
+  color: #9ca3af !important; /* --admin-text-muted in dark */
+}
+
+.dark .post-field-input {
+  color: #ffffff !important; /* --admin-text-primary in dark */
+  background-color: #1a1a1a !important; /* --admin-bg-secondary in dark */
+  border-color: #2f2f2f !important; /* --admin-border in dark */
+}
+
+/* Featured Image Preview */
+.featured-image-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: var(--admin-radius);
+  background: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border);
+  margin-bottom: 1rem;
+}
+
+.featured-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.featured-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.featured-image-preview:hover .featured-image-overlay {
+  opacity: 1;
+}
+
+.featured-image-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--admin-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--admin-transition);
+}
+
+.featured-image-btn-replace {
+  background: var(--admin-primary);
+  color: white;
+}
+
+.featured-image-btn-replace:hover {
+  background: var(--admin-primary-hover);
+}
+
+.featured-image-btn-remove {
+  background: var(--admin-error);
+  color: white;
+}
+
+.featured-image-btn-remove:hover {
+  background: #dc2626;
+}
+
+.featured-image-upload-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--admin-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--admin-transition);
+}
+
+.featured-image-upload-placeholder:hover {
+  color: var(--admin-text-primary);
+  background: var(--admin-bg-tertiary);
+}
+
+/* Content Channels */
+.content-channels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.channel-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--admin-radius);
+  transition: var(--admin-transition);
+  cursor: pointer;
+}
+
+.channel-option:hover {
+  background: var(--admin-bg-secondary);
+}
+
+.channel-radio {
+  margin: 0;
+  accent-color: var(--admin-primary);
+}
+
+.channel-label {
+  font-size: 0.875rem;
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+}
+
+/* Plugin Blocks */
+.plugin-blocks-section {
+  min-height: 60px;
+}
+
+.plugin-block {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+}
+
+.plugin-block:last-child {
+  margin-bottom: 0;
+}
+
+.plugin-block-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* Collapsible sections */
+[data-collapsible-target="content"] {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+
+[data-collapsible-open-value="false"] [data-collapsible-target="content"] {
+  max-height: 0px !important;
+  opacity: 0 !important;
+}
+
+[data-collapsible-open-value="true"] [data-collapsible-target="content"] {
+  max-height: 1000px !important;
+  opacity: 1 !important;
+}
+
+/* Custom scrollbar for sidebar - no visible scrollbars */
+.sidebar-scroll {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Ensure sidebar content is scrollable but without visible scrollbars */
+.sidebar-content {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  max-height: calc(100vh - 200px); /* Ensure it has a max height to enable scrolling */
+}
+
+.sidebar-content::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Ensure all form inputs in sidebar respect the container width */
+.w-80 input,
+.w-80 select,
+.w-80 textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Specific fixes for post field inputs */
+.post-field-row input,
+.post-field-row select {
+  min-width: 0; /* Allow shrinking */
+  width: 100%;
+}
+
+/* ============================================
    GRADIENT ACCENTS - Premium feel
    ============================================ */
 

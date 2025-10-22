@@ -1,5 +1,7 @@
 require "active_support/core_ext/integer/time"
 
+require_relative '../redis'
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -18,15 +20,25 @@ Rails.application.configure do
   config.server_timing = true
 
   #CACHE
-  config.action_controller.perform_caching = true
-  config.action_controller.enable_fragment_cache_logging = true
+  
   if Rails.root.join("tmp/caching-dev.txt").exist?
     config.action_controller.perform_caching = true
     config.action_controller.enable_fragment_cache_logging = true
 
     # Use Redis for caching in development when enabled
     # config.cache_store = :redis_cache_store, RedisConfig.cache_options
-    config.cache_store = :memory_store
+    config.cache_store = :redis_cache_store, {
+      url: ENV['REDIS_URL'],
+      timeout: 1,
+      connect_timeout: 1,
+      reconnect_attempts: 3,
+      # Remove these - not valid for Rails cache store:
+      # reconnect_delay: 0.5,
+      # reconnect_delay_max: 2.0,
+      error_handler: -> (method:, returning:, exception:) {
+        Rails.logger.error "Redis cache error (#{method}): #{exception.message}"
+      }
+    }
   else
     config.action_controller.perform_caching = false
     config.cache_store = :null_store
@@ -92,13 +104,22 @@ Rails.application.configure do
   config.action_controller.raise_on_missing_callback_actions = false
   
   # Hot reloading for CSS/JS changes
-  config.middleware.insert_after ActionDispatch::Static, Hotwire::Livereload::Middleware
+  #config.middleware.insert_after ActionDispatch::Static, Hotwire::Livereload::Middleware
   config.hotwire_livereload.reload_method = :turbo_stream
-  config.hotwire_livereload.listen_paths += [
+  
+  # Optimized listen paths to avoid problematic directories
+  config.hotwire_livereload.listen_paths = [
     Rails.root.join("app/assets/stylesheets"),
-    Rails.root.join("app/assets/javascripts"),
     Rails.root.join("app/javascript"),
     Rails.root.join("app/views"),
     Rails.root.join("app/assets/builds")
+  ]
+  
+  # Add error handling for livereload
+  config.hotwire_livereload.ignore = [
+    /\.(log|tmp)$/,
+    /node_modules/,
+    /\.git/,
+    /coverage/
   ]
 end

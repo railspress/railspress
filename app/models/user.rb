@@ -62,10 +62,10 @@ class User < ApplicationRecord
     if super.present?
       JSON.parse(super)
     else
-      ['publish', 'featured-image', 'categories-tags', 'excerpt', 'seo']
+      ['post', 'categories-tags', 'content-channels', 'seo-meta', 'excerpt', 'plugin-blocks']
     end
   rescue JSON::ParserError
-    ['publish', 'featured-image', 'categories-tags', 'excerpt', 'seo']
+    ['post', 'categories-tags', 'content-channels', 'seo-meta', 'excerpt', 'plugin-blocks']
   end
   
   def sidebar_order=(order)

@@ -82,6 +82,28 @@ redis_running() {
     return 1
 }
 
+start_dev_server() {
+    echo -e "${GREEN}Starting Rails server...${NC}"
+    start_redis || true
+    echo -e "${GREEN}Dev server started on http://localhost:3000${NC}"
+    command ./bin/dev
+    
+}
+
+stop_dev_server() {
+    echo -e "${YELLOW}Stopping Rails server...${NC}"
+    pkill -f "bin/dev" || true
+    echo -e "${GREEN}Server stopped.${NC}"
+    stop_redis || true
+}
+
+restart_dev_server() {
+    echo -e "${YELLOW}Restarting Rails server...${NC}"
+    stop_dev_server
+    sleep 2
+    start_dev_server
+}
+
 start_redis() {
     echo -e "${YELLOW}Ensuring Redis is running...${NC}"
     if redis_running; then
@@ -143,7 +165,7 @@ restart_server() {
     sleep 2
     echo -e "${GREEN}Starting Redis and server...${NC}"
     start_redis || true
-    rails assets:precompile RAILS_ENV=development
+    #rails assets:precompile RAILS_ENV=development
     rails server -d -p 3000
     echo -e "${GREEN}Server restarted on http://localhost:3000${NC}"
 }
@@ -151,7 +173,7 @@ restart_server() {
 start_stack() {
     echo -e "${GREEN}Starting RailsPress stack...${NC}"
     start_redis || true
-    rails assets:precompile RAILS_ENV=development
+    #rails assets:precompile RAILS_ENV=development
     rails server -d -p 3000
     echo -e "${GREEN}Server started on http://localhost:3000${NC}"
 }
@@ -283,6 +305,15 @@ case "$COMMAND" in
         ;;
     coverage)
         generate_coverage
+        ;;
+    dev)
+        start_dev_server
+        ;;
+    stopdev)
+        stop_dev_server
+        ;;
+    restartdev)
+        restart_dev_server
         ;;
     help|--help|-h)
         print_help
