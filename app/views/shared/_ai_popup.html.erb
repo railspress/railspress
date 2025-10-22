@@ -216,6 +216,22 @@ const agentConfigs = {
 function openAiPopup() {
   document.getElementById('aiPopupModal').classList.remove('hidden');
   resetPopup();
+  
+  // Load saved prompt and response from localStorage
+  const savedPrompt = localStorage.getItem('aipostprompt');
+  const savedReply = localStorage.getItem('aipostreply');
+  
+  if (savedPrompt) {
+    document.getElementById('aiInput').value = savedPrompt;
+  }
+  
+  if (savedReply) {
+    generatedContent = savedReply;
+    document.getElementById('aiResult').value = savedReply;
+    document.getElementById('aiResultPreview').innerHTML = savedReply;
+    document.getElementById('resultSection').classList.remove('hidden');
+    document.getElementById('insertButton').classList.remove('hidden');
+  }
 }
 
 function openAiPopupWithPostWriter(event) {
@@ -231,6 +247,22 @@ function openAiPopupWithPostWriter(event) {
     
     // Auto-select Post Writer agent
     selectAgent('post_writer');
+    
+    // Load saved prompt and response
+    const savedPrompt = localStorage.getItem('aipostprompt');
+    const savedReply = localStorage.getItem('aipostreply');
+    
+    if (savedPrompt) {
+      document.getElementById('aiInput').value = savedPrompt;
+    }
+    
+    if (savedReply) {
+      generatedContent = savedReply;
+      document.getElementById('aiResult').value = savedReply;
+      document.getElementById('aiResultPreview').innerHTML = savedReply;
+      document.getElementById('resultSection').classList.remove('hidden');
+      document.getElementById('insertButton').classList.remove('hidden');
+    }
   }, 100);
 }
 
@@ -304,6 +336,15 @@ function selectAgent(agentType) {
   document.getElementById('generateButton').classList.remove('hidden');
   document.getElementById('selectedAgentInfo').classList.remove('hidden');
   document.getElementById('selectedAgentName').textContent = config.name;
+  
+  // Save prompt to localStorage as user types (debounced)
+  let saveTimeout;
+  document.getElementById('aiInput').addEventListener('input', (e) => {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      localStorage.setItem('aipostprompt', e.target.value);
+    }, 500);
+  });
 }
 
 async function generateContent() {
@@ -349,6 +390,10 @@ async function generateContent() {
       document.getElementById('aiResult').value = generatedContent;
       // Render HTML in the preview
       document.getElementById('aiResultPreview').innerHTML = generatedContent;
+      
+      // Save response to localStorage
+      localStorage.setItem('aipostreply', generatedContent);
+      
       document.getElementById('resultSection').classList.remove('hidden');
       document.getElementById('insertButton').classList.remove('hidden');
       document.getElementById('errorSection').classList.add('hidden');

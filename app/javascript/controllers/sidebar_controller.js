@@ -51,14 +51,6 @@ export default class extends Controller {
         mainContent.style.maxWidth = '100%'
       }
       
-      // Expand title and editor container
-      const titleContainer = document.querySelector('.max-w-4xl.mx-auto.px-8.py-12')
-      if (titleContainer) {
-        titleContainer.style.maxWidth = '100%'
-        titleContainer.style.paddingLeft = '3rem'
-        titleContainer.style.paddingRight = '3rem'
-      }
-      
       // Also expand the parent flex container
       const parentFlex = document.querySelector('.flex-1.flex.overflow-hidden')
       if (parentFlex) {
@@ -88,14 +80,6 @@ export default class extends Controller {
       if (mainContent) {
         mainContent.style.width = ''
         mainContent.style.maxWidth = ''
-      }
-      
-      // Restore title and editor container
-      const titleContainer = document.querySelector('.max-w-4xl.mx-auto.px-8.py-12')
-      if (titleContainer) {
-        titleContainer.style.maxWidth = '64rem'
-        titleContainer.style.paddingLeft = ''
-        titleContainer.style.paddingRight = ''
       }
       
       // Restore the parent flex container
