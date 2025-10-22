@@ -1,0 +1,168 @@
+<%= render 'admin/posts/write_styles' %>
+
+<script>
+// Theme initialization
+(function() {
+  try {
+    var saved = localStorage.getItem('theme');
+    var useDark = saved ? saved === 'dark' : true; // default dark
+    if (useDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Dispatch theme event for theme-aware components
+    document.dispatchEvent(new CustomEvent('theme:changed', { 
+      detail: { theme: useDark ? 'dark' : 'light' } 
+    }));
+  } catch (e) {
+    // On any error, default to dark
+    document.documentElement.classList.add('dark');
+    document.dispatchEvent(new CustomEvent('theme:changed', { 
+      detail: { theme: 'dark' } 
+    }));
+  }
+})();
+</script>
+
+<div class="h-screen flex flex-col sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
+  
+  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex flex-col", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @post.persisted? } do |f| %>
+    
+    <!-- Ultra Minimal Top Bar (Full Width) -->
+    <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
+        <%= link_to admin_posts_path, class: "flex items-center gap-2 transition-colors duration-200 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300", style: "", onmouseover: "", onmouseout: "" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+          </svg>
+          <span class="text-sm font-medium">Posts</span>
+        <% end %>
+        
+        <div class="flex items-center gap-4">
+          <!-- Autosave Indicator -->
+          <div class="flex items-center gap-2">
+            <div class="autosave-indicator flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+              <!-- Spinning loader -->
+              <svg class="w-3 h-3 animate-spin text-blue-500 hidden" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <!-- Checkmark -->
+              <svg class="w-3 h-3 text-green-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span class="autosave-text">All changes saved</span>
+            </div>
+          </div>
+          
+          
+          <!-- Theme Toggle -->
+          <button type="button" 
+                  data-controller="theme-toggle" 
+                  data-action="click->theme-toggle#toggle"
+                  class="p-1.5 rounded-lg transition-colors duration-200"
+                  style="background-color: transparent; color: var(--color-gray-500);"
+                  onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
+                  onmouseout="this.style.backgroundColor='transparent'">
+            <svg class="w-4 h-4 theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="display: none;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+            </svg>
+            <svg class="w-4 h-4 theme-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="display: block;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+            </svg>
+          </button>
+          
+          
+          
+          <!-- Small Save Button -->
+          <button type="button" 
+                  class="px-2 py-1 text-xs font-medium rounded-md transition-colors duration-200 save-button"
+                  onclick="document.querySelector('[data-controller*=\"autosave\"]').dispatchEvent(new CustomEvent('save'))">
+            Save
+          </button>
+
+          <!-- Sidebar Toggle Button (topbar) -->
+          <button type="button" 
+                  class="p-1.5 rounded-lg transition-colors duration-200 sidebar-toggle-topbar"
+                  style="background-color: transparent; color: var(--color-gray-500);"
+                  onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
+                  onmouseout="this.style.backgroundColor='transparent'"
+                  onclick="window.dispatchEvent(new CustomEvent('toggle-sidebar'))">
+            <svg class="w-4 h-4" data-sidebar-target="toggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+            </svg>
+          </button>
+        </div>
+    </div>
+    
+    <!-- Main Content Area (Editor + Sidebar) -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- Left: Main Editor Area -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Title + Editor Container -->
+        <div class="flex-1 overflow-y-auto">
+        <div class="max-w-4xl mx-auto px-8 py-12">
+          <!-- Title Input -->
+          <%= f.text_field :title, 
+              value: (@post.auto_draft_status? && @post.title == 'Untitled') ? '' : @post.title,
+              class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-6 leading-tight",
+              placeholder: "Untitled",
+              autofocus: !@post.persisted?,
+              data: { autosave_target: "title", slug_generator_target: "title", action: "input->slug-generator#generateSlug" } %>
+          
+          <!-- Content Editor (Dynamic based on user preference) -->
+          <div class="min-h-[calc(100vh-300px)]">
+            <%= render 'shared/content_editor_simple', 
+                form: f,
+                content: @post.content.to_s,
+                field_name: :content,
+                placeholder: 'Start writing...',
+                editor_type: current_user&.preferred_editor || 'blocknote' %>
+          </div>
+          
+          <!-- Subtle Meta (below editor for edit pages) -->
+          <% if @post.persisted? && !@post.auto_draft_status? %>
+            <div class="flex items-center gap-3 text-sm mt-6" style="color: var(--admin-text-tertiary);">
+              <span>Last edited <%= time_ago_in_words(@post.updated_at) %> ago</span>
+              <span>•</span>
+              <span><%= @post.user&.name || 'Anonymous' %></span>
+            </div>
+          <% end %>
+          
+          <!-- Hidden fields -->
+          <%= f.hidden_field :user_id, value: current_user.id %>
+        </div>
+        </div>
+      </div>
+    
+      <!-- Right Sidebar: Settings -->
+      <div class="w-80 transition-all duration-300 sidebar-scroll" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: 100vh; overflow-y: auto;">
+      
+      <div class="p-6 space-y-8" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
+        
+        <%= render 'admin/posts/sidebar_sections/post', f: f %>
+        
+        <%= render 'admin/posts/sidebar_sections/categories_tags', f: f %>
+        
+        <%= render 'admin/posts/sidebar_sections/seo_meta', f: f %>
+        
+        <%= render 'admin/posts/sidebar_sections/content_channels', f: f %>
+        
+        <%= render 'admin/posts/sidebar_sections/excerpt', f: f %>
+        
+        <%= render 'admin/posts/sidebar_sections/post_info' %>
+        
+        <%= render 'admin/posts/sidebar_sections/versions' %>
+        
+        <% if plugin_blocks_present?(:post, position: :sidebar, record: @post) %>
+          <%= render 'admin/posts/sidebar_sections/plugin_blocks', f: f %>
+        <% end %>
+        
+      </div>
+    </div>
+    </div>
+  <% end %>
+</div>
+
+<%= render 'admin/posts/keyboard_shortcuts' %>

@@ -1,0 +1,62 @@
+<!-- Keyboard shortcuts help (toggle with ?) -->
+<div id="shortcuts-help" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50" data-keyboard-shortcuts-target="helpPanel" data-action="click->keyboard-shortcuts#hideHelp">
+  <div class="bg-white dark:bg-gray-900 rounded-xl p-8 max-w-2xl w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
+      <button data-action="click->keyboard-shortcuts#hideHelp" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">General</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>⌘/Ctrl + S</kbd> - Save</li>
+          <li><kbd>⌘/Ctrl + Enter</kbd> - Publish</li>
+          <li><kbd>?</kbd> - Show this help</li>
+          <li><kbd>Esc</kbd> - Close dialogs</li>
+        </ul>
+      </div>
+      
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Formatting</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>⌘/Ctrl + B</kbd> - Bold</li>
+          <li><kbd>⌘/Ctrl + I</kbd> - Italic</li>
+          <li><kbd>⌘/Ctrl + U</kbd> - Underline</li>
+          <li><kbd>⌘/Ctrl + E</kbd> - Inline Code</li>
+        </ul>
+      </div>
+      
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Blocks</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>⌘ + ⇧ + H</kbd> - Header</li>
+          <li><kbd>⌘ + ⇧ + L</kbd> - List</li>
+          <li><kbd>⌘ + ⇧ + Q</kbd> - Quote</li>
+          <li><kbd>⌘ + ⇧ + C</kbd> - Code Block</li>
+        </ul>
+      </div>
+      
+      <div>
+        <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Navigation</p>
+        <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+          <li><kbd>Tab</kbd> - Indent</li>
+          <li><kbd>⇧ + Tab</kbd> - Outdent</li>
+          <li><kbd>Enter</kbd> - New block</li>
+          <li><kbd>⌫</kbd> - Delete block (if empty)</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+      <p class="text-xs text-gray-500 dark:text-gray-400">
+        💡 Tip: Type <code>/</code> to see all available blocks
+      </p>
+    </div>
+  </div>
+</div>
+

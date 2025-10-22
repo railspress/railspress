@@ -1,0 +1,11 @@
+<div class="post-field-row">
+  <label class="post-field-label">Discussion</label>
+  <%= f.select :comment_status, 
+      options_for_select([
+        ['Open', 'open'],
+        ['Closed', 'closed']
+      ], record.comment_status || 'open'),
+      {},
+      { class: "post-field-input" } %>
+</div>
+

@@ -29,9 +29,12 @@ cleanup_logs:
   queue: low
   description: "Clean up old log files and database records"
 
-
-
-
+# Cleanup auto drafts - Run daily at 3 AM
+cleanup_auto_drafts:
+  cron: "0 3 * * *"  # Daily at 3 AM
+  class: "CleanupAutoDraftsJob"
+  queue: default
+  description: "Clean up stale auto_draft posts older than 24 hours"
 
 
 

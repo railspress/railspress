@@ -30,7 +30,7 @@
     }, 100);
   </script>
   
-  <!-- Editor.js Core (load conditionally and deferred) -->
+  <!-- Editor.js Core and Tools (load conditionally and deferred) -->
   <script>
     // Only load Editor.js if the page contains an Editor.js editor (deferred)
     setTimeout(function() {
@@ -42,7 +42,44 @@
         coreScript.src = 'https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.31.0';
         coreScript.onload = function() {
           console.log('Editor.js core loaded successfully');
-          window.EditorJSLoaded = true;
+          
+          // Load essential Editor.js tools with specific versions for stability
+          const tools = [
+            { name: 'Header', url: 'https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.0' },
+            { name: 'List', url: 'https://cdn.jsdelivr.net/npm/@editorjs/list@1.8.0' },
+            { name: 'Quote', url: 'https://cdn.jsdelivr.net/npm/@editorjs/quote@2.5.0' },
+            { name: 'Code', url: 'https://cdn.jsdelivr.net/npm/@editorjs/code@2.8.0' },
+            { name: 'Delimiter', url: 'https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.3.0' },
+            { name: 'Table', url: 'https://cdn.jsdelivr.net/npm/@editorjs/table@2.2.2' },
+            { name: 'Warning', url: 'https://cdn.jsdelivr.net/npm/@editorjs/warning@1.3.0' },
+            { name: 'Checklist', url: 'https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.5.0' },
+            { name: 'SimpleImage', url: 'https://cdn.jsdelivr.net/npm/@editorjs/simple-image@1.5.0' },
+            { name: 'InlineCode', url: 'https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.4.0' },
+            { name: 'Marker', url: 'https://cdn.jsdelivr.net/npm/@editorjs/marker@1.3.0' },
+            { name: 'Undo', url: 'https://cdn.jsdelivr.net/npm/editorjs-undo@1.0.18' }
+          ];
+          
+          let loadedCount = 0;
+          tools.forEach(tool => {
+            const script = document.createElement('script');
+            script.src = tool.url;
+            script.onload = function() {
+              loadedCount++;
+              console.log(`Loaded ${tool.name} (${loadedCount}/${tools.length})`);
+              if (loadedCount === tools.length) {
+                window.EditorJSLoaded = true;
+                console.log('All Editor.js tools loaded!');
+              }
+            };
+            script.onerror = function() {
+              console.warn(`Failed to load ${tool.name}`);
+              loadedCount++;
+              if (loadedCount === tools.length) {
+                window.EditorJSLoaded = true;
+              }
+            };
+            document.head.appendChild(script);
+          });
         };
         coreScript.onerror = function() {
           console.error('Failed to load Editor.js core');
@@ -53,6 +90,11 @@
     }, 200);
   </script>
   
+  <!-- EditorJS Dark Theme Styles -->
+  <style>
+    
+  </style>
+
   <!-- Early theme bootstrap: default dark, honor saved preference -->
   <script>
     (function() {

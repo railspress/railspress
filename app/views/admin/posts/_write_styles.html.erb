@@ -1,0 +1,310 @@
+<style>
+/* --------- Quick theme tokens --------- */
+:root {
+  --ce-bg: #0b0b0b;
+  --ce-text: #fff;
+  --ce-muted: #b8b8b8;
+  --ce-border: #1f1f1f;
+  --ce-hover: #151515;
+  --ce-accent: #7c5cff;
+  --ce-focus: #2a2a2a;
+  --ce-shadow: 0 12px 28px rgba(0,0,0,.55);
+  --ce-select-bg: rgba(124, 92, 255, 0.28); /* highlight background */
+  --ce-select-fg: #fff;                     /* highlighted text color */
+  --ce-caret: #7c5cff;                       /* text caret color */
+  --ce-block-focus: #151515;                 /* focused block bg */
+  --ce-block-hover: #121212;                 /* hover bg (optional) */
+  --ce-focus-ring: 0 0 0 2px rgba(124,92,255,.35); /* keyboard focus ring */
+}
+
+.editorjs--light {
+  --ce-select-bg: rgba(124, 92, 255, 0.18);
+  --ce-select-fg: #111;
+  --ce-caret: #3a2bb3;
+  --ce-block-focus: #f6f6f8;
+  --ce-block-hover: #fafafa;
+  --ce-focus-ring: 0 0 0 2px rgba(58,43,179,.28);
+}
+
+.codex-editor__redactor,
+.ce-block__content,
+.ce-toolbar__content {
+  max-width: none !important;
+  width: 90% !important;
+}
+/* --------- Core popovers (toolbox, block settings, conversion) --------- */
+.ce-popover,
+.ce-inline-toolbar,
+.ce-conversion-toolbar,
+.ce-settings {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+  box-shadow: var(--ce-shadow) !important;
+  backdrop-filter: saturate(120%) blur(6px);
+  z-index: 9999; /* keep above other UI */
+}
+
+/* Popover container + sections */
+.ce-popover__container,
+.ce-popover__items,
+.ce-popover__scroll {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border-color: var(--ce-border) !important;
+}
+
+/* Search field in the toolbox */
+.ce-popover__search .cdx-search-field,
+.ce-popover__search .cdx-search-field input {
+  background: var(--ce-focus) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+.ce-popover__search .cdx-search-field input::placeholder {
+  color: var(--ce-muted) !important;
+}
+
+/* Toolbox items (icon + label) — supports both old/new item class names */
+.ce-popover-item,
+.ce-popover__item {
+  background: transparent !important;
+  color: var(--ce-text) !important;
+  border-radius: 10px;
+}
+.ce-popover-item:hover,
+.ce-popover__item:hover,
+.ce-popover-item:focus-visible,
+.ce-popover__item:focus-visible {
+  background: var(--ce-hover) !important;
+  outline: none;
+}
+
+/* Item icon + title */
+.ce-popover-item__icon,
+.ce-popover__item-icon {
+  background: var(--ce-focus) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+.ce-popover-item__icon svg,
+.ce-popover__item-icon svg {
+  fill: var(--ce-text) !important;
+  stroke: var(--ce-text) !important;
+}
+.ce-popover-item__title,
+.ce-popover__item-label {
+  color: var(--ce-text) !important;
+}
+.ce-popover-item__secondary-title,
+.ce-popover__item-secondary {
+  color: var(--ce-muted) !important;
+}
+
+/* Divider lines inside popovers */
+.ce-popover__items > *.ce-popover__items-separator,
+.ce-popover .ce-popover__separator {
+  background: var(--ce-border) !important;
+}
+
+/* --------- Inline toolbar (bold/italic/link/etc.) --------- */
+.ce-inline-toolbar,
+.ce-inline-toolbar--showed {
+  background: var(--ce-bg) !important;
+  border-color: var(--ce-border) !important;
+}
+.ce-inline-tool {
+  color: var(--ce-text) !important;
+}
+.ce-inline-tool:hover,
+.ce-inline-tool--active {
+  background: var(--ce-hover) !important;
+}
+.ce-inline-toolbar .ce-link-input {
+  background: var(--ce-focus) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+
+/* --------- Conversion toolbar (change block type) --------- */
+.ce-conversion-toolbar__label {
+  color: var(--ce-muted) !important;
+}
+.ce-conversion-toolbar__action {
+  color: var(--ce-text) !important;
+}
+.ce-conversion-toolbar__action:hover,
+.ce-conversion-toolbar__action--selected {
+  background: var(--ce-hover) !important;
+}
+
+/* --------- Block settings (three-dots menu) --------- */
+.ce-settings,
+.ce-settings__plugin-zone {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border-color: var(--ce-border) !important;
+}
+.ce-settings .ce-settings__button,
+.ce-settings .ce-settings__button:hover {
+  color: var(--ce-text) !important;
+  background: transparent !important;
+}
+.ce-settings .ce-settings__button:hover {
+  background: var(--ce-hover) !important;
+}
+
+/* --------- Toolbox triggers (plus + settings) --------- */
+.ce-toolbar__plus,
+.ce-toolbar__settings-btn {
+  background: var(--ce-focus) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+.ce-toolbar__plus:hover,
+.ce-toolbar__settings-btn:hover {
+  background: var(--ce-hover) !important;
+  border-color: var(--ce-accent) !important;
+}
+
+/* --------- Tooltips --------- */
+.ce-tooltip {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+  box-shadow: var(--ce-shadow) !important;
+}
+
+/* --------- Scrollbars inside popovers --------- */
+.ce-popover__items::-webkit-scrollbar {
+  width: 10px;
+}
+.ce-popover__items::-webkit-scrollbar-track {
+  background: var(--ce-bg);
+}
+.ce-popover__items::-webkit-scrollbar-thumb {
+  background: var(--ce-focus);
+  border: 2px solid var(--ce-bg);
+  border-radius: 8px;
+}
+
+/* --------- Safety: catch-all for future class name tweaks --------- */
+:where([class^="ce-popover"], [class*=" ce-popover"], .ce-inline-toolbar, .ce-conversion-toolbar)
+  * {
+  color: inherit;
+}
+
+/* Apply custom selection colors inside Editor.js */
+.codex-editor, .codex-editor * {
+  caret-color: var(--ce-caret);
+}
+.codex-editor *::selection {
+  background: var(--ce-select-bg);
+  color: var(--ce-select-fg);
+}
+.codex-editor *::-moz-selection {
+  background: var(--ce-select-bg);
+  color: var(--ce-select-fg);
+}
+
+/* Editor.js block focus/hover (prevents that default whitish flash) */
+.ce-block {
+  transition: background-color .12s ease;
+}
+.ce-block:hover {
+  background: var(--ce-block-hover);
+}
+.ce-block--focused,
+.ce-block.ce-block--selected,
+.ce-block:focus-within {
+  background: var(--ce-block-focus);
+  box-shadow: var(--ce-focus-ring);
+  outline: none;
+}
+
+.ce-block--selected .ce-block__content {
+    background: var(--ce-block-focus) !important;
+}
+
+/* Paragraph + header content area so the whole line doesn’t look “selected” */
+.ce-block__content,
+.ce-paragraph,
+.ce-header {
+  text-shadow: none; /* keep text crisp on custom selection */
+}
+
+/* Optional: reduce accidental line-wide selection when clicking “tunes” area */
+.ce-toolbar__settings-btn,
+.ce-toolbar__plus {
+  -webkit-tap-highlight-color: transparent; /* mobile */
+}
+
+</style>
+
+<style>
+/* Hide sidebar initially to prevent flash */
+[data-sidebar-collapsed-value="true"] {
+  width: 0px !important;
+  overflow: hidden !important;
+}
+
+[data-sidebar-collapsed-value="true"] [data-sidebar-target="content"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* When sidebar is collapsed, expand main content to full width */
+.sidebar-collapsed [data-sidebar-collapsed-value="true"] {
+  width: 0px !important;
+  overflow: hidden !important;
+}
+
+.sidebar-collapsed .flex-1.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.sidebar-collapsed .max-w-4xl.mx-auto.px-8.py-12 {
+  max-width: 100% !important;
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
+}
+
+/* Theme variables (use global admin vars) */
+:root {
+  --input-bg: var(--admin-bg-primary);
+  --input-border: var(--admin-border);
+  --input-text: var(--admin-text-primary);
+}
+
+/* Unified form control styling via vars */
+.form-control {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  color: var(--input-text) !important;
+}
+
+/* Save Button Styles - Inverted colors for light/dark themes */
+.save-button {
+  background-color: var(--color-gray-800) !important;
+  color: var(--color-gray-200) !important;
+  border: 1px solid var(--color-gray-600) !important;
+}
+
+.save-button:hover {
+  background-color: var(--color-gray-700) !important;
+  color: white !important;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .save-button {
+  background-color: var(--color-gray-100) !important;
+  color: var(--color-gray-800) !important;
+  border: 1px solid var(--color-gray-300) !important;
+}
+
+[data-theme="light"] .save-button:hover {
+  background-color: var(--color-gray-200) !important;
+  color: var(--color-gray-900) !important;
+}
+</style>
+

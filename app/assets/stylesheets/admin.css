@@ -929,14 +929,102 @@
 }
 
 /* Force text colors in light theme - ensure visibility */
-:root .post-field-label {
+:root:not(.dark) .post-field-label {
   color: #6b7280 !important; /* --admin-text-muted */
 }
 
-:root .post-field-input {
+:root:not(.dark) .post-field-input {
   color: #0f172a !important; /* --admin-text-primary */
   background-color: #f9fafb !important; /* --admin-bg-secondary */
   border-color: #e5e7eb !important; /* --admin-border */
+}
+
+/* Also ensure form controls in sidebar are visible in light theme */
+:root:not(.dark) .form-control {
+  color: #0f172a !important;
+  background-color: #f9fafb !important;
+  border-color: #e5e7eb !important;
+}
+
+:root:not(.dark) .form-control::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Ensure sidebar text is readable in light theme */
+:root:not(.dark) .sidebar-section .text-gray-900 {
+  color: #0f172a !important;
+}
+
+:root:not(.dark) .sidebar-section .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+:root:not(.dark) .sidebar-section .text-gray-600 {
+  color: #374151 !important;
+}
+
+:root:not(.dark) .sidebar-section .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* Ensure labels with CSS variables are visible */
+:root:not(.dark) [style*="color: var(--admin-text-muted)"] {
+  color: #6b7280 !important;
+}
+
+/* Ensure SVG icons are darker in light theme */
+:root:not(.dark) .sidebar-section svg {
+  color: #1f2937 !important; /* Much darker gray */
+}
+
+:root:not(.dark) .sidebar-section .text-gray-400 svg {
+  color: #374151 !important; /* Dark gray */
+}
+
+:root:not(.dark) .sidebar-section .text-gray-500 svg {
+  color: #374151 !important; /* Dark gray */
+}
+
+:root:not(.dark) .sidebar-section .text-gray-600 svg {
+  color: #1f2937 !important; /* Very dark gray */
+}
+
+/* Ensure drag handles and icons are visible */
+:root:not(.dark) .drag-handle svg {
+  color: #374151 !important; /* Dark gray */
+}
+
+:root:not(.dark) .drag-handle:hover svg {
+  color: #1f2937 !important; /* Very dark on hover */
+}
+
+/* Ensure all sidebar icons are visible in light theme */
+:root:not(.dark) .sidebar-section button svg {
+  color: #374151 !important; /* Dark gray */
+}
+
+:root:not(.dark) .sidebar-section button:hover svg {
+  color: #1f2937 !important; /* Very dark on hover */
+}
+
+/* Ensure collapsible section icons are visible */
+:root:not(.dark) [data-collapsible-target="icon"] {
+  color: #374151 !important; /* Dark gray */
+}
+
+:root:not(.dark) [data-collapsible-target="icon"]:hover {
+  color: #1f2937 !important; /* Very dark on hover */
+}
+
+/* Aggressive override for ALL sidebar SVGs in light theme */
+:root:not(.dark) .sidebar-scroll svg,
+:root:not(.dark) .sidebar-scroll * svg {
+  color: #1f2937 !important; /* Very dark gray */
+}
+
+:root:not(.dark) .sidebar-scroll svg:hover,
+:root:not(.dark) .sidebar-scroll * svg:hover {
+  color: #111827 !important; /* Almost black on hover */
 }
 
 /* Dark theme overrides */

@@ -58,6 +58,12 @@ export default class extends Controller {
         titleContainer.style.paddingLeft = '3rem'
         titleContainer.style.paddingRight = '3rem'
       }
+      
+      // Also expand the parent flex container
+      const parentFlex = document.querySelector('.flex-1.flex.overflow-hidden')
+      if (parentFlex) {
+        parentFlex.style.width = '100%'
+      }
     } else {
       if (rootContainer) {
         rootContainer.classList.remove('sidebar-collapsed')
@@ -90,6 +96,12 @@ export default class extends Controller {
         titleContainer.style.maxWidth = '64rem'
         titleContainer.style.paddingLeft = ''
         titleContainer.style.paddingRight = ''
+      }
+      
+      // Restore the parent flex container
+      const parentFlex = document.querySelector('.flex-1.flex.overflow-hidden')
+      if (parentFlex) {
+        parentFlex.style.width = ''
       }
     }
   }

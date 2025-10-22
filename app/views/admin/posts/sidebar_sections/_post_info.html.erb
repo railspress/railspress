@@ -1,0 +1,46 @@
+<% if @post.persisted? && !@post.auto_draft_status? %>
+  <div class="sidebar-section pb-6 border-b border-gray-100 dark:border-gray-800" data-controller="collapsible" data-collapsible-open-value="true" data-collapsible-section-type-value="post-info" data-collapsible-user-id-value="<%= current_user.id %>" data-section-type="post-info">
+    <div class="flex items-center gap-2 mb-4">
+      <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+        </svg>
+      </div>
+      <button type="button" 
+              data-action="click->collapsible#toggle" 
+              class="flex-1 text-left text-sm font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+        Post Info
+      </button>
+      <button type="button" 
+              data-action="click->collapsible#toggle" 
+              class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+        <svg class="w-4 h-4 transition-transform" data-collapsible-target="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </button>
+    </div>
+    
+    <div data-collapsible-target="content">
+      <div class="space-y-2 text-xs text-gray-400">
+        <div class="flex justify-between">
+          <span>Created:</span>
+          <span class="text-gray-300"><%= @post.created_at.strftime('%b %d, %Y') %></span>
+        </div>
+        <div class="flex justify-between">
+          <span>Last updated:</span>
+          <span class="text-gray-300"><%= @post.updated_at.strftime('%b %d, %Y') %></span>
+        </div>
+        <div class="flex justify-between">
+          <span>Author:</span>
+          <span class="text-gray-300"><%= @post.user&.name || 'Anonymous' %></span>
+        </div>
+        <% if @post.respond_to?(:views_count) && @post.views_count.present? && @post.persisted? && !@post.auto_draft_status? %>
+          <div class="flex justify-between">
+            <span>Views:</span>
+            <span class="text-gray-300"><%= number_with_delimiter(@post.views_count) %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

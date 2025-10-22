@@ -37,20 +37,134 @@ export default class extends Controller {
       return
     }
 
-    // Initialize Editor.js with minimal configuration
+    // Initialize Editor.js with all available tools
     try {
+      // Debug: Check what tools are available
+      console.log('Available EditorJS tools:', {
+        Header: !!window.Header,
+        List: !!window.List,
+        Quote: !!window.Quote,
+        Code: !!window.Code,
+        Delimiter: !!window.Delimiter,
+        Table: !!window.Table,
+        Warning: !!window.Warning,
+        Checklist: !!window.Checklist,
+        SimpleImage: !!window.SimpleImage,
+        InlineCode: !!window.InlineCode,
+        Marker: !!window.Marker,
+        Undo: !!window.Undo
+      })
+
       this.editor = new window.EditorJS({
-        holder: this.element.querySelector('.editorjs-container'),
+        holder: 'editorjs',
         placeholder: this.placeholderValue || 'Start writing...',
         autofocus: true,
         data: initialData,
         
-        // Minimal tools configuration
-        tools: {},
+        // Essential tools configuration (only reliable ones)
+        tools: Object.fromEntries(
+          Object.entries({
+            // Essential paragraph tool (EditorJS requires this)
+            paragraph: {
+              class: window.Paragraph || class {
+                constructor({ data, config, api, readOnly }) {
+                  this.api = api
+                  this.readOnly = readOnly
+                  this.data = data || { text: '' }
+                }
+                
+                render() {
+                  const wrapper = document.createElement('div')
+                  wrapper.classList.add('ce-paragraph')
+                  wrapper.contentEditable = !this.readOnly
+                  wrapper.innerHTML = this.data.text || ''
+                  return wrapper
+                }
+                
+                save(blockContent) {
+                  return { text: blockContent.innerHTML }
+                }
+                
+                static get toolbox() {
+                  return {
+                    title: 'Paragraph'
+                  }
+                }
+              },
+              inlineToolbar: true
+            },
+            // Only use tools that are definitely loaded and working
+            header: window.Header ? {
+              class: window.Header,
+              inlineToolbar: ['marker', 'inlineCode'],
+              config: {
+                placeholder: 'Enter a header',
+                levels: [1, 2, 3, 4, 5, 6],
+                defaultLevel: 2
+              }
+            } : undefined,
+            list: window.List ? {
+              class: window.List,
+              inlineToolbar: true,
+              config: {
+                defaultStyle: 'unordered'
+              }
+            } : undefined,
+            quote: window.Quote ? {
+              class: window.Quote,
+              inlineToolbar: true,
+              config: {
+                quotePlaceholder: 'Enter a quote',
+                captionPlaceholder: "Quote's author"
+              }
+            } : undefined,
+            code: window.Code ? {
+              class: window.Code,
+              config: {
+                placeholder: 'Enter code here...'
+              }
+            } : undefined,
+            delimiter: window.Delimiter,
+            table: window.Table ? {
+              class: window.Table,
+              inlineToolbar: true,
+              config: {
+                rows: 2,
+                cols: 3
+              }
+            } : undefined,
+            warning: window.Warning ? {
+              class: window.Warning,
+              inlineToolbar: true,
+              config: {
+                titlePlaceholder: 'Title',
+                messagePlaceholder: 'Message'
+              }
+            } : undefined,
+            checklist: window.Checklist ? {
+              class: window.Checklist,
+              inlineToolbar: true
+            } : undefined,
+            image: window.SimpleImage ? {
+              class: window.SimpleImage,
+              inlineToolbar: true
+            } : undefined,
+            inlineCode: window.InlineCode ? {
+              class: window.InlineCode
+            } : undefined,
+            marker: window.Marker ? {
+              class: window.Marker
+            } : undefined,
+            undo: window.Undo ? {
+              class: window.Undo
+            } : undefined
+          }).filter(([key, value]) => value !== undefined)
+        ),
         
         onChange: async () => {
           await this.saveContent()
-          this.triggerAutoSave()
+          // Notify autosave controller that content has changed
+          this.notifyAutosave()
         },
         
         onReady: () => {
@@ -61,6 +175,17 @@ export default class extends Controller {
     } catch (error) {
       console.error('Editor.js initialization failed:', error)
       this.showFallbackEditor()
+    }
+  }
+
+  notifyAutosave() {
+    // Find the autosave controller and notify it of changes
+    const autosaveController = this.application.getControllerForElementAndIdentifier(
+      document.querySelector('[data-controller*="autosave"]'), 
+      'autosave'
+    )
+    if (autosaveController) {
+      autosaveController.handleChange()
     }
   }
 

@@ -1,0 +1,21 @@
+<div class="featured-image-preview" 
+     data-controller="featured-image"
+     data-featured-image-target="preview">
+  <% if record.featured_image_file.attached? %>
+    <%= image_tag record.featured_image_file, class: "w-full h-full object-cover" %>
+    <div class="featured-image-overlay">
+      <button type="button" class="featured-image-btn featured-image-btn-replace" data-action="replace">Replace</button>
+      <button type="button" class="featured-image-btn featured-image-btn-remove" data-action="remove">Remove</button>
+    </div>
+  <% else %>
+    <div class="featured-image-upload-placeholder" data-action="upload">
+      Click to upload featured image
+    </div>
+  <% end %>
+  <%= f.file_field :featured_image_file, 
+      class: "hidden", 
+      data: { 
+        featured_image_target: "input",
+        action: "change->featured-image#preview"
+      } %>
+</div>

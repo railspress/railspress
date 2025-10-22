@@ -5,7 +5,7 @@ export default class extends Controller {
   static targets = ["form", "title", "content"]
   static values = { 
     url: String,
-    interval: { type: Number, default: 30000 }, // 30 seconds
+    interval: { type: Number, default: 30000 }, // 30 seconds default, overridden by site setting
     debounce: { type: Number, default: 2000 }   // 2 seconds
   }
 
@@ -67,20 +67,12 @@ export default class extends Controller {
 
   handleChange() {
     this.hasChanges = true
-    this.showSaving()
-    
-    // Debounce the save
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout)
-    }
-    
-    this.saveTimeout = setTimeout(() => {
-      this.save()
-    }, this.debounceValue)
+    // Just mark that changes exist
+    // Let the periodic timer handle the actual saving
   }
 
   startPeriodicSave() {
-    // Save every 30 seconds if there are changes
+    // Save every X seconds based on site setting (default 30s, configurable in Writing Settings)
     this.periodicSaveInterval = setInterval(() => {
       if (this.hasChanges && !this.isSaving) {
         this.save()

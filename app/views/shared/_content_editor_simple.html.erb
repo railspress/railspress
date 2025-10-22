@@ -1,6 +1,8 @@
 <%
   editor_type = local_assigns.fetch(:editor_type, 'blocknote')
-  content = local_assigns.fetch(:content, '')
+  raw_content = local_assigns.fetch(:content, '')
+  # Force content to be a plain string, not SafeBuffer, so we can escape it properly
+  content = raw_content.to_str rescue raw_content.to_s
   field_name = local_assigns.fetch(:field_name, :content)
   placeholder = local_assigns.fetch(:placeholder, 'Start writing...')
   form = local_assigns.fetch(:form, nil)
@@ -9,7 +11,7 @@
 <div class="content-editor-wrapper" data-editor-type="<%= editor_type %>" data-autosave-target="content">
   <% if editor_type == 'blocknote' %>
     <!-- BlockNote Editor -->
-    <div class="blocknote-editor h-full" data-controller="blocknote" data-blocknote-content-value="<%= content %>" data-blocknote-placeholder-value="<%= placeholder %>">
+    <div class="blocknote-editor h-full" data-controller="blocknote" data-blocknote-content-value="<%= ERB::Util.html_escape(content) %>" data-blocknote-placeholder-value="<%= ERB::Util.html_escape(placeholder) %>">
       <div id="blocknote-container" class="prose prose-lg max-w-none h-full min-h-[calc(100vh-300px)] text-gray-900 dark:text-gray-100"></div>
       <% if form %>
         <%= form.hidden_field field_name, data: { blocknote_target: "input" } %>
@@ -26,8 +28,8 @@
     </div>
   <% elsif editor_type == 'editorjs' %>
     <!-- Editor.js Editor -->
-    <div class="editorjs-editor h-full" data-controller="editorjs" data-editorjs-content-value="<%= content %>" data-editorjs-placeholder-value="<%= placeholder %>">
-      <div class="editorjs-container min-h-[calc(100vh-300px)] bg-transparent p-0"></div>
+    <div class="editorjs-editor h-full" data-controller="editorjs" data-editorjs-content-value="<%= ERB::Util.html_escape(content) %>" data-editorjs-placeholder-value="<%= ERB::Util.html_escape(placeholder) %>">
+      <div id="editorjs" class="editorjs-container min-h-[calc(100vh-300px)] bg-transparent p-0" data-controller="theme-aware"></div>
       <% if form %>
         <%= form.hidden_field field_name, data: { editorjs_target: "input" } %>
       <% end %>

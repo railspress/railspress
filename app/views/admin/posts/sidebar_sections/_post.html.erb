@@ -20,46 +20,22 @@
   </div>
   
   <div data-collapsible-target="content">
-    <!-- Featured Image Preview -->
-    <div class="featured-image-preview">
-      <% if @post.featured_image_file.attached? %>
-        <%= image_tag @post.featured_image_file, class: "w-full h-full object-cover" %>
-        <div class="featured-image-overlay">
-          <button type="button" class="featured-image-btn featured-image-btn-replace" onclick="document.querySelector('input[type=\"file\"]').click()">Replace</button>
-          <button type="button" class="featured-image-btn featured-image-btn-remove" onclick="removeFeaturedImage()">Remove</button>
-        </div>
-      <% else %>
-        <div class="featured-image-upload-placeholder" onclick="document.querySelector('input[type=\"file\"]').click()">
-          Click to upload featured image
-        </div>
-      <% end %>
-      <%= f.file_field :featured_image_file, class: "hidden", onchange: "previewFeaturedImage(this)" %>
-    </div>
+    <!-- Featured Image (Shared Partial) -->
+    <%= render 'admin/shared/fields/featured_image', f: f, record: @post %>
     
     <!-- Two-column layout for Post settings -->
     <div class="space-y-3">
-      <!-- Status -->
-      <div class="post-field-row">
-        <label class="post-field-label">Status</label>
-        <%= f.select :status, 
-            options_for_select([
-              ['Draft', 'draft'],
-              ['Published', 'published'],
-              ['Scheduled', 'scheduled'],
-              ['Pending Review', 'pending_review'],
-              ['Private', 'private']
-            ], @post.status),
-            {},
-            class: "post-field-input" %>
-      </div>
+      <!-- Status (Shared Partial) -->
+      <%= render 'admin/shared/fields/status_select', f: f, record: @post, statuses: [
+        ['Draft', 'draft'],
+        ['Published', 'published'],
+        ['Scheduled', 'scheduled'],
+        ['Pending Review', 'pending_review'],
+        ['Private', 'private']
+      ] %>
       
-      <!-- Publish Date -->
-      <div class="post-field-row">
-        <label class="post-field-label">Publish</label>
-        <%= f.datetime_local_field :published_at, 
-            value: @post.published_at&.strftime('%Y-%m-%dT%H:%M'),
-            class: "post-field-input" %>
-      </div>
+      <!-- Publish Date (Shared Partial) -->
+      <%= render 'admin/shared/fields/publish_date', f: f, record: @post %>
       
       <!-- Slug -->
       <div class="post-field-row">
@@ -86,17 +62,8 @@
             { class: "post-field-input" } %>
       </div>
       
-      <!-- Discussion -->
-      <div class="post-field-row">
-        <label class="post-field-label">Discussion</label>
-        <%= f.select :comment_status, 
-            options_for_select([
-              ['Open', 'open'],
-              ['Closed', 'closed']
-            ], @post.comment_status || 'open'),
-            {},
-            { class: "post-field-input" } %>
-      </div>
+      <!-- Discussion (Shared Partial) -->
+      <%= render 'admin/shared/fields/discussion', f: f, record: @post %>
     </div>
   </div>
 </div>

@@ -1,0 +1,8 @@
+<div class="post-field-row">
+  <label class="post-field-label">Status</label>
+  <%= f.select :status, 
+      options_for_select(statuses, record.status),
+      {},
+      class: "post-field-input" %>
+</div>
+

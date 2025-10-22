@@ -30,6 +30,11 @@ export default class extends Controller {
       this.showDark()
       console.log('[theme-toggle] toggled -> dark', { saved: localStorage.getItem('theme'), hasDarkClass: document.documentElement.classList.contains('dark') })
     }
+    
+    // Dispatch custom event for other components to listen to
+    document.dispatchEvent(new CustomEvent('theme:changed', { 
+      detail: { theme: isDark ? 'light' : 'dark' } 
+    }))
   }
 
   showLight() {

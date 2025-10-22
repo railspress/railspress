@@ -4,7 +4,7 @@ class Admin::PostsController < Admin::BaseController
 
   # GET /admin/posts or /admin/posts.json
   def index
-    @posts = Post.kept.includes(:user, :terms).order(created_at: :desc)
+    @posts = Post.kept.where.not(status: :auto_draft).includes(:user, :terms).order(created_at: :desc)
     
     # Filter by status if specified
     if params[:status].present? && Post.statuses.keys.include?(params[:status])
@@ -13,17 +13,17 @@ class Admin::PostsController < Admin::BaseController
     
     # Show trashed if explicitly requested
     if params[:show_trash] == 'true'
-      @posts = Post.trashed.includes(:user, :terms).order(deleted_at: :desc)
+      @posts = Post.trashed.where.not(status: :auto_draft).includes(:user, :terms).order(deleted_at: :desc)
     end
     
     respond_to do |format|
       format.html do
         @posts_data = posts_json
         @stats = {
-          total: Post.kept.count,
+          total: Post.kept.where.not(status: :auto_draft).count,
           published: Post.published.count,
           draft: Post.where(status: 'draft').count,
-          trash: Post.trashed.count
+          trash: Post.trashed.where.not(status: :auto_draft).count
         }
         @bulk_actions = [
           { value: 'trash', label: 'Move to Trash' },
@@ -103,14 +103,21 @@ class Admin::PostsController < Admin::BaseController
   def new
     @post = current_user.posts.build(status: :draft)
     @categories = Term.for_taxonomy('category').ordered
-    @tags = Term.for_taxonomy('post_tag').ordered
+    @tags = Term.for_taxonomy('tag').ordered
   end
   
   # GET /admin/posts/write (collection)
   def write_new
-    @post = current_user.posts.build(status: :draft)
+    # Create auto-draft immediately (WordPress style)
+    @post = current_user.posts.create!(
+      title: 'Untitled',
+      slug: generate_unique_untitled_slug,
+      status: :auto_draft,
+      comment_status: 'open'
+    )
+    
     @categories = Term.for_taxonomy('category').ordered
-    @tags = Term.for_taxonomy('post_tag').ordered
+    @tags = Term.for_taxonomy('tag').ordered
     @channels = Channel.active.order(:name)
     @users = User.order(:name)
     @available_templates = get_available_templates
@@ -121,7 +128,7 @@ class Admin::PostsController < Admin::BaseController
   # GET /admin/posts/:id/write (member)
   def write
     @categories = Term.for_taxonomy('category').ordered
-    @tags = Term.for_taxonomy('post_tag').ordered
+    @tags = Term.for_taxonomy('tag').ordered
     @channels = Channel.active.order(:name)
     @users = User.order(:name)
     @available_templates = get_available_templates
@@ -132,30 +139,41 @@ class Admin::PostsController < Admin::BaseController
   # GET /admin/posts/1/edit
   def edit
     @categories = Term.for_taxonomy('category').ordered
-    @tags = Term.for_taxonomy('post_tag').ordered
+    @tags = Term.for_taxonomy('tag').ordered
+    @channels = Channel.active.order(:name)
+    @users = User.order(:name)
+    @available_templates = get_available_templates
+    @sidebar_order = current_user.sidebar_order
+    render layout: 'write_fullscreen'
   end
 
   # POST /admin/posts or /admin/posts.json
   def create
     @post = current_user.posts.build(post_params)
     
-    # Handle unique slug generation for untitled posts
+    # Handle unique slug generation for untitled posts or empty slugs
     if params[:post][:generate_unique_slug] == 'true' && @post.slug == 'untitled'
+      @post.slug = generate_unique_untitled_slug
+    elsif @post.slug.blank?
+      # Generate a slug for autosave when slug is empty
       @post.slug = generate_unique_untitled_slug
     end
 
     respond_to do |format|
-      if @post.save
-        if params[:autosave] == 'true'
-          # Autosave response - redirect to edit page for continued editing
+      if params[:autosave] == 'true'
+        # Autosave - skip validations and set default values
+        @post.title = 'Untitled' if @post.title.blank?
+        if @post.save(validate: false)
           format.json { render json: { status: 'success', id: @post.id, edit_url: admin_post_path(@post), slug: @post.slug } }
         else
-          format.html { redirect_to [:admin, @post], notice: "Post was successfully created." }
-          format.json { render :show, status: :created, location: @post }
+          format.json { render json: { status: 'error', errors: @post.errors }, status: :unprocessable_entity }
         end
+      elsif @post.save
+        format.html { redirect_to [:admin, @post], notice: "Post was successfully created." }
+        format.json { render :show, status: :created, location: @post }
       else
         @categories = Term.for_taxonomy('category').ordered
-        @tags = Term.for_taxonomy('post_tag').ordered
+        @tags = Term.for_taxonomy('tag').ordered
         if params[:autosave] == 'true'
           format.json { render json: { status: 'error', errors: @post.errors }, status: :unprocessable_entity }
         else
@@ -168,22 +186,39 @@ class Admin::PostsController < Admin::BaseController
 
   # PATCH/PUT /admin/posts/1 or /admin/posts/1.json
   def update
+    # Keep auto_draft posts as auto_draft during autosave
+    if params[:autosave] == 'true' && @post.auto_draft_status?
+      # Force status to remain auto_draft during autosave
+      params[:post][:status] = 'auto_draft'
+      # Ensure we have a title
+      params[:post][:title] = 'Untitled' if params[:post][:title].blank?
+    end
+    
+    # Promote auto_draft to draft on manual save
+    if !params[:autosave] && @post.auto_draft_status?
+      @post.status = :draft
+      @post.title = 'Untitled' if @post.title.blank?
+    end
+    
     respond_to do |format|
       if @post.update(post_params)
         if params[:autosave] == 'true'
-          # Autosave response - just return success
           format.json { render json: { status: 'success', updated_at: @post.updated_at, slug: @post.slug } }
         else
-          format.html { redirect_to [:admin, @post], notice: "Post was successfully updated.", status: :see_other }
+          format.html { redirect_to edit_admin_post_path(@post), notice: "Post was successfully updated.", status: :see_other }
           format.json { render :show, status: :ok, location: @post }
         end
       else
         @categories = Term.for_taxonomy('category').ordered
-        @tags = Term.for_taxonomy('post_tag').ordered
+        @tags = Term.for_taxonomy('tag').ordered
+        @channels = Channel.active.order(:name)
+        @users = User.order(:name)
+        @available_templates = get_available_templates
+        @sidebar_order = current_user.sidebar_order
         if params[:autosave] == 'true'
           format.json { render json: { status: 'error', errors: @post.errors }, status: :unprocessable_entity }
         else
-          format.html { render :edit, status: :unprocessable_entity }
+          format.html { render :edit, layout: 'write_fullscreen', status: :unprocessable_entity }
           format.json { render json: @post.errors, status: :unprocessable_entity }
         end
       end
@@ -266,8 +301,9 @@ class Admin::PostsController < Admin::BaseController
     def post_params
       params.require(:post).permit(
         :title, :slug, :content, :excerpt, :status, :published_at,
-        :featured_image, :meta_description, :meta_keywords,
+        :featured_image, :meta_title, :meta_description, :meta_keywords,
         :featured_image_file, :password, :password_hint, :user_id, :template, :comment_status,
+        :tag_list,
         category_ids: [], tag_ids: [], channel_ids: []
       )
     end
@@ -279,8 +315,8 @@ class Admin::PostsController < Admin::BaseController
       loop do
         candidate_slug = counter == 1 ? base_slug : "#{base_slug}-#{counter}"
         
-        # Check if slug exists (considering tenant scope if using multi-tenancy)
-        existing_post = current_user.posts.where(slug: candidate_slug).first
+        # Check if slug exists (considering tenant scope)
+        existing_post = Post.where(slug: candidate_slug).first
         
         unless existing_post
           return candidate_slug

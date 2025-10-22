@@ -56,7 +56,7 @@ class Post < ApplicationRecord
   
   def version_summary(version)
     changes = version.changeset
-    return "Initial version" if changes.empty?
+    return "Initial version" if changes.nil? || changes.empty?
     
     summary_parts = []
     summary_parts << "Title changed" if changes.key?('title')
@@ -88,7 +88,7 @@ class Post < ApplicationRecord
   
   # Set up taxonomy associations
   has_taxonomy :category
-  has_taxonomy :post_tag
+  has_taxonomy :tag
   
   # SEO
   include SeoOptimizable
@@ -133,7 +133,8 @@ class Post < ApplicationRecord
     scheduled: 2,
     pending_review: 3,
     private_post: 4,
-    trash: 5
+    auto_draft: 5,
+    trash: 6
   }, _suffix: true
   
   # Status scopes
@@ -190,7 +191,7 @@ class Post < ApplicationRecord
   friendly_id :title, use: :slugged
   
   # Validations
-  validates :title, presence: true
+  validates :title, presence: true, unless: :auto_draft_status?
   validates :slug, presence: true, uniqueness: { scope: :tenant_id }
   validates :status, presence: true
   validates :password, length: { minimum: 4 }, allow_blank: true
@@ -201,16 +202,24 @@ class Post < ApplicationRecord
   scope :scheduled, -> { where(status: 'scheduled').where('published_at > ?', Time.current) }
   scope :recent, -> { order(published_at: :desc) }
   scope :by_category, ->(category) { joins(:terms).where(terms: { slug: category }).joins('INNER JOIN taxonomies ON terms.taxonomy_id = taxonomies.id').where(taxonomies: { slug: 'category' }) }
-  scope :by_tag, ->(tag) { joins(:terms).where(terms: { slug: tag }).joins('INNER JOIN taxonomies ON terms.taxonomy_id = taxonomies.id').where(taxonomies: { slug: 'post_tag' }) }
+  scope :by_tag, ->(tag) { joins(:terms).where(terms: { slug: tag }).joins('INNER JOIN taxonomies ON terms.taxonomy_id = taxonomies.id').where(taxonomies: { slug: 'tag' }) }
   scope :search, ->(query) { where("title ILIKE ? OR content ILIKE ?", "%#{query}%", "%#{query}%") }
+  scope :stale_auto_drafts, -> { 
+    where(status: :auto_draft).where('updated_at < ?', 24.hours.ago) 
+  }
   
   # Callbacks
   before_validation :set_published_at, if: :published_status?
+  before_save :extract_plain_text_content
   after_create :trigger_post_created_hook
   after_update :trigger_post_updated_hook, if: :saved_change_to_status?
   
   # Methods
   def should_generate_new_friendly_id?
+    # Never generate slug for auto_drafts with empty titles
+    return false if auto_draft_status? && title.blank?
+    
+    # Only regenerate if title changed or slug is blank
     title_changed? || slug.blank?
   end
   
@@ -222,6 +231,15 @@ class Post < ApplicationRecord
   
   def set_published_at
     self.published_at ||= Time.current
+  end
+  
+  def extract_plain_text_content
+    return if content.blank?
+    
+    # Strip HTML tags and decode entities
+    self.content_plain = ActionView::Base.full_sanitizer.sanitize(content)
+      .gsub(/\s+/, ' ')
+      .strip
   end
   
   def trigger_post_created_hook

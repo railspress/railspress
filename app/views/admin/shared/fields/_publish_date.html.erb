@@ -1,0 +1,7 @@
+<div class="post-field-row">
+  <label class="post-field-label">Publish</label>
+  <%= f.datetime_local_field :published_at, 
+      value: record.published_at&.strftime('%Y-%m-%dT%H:%M'),
+      class: "post-field-input" %>
+</div>
+
