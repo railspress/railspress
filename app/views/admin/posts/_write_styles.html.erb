@@ -12,7 +12,7 @@
   --ce-select-bg: rgba(124, 92, 255, 0.28); /* highlight background */
   --ce-select-fg: #fff;                     /* highlighted text color */
   --ce-caret: #7c5cff;                       /* text caret color */
-  --ce-block-focus: #151515;                 /* focused block bg */
+  --ce-block-focus: #0b0b0b;                 /* focused block bg */
   --ce-block-hover: #121212;                 /* hover bg (optional) */
   --ce-focus-ring: 0 0 0 2px rgba(124,92,255,.35); /* keyboard focus ring */
 }
@@ -216,8 +216,6 @@
 .ce-block--focused,
 .ce-block.ce-block--selected,
 .ce-block:focus-within {
-  background: var(--ce-block-focus);
-  box-shadow: var(--ce-focus-ring);
   outline: none;
 }
 
@@ -305,6 +303,172 @@
 [data-theme="light"] .save-button:hover {
   background-color: var(--color-gray-200) !important;
   color: var(--color-gray-900) !important;
+}
+
+/* CKEditor 5 Dark Theme (default) */
+.ck-editor__editable,
+.ck-editor__main {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+  border-color: #2a2a2a !important;
+  min-height: calc(100vh - 300px) !important;
+}
+
+.ck-toolbar {
+  background-color: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+}
+
+.ck-toolbar__separator {
+  background-color: #2a2a2a !important;
+}
+
+.ck-button {
+  color: #ffffff !important;
+}
+
+.ck-button:hover {
+  background-color: #2a2a2a !important;
+}
+
+.ck-button.ck-on {
+  background-color: #1e3a8a !important;
+  color: #ffffff !important;
+}
+
+/* CKEditor 5 Light Theme */
+.editor--light .ck-editor__editable,
+.editor--light .ck-editor__main {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: #e5e7eb !important;
+}
+
+.editor--light .ck-toolbar {
+  background-color: #f9fafb !important;
+  border-color: #e5e7eb !important;
+}
+
+.editor--light .ck-toolbar__separator {
+  background-color: #d1d5db !important;
+}
+
+.editor--light .ck-button {
+  color: #374151 !important;
+}
+
+.editor--light .ck-button:hover {
+  background-color: #e5e7eb !important;
+}
+
+.editor--light .ck-button.ck-on {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+/* Trix Dark Theme (default) */
+trix-toolbar {
+  background-color: #1a1a1a !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  color: #ffffff !important;
+  padding: 0.5rem !important;
+}
+
+trix-toolbar .trix-button {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+  margin: 0.125rem !important;
+  transition: all 0.15s ease !important;
+}
+
+trix-toolbar .trix-button:hover {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+trix-toolbar .trix-button.trix-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+trix-toolbar .trix-button-group {
+  border: none !important;
+  margin: 0 0.25rem !important;
+}
+
+trix-toolbar .trix-button-group::after {
+  content: '' !important;
+  display: none !important;
+}
+
+trix-editor {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+  border: 1px solid #2a2a2a !important;
+  border-top: none !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
+  min-height: calc(100vh - 300px) !important;
+  padding: 1rem !important;
+  font-size: 1.125rem !important;
+  line-height: 1.75 !important;
+}
+
+trix-toolbar .trix-button--icon {
+   -webkit-filter: invert(50%);
+}
+
+/* Trix Light Theme */
+.editor--light trix-toolbar {
+  background-color: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  color: #374151 !important;
+  padding: 0.5rem !important;
+}
+
+.editor--light trix-toolbar .trix-button {
+  color: #374151 !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+  margin: 0.125rem !important;
+  transition: all 0.15s ease !important;
+}
+
+.editor--light trix-toolbar .trix-button:hover {
+  background-color: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.editor--light trix-toolbar .trix-button.trix-active {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.editor--light trix-toolbar .trix-button-group {
+  border: none !important;
+  margin: 0 0.25rem !important;
+}
+
+.editor--light trix-toolbar .trix-button-group::after {
+  content: '' !important;
+  display: none !important;
+}
+
+.editor--light trix-editor {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
+  padding: 1rem !important;
+  font-size: 1.125rem !important;
+  line-height: 1.75 !important;
 }
 </style>
 

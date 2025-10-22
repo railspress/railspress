@@ -1,0 +1,8 @@
+<!-- EditorJS Editor -->
+<div class="editorjs-editor h-full" data-controller="editorjs" data-editorjs-content-value="<%= ERB::Util.html_escape(content) %>" data-editorjs-placeholder-value="<%= ERB::Util.html_escape(placeholder) %>">
+  <div id="editorjs" class="editorjs-container min-h-[calc(100vh-300px)] bg-transparent p-0" data-controller="editor-theme"></div>
+  <% if form %>
+    <%= form.hidden_field field_name, data: { editorjs_target: "input" } %>
+  <% end %>
+</div>
+

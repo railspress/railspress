@@ -42,14 +42,19 @@ export default class extends Controller {
       // Debug: Check what tools are available
       console.log('Available EditorJS tools:', {
         Header: !!window.Header,
+        ImageTool: !!window.ImageTool,
+        SimpleImage: !!window.SimpleImage,
         List: !!window.List,
         Quote: !!window.Quote,
         Code: !!window.Code,
         Delimiter: !!window.Delimiter,
         Table: !!window.Table,
+        RawTool: !!window.RawTool,
         Warning: !!window.Warning,
         Checklist: !!window.Checklist,
-        SimpleImage: !!window.SimpleImage,
+        LinkTool: !!window.LinkTool,
+        AttachesTool: !!window.AttachesTool,
+        Embed: !!window.Embed,
         InlineCode: !!window.InlineCode,
         Marker: !!window.Marker,
         Undo: !!window.Undo
@@ -61,7 +66,7 @@ export default class extends Controller {
         autofocus: true,
         data: initialData,
         
-        // Essential tools configuration (only reliable ones)
+        // Essential tools configuration with SVG icons
         tools: Object.fromEntries(
           Object.entries({
             // Essential paragraph tool (EditorJS requires this)
@@ -87,15 +92,17 @@ export default class extends Controller {
                 
                 static get toolbox() {
                   return {
-                    title: 'Paragraph'
+                    title: 'Paragraph',
+                    icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 4h14M3 8h14M3 12h10M3 16h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
                   }
                 }
               },
               inlineToolbar: true
             },
-            // Only use tools that are definitely loaded and working
+            // Header
             header: window.Header ? {
               class: window.Header,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><text x="1" y="14" font-size="14" font-family="sans-serif" font-weight="bold">H</text></svg>',
               inlineToolbar: ['marker', 'inlineCode'],
               config: {
                 placeholder: 'Enter a header',
@@ -103,52 +110,128 @@ export default class extends Controller {
                 defaultLevel: 2
               }
             } : undefined,
+            // Image (Advanced)
+            image: window.ImageTool ? {
+              class: window.ImageTool,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="12" height="12" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+              config: {
+                endpoints: {
+                  byFile: '/admin/uploads/image',
+                  byUrl: '/admin/uploads/image_by_url'
+                },
+                field: 'image',
+                types: 'image/*',
+                captionPlaceholder: 'Enter image caption',
+                buttonContent: 'Select an image'
+              }
+            } : undefined,
+            // Simple Image (URL-based)
+            simpleImage: window.SimpleImage ? {
+              class: window.SimpleImage,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="12" height="12" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+              inlineToolbar: true,
+              config: {
+                placeholder: 'Paste image URL'
+              }
+            } : undefined,
+            // List
             list: window.List ? {
               class: window.List,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><text x="1" y="14" font-size="14" font-family="sans-serif">•</text></svg>',
               inlineToolbar: true,
               config: {
                 defaultStyle: 'unordered'
               }
             } : undefined,
+            // Code
+            code: window.Code ? {
+              class: window.Code,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M6 5l-3 4 3 4m6-8l3 4-3 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+              config: {
+                placeholder: 'Enter code here...'
+              }
+            } : undefined,
+            // Quote
             quote: window.Quote ? {
               class: window.Quote,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M3 21c3-3 3-9 3-9s6 0 6 6c0 3-3 3-3 3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 21c3-3 3-9 3-9s6 0 6 6c0 3-3 3-3 3" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
               inlineToolbar: true,
               config: {
                 quotePlaceholder: 'Enter a quote',
                 captionPlaceholder: "Quote's author"
               }
             } : undefined,
-            code: window.Code ? {
-              class: window.Code,
-              config: {
-                placeholder: 'Enter code here...'
-              }
+            // Delimiter
+            delimiter: window.Delimiter ? {
+              class: window.Delimiter,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M3 9h12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
             } : undefined,
-            delimiter: window.Delimiter,
+            // Table
             table: window.Table ? {
               class: window.Table,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M3 4h14M3 8h14M3 12h14M3 16h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
               inlineToolbar: true,
               config: {
                 rows: 2,
                 cols: 3
               }
             } : undefined,
+            // Raw HTML
+            raw: window.RawTool ? {
+              class: window.RawTool,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L2 7l8 5 8-5-8-5zM2 17l8 5 8-5M2 12l8 5 8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+              config: {
+                placeholder: 'Enter raw HTML code...'
+              }
+            } : undefined,
+            // Warning
             warning: window.Warning ? {
               class: window.Warning,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L2 18h16L10 2zM10 8v4M10 14h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
               inlineToolbar: true,
               config: {
                 titlePlaceholder: 'Title',
                 messagePlaceholder: 'Message'
               }
             } : undefined,
+            // Checklist
             checklist: window.Checklist ? {
               class: window.Checklist,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
               inlineToolbar: true
             } : undefined,
-            image: window.SimpleImage ? {
-              class: window.SimpleImage,
-              inlineToolbar: true
+            // Link
+            linkTool: window.LinkTool ? {
+              class: window.LinkTool,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M10 13a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/><path d="M7 10a3 3 0 100 6 3 3 0 000-6z" stroke="currentColor" stroke-width="2"/><path d="M13 10a3 3 0 100 6 3 3 0 000-6z" stroke="currentColor" stroke-width="2"/></svg>',
+              config: {
+                endpoint: '/admin/uploads/link_preview'
+              }
             } : undefined,
+            // Attaches
+            attaches: window.AttachesTool ? {
+              class: window.AttachesTool,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.64 16.2a2 2 0 01-2.83-2.83l8.49-8.49" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+              config: {
+                endpoint: '/admin/uploads/attaches'
+              }
+            } : undefined,
+            // Embed
+            embed: window.Embed ? {
+              class: window.Embed,
+              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 8l3 3 3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+              config: {
+                services: {
+                  youtube: true,
+                  codepen: true,
+                  instagram: true,
+                  twitter: true,
+                  vimeo: true,
+                  github: true
+                }
+              }
+            } : undefined,
+            // Inline tools
             inlineCode: window.InlineCode ? {
               class: window.InlineCode
             } : undefined,
@@ -356,11 +439,11 @@ export default class extends Controller {
   // Helper to wait for Editor.js to load
   waitForEditorJS() {
     return new Promise((resolve) => {
-      if (window.EditorJS && window.EditorJSLoaded) {
+      if (window.EditorJS) {
         resolve()
       } else {
         const checkInterval = setInterval(() => {
-          if (window.EditorJS && window.EditorJSLoaded) {
+          if (window.EditorJS) {
             clearInterval(checkInterval)
             resolve()
           }

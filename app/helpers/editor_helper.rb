@@ -4,8 +4,8 @@ module EditorHelper
     # Get content from form object if not provided
     content = form.object.send(field_name) if content.nil? && form.object.respond_to?(field_name)
     
-    # Get user's preferred editor or default to blocknote
-    editor_type = current_user&.preferred_editor || 'blocknote'
+    # Get user's preferred editor or default to editorjs
+    editor_type = current_user&.editor_preference || 'editorjs'
     placeholder = options[:placeholder] || 'Start writing...'
     
     # Render the reusable content editor partial
@@ -21,18 +21,15 @@ module EditorHelper
   # Editor preference options for settings
   def editor_preference_options
     [
-      ['BlockNote - Modern Block Editor (Default)', 'blocknote'],
+      ['Editor.js - JSON-based Editor (Default)', 'editorjs'],
       ['Trix - ActionText Rich Text', 'trix'],
-      ['CKEditor - Classic WYSIWYG', 'ckeditor'],
-      ['Editor.js - JSON-based Editor', 'editorjs']
+      ['CKEditor - Classic WYSIWYG', 'ckeditor5']
     ]
   end
   
   # Get display name for editor type
   def editor_display_name(editor_type)
     case editor_type
-    when 'blocknote'
-      'BlockNote'
     when 'trix'
       'Trix (ActionText)'
     when 'ckeditor'
@@ -52,10 +49,6 @@ module EditorHelper
   # Get editor icon for UI
   def editor_icon(editor_type)
     case editor_type
-    when 'blocknote'
-      '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
-      </svg>'.html_safe
     when 'trix'
       '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>

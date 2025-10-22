@@ -2,7 +2,7 @@
 <div id="aiPopupModal" class="fixed inset-0 z-50 hidden">
   <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAiPopup()"></div>
   <div class="relative flex items-start justify-center min-h-screen pt-[5vh] px-4">
-    <div class="w-full max-w-3xl bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-2xl">
+    <div class="w-full max-w-3xl bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-2xl max-h-[90vh] flex flex-col">
       <!-- Header -->
       <div class="px-6 py-4 border-b border-[#2a2a2a]">
         <div class="flex items-center justify-between">
@@ -26,7 +26,7 @@
       </div>
       
       <!-- Content -->
-      <div class="p-6">
+      <div class="p-6 flex-1 overflow-y-auto">
         <!-- Agent Selection -->
         <div class="mb-6">
           <label class="block text-sm font-medium text-gray-300 mb-3">Choose AI Agent</label>
@@ -112,19 +112,23 @@
           
           <!-- Additional Options -->
           <div id="additionalOptions" class="mb-4 hidden">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Additional Options</label>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs text-gray-400 mb-1">Word Count</label>
-                <select id="wordCount" class="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                  <option value="500-800">Short (500-800 words)</option>
-                  <option value="800-1200" selected>Medium (800-1200 words)</option>
-                  <option value="1200-2000">Long (1200-2000 words)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs text-gray-400 mb-1">Target Keywords</label>
-                <input type="text" id="targetKeywords" placeholder="keyword1, keyword2" class="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            <button type="button" onclick="toggleAdditionalOptions()" class="text-sm text-gray-400 hover:text-gray-300 transition-colors mb-2">
+              Additional Options...
+            </button>
+            <div id="additionalOptionsContent" class="hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-gray-400 mb-1">Word Count</label>
+                  <select id="wordCount" class="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <option value="500-800">Short (500-800 words)</option>
+                    <option value="800-1200" selected>Medium (800-1200 words)</option>
+                    <option value="1200-2000">Long (1200-2000 words)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-400 mb-1">Target Keywords</label>
+                  <input type="text" id="targetKeywords" placeholder="keyword1, keyword2" class="w-full px-3 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
               </div>
             </div>
           </div>
@@ -133,8 +137,11 @@
         <!-- Result Section -->
         <div id="resultSection" class="hidden">
           <label class="block text-sm font-medium text-gray-300 mb-2">Generated Content</label>
-          <div class="p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg">
-            <textarea id="aiResult" rows="12" readonly class="w-full bg-transparent text-white resize-none focus:outline-none"></textarea>
+          <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg overflow-hidden">
+            <!-- Hidden Trix editor for HTML rendering -->
+            <div id="aiResultPreview" class="trix-content bg-transparent text-white p-4 max-h-64 overflow-y-auto" style="min-height: 200px;"></div>
+            <!-- Hidden textarea to store the raw content -->
+            <textarea id="aiResult" class="hidden"></textarea>
           </div>
         </div>
         
@@ -158,13 +165,10 @@
           <span id="selectedAgentInfo" class="hidden">Selected: <span id="selectedAgentName"></span></span>
         </div>
         <div class="flex items-center gap-3">
-          <button onclick="closeAiPopup()" class="px-4 py-2 bg-[#0a0a0a] hover:bg-[#111111] border border-[#2a2a2a] text-gray-300 hover:text-white rounded-lg transition">
-            Cancel
-          </button>
-          <button onclick="generateContent()" id="generateButton" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition hidden">
+          <button onclick="generateContent()" id="generateButton" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 hover:text-white rounded transition hidden">
             <span id="generateButtonText">Generate Content</span>
           </button>
-          <button onclick="insertContent()" id="insertButton" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition hidden">
+          <button onclick="insertContent()" id="insertButton" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 hover:text-white rounded transition hidden">
             Insert Content
           </button>
         </div>
@@ -214,6 +218,22 @@ function openAiPopup() {
   resetPopup();
 }
 
+function openAiPopupWithPostWriter(event) {
+  if (event) event.preventDefault();
+  openAiPopup();
+  // Auto-select Post Writer agent after a brief delay to ensure UI is ready
+  setTimeout(() => {
+    // Hide the agent selection section
+    document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2').closest('.mb-6').style.display = 'none';
+    
+    // Hide the "Selected: Post Writer" info at bottom
+    document.getElementById('selectedAgentInfo').style.display = 'none';
+    
+    // Auto-select Post Writer agent
+    selectAgent('post_writer');
+  }, 100);
+}
+
 function closeAiPopup() {
   document.getElementById('aiPopupModal').classList.add('hidden');
   resetPopup();
@@ -239,6 +259,7 @@ function resetPopup() {
   // Clear inputs
   document.getElementById('aiInput').value = '';
   document.getElementById('aiResult').value = '';
+  document.getElementById('aiResultPreview').innerHTML = '';
   document.getElementById('errorMessage').textContent = '';
 }
 
@@ -270,6 +291,10 @@ function selectAgent(agentType) {
   // Show/hide additional options
   if (config.showOptions) {
     document.getElementById('additionalOptions').classList.remove('hidden');
+    // Auto-expand additional options for Post Writer
+    if (agentType === 'post_writer') {
+      document.getElementById('additionalOptionsContent').classList.remove('hidden');
+    }
   } else {
     document.getElementById('additionalOptions').classList.add('hidden');
   }
@@ -322,6 +347,8 @@ async function generateContent() {
     if (data.success) {
       generatedContent = data.result;
       document.getElementById('aiResult').value = generatedContent;
+      // Render HTML in the preview
+      document.getElementById('aiResultPreview').innerHTML = generatedContent;
       document.getElementById('resultSection').classList.remove('hidden');
       document.getElementById('insertButton').classList.remove('hidden');
       document.getElementById('errorSection').classList.add('hidden');
@@ -338,10 +365,96 @@ async function generateContent() {
   }
 }
 
-function insertContent() {
+function toggleAdditionalOptions() {
+  const content = document.getElementById('additionalOptionsContent');
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+  } else {
+    content.classList.add('hidden');
+  }
+}
+
+async function insertContent() {
   if (!generatedContent) return;
   
-  // Try to find the content editor
+  // Detect editor type from the wrapper
+  const editorWrapper = document.querySelector('[data-editor-type]');
+  const editorType = editorWrapper ? editorWrapper.dataset.editorType : null;
+  
+  // Try different insertion methods based on editor type
+  if (editorType === 'editorjs') {
+    // Find EditorJS controller
+    const editorjsElement = document.querySelector('[data-controller*="editorjs"]');
+    if (editorjsElement) {
+      const controller = window.Stimulus.getControllerForElementAndIdentifier(editorjsElement, 'editorjs');
+      if (controller && controller.editor) {
+        try {
+          // Clear existing content and insert as plain text first
+          controller.editor.blocks.clear();
+          
+          // Use EditorJS renderFromHTML method
+          await controller.editor.blocks.renderFromHTML(generatedContent);
+          
+          closeAiPopup();
+          return;
+        } catch (error) {
+          console.error('EditorJS insertion failed:', error);
+          // Fall through to fallback method
+        }
+      }
+    }
+    
+    // Fallback: try to find EditorJS instance directly
+    const editorjsInstance = document.querySelector('[data-controller*="editorjs"]')?.editorjsInstance;
+    if (editorjsInstance) {
+      try {
+        editorjsInstance.blocks.clear();
+        await editorjsInstance.blocks.renderFromHTML(generatedContent);
+        closeAiPopup();
+        return;
+      } catch (error) {
+        console.error('EditorJS fallback insertion failed:', error);
+      }
+    }
+    
+    // Last resort: try to find any EditorJS instance on the page
+    const editorjsContainer = document.querySelector('[data-controller*="editorjs"]');
+    if (editorjsContainer && window.EditorJS) {
+      try {
+        // Look for EditorJS instance in the container's data attributes or global scope
+        const editorInstance = editorjsContainer.editorjsInstance || window.editorjsInstance;
+        if (editorInstance) {
+          editorInstance.blocks.clear();
+          await editorInstance.blocks.renderFromHTML(generatedContent);
+          closeAiPopup();
+          return;
+        }
+      } catch (error) {
+        console.error('EditorJS global fallback insertion failed:', error);
+      }
+    }
+  } else if (editorType === 'trix') {
+    // Find Trix editor
+    const trixEditor = document.querySelector('trix-editor');
+    if (trixEditor) {
+      trixEditor.editor.loadHTML(generatedContent);
+      closeAiPopup();
+      return;
+    }
+  } else if (editorType === 'ckeditor5') {
+    // Find CKEditor instance
+    const ckElement = document.querySelector('[data-controller*="ckeditor5"]');
+    if (ckElement) {
+      const controller = window.Stimulus.getControllerForElementAndIdentifier(ckElement, 'ckeditor5');
+      if (controller && controller.editor) {
+        controller.editor.setData(generatedContent);
+        closeAiPopup();
+        return;
+      }
+    }
+  }
+  
+  // Fallback to original logic
   const contentEditor = document.querySelector('textarea[name*="content"]') || 
                        document.querySelector('.editor-content') ||
                        document.querySelector('#content') ||
@@ -377,6 +490,35 @@ function insertContent() {
 .agent-option.selected {
   border-color: #6366f1 !important;
   background-color: rgba(99, 102, 241, 0.05) !important;
+}
+
+/* AI Result Preview Styling */
+#aiResultPreview {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+#aiResultPreview h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem 0;
+  color: #ffffff;
+}
+
+#aiResultPreview h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0.75rem 0 0.5rem 0;
+  color: #e5e7eb;
+}
+
+#aiResultPreview p {
+  margin: 0.5rem 0;
+  color: #d1d5db;
+}
+
+#aiResultPreview:first-child h2 {
+  margin-top: 0;
 }
 </style>
 

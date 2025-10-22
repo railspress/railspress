@@ -230,9 +230,9 @@ class Admin::WebhooksController < Admin::BaseController
       <div class="flex space-x-2">
         <a href="#{admin_webhook_path(webhook)}" class="text-indigo-600 hover:text-indigo-900">View</a>
         <a href="#{edit_admin_webhook_path(webhook)}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-        <a href="#{test_admin_webhook_path(webhook)}" data-method="post" class="text-green-600 hover:text-green-900">Test</a>
-        <a href="#{toggle_active_admin_webhook_path(webhook)}" data-method="patch" class="text-yellow-600 hover:text-yellow-900">#{webhook.active? ? 'Disable' : 'Enable'}</a>
-        <a href="#{admin_webhook_path(webhook)}" data-method="delete" data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">Delete</a>
+        <a href="#{test_admin_webhook_path(webhook)}" data-turbo-method="post" class="text-green-600 hover:text-green-900">Test</a>
+        <a href="#{toggle_active_admin_webhook_path(webhook)}" data-turbo-method="patch" class="text-yellow-600 hover:text-yellow-900">#{webhook.active? ? 'Disable' : 'Enable'}</a>
+        <a href="#{admin_webhook_path(webhook)}" data-turbo-method="delete" data-confirm="Are you sure?" class="text-red-600 hover:text-red-900">Delete</a>
       </div>
     }
   end

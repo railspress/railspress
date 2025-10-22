@@ -44,7 +44,9 @@ class AiAgent < ApplicationRecord
     
     # Context
     if context.present?
-      context_str = context.map { |k, v| "#{k}: #{v}" }.join("\n")
+      # Convert ActionController::Parameters to hash if needed
+      context_hash = context.respond_to?(:to_unsafe_h) ? context.to_unsafe_h : context.to_h
+      context_str = context_hash.map { |k, v| "#{k}: #{v}" }.join("\n")
       parts << "Context:\n#{context_str}"
     end
     

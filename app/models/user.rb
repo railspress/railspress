@@ -39,12 +39,10 @@ class User < ApplicationRecord
   include Metable
 
   # Editor preference
-  EDITOR_OPTIONS = %w[blocknote trix ckeditor editorjs].freeze
+  EDITOR_OPTIONS = %w[trix ckeditor5 editorjs].freeze
   validates :editor_preference, inclusion: { in: EDITOR_OPTIONS }, allow_nil: true
   
-  def preferred_editor
-    editor_preference.presence || 'blocknote' # Default to BlockNote
-  end
+  
   
   # Monaco Editor theme preference
   MONACO_THEMES = %w[auto dark light blue].freeze

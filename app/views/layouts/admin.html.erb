@@ -16,7 +16,7 @@
 
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-
+    
     <%= debugbar_head  if defined? Debugbar %>
 
     <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
@@ -1634,46 +1634,11 @@
         to { opacity: 0; transform: scale(0.9); }
       }
       
-      #hot-reload-dialog {
-        animation: fadeIn 0.3s ease-out;
-      }
       
-      #hot-reload-dialog.hidden {
-        animation: fadeOut 0.3s ease-in;
-      }
     </style>
     
     
-    <!-- Hot Reload Dialog -->
-    <div id="hot-reload-dialog" 
-         data-controller="hot-reload-dialog" 
-         data-hot-reload-dialog-target="dialog"
-         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div class="bg-gradient-to-br from-purple-900/90 to-blue-900/90 border border-purple-500/30 rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
-        <!-- Animated Icon -->
-        <div class="flex justify-center mb-6">
-          <div data-hot-reload-dialog-target="icon" 
-               class="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-          </div>
-        </div>
-        
-        <!-- Content -->
-        <div data-hot-reload-dialog-target="text" class="text-center">
-          <!-- Content will be populated by JavaScript -->
-        </div>
-        
-        <!-- Progress Bar -->
-        <div class="mt-6">
-          <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-            <div data-hot-reload-dialog-target="progress" 
-                 class="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transform -translate-x-full"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Admin Footer Hook - Plugins can add scripts, styles, or content here -->
     <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
@@ -1692,25 +1657,7 @@
     <!-- Global Admin Controllers -->
     <div data-controller="tabulator-manager"></div>
     
-    <!-- Hot Reload Trigger Script -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Check for hot reload flash message
-        <% if flash[:hot_reload] %>
-          const dialog = document.getElementById('hot-reload-dialog');
-          const controller = Stimulus.getControllerForElementAndIdentifier(dialog, 'hot-reload-dialog');
-          
-          if (controller) {
-            controller.show('<%= flash[:plugin_name] %>', '<%= flash[:action] %>');
-            
-            // After showing dialog, reload the page after a delay
-            setTimeout(() => {
-              window.location.reload();
-            }, 3000);
-          }
-        <% end %>
-      });
-    </script>
+    
     
     <% flash.discard %>
     <%= debugbar_body if defined? Debugbar %> 

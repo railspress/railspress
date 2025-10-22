@@ -1,42 +1,30 @@
 import { Controller } from "@hotwired/stimulus"
+import { EditorBase } from "./editor_base"
 
 // Connects to data-controller="trix"
 export default class extends Controller {
   connect() {
-    console.log("Trix editor connected")
+    this.base = new EditorBase(this)
+    this.base.log('connecting')
+    this.base.emitState('connecting')
     
-    // Add dark theme styles to Trix editor
+    // Setup theme listener
+    this.base.setupThemeListener()
+    
+    // Add autosave event listener
     const trixEditor = this.element.querySelector('trix-editor')
     if (trixEditor) {
-      trixEditor.style.backgroundColor = 'transparent'
-      trixEditor.style.color = '#111827'
-      trixEditor.style.border = 'none'
-      trixEditor.style.borderRadius = '0'
-      trixEditor.style.minHeight = '400px'
-      trixEditor.style.padding = '0'
-      trixEditor.style.fontSize = '18px'
-      trixEditor.style.lineHeight = '1.6'
-      
-      // Add autosave event listener
       trixEditor.addEventListener('trix-change', () => {
-        this.triggerAutoSave()
+        this.base.notifyAutosave()
       })
     }
     
-    // Add dark theme to Trix toolbar
-    const trixToolbar = this.element.querySelector('trix-toolbar')
-    if (trixToolbar) {
-      trixToolbar.style.backgroundColor = '#f9fafb'
-      trixToolbar.style.border = '1px solid #e5e7eb'
-      trixToolbar.style.borderRadius = '0.5rem 0.5rem 0 0'
-    }
+    this.base.log('Trix editor connected')
   }
 
-  triggerAutoSave() {
-    // Dispatch event for autosave functionality
-    const event = new CustomEvent('editor:content-changed', {
-      detail: { content: this.element.querySelector('trix-editor').innerHTML }
-    })
-    window.dispatchEvent(event)
+  disconnect() {
+    this.base.log('disconnect')
+    this.base.emitState('destroy')
+    this.base.cleanupThemeListener()
   }
 }

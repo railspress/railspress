@@ -236,10 +236,9 @@ class Post < ApplicationRecord
   def extract_plain_text_content
     return if content.blank?
     
-    # Strip HTML tags and decode entities
-    self.content_plain = ActionView::Base.full_sanitizer.sanitize(content)
-      .gsub(/\s+/, ' ')
-      .strip
+    # Use the service to extract plain text based on editor type
+    editor_type = user&.editor_preference || 'editorjs'
+    self.content_plain = PlainContentExtractor.extract(content, editor_type)
   end
   
   def trigger_post_created_hook

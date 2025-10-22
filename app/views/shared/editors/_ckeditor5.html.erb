@@ -1,0 +1,7 @@
+<!-- CKEditor 5 Editor -->
+<div class="ckeditor5-editor h-full" data-controller="ckeditor5" data-ckeditor5-content-value="<%= ERB::Util.html_escape(content) %>" data-ckeditor5-placeholder-value="<%= ERB::Util.html_escape(placeholder) %>">
+  <div id="ckeditor5-container" class="min-h-[calc(100vh-300px)] bg-transparent p-0" data-editor-theme-target="editor"></div>
+  <% if form %>
+    <%= form.hidden_field field_name, data: { ckeditor5_target: "input" } %>
+  <% end %>
+</div>

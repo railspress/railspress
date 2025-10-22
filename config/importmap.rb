@@ -16,26 +16,6 @@ pin "trix"
 
 pin "tabulator-tables", to: "https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/js/tabulator_esm.min.js"
 
-# Editor.js - Block-style editor like Notion
-# Using UMD builds since not all plugins have ESM versions
-pin "@editorjs/editorjs", to: "https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.29.0/dist/editorjs.umd.min.js"
-pin "@editorjs/header", to: "https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.1/dist/header.umd.min.js"
-pin "@editorjs/list", to: "https://cdn.jsdelivr.net/npm/@editorjs/list@1.9.0/dist/list.umd.min.js"
-pin "@editorjs/quote", to: "https://cdn.jsdelivr.net/npm/@editorjs/quote@2.6.0/dist/quote.umd.min.js"
-pin "@editorjs/code", to: "https://cdn.jsdelivr.net/npm/@editorjs/code@2.9.0/dist/code.umd.min.js"
-pin "@editorjs/image", to: "https://cdn.jsdelivr.net/npm/@editorjs/image@2.9.0/dist/image.umd.min.js"
-pin "@editorjs/embed", to: "https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.0/dist/embed.umd.min.js"
-pin "@editorjs/table", to: "https://cdn.jsdelivr.net/npm/@editorjs/table@2.3.0/dist/table.umd.min.js"
-pin "@editorjs/warning", to: "https://cdn.jsdelivr.net/npm/@editorjs/warning@1.4.0/dist/warning.umd.min.js"
-pin "@editorjs/delimiter", to: "https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.0/dist/delimiter.umd.min.js"
-pin "@editorjs/checklist", to: "https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.6.0/dist/checklist.umd.min.js"
-pin "@editorjs/marker", to: "https://cdn.jsdelivr.net/npm/@editorjs/marker@1.4.0/dist/marker.umd.min.js"
-pin "@editorjs/inline-code", to: "https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.5.0/dist/inline-code.umd.min.js"
-pin "@editorjs/underline", to: "https://cdn.jsdelivr.net/npm/@editorjs/underline@1.2.1/dist/underline.umd.min.js"
-pin "@editorjs/nested-list", to: "https://cdn.jsdelivr.net/npm/@editorjs/nested-list@1.4.2/dist/nested-list.umd.min.js"
-pin "@editorjs/raw", to: "https://cdn.jsdelivr.net/npm/@editorjs/raw@2.5.0/dist/raw.umd.min.js"
-pin "@editorjs/attaches", to: "https://cdn.jsdelivr.net/npm/@editorjs/attaches@1.3.1/dist/bundle.js"
-
 # Admin table configurations
 pin "admin_table_columns", to: "admin_table_columns.js"
 

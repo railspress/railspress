@@ -38,6 +38,28 @@ class Admin::ProfileController < Admin::BaseController
     redirect_to edit_admin_profile_path, notice: 'Avatar removed successfully.'
   end
 
+  # PATCH /admin/profile/editor_preference
+  def editor_preference
+    editor_value = params[:editor_preference]
+    
+    if editor_value.blank?
+      render json: { error: 'Editor preference is required' }, status: :unprocessable_entity
+      return
+    end
+
+    valid_editors = ['editorjs', 'trix', 'ckeditor5']
+    unless valid_editors.include?(editor_value)
+      render json: { error: 'Invalid editor preference' }, status: :unprocessable_entity
+      return
+    end
+
+    if @user.update(editor_preference: editor_value)
+      render json: { status: 'success', editor_preference: editor_value }
+    else
+      render json: { error: 'Failed to update editor preference' }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_user
@@ -50,10 +72,9 @@ class Admin::ProfileController < Admin::BaseController
 
   def available_editors
     [
-      ['BlockNote (Modern Block Editor)', 'blocknote'],
-      ['Editor.js (Rich Block Editor)', 'editorjs'],
+      ['EditorJS (Rich Block Editor)', 'editorjs'],
       ['Trix (Rich Text Editor)', 'trix'],
-      ['Simple Textarea', 'simple']
+      ['CKEditor 5 (Classic Editor)', 'ckeditor5']
     ]
   end
 end

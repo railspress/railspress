@@ -1,58 +1,9 @@
-<%
-  editor_type = local_assigns.fetch(:editor_type, 'blocknote')
-  raw_content = local_assigns.fetch(:content, '')
-  # Force content to be a plain string, not SafeBuffer, so we can escape it properly
-  content = raw_content.to_str rescue raw_content.to_s
-  field_name = local_assigns.fetch(:field_name, :content)
-  placeholder = local_assigns.fetch(:placeholder, 'Start writing...')
-  form = local_assigns.fetch(:form, nil)
-%>
-
-<div class="content-editor-wrapper" data-editor-type="<%= editor_type %>" data-autosave-target="content">
-  <% if editor_type == 'blocknote' %>
-    <!-- BlockNote Editor -->
-    <div class="blocknote-editor h-full" data-controller="blocknote" data-blocknote-content-value="<%= ERB::Util.html_escape(content) %>" data-blocknote-placeholder-value="<%= ERB::Util.html_escape(placeholder) %>">
-      <div id="blocknote-container" class="prose prose-lg max-w-none h-full min-h-[calc(100vh-300px)] text-gray-900 dark:text-gray-100"></div>
-      <% if form %>
-        <%= form.hidden_field field_name, data: { blocknote_target: "input" } %>
-      <% end %>
-    </div>
-  <% elsif editor_type == 'trix' %>
-    <!-- Trix Editor -->
-    <div class="trix-editor-wrapper h-full" data-controller="trix">
-      <% if form %>
-        <%= form.rich_text_area field_name,
-            placeholder: placeholder,
-            class: "trix-content bg-transparent border-none min-h-[calc(100vh-300px)] w-full text-gray-900 dark:text-gray-100" %>
-      <% end %>
-    </div>
-  <% elsif editor_type == 'editorjs' %>
-    <!-- Editor.js Editor -->
-    <div class="editorjs-editor h-full" data-controller="editorjs" data-editorjs-content-value="<%= ERB::Util.html_escape(content) %>" data-editorjs-placeholder-value="<%= ERB::Util.html_escape(placeholder) %>">
-      <div id="editorjs" class="editorjs-container min-h-[calc(100vh-300px)] bg-transparent p-0" data-controller="theme-aware"></div>
-      <% if form %>
-        <%= form.hidden_field field_name, data: { editorjs_target: "input" } %>
-      <% end %>
-    </div>
-  <% else %>
-    <!-- Fallback: Simple Textarea -->
-    <div class="simple-editor h-full">
-      <% if form %>
-        <%= form.text_area field_name,
-            rows: 30,
-            placeholder: placeholder,
-            class: "w-full h-full min-h-[calc(100vh-300px)] bg-transparent border-none outline-none focus:ring-0 text-lg leading-relaxed resize-none text-gray-900 dark:text-gray-100",
-            value: content %>
-      <% end %>
-    </div>
-  <% end %>
-</div>
-
-<div class="editor-info flex items-center justify-between mt-2 text-xs text-gray-500">
-  <span>
-    Editor: <strong class="text-gray-400"><%= editor_type.titleize %></strong>
-  </span>
-</div>
+<%= render 'shared/content_editor', 
+    editor_type: local_assigns.fetch(:editor_type, 'editorjs'),
+    content: local_assigns.fetch(:content, ''),
+    field_name: local_assigns.fetch(:field_name, :content),
+    placeholder: local_assigns.fetch(:placeholder, 'Start writing...'),
+    form: local_assigns.fetch(:form, nil) %>
 
 
 

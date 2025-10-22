@@ -118,7 +118,7 @@
                 content: @post.content.to_s,
                 field_name: :content,
                 placeholder: 'Start writing...',
-                editor_type: current_user&.preferred_editor || 'blocknote' %>
+                editor_type: current_user&.editor_preference || 'editorjs' %>
           </div>
           
           <!-- Subtle Meta (below editor for edit pages) -->
@@ -166,3 +166,5 @@
 </div>
 
 <%= render 'admin/posts/keyboard_shortcuts' %>
+
+<%= render 'shared/ai_popup' %>

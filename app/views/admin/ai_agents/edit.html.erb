@@ -1,4 +1,126 @@
-<div>
-  <h1 class="font-bold text-4xl">Admin::AiAgents#edit</h1>
-  <p>Find me in app/views/admin/ai_agents/edit.html.erb</p>
+<% content_for :title, "Edit AI Agent" %>
+
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-white mb-2">Edit AI Agent</h1>
+      <p class="text-gray-400">Update agent configuration and settings</p>
+    </div>
+    <%= link_to admin_ai_agents_path, class: "px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 hover:text-white rounded-lg font-medium transition" do %>
+      <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Back to Agents
+    <% end %>
+  </div>
+
+  <!-- Edit Form -->
+  <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-[#2a2a2a]">
+      <h2 class="text-lg font-semibold text-white">Agent Configuration</h2>
+    </div>
+
+    <%= form_with model: [:admin, @ai_agent], local: true, class: "p-6 space-y-6" do |f| %>
+      <% if @ai_agent.errors.any? %>
+        <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h4 class="font-medium text-red-400">Please fix the following errors:</h4>
+          </div>
+          <ul class="text-red-400 text-sm space-y-1">
+            <% @ai_agent.errors.full_messages.each do |message| %>
+              <li>• <%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Basic Information -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <%= f.label :name, class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <%= f.text_field :name, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+        </div>
+
+        <div>
+          <%= f.label :agent_type, class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <%= f.select :agent_type, 
+              options_for_select(AiAgent::AGENT_TYPES.map { |type| [type.humanize, type] }, @ai_agent.agent_type),
+              { prompt: "Select agent type" },
+              { class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" } %>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :ai_provider_id, "AI Provider", class: "block text-sm font-medium text-gray-300 mb-2" %>
+        <%= f.select :ai_provider_id, 
+            options_from_collection_for_select(@ai_providers, :id, :display_name, @ai_agent.ai_provider_id),
+            { prompt: "Select AI provider" },
+            { class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" } %>
+      </div>
+
+      <!-- Prompts and Content -->
+      <div class="space-y-6">
+        <div>
+          <%= f.label :master_prompt, "Master Prompt", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <p class="text-gray-500 text-sm mb-3">The primary prompt that defines the agent's core behavior and expertise.</p>
+          <%= f.text_area :master_prompt, rows: 4, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" %>
+        </div>
+
+        <div>
+          <%= f.label :prompt, "Agent Prompt", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <p class="text-gray-500 text-sm mb-3">Specific instructions for this agent's task.</p>
+          <%= f.text_area :prompt, rows: 4, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" %>
+        </div>
+
+        <div>
+          <%= f.label :content, "Content Guidelines", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <p class="text-gray-500 text-sm mb-3">Guidelines for content structure and style.</p>
+          <%= f.text_area :content, rows: 4, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" %>
+        </div>
+
+        <div>
+          <%= f.label :guidelines, "Guidelines", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <p class="text-gray-500 text-sm mb-3">Additional guidelines for the agent.</p>
+          <%= f.text_area :guidelines, rows: 3, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" %>
+        </div>
+
+        <div>
+          <%= f.label :rules, "Rules", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <p class="text-gray-500 text-sm mb-3">Important rules the agent must follow (e.g., HTML format requirements).</p>
+          <%= f.text_area :rules, rows: 4, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" %>
+        </div>
+
+        <div>
+          <%= f.label :tasks, "Tasks", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <p class="text-gray-500 text-sm mb-3">Specific tasks this agent should perform.</p>
+          <%= f.text_area :tasks, rows: 3, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" %>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex items-center">
+          <%= f.check_box :active, class: "w-4 h-4 text-indigo-600 bg-[#0a0a0a] border-[#2a2a2a] rounded focus:ring-indigo-500 focus:ring-2" %>
+          <%= f.label :active, "Active", class: "ml-2 text-sm font-medium text-gray-300" %>
+        </div>
+
+        <div>
+          <%= f.label :position, "Position", class: "block text-sm font-medium text-gray-300 mb-2" %>
+          <%= f.number_field :position, class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center justify-end gap-3 pt-6 border-t border-[#2a2a2a]">
+        <%= link_to admin_ai_agents_path, class: "px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 hover:text-white rounded-lg font-medium transition" do %>
+          Cancel
+        <% end %>
+        <%= f.submit "Update Agent", class: "px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition" %>
+      </div>
+    <% end %>
+  </div>
 </div>

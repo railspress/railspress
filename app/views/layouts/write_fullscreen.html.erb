@@ -17,82 +17,39 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
   
-  <!-- BlockNote CSS (load conditionally and deferred) -->
-  <script>
-    // Load BlockNote CSS if needed (deferred to avoid blocking render)
-    setTimeout(function() {
-      if (document.querySelector('[data-controller*="blocknote"]')) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.jsdelivr.net/npm/@blocknote/mantine@0.12.4/dist/style.css';
-        document.head.appendChild(link);
-      }
-    }, 100);
-  </script>
-  
-  <!-- Editor.js Core and Tools (load conditionally and deferred) -->
-  <script>
-    // Only load Editor.js if the page contains an Editor.js editor (deferred)
-    setTimeout(function() {
-      if (document.querySelector('[data-controller*="editorjs"]')) {
-        console.log('Loading Editor.js...');
-        
-        // Load Editor.js core
-        const coreScript = document.createElement('script');
-        coreScript.src = 'https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.31.0';
-        coreScript.onload = function() {
-          console.log('Editor.js core loaded successfully');
-          
-          // Load essential Editor.js tools with specific versions for stability
-          const tools = [
-            { name: 'Header', url: 'https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.0' },
-            { name: 'List', url: 'https://cdn.jsdelivr.net/npm/@editorjs/list@1.8.0' },
-            { name: 'Quote', url: 'https://cdn.jsdelivr.net/npm/@editorjs/quote@2.5.0' },
-            { name: 'Code', url: 'https://cdn.jsdelivr.net/npm/@editorjs/code@2.8.0' },
-            { name: 'Delimiter', url: 'https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.3.0' },
-            { name: 'Table', url: 'https://cdn.jsdelivr.net/npm/@editorjs/table@2.2.2' },
-            { name: 'Warning', url: 'https://cdn.jsdelivr.net/npm/@editorjs/warning@1.3.0' },
-            { name: 'Checklist', url: 'https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.5.0' },
-            { name: 'SimpleImage', url: 'https://cdn.jsdelivr.net/npm/@editorjs/simple-image@1.5.0' },
-            { name: 'InlineCode', url: 'https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.4.0' },
-            { name: 'Marker', url: 'https://cdn.jsdelivr.net/npm/@editorjs/marker@1.3.0' },
-            { name: 'Undo', url: 'https://cdn.jsdelivr.net/npm/editorjs-undo@1.0.18' }
-          ];
-          
-          let loadedCount = 0;
-          tools.forEach(tool => {
-            const script = document.createElement('script');
-            script.src = tool.url;
-            script.onload = function() {
-              loadedCount++;
-              console.log(`Loaded ${tool.name} (${loadedCount}/${tools.length})`);
-              if (loadedCount === tools.length) {
-                window.EditorJSLoaded = true;
-                console.log('All Editor.js tools loaded!');
-              }
-            };
-            script.onerror = function() {
-              console.warn(`Failed to load ${tool.name}`);
-              loadedCount++;
-              if (loadedCount === tools.length) {
-                window.EditorJSLoaded = true;
-              }
-            };
-            document.head.appendChild(script);
-          });
-        };
-        coreScript.onerror = function() {
-          console.error('Failed to load Editor.js core');
-          window.EditorJSLoaded = false;
-        };
-        document.head.appendChild(coreScript);
-      }
-    }, 200);
-  </script>
+  <!-- Load ONLY user's preferred editor assets (JS + CSS) -->
+  <% case current_user&.editor_preference || 'editorjs' %>
+  <% when 'editorjs' %>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.31.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@1.8.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.5.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.7.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.2.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.3.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@1.3.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.5.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@1.3.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.4.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/editorjs-undo@2.0.28"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.9.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@2.5.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@1.5.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@2.5.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/attaches@1.4.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.5.0"></script>
+
+  <% when 'ckeditor5' %>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+
+  <% when 'trix' %>
+    <%= stylesheet_link_tag "trix" %>
+    <%= javascript_include_tag "trix" %>
+  <% end %>
   
   <!-- EditorJS Dark Theme Styles -->
   <style>
-    
+    /* EditorJS Dark Theme Styles */
   </style>
 
   <!-- Early theme bootstrap: default dark, honor saved preference -->
@@ -110,6 +67,37 @@
   
   <%= javascript_importmap_tags %>
   
+  <!-- AI Popup Functions -->
+  <script>
+  function openAiPopupWithPostWriter(event) {
+    if (event) event.preventDefault();
+    
+    // Create and show AI popup modal
+    const modal = document.getElementById('aiPopupModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      
+      // Auto-select Post Writer agent after a brief delay
+      setTimeout(() => {
+        // Hide the agent selection section
+        const agentSection = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2')?.closest('.mb-6');
+        if (agentSection) agentSection.style.display = 'none';
+        
+        // Hide the "Selected: Post Writer" info at bottom
+        const selectedInfo = document.getElementById('selectedAgentInfo');
+        if (selectedInfo) selectedInfo.style.display = 'none';
+        
+        // Auto-select Post Writer agent
+        if (typeof selectAgent === 'function') {
+          selectAgent('post_writer');
+        }
+      }, 100);
+    } else {
+      alert('AI popup not available. Please refresh the page.');
+    }
+  }
+  </script>
+  
   <style>
     /* Full height layout for Write Editor */
     html, body {
@@ -119,24 +107,16 @@
       background: var(--admin-bg-app);
       color: var(--admin-text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
-      overflow: hidden; /* Prevent body scroll */
+    }
+    
+    /* Main content area should be scrollable */
+    .main-content {
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
     
     /* Dark mode uses CSS variables defined globally */
-    
-    /* BlockNote editor styles */
-    .blocknote-editor {
-      height: 100%;
-    }
-    
-    .blocknote-editor-dark {
-      background: transparent;
-      color: #111827;
-    }
-    
-    .dark .blocknote-editor-dark {
-      color: #f9fafb;
-    }
     
     /* Content editor wrapper */
     .content-editor-wrapper {

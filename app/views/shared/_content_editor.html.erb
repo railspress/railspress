@@ -1,260 +1,54 @@
 <%
-  # Reusable Content Editor Partial
-  # Usage: <%= render 'shared/content_editor', form: f, content: @post.content, field_name: :content %>
-  
-  editor_type = local_assigns.fetch(:editor_type, current_user&.preferred_editor || 'blocknote')
-  content = local_assigns.fetch(:content, '')
+  editor_type = local_assigns.fetch(:editor_type, 'editorjs')
+  raw_content = local_assigns.fetch(:content, '')
+  # Force content to be a plain string, not SafeBuffer, so we can escape it properly
+  content = raw_content.to_str rescue raw_content.to_s
   field_name = local_assigns.fetch(:field_name, :content)
   placeholder = local_assigns.fetch(:placeholder, 'Start writing...')
   form = local_assigns.fetch(:form, nil)
 %>
 
-<div class="content-editor-wrapper" data-editor-type="<%= editor_type %>">
-  <% case editor_type %>
-  <% when 'blocknote' %>
-    <!-- BlockNote Editor -->
-    <div class="blocknote-editor"
-         data-controller="blocknote"
-         data-blocknote-content-value="<%= content.present? ? content.to_s.to_json : ''.to_json %>"
-         data-blocknote-placeholder-value="<%= placeholder %>">
-      <div id="blocknote-container" class="prose prose-invert prose-lg max-w-none min-h-[400px]"></div>
-      <% if form %>
-        <%= form.hidden_field field_name, data: { blocknote_target: "input" } %>
-      <% end %>
-    </div>
-
-    <script type="module">
-      import { BlockNoteView } from "https://cdn.jsdelivr.net/npm/@blocknote/core@latest/dist/index.js"
-      import "@blocknote/core/style.css"
-
-      document.addEventListener('turbo:load', () => {
-        const container = document.getElementById('blocknote-container')
-        if (!container || container.dataset.initialized) return
-
-        const editor = new BlockNoteView({
-          parentElement: container,
-          theme: 'dark',
-          placeholder: '<%= placeholder %>'
-        })
-
-        // Load existing content
-        const contentField = document.querySelector('[data-blocknote-target="input"]')
-        if (contentField && contentField.value) {
-          try {
-            const blocks = JSON.parse(contentField.value)
-            editor.replaceBlocks(editor.topLevelBlocks, blocks)
-          } catch (e) {
-            console.warn('Could not parse BlockNote content:', e)
-          }
-        }
-
-        // Save on change
-        editor.onChange(() => {
-          if (contentField) {
-            contentField.value = JSON.stringify(editor.topLevelBlocks)
-          }
-        })
-
-        container.dataset.initialized = 'true'
-      })
-    </script>
-
-  <% when 'trix' %>
-    <!-- Trix Editor (ActionText) -->
-    <div class="trix-editor-wrapper">
-      <% if form %>
-        <%= form.rich_text_area field_name,
-            placeholder: placeholder,
-            class: "trix-content bg-[#0a0a0a] text-white border border-[#2a2a2a] rounded-lg min-h-[400px]",
-            data: { direct_upload_url: rails_direct_uploads_url } %>
-      <% else %>
-        <trix-editor 
-          placeholder="<%= placeholder %>"
-          class="trix-content bg-[#0a0a0a] text-white border border-[#2a2a2a] rounded-lg min-h-[400px]">
-        </trix-editor>
-      <% end %>
-    </div>
-
-    <style>
-      trix-toolbar {
-        background: #1a1a1a;
-        border: 1px solid #2a2a2a;
-        border-radius: 0.5rem 0.5rem 0 0;
-      }
-      
-      trix-toolbar .trix-button-group {
-        border-color: #2a2a2a;
-      }
-      
-      trix-toolbar .trix-button {
-        color: #d1d5db;
-        border-bottom-color: #2a2a2a;
-      }
-      
-      trix-toolbar .trix-button:hover {
-        background: #2a2a2a;
-      }
-      
-      trix-toolbar .trix-button.trix-active {
-        background: #3730a3;
-        color: white;
-      }
-      
-      trix-editor {
-        padding: 1rem;
-        min-height: 400px;
-      }
-      
-      trix-editor:empty:not(:focus)::before {
-        color: #6b7280;
-      }
-    </style>
-
-  <% when 'ckeditor' %>
-    <!-- CKEditor 5 -->
-    <div class="ckeditor-wrapper">
-      <% if form %>
-        <%= form.text_area field_name, 
-            id: "ckeditor-#{field_name}",
-            class: "hidden",
-            value: content %>
-      <% else %>
-        <textarea id="ckeditor-content" class="hidden"><%= content %></textarea>
-      <% end %>
-      <div id="ckeditor-container-<%= field_name %>" class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg overflow-hidden"></div>
-    </div>
-
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.0/classic/ckeditor.js"></script>
-    <script>
-      document.addEventListener('turbo:load', () => {
-        const textareaId = '<%= form ? "ckeditor-#{field_name}" : "ckeditor-content" %>'
-        const textarea = document.getElementById(textareaId)
-        const container = document.getElementById('ckeditor-container-<%= field_name %>')
-        
-        if (!textarea || !container || container.dataset.initialized) return
-
-        ClassicEditor
-          .create(container, {
-            placeholder: '<%= placeholder %>',
-            toolbar: {
-              items: [
-                'heading', '|',
-                'bold', 'italic', 'link', '|',
-                'bulletedList', 'numberedList', '|',
-                'blockQuote', 'insertTable', '|',
-                'imageUpload', 'mediaEmbed', '|',
-                'undo', 'redo'
-              ]
-            },
-            heading: {
-              options: [
-                { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-                { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-              ]
-            }
-          })
-          .then(editor => {
-            // Load existing content
-            if (textarea.value) {
-              editor.setData(textarea.value)
-            }
-
-            // Save on change
-            editor.model.document.on('change:data', () => {
-              textarea.value = editor.getData()
-            })
-
-            container.dataset.initialized = 'true'
-            container.editorInstance = editor
-          })
-          .catch(error => {
-            console.error('CKEditor initialization error:', error)
-          })
-      })
-
-      // Cleanup on page change
-      document.addEventListener('turbo:before-cache', () => {
-        const container = document.getElementById('ckeditor-container-<%= field_name %>')
-        if (container && container.editorInstance) {
-          container.editorInstance.destroy()
-          delete container.dataset.initialized
-        }
-      })
-    </script>
-
-    <style>
-      .ck-editor__editable {
-        min-height: 400px;
-        background: #0a0a0a !important;
-        color: white !important;
-      }
-      
-      .ck.ck-toolbar {
-        background: #1a1a1a !important;
-        border-color: #2a2a2a !important;
-      }
-      
-      .ck.ck-button {
-        color: #d1d5db !important;
-      }
-      
-      .ck.ck-button:hover {
-        background: #2a2a2a !important;
-      }
-      
-      .ck.ck-button.ck-on {
-        background: #3730a3 !important;
-        color: white !important;
-      }
-    </style>
-
-  <% when 'editorjs' %>
-    <!-- Editor.js (legacy support) -->
-    <div class="editorjs-wrapper"
-         data-controller="editorjs"
-         data-editorjs-content-value="<%= content.present? ? content.to_s.to_json : ''.to_json %>"
-         data-editorjs-placeholder-value="<%= placeholder %>">
-      <div class="editorjs-container prose prose-invert prose-lg max-w-none min-h-[400px]"></div>
-      <% if form %>
-        <%= form.hidden_field field_name, data: { editorjs_target: "input" } %>
-      <% end %>
-    </div>
-
+<div class="content-editor-wrapper" data-editor-type="<%= editor_type %>" data-autosave-target="content">
+  <% if editor_type == 'editorjs' %>
+    <%= render 'shared/editors/editorjs', 
+        content: content, 
+        placeholder: placeholder, 
+        field_name: field_name, 
+        form: form %>
+  <% elsif editor_type == 'trix' %>
+    <%= render 'shared/editors/trix', 
+        content: content, 
+        placeholder: placeholder, 
+        field_name: field_name, 
+        form: form %>
+  <% elsif editor_type == 'ckeditor5' %>
+    <%= render 'shared/editors/ckeditor5', 
+        content: content, 
+        placeholder: placeholder, 
+        field_name: field_name, 
+        form: form %>
   <% else %>
     <!-- Fallback: Simple Textarea -->
-    <div class="simple-editor">
+    <div class="simple-editor h-full">
       <% if form %>
         <%= form.text_area field_name,
-            rows: 20,
+            rows: 30,
             placeholder: placeholder,
-            class: "w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm",
+            class: "w-full h-full min-h-[calc(100vh-300px)] bg-transparent border-none outline-none focus:ring-0 text-lg leading-relaxed resize-none text-gray-900 dark:text-gray-100",
             value: content %>
-      <% else %>
-        <textarea 
-          rows="20"
-          placeholder="<%= placeholder %>"
-          class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"><%= content %></textarea>
       <% end %>
-      <p class="text-xs text-gray-500 mt-2">
-        💡 Set your preferred editor in your profile settings
-      </p>
     </div>
   <% end %>
 </div>
 
-<!-- Editor Type Indicator -->
-<div class="editor-info flex items-center justify-between mt-2 text-xs text-gray-500">
-  <span>
-    Editor: <strong class="text-gray-400"><%= editor_type.titleize %></strong>
+<div class="editor-info flex items-center mt-2 text-xs text-gray-500">
+  <span data-controller="editor-switcher" data-editor-switcher-current-value="<%= editor_type %>">
+    <strong class="text-gray-400 cursor-pointer hover:text-gray-300 transition-colors" data-action="click->editor-switcher#toggle"><%= editor_type.titleize %></strong>
   </span>
-  <%= link_to "Change editor preference", edit_admin_profile_path, 
-      class: "text-indigo-400 hover:text-indigo-300" if defined?(edit_admin_profile_path) %>
+  
+  <span class="mx-2 text-gray-400">|</span>
+  
+  <a href="#" onclick="openAiPopupWithPostWriter(event)" class="text-gray-400 cursor-pointer hover:text-gray-300 transition-colors">
+    <strong>Write with AI</strong>
+  </a>
 </div>
-
-
-
-
-
-

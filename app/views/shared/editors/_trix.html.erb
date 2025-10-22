@@ -1,0 +1,8 @@
+<!-- Trix Editor -->
+<div class="trix-editor-wrapper h-full" data-controller="trix" data-editor-theme-target="editor">
+  <% if form %>
+    <%= form.rich_text_area field_name,
+        placeholder: placeholder,
+        class: "trix-content bg-transparent border-none min-h-[calc(100vh-300px)] w-full text-gray-900 dark:text-gray-100" %>
+  <% end %>
+</div>

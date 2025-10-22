@@ -388,6 +388,7 @@ Rails.application.routes.draw do
     # Profile & Security
     resource :profile, only: [:show, :edit, :update], controller: 'profile' do
       delete :remove_avatar
+      patch :editor_preference
     end
     
     resource :security, only: [:show], controller: 'security' do
