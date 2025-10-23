@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_23_110511) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_23_121326) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -1012,8 +1012,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_23_110511) do
     t.string "comment_status", default: "open"
     t.text "content_plain"
     t.string "uuid"
+    t.text "content_json"
+    t.integer "featured_medium_id"
     t.index ["content_type_id"], name: "index_posts_on_content_type_id"
     t.index ["deleted_at"], name: "index_posts_on_deleted_at"
+    t.index ["featured_medium_id"], name: "index_posts_on_featured_medium_id"
     t.index ["focus_keyphrase"], name: "index_posts_on_focus_keyphrase"
     t.index ["password"], name: "index_posts_on_password"
     t.index ["tenant_id"], name: "index_posts_on_tenant_id"

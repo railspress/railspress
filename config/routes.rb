@@ -336,6 +336,7 @@ Rails.application.routes.draw do
     resources :media, except: [:show] do
       collection do
         post :bulk_upload
+        post :upload              # EditorJS image upload endpoint
         get :bulk_optimization
         post :bulk_optimize
         get :bulk_optimize_status

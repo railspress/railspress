@@ -119,6 +119,7 @@ class Post < ApplicationRecord
   
   # Media/image support
   has_one_attached :featured_image_file
+  belongs_to :featured_medium, class_name: 'Medium', optional: true
   
   # Channels
   has_and_belongs_to_many :channels
@@ -214,6 +215,7 @@ class Post < ApplicationRecord
   before_validation :generate_uuid, on: :create
   before_validation :set_published_at, if: :published_status?
   before_save :extract_plain_text_content
+  before_save :create_featured_medium_from_file
   after_create :trigger_post_created_hook
   after_update :trigger_post_updated_hook, if: :saved_change_to_status?
   
@@ -294,6 +296,7 @@ class Post < ApplicationRecord
   
   # Featured image URL for SEO
   def featured_image_url
+    return featured_medium.url if featured_medium&.url.present?
     return nil unless featured_image_file.attached?
     Rails.application.routes.url_helpers.url_for(featured_image_file)
   rescue
@@ -393,4 +396,32 @@ class Post < ApplicationRecord
 
   # Make these methods public for Liquid access
   public :url, :author, :categories, :to_liquid, :preview_url
+  
+  private
+  
+  def create_featured_medium_from_file
+    return unless featured_image_file.attached? && featured_image_file.blob.new_record?
+    
+    # Create Upload record
+    upload = Upload.create!(
+      title: featured_image_file.blob.filename.to_s,
+      user: user,
+      storage_provider: StorageProvider.active.first
+    )
+    
+    # Attach the file to the upload
+    upload.file.attach(featured_image_file.blob)
+    
+    # Create Medium record
+    medium = Medium.create!(
+      title: featured_image_file.blob.filename.to_s,
+      user: user,
+      upload: upload
+    )
+    
+    # Set the featured_medium_id
+    self.featured_medium_id = medium.id
+  rescue => e
+    Rails.logger.error "Failed to create featured medium from file: #{e.message}"
+  end
 end

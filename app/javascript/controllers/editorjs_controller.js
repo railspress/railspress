@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // Editor.js integration for distraction-free writing
 export default class extends Controller {
-  static targets = ["input", "toolbar", "title"]
+  static targets = ["input", "toolbar", "title", "jsonInput"]
   static values = {
     content: String,
     placeholder: String
@@ -18,6 +18,7 @@ export default class extends Controller {
     let initialData = null
     if (this.contentValue) {
       try {
+        // Try to parse as JSON first
         initialData = JSON.parse(this.contentValue)
       } catch (e) {
         // If it's HTML from ActionText, convert to plain text block
@@ -114,8 +115,8 @@ export default class extends Controller {
               class: window.ImageTool,
               config: {
                 endpoints: {
-                  byFile: '/admin/uploads/image',
-                  byUrl: '/admin/uploads/image_by_url'
+                  byFile: '/admin/media/upload',
+                  byUrl: '/admin/media/upload'
                 },
                 field: 'image',
                 types: 'image/*',
@@ -272,6 +273,11 @@ export default class extends Controller {
       
       // Store both JSON and HTML
       this.inputTarget.value = html
+      
+      // Store JSON in content_json field
+      if (this.hasJsonInputTarget) {
+        this.jsonInputTarget.value = JSON.stringify(outputData)
+      }
       
       // Also store JSON in a data attribute for future editing
       this.element.dataset.editorjsContent = JSON.stringify(outputData)

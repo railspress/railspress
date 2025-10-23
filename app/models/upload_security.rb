@@ -162,7 +162,7 @@ class UploadSecurity < ApplicationRecord
   def get_storage_settings
     {
       max_file_size: SiteSetting.get('max_file_size', 10).to_i,
-      allowed_file_types: SiteSetting.get('allowed_file_types', 'jpg,jpeg,png,gif,pdf,doc,docx,mp4,mp3'),
+      allowed_file_types: SiteSetting.get('allowed_file_types', 'jpg,jpeg,png,gif,webp,pdf,doc,docx,mp4,mp3'),
       storage_type: SiteSetting.get('storage_type', 'local'),
       local_storage_path: SiteSetting.get('local_storage_path', Rails.root.join('storage').to_s),
       enable_cdn: SiteSetting.get('enable_cdn', false),

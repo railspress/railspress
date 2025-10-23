@@ -520,6 +520,12 @@ async function insertContent() {
           
           // Insert into EditorJS
           await controller.editor.render(editorJSData);
+          
+          // Trigger saveContent to populate content_json field
+          if (controller.saveContent) {
+            await controller.saveContent();
+          }
+          
           closeAiPopup();
           return;
         } catch (error) {

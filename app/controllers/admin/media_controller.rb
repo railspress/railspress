@@ -1,5 +1,6 @@
 class Admin::MediaController < Admin::BaseController
   before_action :set_medium, only: %i[ show edit update destroy ]
+  skip_before_action :verify_authenticity_token, only: [:upload]
 
   # GET /admin/media or /admin/media.json
   def index
@@ -49,6 +50,82 @@ class Admin::MediaController < Admin::BaseController
       else
         format.json { render json: { success: false, message: errors.join('; ') }, status: :unprocessable_entity }
       end
+    end
+  end
+
+  # POST /admin/media/upload (for EditorJS and general file uploads)
+  def upload
+    # Accept both :image (EditorJS) and :file (generic) parameters
+    file = params[:image] || params[:file]
+    
+    unless file.present?
+      return render json: {
+        success: 0,
+        message: 'No file provided'
+      }, status: :bad_request
+    end
+    
+    # Security validation
+    upload_security = UploadSecurity.current
+    unless upload_security.file_allowed?(file)
+      return render json: {
+        success: 0,
+        message: 'File type, size, or extension is not permitted'
+      }, status: :forbidden
+    end
+    
+    # Check for suspicious files
+    quarantine_file = false
+    quarantine_reason = nil
+    
+    if upload_security.file_suspicious?(file)
+      if upload_security.quarantine_suspicious?
+        quarantine_file = true
+        quarantine_reason = 'Suspicious file pattern detected'
+      else
+        return render json: {
+          success: 0,
+          message: 'File appears to be suspicious and has been blocked'
+        }, status: :forbidden
+      end
+    end
+    
+    # Create Upload record with file attachment
+    upload = Upload.new(
+      title: file.original_filename,
+      user: current_user,
+      quarantined: quarantine_file,
+      quarantine_reason: quarantine_reason
+    )
+    upload.file.attach(file)
+    upload.storage_provider = StorageProvider.active.first
+    
+    # Create Medium record linked to upload
+    medium = Medium.new(
+      title: file.original_filename,
+      user: current_user,
+      upload: upload
+    )
+    
+    if upload.save && medium.save
+      # Medium after_create callback will trigger:
+      # - media_uploaded plugin hooks
+      # - optimize_image_if_needed (for images only)
+      
+      render json: {
+        success: 1,
+        file: {
+          url: upload.url,
+          size: upload.file_size,
+          type: upload.content_type
+        },
+        medium_id: medium.id
+      }
+    else
+      render json: {
+        success: 0,
+        message: (upload.errors.full_messages + medium.errors.full_messages).join(', ')
+      }, status: :unprocessable_entity
     end
   end
 

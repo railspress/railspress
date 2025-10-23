@@ -323,15 +323,16 @@ class Admin::PostsController < Admin::BaseController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_post
-      @post = Post.find_by!(uuid: params[:id])
+      # Eager load associations for featured image
+      @post = Post.includes(:featured_medium, :user, featured_medium: :upload).find_by!(uuid: params[:id])
     end
 
     # Only allow a list of trusted parameters through.
     def post_params
       params.require(:post).permit(
-        :title, :slug, :content, :excerpt, :status, :published_at,
+        :title, :slug, :content, :content_json, :excerpt, :status, :published_at,
         :featured_image, :meta_title, :meta_description, :meta_keywords,
-        :featured_image_file, :password, :password_hint, :user_id, :template, :comment_status,
+        :featured_image_file, :featured_medium_id, :password, :password_hint, :user_id, :template, :comment_status,
         :tag_list,
         category_ids: [], tag_ids: [], channel_ids: []
       )

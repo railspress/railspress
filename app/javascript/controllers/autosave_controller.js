@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="autosave"
 export default class extends Controller {
-  static targets = ["form", "title", "content", "saveButton", "saveSpinner", "saveText"]
+  static targets = ["form", "title", "content", "saveButton", "saveSpinner", "saveIcon"]
   static values = { 
     url: String,
     interval: { type: Number, default: 30000 }, // 30 seconds default, overridden by site setting
@@ -62,6 +62,17 @@ export default class extends Controller {
     // Listen for form changes (for other fields)
     if (this.hasFormTarget) {
       this.formTarget.addEventListener('input', () => this.handleChange())
+    }
+    
+    // Listen for featured_medium_id changes (AJAX upload completion)
+    const featuredMediumField = document.querySelector('input[name*="featured_medium_id"]')
+    if (featuredMediumField) {
+      featuredMediumField.addEventListener('change', () => {
+        console.log('Featured medium changed, triggering save')
+        this.handleChange()
+        // Auto-save immediately after a short delay
+        setTimeout(() => this.save(), 500)
+      })
     }
 
     // Listen for custom editor events
@@ -130,10 +141,31 @@ export default class extends Controller {
     const minDuration = 200 // Minimum 200ms to show spinner
     
     try {
+      // Trigger EditorJS saveContent if EditorJS is active
+      const editorjsElement = document.querySelector('[data-controller*="editorjs"]');
+      if (editorjsElement) {
+        const editorjsController = window.Stimulus.getControllerForElementAndIdentifier(editorjsElement, 'editorjs');
+        if (editorjsController && editorjsController.saveContent) {
+          await editorjsController.saveContent();
+        }
+      }
+      
       const formData = new FormData(this.formTarget)
       
       // Add autosave parameter
       formData.append('autosave', 'true')
+      
+      // Debug: Log featured_medium_id and featured_image_file
+      console.log('Autosave - featured_medium_id:', formData.get('post[featured_medium_id]'))
+      console.log('Autosave - featured_image_file:', formData.get('post[featured_image_file]') ? 'File attached' : 'No file')
+      
+      // Debug: Log all form fields
+      const allFields = Array.from(formData.entries()).map(([key, val]) => ({ 
+        key, 
+        value: val instanceof File ? `File: ${val.name}` : val 
+      }))
+      console.log('Autosave - All form fields:', allFields)
+      console.log('Autosave - Featured image fields:', allFields.filter(f => f.key.includes('featured')))
       
       // Determine if this is a new post or existing post
       // Check if URL ends with a number (existing post) or is the base posts path
@@ -218,8 +250,8 @@ export default class extends Controller {
     if (this.hasSaveSpinnerTarget) {
       this.saveSpinnerTarget.classList.remove('hidden')
     }
-    if (this.hasSaveTextTarget) {
-      this.saveTextTarget.textContent = 'Saving...'
+    if (this.hasSaveIconTarget) {
+      this.saveIconTarget.classList.add('hidden')
     }
   }
 
@@ -231,41 +263,25 @@ export default class extends Controller {
     if (this.hasSaveSpinnerTarget) {
       this.saveSpinnerTarget.classList.add('hidden')
     }
-    if (this.hasSaveTextTarget) {
-      this.saveTextTarget.textContent = 'Save'
+    if (this.hasSaveIconTarget) {
+      this.saveIconTarget.classList.remove('hidden')
     }
   }
 
   showSaving() {
+    // Hide autosave indicator - we're using the floppy icon instead
     const indicator = document.querySelector('.autosave-indicator')
-    if (!indicator) return
-
-    const spinner = indicator.querySelector('.animate-spin')
-    const checkmark = indicator.querySelector('.text-green-500')
-    const text = indicator.querySelector('.autosave-text')
-
-    if (spinner) spinner.classList.remove('hidden')
-    if (checkmark) checkmark.classList.add('hidden')
-    if (text) text.textContent = 'Saving...'
+    if (indicator) {
+      indicator.classList.add('hidden')
+    }
   }
 
   showSaved() {
+    // Hide autosave indicator - we're using the floppy icon instead
     const indicator = document.querySelector('.autosave-indicator')
-    if (!indicator) return
-
-    const spinner = indicator.querySelector('.animate-spin')
-    const checkmark = indicator.querySelector('.text-green-500')
-    const text = indicator.querySelector('.autosave-text')
-
-    if (spinner) spinner.classList.add('hidden')
-    if (checkmark) checkmark.classList.remove('hidden')
-    if (text) text.textContent = 'All changes saved'
-
-    // Hide the indicator after 3 seconds
-    setTimeout(() => {
-      if (checkmark) checkmark.classList.add('hidden')
-      if (text) text.textContent = ''
-    }, 3000)
+    if (indicator) {
+      indicator.classList.add('hidden')
+    }
   }
 
   showError(errorMessage = 'Save failed') {

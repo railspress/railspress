@@ -3,6 +3,7 @@
   <div id="editorjs" class="editorjs-container min-h-[calc(100vh-220px)] bg-transparent p-0" data-controller="editor-theme"></div>
   <% if form %>
     <%= form.hidden_field field_name, data: { editorjs_target: "input" } %>
+    <%= form.hidden_field :content_json, data: { editorjs_target: "jsonInput" } %>
   <% end %>
 </div>
 

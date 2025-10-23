@@ -31,18 +31,55 @@ export default class extends Controller {
   preview(event) {
     const input = event.target
     if (input.files && input.files[0]) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        this.previewTarget.innerHTML = `
-          <img src="${e.target.result}" class="w-full h-full object-cover" />
-          <div class="featured-image-overlay">
-            <button type="button" class="featured-image-btn featured-image-btn-replace" data-action="replace">Replace</button>
-            <button type="button" class="featured-image-btn featured-image-btn-remove" data-action="remove">Remove</button>
-          </div>
-        `
-        this.initializeEvents()
-      }
-      reader.readAsDataURL(input.files[0])
+      console.log('Featured image selected:', input.files[0].name, input.files[0].size)
+      
+      const file = input.files[0]
+      
+      // Upload immediately
+      const formData = new FormData()
+      formData.append('image', file)
+      
+      fetch('/admin/media/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success === 1) {
+          console.log('Upload successful:', data.file.url)
+          
+          // Update hidden field with medium ID
+          const hiddenField = document.querySelector('input[name*="featured_medium_id"]')
+          if (hiddenField) {
+            hiddenField.value = data.medium_id
+            console.log('Set featured_medium_id:', data.medium_id)
+          }
+          
+          // Update preview
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            this.previewTarget.innerHTML = `
+              <img src="${e.target.result}" class="w-full h-full object-cover" />
+              <div class="featured-image-overlay">
+                <button type="button" class="featured-image-btn featured-image-btn-replace" data-action="replace">Replace</button>
+                <button type="button" class="featured-image-btn featured-image-btn-remove" data-action="remove">Remove</button>
+              </div>
+            `
+            this.initializeEvents()
+          }
+          reader.readAsDataURL(file)
+        } else {
+          console.error('Upload failed:', data.message)
+          alert('Failed to upload image: ' + data.message)
+        }
+      })
+      .catch(error => {
+        console.error('Upload error:', error)
+        alert('Failed to upload image')
+      })
     }
   }
 
