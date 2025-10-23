@@ -73,7 +73,7 @@
 
 .dark {
   /* DARK THEME overrides */
-  --admin-bg-app: #0f0f0f;           /* App background */
+  --admin-bg-app: #191919;           /* App background */
   --admin-bg-primary: #141414;        /* Primary surfaces */
   --admin-bg-secondary: #1a1a1a;      /* Secondary surfaces */
   --admin-bg-tertiary: #1f1f1f;       /* Tertiary surfaces */

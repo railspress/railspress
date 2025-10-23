@@ -10,11 +10,11 @@
   --ce-accent: #7c5cff;
   --ce-focus: #2a2a2a;
   --ce-shadow: 0 12px 28px rgba(0,0,0,.55);
-  --ce-select-bg: rgba(124, 92, 255, 0.28); /* highlight background */
-  --ce-select-fg: #fff;                     /* highlighted text color */
+  --ce-select-bg: darkgray; /* highlight background */
+  --ce-select-fg: #000000;                     /* highlighted text color */
   --ce-caret: #7c5cff;                       /* text caret color */
-  --ce-block-focus: #0b0b0b;                 /* focused block bg */
-  --ce-block-hover: #121212;                 /* hover bg (optional) */
+  --ce-block-focus: transparent;                 /* focused block bg */
+  --ce-block-hover: transparent;                 /* hover bg (optional) */
   --ce-focus-ring: 0 0 0 2px rgba(124,92,255,.35); /* keyboard focus ring */
 }
 
@@ -154,14 +154,14 @@
 /* --------- Toolbox triggers (plus + settings) --------- */
 .ce-toolbar__plus,
 .ce-toolbar__settings-btn {
-  background: var(--ce-focus) !important;
   color: var(--ce-text) !important;
   border: 1px solid var(--ce-border) !important;
 }
 .ce-toolbar__plus:hover,
 .ce-toolbar__settings-btn:hover {
-  background: var(--ce-hover) !important;
   border-color: var(--ce-accent) !important;
+  background-color: #090909;
+  color: #FFFFFF;
 }
 
 /* --------- Tooltips --------- */
@@ -218,7 +218,7 @@
 }
 
 .ce-block--selected .ce-block__content {
-    background: var(--ce-block-focus) !important;
+    
 }
 
 /* Paragraph + header content area so the whole line doesn't look "selected" */
@@ -250,7 +250,7 @@
 }
 
 .ce-block__content {
-    border: 1px solid var(--ce-block-focus) !important;
+    /* border: 1px solid var(--ce-block-focus) !important; */
 }
 
 .codex-editor__redactor,
@@ -304,7 +304,7 @@ h6.ce-header { font-size: 1.125rem; }
 /* Paragraphs */
 .ce-paragraph {
   color: var(--ce-text);
-  font-size: 1.125rem;
+  font-size: 16px;
   line-height: 1.75;
 }
 
