@@ -28,7 +28,7 @@
 
 <div class="h-screen flex flex-col sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
   
-  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex flex-col", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @post.persisted? } do |f| %>
+  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex flex-col", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @post.persisted?, slug_generator_status_value: @post.status, post_id: @post.persisted? ? @post.id : 'new' } do |f| %>
     
     <!-- Ultra Minimal Top Bar (Full Width) -->
     <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">

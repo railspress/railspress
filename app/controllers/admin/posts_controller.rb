@@ -108,12 +108,15 @@ class Admin::PostsController < Admin::BaseController
   
   # GET /admin/posts/write (collection)
   def write_new
-    # Create auto-draft immediately (WordPress style)
+    # Get default comment status from site settings
+    default_comment_status = SiteSetting.get('default_comment_status', 'closed')
+    
+    # Create auto-draft with UUID slug (SIMPLE!)
     @post = current_user.posts.create!(
       title: 'Untitled',
-      slug: generate_unique_untitled_slug,
+      slug: "untitled-#{SecureRandom.uuid[0..7]}", # Truncated UUID (8 chars)
       status: :auto_draft,
-      comment_status: 'open'
+      comment_status: default_comment_status
     )
     
     @categories = Term.for_taxonomy('category').ordered
@@ -152,11 +155,8 @@ class Admin::PostsController < Admin::BaseController
     @post = current_user.posts.build(post_params)
     
     # Handle unique slug generation for untitled posts or empty slugs
-    if params[:post][:generate_unique_slug] == 'true' && @post.slug == 'untitled'
-      @post.slug = generate_unique_untitled_slug
-    elsif @post.slug.blank?
-      # Generate a slug for autosave when slug is empty
-      @post.slug = generate_unique_untitled_slug
+    if @post.slug.blank? || @post.slug == 'untitled'
+      @post.slug = "untitled-#{SecureRandom.uuid[0..7]}"
     end
 
     respond_to do |format|
@@ -308,29 +308,7 @@ class Admin::PostsController < Admin::BaseController
       )
     end
     
-    def generate_unique_untitled_slug
-      base_slug = 'untitled'
-      counter = 1
-      
-      loop do
-        candidate_slug = counter == 1 ? base_slug : "#{base_slug}-#{counter}"
-        
-        # Check if slug exists (considering tenant scope)
-        existing_post = Post.where(slug: candidate_slug).first
-        
-        unless existing_post
-          return candidate_slug
-        end
-        
-        counter += 1
-        
-        # Prevent infinite loop
-        break if counter > 1000
-      end
-      
-      # Fallback to timestamp-based slug if we hit the limit
-      "#{base_slug}-#{Time.current.to_i}"
-    end
+    
     
     def posts_json
       @posts.map do |post|

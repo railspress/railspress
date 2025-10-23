@@ -5,7 +5,8 @@ export default class extends Controller {
   static targets = ["title", "slug"]
   static values = { 
     debounce: { type: Number, default: 300 }, // 300ms debounce
-    persisted: { type: Boolean, default: false } // Is this an existing post?
+    persisted: { type: Boolean, default: false }, // Is this an existing post?
+    status: { type: String, default: 'auto_draft' } // Post status
   }
 
   connect() {
@@ -20,9 +21,10 @@ export default class extends Controller {
   }
 
   generateSlug() {
-    // Only auto-generate for NEW posts (not persisted)
-    if (this.persistedValue) {
-      console.log("Post is persisted, skipping slug auto-generation")
+    // ALWAYS auto-generate for auto-drafts (even if persisted)
+    // Only skip for published/pending posts
+    if (this.persistedValue && this.statusValue !== 'auto_draft') {
+      console.log("Post is persisted and not auto-draft, skipping slug auto-generation")
       return
     }
 

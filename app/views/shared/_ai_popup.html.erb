@@ -181,6 +181,12 @@
 let selectedAgent = null;
 let generatedContent = '';
 
+// Helper function to get post ID from form data attribute
+function getPostId() {
+  const form = document.querySelector('form[data-post-id]');
+  return form ? form.dataset.postId : 'new';
+}
+
 // Agent configurations
 const agentConfigs = {
   post_writer: {
@@ -218,8 +224,8 @@ function openAiPopup() {
   resetPopup();
   
   // Load saved prompt and response from localStorage
-  const savedPrompt = localStorage.getItem('aipostprompt');
-  const savedReply = localStorage.getItem('aipostreply');
+  const savedPrompt = localStorage.getItem('aipostprompt_' + getPostId());
+  const savedReply = localStorage.getItem('aipostreply_' + getPostId());
   
   if (savedPrompt) {
     document.getElementById('aiInput').value = savedPrompt;
@@ -249,8 +255,8 @@ function openAiPopupWithPostWriter(event) {
     selectAgent('post_writer');
     
     // Load saved prompt and response
-    const savedPrompt = localStorage.getItem('aipostprompt');
-    const savedReply = localStorage.getItem('aipostreply');
+    const savedPrompt = localStorage.getItem('aipostprompt_' + getPostId());
+    const savedReply = localStorage.getItem('aipostreply_' + getPostId());
     
     if (savedPrompt) {
       document.getElementById('aiInput').value = savedPrompt;
@@ -342,7 +348,7 @@ function selectAgent(agentType) {
   document.getElementById('aiInput').addEventListener('input', (e) => {
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
-      localStorage.setItem('aipostprompt', e.target.value);
+      localStorage.setItem('aipostprompt_' + getPostId(), e.target.value);
     }, 500);
   });
 }
@@ -392,7 +398,7 @@ async function generateContent() {
       document.getElementById('aiResultPreview').innerHTML = generatedContent;
       
       // Save response to localStorage
-      localStorage.setItem('aipostreply', generatedContent);
+      localStorage.setItem('aipostreply_' + getPostId(), generatedContent);
       
       document.getElementById('resultSection').classList.remove('hidden');
       document.getElementById('insertButton').classList.remove('hidden');

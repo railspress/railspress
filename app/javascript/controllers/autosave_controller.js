@@ -14,10 +14,19 @@ export default class extends Controller {
     this.hasChanges = false
     this.isSaving = false
     this.saveTimeout = null
+    this.isOfflineMode = false
+    this.offlineSyncInterval = null
     // Store the original URL for new posts (before slug is generated)
     this.originalUrl = this.urlValue
     this.setupEventListeners()
     this.startPeriodicSave()
+    
+    // Monitor online/offline events
+    window.addEventListener('online', () => this.handleOnline())
+    window.addEventListener('offline', () => this.handleOffline())
+    
+    // Restore from localStorage for NEW posts only
+    this.restoreFromLocalStorage()
   }
 
   disconnect() {
@@ -27,6 +36,14 @@ export default class extends Controller {
     if (this.periodicSaveInterval) {
       clearInterval(this.periodicSaveInterval)
     }
+    if (this.offlineSyncInterval) {
+      clearInterval(this.offlineSyncInterval)
+    }
+    if (this.retryInterval) {
+      clearInterval(this.retryInterval)
+    }
+    window.removeEventListener('online', () => this.handleOnline())
+    window.removeEventListener('offline', () => this.handleOffline())
   }
 
   setupEventListeners() {
@@ -114,6 +131,10 @@ export default class extends Controller {
         const data = await response.json()
         this.hasChanges = false
         
+        // SUCCESS - clear localStorage and exit offline mode
+        this.clearLocalStorage()
+        this.setOfflineMode(false)
+        
         // If this was a new post, update the URL for future saves
         if (isNewPost && data.id && data.edit_url) {
           this.urlValue = data.edit_url
@@ -124,10 +145,31 @@ export default class extends Controller {
         this.showSaved()
       } else {
         const errorData = await response.json().catch(() => ({}))
+        
+        // Handle specific error types
+        if (errorData.errors) {
+          if (errorData.errors.slug && errorData.errors.slug.includes('has already been taken')) {
+            console.warn('Slug conflict detected, clearing slug and retrying...')
+            // Clear the slug field and try again
+            const slugField = document.querySelector('[name*="slug"]')
+            if (slugField) {
+              slugField.value = ''
+            }
+            // Don't enter offline mode for slug conflicts, just retry
+            this.save()
+            return
+          }
+        }
+        
         throw new Error(errorData.errors || 'Save failed')
       }
     } catch (error) {
       console.error('Autosave failed:', error)
+      
+      // FAILURE - enter offline mode and save to localStorage
+      this.setOfflineMode(true)
+      this.saveToLocalStorage()
+      
       this.showError(error.message)
     } finally {
       this.isSaving = false
@@ -193,5 +235,163 @@ export default class extends Controller {
   // Manual save trigger
   saveNow() {
     this.save()
+  }
+
+  // Offline mode methods
+  setOfflineMode(isOffline) {
+    this.isOfflineMode = isOffline
+    
+    const indicator = document.querySelector('.autosave-indicator')
+    if (!indicator) return
+    
+    if (isOffline) {
+      indicator.innerHTML = '<span class="text-orange-500">⚠ Offline Mode</span>'
+      
+      // Start syncing changes to localStorage
+      this.startOfflineSync()
+    } else {
+      // Stop syncing to localStorage
+      // Note: autosave will handle showing "All changes saved"
+      this.stopOfflineSync()
+    }
+  }
+
+  startOfflineSync() {
+    // Save to localStorage on every change while offline
+    if (this.offlineSyncInterval) return
+    
+    this.offlineSyncInterval = setInterval(() => {
+      this.saveToLocalStorage()
+    }, 2000) // Save every 2 seconds while offline
+    
+    // Also try to reconnect every 10 seconds
+    this.retryInterval = setInterval(() => {
+      console.log('Retrying autosave while offline...')
+      this.save()
+    }, 10000) // Try autosave every 10 seconds
+  }
+
+  stopOfflineSync() {
+    if (this.offlineSyncInterval) {
+      clearInterval(this.offlineSyncInterval)
+      this.offlineSyncInterval = null
+    }
+    if (this.retryInterval) {
+      clearInterval(this.retryInterval)
+      this.retryInterval = null
+    }
+  }
+
+  // localStorage methods
+  saveToLocalStorage() {
+    const postId = this.getPostId()
+    
+    const postData = {
+      title: this.titleTarget?.value || '',
+      content: this.getEditorContent(),
+      slug: document.querySelector('[name*="slug"]')?.value || '',
+      status: document.querySelector('[name*="status"]')?.value || '',
+      timestamp: Date.now()
+    }
+    
+    localStorage.setItem(`post_backup_${postId}`, JSON.stringify(postData))
+    console.log('Saved to localStorage:', postId)
+  }
+
+  clearLocalStorage() {
+    const postId = this.getPostId()
+    localStorage.removeItem(`post_backup_${postId}`)
+    console.log('Cleared localStorage:', postId)
+  }
+
+  getPostId() {
+    // Get post ID from URL or use 'new' for new posts
+    const match = window.location.pathname.match(/\/posts\/(\d+)/)
+    return match ? match[1] : 'new'
+  }
+
+  restoreFromLocalStorage() {
+    const postId = this.getPostId()
+    
+    // ONLY restore for NEW posts
+    if (postId !== 'new') {
+      console.log('Editing existing post - ignoring localStorage')
+      return
+    }
+    
+    const backup = localStorage.getItem(`post_backup_${postId}`)
+    if (!backup) return
+    
+    try {
+      const postData = JSON.parse(backup)
+      console.log('Found offline backup, restoring...', postData)
+      
+      // Wait for editors to be ready before restoring content
+      setTimeout(() => {
+        // Restore title
+        if (this.titleTarget && postData.title) {
+          this.titleTarget.value = postData.title
+          console.log('Restored title:', postData.title)
+        }
+        
+        // Restore content
+        if (postData.content) {
+          console.log('Restoring content from localStorage')
+          this.setEditorContent(postData.content)
+        }
+        
+        // Restore slug
+        const slugField = document.querySelector('[name*="slug"]')
+        if (slugField && postData.slug) {
+          slugField.value = postData.slug
+          console.log('Restored slug:', postData.slug)
+        }
+        
+        // Don't start in offline mode - just restore the content
+        // Offline mode should only be triggered by actual autosave failures
+        console.log('Content restored from localStorage, ready for normal operation')
+      }, 2000) // Wait 2 seconds for editors to initialize
+      
+    } catch (error) {
+      console.error('Failed to restore backup:', error)
+    }
+  }
+
+  getEditorContent() {
+    // SIMPLE: Just get the HTML from the hidden input field
+    // ALL editors save HTML to the hidden input, so just use that
+    const hiddenInput = document.querySelector('input[type="hidden"][name*="content"]')
+    if (hiddenInput) {
+      return hiddenInput.value || ''
+    }
+    
+    // Fallback to contentTarget
+    return this.contentTarget?.value || ''
+  }
+
+  setEditorContent(content) {
+    // SIMPLE: Just set the HTML to the hidden input field
+    // ALL editors will pick it up from there on initialization
+    const hiddenInput = document.querySelector('input[type="hidden"][name*="content"]')
+    if (hiddenInput) {
+      hiddenInput.value = content
+      console.log('Restored content to hidden input')
+    } else if (this.contentTarget) {
+      this.contentTarget.value = content
+      console.log('Restored content to textarea')
+    }
+  }
+
+  // Connection event handlers
+  handleOffline() {
+    console.log('Connection lost')
+    this.setOfflineMode(true)
+  }
+
+  handleOnline() {
+    console.log('Connection restored - triggering autosave')
+    // Trigger autosave to sync with server
+    this.save()
+    // save() will automatically exit offline mode on success
   }
 }

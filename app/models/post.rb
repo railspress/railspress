@@ -192,7 +192,8 @@ class Post < ApplicationRecord
   
   # Validations
   validates :title, presence: true, unless: :auto_draft_status?
-  validates :slug, presence: true, uniqueness: { scope: :tenant_id }
+  validates :slug, presence: true
+  validate :slug_uniqueness_for_published_posts
   validates :status, presence: true
   validates :password, length: { minimum: 4 }, allow_blank: true
   validates :comment_status, inclusion: { in: %w[open closed] }
@@ -229,6 +230,21 @@ class Post < ApplicationRecord
   
   private
   
+  def slug_uniqueness_for_published_posts
+    # Only validate slug uniqueness for published posts
+    # Auto-drafts and regular drafts can have duplicate slugs
+    return if auto_draft_status? || draft_status?
+    
+    existing_post = Post.where(slug: slug, tenant_id: tenant_id)
+                        .where.not(status: ['auto_draft', 'draft'])
+                        .where.not(id: id)
+                        .first
+    
+    if existing_post
+      errors.add(:slug, 'has already been taken')
+    end
+  end
+  
   def set_published_at
     self.published_at ||= Time.current
   end
@@ -236,9 +252,12 @@ class Post < ApplicationRecord
   def extract_plain_text_content
     return if content.blank?
     
+    # Convert ActionText to string
+    content_string = content.to_s
+    
     # Use the service to extract plain text based on editor type
     editor_type = user&.editor_preference || 'editorjs'
-    self.content_plain = PlainContentExtractor.extract(content, editor_type)
+    self.content_plain = PlainContentExtractor.extract(content_string, editor_type)
   end
   
   def trigger_post_created_hook
