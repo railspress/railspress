@@ -181,10 +181,9 @@
 let selectedAgent = null;
 let generatedContent = '';
 
-// Helper function to get post ID from form data attribute
+// Helper function to get post UUID from global RailsPress context
 function getPostId() {
-  const form = document.querySelector('form[data-post-id]');
-  return form ? form.dataset.postId : 'new';
+  return window.RailsPress?.getPostUuid() || 'new';
 }
 
 // Agent configurations

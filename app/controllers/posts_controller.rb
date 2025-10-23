@@ -22,6 +22,7 @@ class PostsController < ApplicationController
     post = Post.friendly.find(params[:id])
     
     # Check if visible (handles all statuses)
+    # Allow authenticated users to view drafts via can_view_post?
     unless post.visible_to_public? || can_view_post?(post)
       raise ActiveRecord::RecordNotFound
     end

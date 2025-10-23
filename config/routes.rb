@@ -290,7 +290,7 @@ Rails.application.routes.draw do
     resources :posts do
       collection do
         post :bulk_action
-        get :write, action: :write_new  # Fullscreen editor for new post
+        get :write, action: :new  # Redirects to new which creates auto-draft and redirects to edit
       end
       member do
         patch :publish

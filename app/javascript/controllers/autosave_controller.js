@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="autosave"
 export default class extends Controller {
-  static targets = ["form", "title", "content"]
+  static targets = ["form", "title", "content", "saveButton", "saveSpinner", "saveText"]
   static values = { 
     url: String,
     interval: { type: Number, default: 30000 }, // 30 seconds default, overridden by site setting
@@ -32,6 +32,9 @@ export default class extends Controller {
   disconnect() {
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout)
+    }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
     }
     if (this.periodicSaveInterval) {
       clearInterval(this.periodicSaveInterval)
@@ -84,25 +87,48 @@ export default class extends Controller {
 
   handleChange() {
     this.hasChanges = true
-    // Just mark that changes exist
-    // Let the periodic timer handle the actual saving
+    
+    // Clear existing debounce timer
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
+    
+    // Start new debounce timer - save after 5 seconds of inactivity
+    this.debounceTimer = setTimeout(() => {
+      if (this.hasChanges && !this.isSaving) {
+        this.save()
+      }
+    }, 5000) // 5 seconds
   }
 
   startPeriodicSave() {
-    // Save every X seconds based on site setting (default 30s, configurable in Writing Settings)
+    // Periodic save as backup - runs every X seconds based on site setting
+    // This ensures saves happen even if user is continuously typing
     this.periodicSaveInterval = setInterval(() => {
       if (this.hasChanges && !this.isSaving) {
         this.save()
       }
     }, this.intervalValue)
+    
+    console.log(`Periodic save enabled: every ${this.intervalValue / 1000}s`)
   }
 
   async save() {
     if (this.isSaving) return
     
+    // Clear debounce timer if it exists
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+      this.debounceTimer = null
+    }
+    
     this.isSaving = true
     this.showSaving()
-
+    this.showSaveButtonLoading() // Show spinner on save button
+    
+    const startTime = Date.now() // Track when save started
+    const minDuration = 200 // Minimum 200ms to show spinner
+    
     try {
       const formData = new FormData(this.formTarget)
       
@@ -173,6 +199,40 @@ export default class extends Controller {
       this.showError(error.message)
     } finally {
       this.isSaving = false
+      
+      // Ensure minimum duration for spinner visibility
+      const elapsed = Date.now() - startTime
+      const remaining = Math.max(0, minDuration - elapsed)
+      
+      setTimeout(() => {
+        this.hideSaveButtonLoading() // Hide spinner on save button
+      }, remaining)
+    }
+  }
+
+  showSaveButtonLoading() {
+    if (this.hasSaveButtonTarget) {
+      this.saveButtonTarget.disabled = true
+      this.saveButtonTarget.classList.add('opacity-50', 'cursor-not-allowed')
+    }
+    if (this.hasSaveSpinnerTarget) {
+      this.saveSpinnerTarget.classList.remove('hidden')
+    }
+    if (this.hasSaveTextTarget) {
+      this.saveTextTarget.textContent = 'Saving...'
+    }
+  }
+
+  hideSaveButtonLoading() {
+    if (this.hasSaveButtonTarget) {
+      this.saveButtonTarget.disabled = false
+      this.saveButtonTarget.classList.remove('opacity-50', 'cursor-not-allowed')
+    }
+    if (this.hasSaveSpinnerTarget) {
+      this.saveSpinnerTarget.classList.add('hidden')
+    }
+    if (this.hasSaveTextTarget) {
+      this.saveTextTarget.textContent = 'Save'
     }
   }
 
@@ -264,11 +324,12 @@ export default class extends Controller {
       this.saveToLocalStorage()
     }, 2000) // Save every 2 seconds while offline
     
-    // Also try to reconnect every 10 seconds
+    // Retry autosave at half the interval (e.g., every 30s if interval is 60s)
+    const retryInterval = this.intervalValue / 2
     this.retryInterval = setInterval(() => {
-      console.log('Retrying autosave while offline...')
+      console.log(`Retrying autosave while offline... (every ${retryInterval / 1000}s)`)
       this.save()
-    }, 10000) // Try autosave every 10 seconds
+    }, retryInterval)
   }
 
   stopOfflineSync() {
@@ -305,9 +366,8 @@ export default class extends Controller {
   }
 
   getPostId() {
-    // Get post ID from URL or use 'new' for new posts
-    const match = window.location.pathname.match(/\/posts\/(\d+)/)
-    return match ? match[1] : 'new'
+    // Get post UUID from global RailsPress context
+    return window.RailsPress?.getPostUuid() || 'new'
   }
 
   restoreFromLocalStorage() {

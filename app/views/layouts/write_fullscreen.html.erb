@@ -29,7 +29,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>}
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
@@ -300,7 +300,17 @@
   </style>
 </head>
 
-<body class="antialiased">
+<body class="antialiased" 
+     data-controller="railspress-context"
+     data-railspress-context-post-value="<%= {
+       uuid: @post.uuid,
+       id: @post.id,
+       slug: @post.slug,
+       status: @post.status,
+       title: @post.title,
+       updated_at: @post.updated_at.iso8601,
+       created_at: @post.created_at.iso8601
+     }.to_json %>">
   <%= yield %>
 </body>
 </html>

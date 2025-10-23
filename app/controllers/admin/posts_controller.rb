@@ -101,9 +101,26 @@ class Admin::PostsController < Admin::BaseController
 
   # GET /admin/posts/new
   def new
-    @post = current_user.posts.build(status: :draft)
-    @categories = Term.for_taxonomy('category').ordered
-    @tags = Term.for_taxonomy('tag').ordered
+    # Check permissions
+    unless current_user.can_create_posts?
+      flash[:alert] = "You don't have permission to create posts"
+      redirect_to admin_posts_path and return
+    end
+    
+    # Get default comment status from site settings
+    default_comment_status = SiteSetting.get('default_comment_status', 'closed')
+    
+    # Create auto-draft immediately - slug will be generated on publish
+    @post = current_user.posts.create!(
+      status: :auto_draft,
+      content_type: ContentType.find_by(ident: 'post'),
+      comment_status: default_comment_status,
+      title: '',  # Empty, will be filled in editor
+      slug: ''    # Empty, will be generated when published
+    )
+    
+    # Redirect to edit with UUID
+    redirect_to edit_admin_post_path(@post) # Uses UUID via to_param
   end
   
   # GET /admin/posts/write (collection)
@@ -141,6 +158,7 @@ class Admin::PostsController < Admin::BaseController
 
   # GET /admin/posts/1/edit
   def edit
+    @post = Post.find_by!(uuid: params[:id])
     @categories = Term.for_taxonomy('category').ordered
     @tags = Term.for_taxonomy('tag').ordered
     @channels = Channel.active.order(:name)
@@ -186,12 +204,14 @@ class Admin::PostsController < Admin::BaseController
 
   # PATCH/PUT /admin/posts/1 or /admin/posts/1.json
   def update
+    @post = Post.find_by!(uuid: params[:id])
+    
     # Keep auto_draft posts as auto_draft during autosave
     if params[:autosave] == 'true' && @post.auto_draft_status?
       # Force status to remain auto_draft during autosave
-      params[:post][:status] = 'auto_draft'
+      params[:post][:status] = 'auto_draft' if params[:post]
       # Ensure we have a title
-      params[:post][:title] = 'Untitled' if params[:post][:title].blank?
+      params[:post][:title] = 'Untitled' if params[:post] && params[:post][:title].blank?
     end
     
     # Promote auto_draft to draft on manual save
@@ -203,7 +223,16 @@ class Admin::PostsController < Admin::BaseController
     respond_to do |format|
       if @post.update(post_params)
         if params[:autosave] == 'true'
-          format.json { render json: { status: 'success', updated_at: @post.updated_at, slug: @post.slug } }
+          format.json { 
+            render json: { 
+              status: 'success', 
+              updated_at: @post.updated_at, 
+              slug: @post.slug,
+              id: @post.id,
+              uuid: @post.uuid,
+              edit_url: edit_admin_post_path(@post)
+            } 
+          }
         else
           format.html { redirect_to edit_admin_post_path(@post), notice: "Post was successfully updated.", status: :see_other }
           format.json { render :show, status: :ok, location: @post }
@@ -216,7 +245,7 @@ class Admin::PostsController < Admin::BaseController
         @available_templates = get_available_templates
         @sidebar_order = current_user.sidebar_order
         if params[:autosave] == 'true'
-          format.json { render json: { status: 'error', errors: @post.errors }, status: :unprocessable_entity }
+          format.json { render json: { status: 'error', errors: @post.errors.full_messages }, status: :unprocessable_entity }
         else
           format.html { render :edit, layout: 'write_fullscreen', status: :unprocessable_entity }
           format.json { render json: @post.errors, status: :unprocessable_entity }
@@ -294,7 +323,7 @@ class Admin::PostsController < Admin::BaseController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_post
-      @post = Post.friendly.find(params[:id])
+      @post = Post.find_by!(uuid: params[:id])
     end
 
     # Only allow a list of trusted parameters through.

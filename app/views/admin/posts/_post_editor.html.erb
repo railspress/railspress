@@ -57,6 +57,19 @@
           </div>
           
           
+          <!-- Preview Link -->
+          <a href="<%= @post.preview_url %>" 
+             target="_blank"
+             class="p-1.5 rounded-lg transition-colors duration-200"
+             style="background-color: transparent; color: var(--color-gray-500);"
+             onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
+             onmouseout="this.style.backgroundColor='transparent'"
+             title="View post">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+            </svg>
+          </a>
+          
           <!-- Theme Toggle -->
           <button type="button" 
                   data-controller="theme-toggle" 
@@ -77,9 +90,14 @@
           
           <!-- Small Save Button -->
           <button type="button" 
-                  class="px-2 py-1 text-xs font-medium rounded-md transition-colors duration-200 save-button"
-                  onclick="document.querySelector('[data-controller*=\"autosave\"]').dispatchEvent(new CustomEvent('save'))">
-            Save
+                  class="px-2 py-1 text-xs font-medium rounded-md transition-colors duration-200 save-button flex items-center gap-1.5"
+                  data-action="click->autosave#saveNow"
+                  data-autosave-target="saveButton">
+            <svg class="w-3 h-3 animate-spin hidden" data-autosave-target="saveSpinner" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span data-autosave-target="saveText">Save</span>
           </button>
 
           <!-- Sidebar Toggle Button (topbar) -->
@@ -106,11 +124,12 @@
 
         <div class="post-title-container">
           <!-- Title Input -->
-          <%= f.text_field :title, 
+          <%= f.text_area :title, 
               value: (@post.auto_draft_status? && @post.title == 'Untitled') ? '' : @post.title,
-              class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-6 leading-tight",
+              class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-6 leading-tight resize-none",
               placeholder: "Untitled",
               autofocus: !@post.persisted?,
+              rows: 1,
               data: { autosave_target: "title", slug_generator_target: "title", action: "input->slug-generator#generateSlug" } %>
         </div>
           
@@ -171,3 +190,21 @@
 <%= render 'admin/posts/keyboard_shortcuts' %>
 
 <%= render 'shared/ai_popup' %>
+
+<script>
+// Auto-grow title textarea
+(function() {
+  const titleInput = document.querySelector('textarea[name*="title"]');
+  if (titleInput) {
+    // Auto-resize on input
+    titleInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+    
+    // Initial resize
+    titleInput.style.height = 'auto';
+    titleInput.style.height = titleInput.scrollHeight + 'px';
+  }
+})();
+</script>

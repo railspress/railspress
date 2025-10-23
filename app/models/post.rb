@@ -192,11 +192,12 @@ class Post < ApplicationRecord
   
   # Validations
   validates :title, presence: true, unless: :auto_draft_status?
-  validates :slug, presence: true
+  validates :slug, presence: true, unless: :auto_draft_status?
   validate :slug_uniqueness_for_published_posts
   validates :status, presence: true
   validates :password, length: { minimum: 4 }, allow_blank: true
   validates :comment_status, inclusion: { in: %w[open closed] }
+  validates :uuid, presence: true, uniqueness: true
   
   # Scopes
   scope :published, -> { where(status: 'published').where('published_at <= ?', Time.current) }
@@ -206,10 +207,11 @@ class Post < ApplicationRecord
   scope :by_tag, ->(tag) { joins(:terms).where(terms: { slug: tag }).joins('INNER JOIN taxonomies ON terms.taxonomy_id = taxonomies.id').where(taxonomies: { slug: 'tag' }) }
   scope :search, ->(query) { where("title ILIKE ? OR content ILIKE ?", "%#{query}%", "%#{query}%") }
   scope :stale_auto_drafts, -> { 
-    where(status: :auto_draft).where('updated_at < ?', 24.hours.ago) 
+    where(status: :auto_draft).where('updated_at < ?', 7.days.ago) 
   }
   
   # Callbacks
+  before_validation :generate_uuid, on: :create
   before_validation :set_published_at, if: :published_status?
   before_save :extract_plain_text_content
   after_create :trigger_post_created_hook
@@ -228,7 +230,16 @@ class Post < ApplicationRecord
     user&.name || user&.email&.split('@')&.first&.titleize || 'Anonymous'
   end
   
+  # Use UUID for admin routing
+  def to_param
+    uuid
+  end
+  
   private
+  
+  def generate_uuid
+    self.uuid ||= SecureRandom.uuid
+  end
   
   def slug_uniqueness_for_published_posts
     # Only validate slug uniqueness for published posts
@@ -340,6 +351,16 @@ class Post < ApplicationRecord
     Rails.application.routes.url_helpers.blog_post_url(self.id, host: 'localhost:3000')
   end
 
+  # Generate preview URL for the post
+  def preview_url
+    # Use slug for preview URL if available, otherwise fallback to ID
+    if slug.present?
+      Rails.application.routes.url_helpers.blog_post_path(slug)
+    else
+      Rails.application.routes.url_helpers.blog_post_path(id)
+    end
+  end
+
   # Get the author of the post
   def author
     User.find_by(id: self.user_id)
@@ -371,5 +392,5 @@ class Post < ApplicationRecord
   end
 
   # Make these methods public for Liquid access
-  public :url, :author, :categories, :to_liquid
+  public :url, :author, :categories, :to_liquid, :preview_url
 end
