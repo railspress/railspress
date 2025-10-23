@@ -1,12 +1,25 @@
 class Admin::PluginProxyController < Admin::BaseController
   skip_before_action :verify_authenticity_token, only: [:proxy]
+  skip_before_action :authenticate_user!, only: [:proxy], if: -> { params[:action_name] == 'assets' }
+  skip_before_action :ensure_admin_access, only: [:proxy], if: -> { params[:action_name] == 'assets' }
   
   def proxy
-    plugin_id = params[:plugin_id]
+    plugin_slug = params[:plugin_id]
     action = params[:action_name]
     
-    # Get plugin instance
-    plugin = Railspress::PluginSystem.get_plugin(plugin_id)
+    Rails.logger.info "PluginProxy: #{plugin_slug}.#{action} - params: #{params.except(:file).inspect}"
+    
+    # Map plural actions to singular handlers
+    action = action.singularize if action == 'assets'
+    
+    # Get plugin instance by slug
+    plugin_record = Plugin.find_by(slug: plugin_slug)
+    unless plugin_record
+      return render json: { error: 'Plugin not found' }, status: 404
+    end
+    
+    # Get plugin instance from PluginSystem
+    plugin = Railspress::PluginSystem.get_plugin(plugin_record.name)
     
     unless plugin
       return render json: { error: 'Plugin not found' }, status: 404

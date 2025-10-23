@@ -45,9 +45,21 @@
   <script src="https://cdn.jsdelivr.net/npm/editorjs-undo@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
 
+  <!-- Plugin-injected EditorJS assets -->
+  <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+    <%= Railspress::PluginSystem.do_action('editor_js_head_assets').html_safe %>
+  <% end %>
+
   <!-- Editor.js Core -->
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
 
+  <!-- Initialize plugin tools -->
+  <script>
+    window.pluginEditorJsTools = window.pluginEditorJsTools || {};
+    <% if defined?(Railspress::PluginSystem) && Railspress::PluginSystem.respond_to?(:do_action) %>
+      <%= Railspress::PluginSystem.do_action('editor_js_tools').html_safe %>
+    <% end %>
+  </script>
 
   <% when 'ckeditor5' %>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>

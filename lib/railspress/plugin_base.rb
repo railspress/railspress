@@ -1008,7 +1008,7 @@ module Railspress
     
     # Get plugin identifier (snake_case name)
     def plugin_identifier
-      plugin_name.underscore.gsub(/\s+/, '_').gsub(/[^a-z0-9_]/, '')
+      @plugin_identifier ||= plugin_name.underscore.gsub(/\s+/, '_').gsub(/[^a-z0-9_]/, '')
     end
     
     # Get plugin directory path

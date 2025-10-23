@@ -49,13 +49,11 @@ export default class extends Controller {
       .then(response => response.json())
       .then(data => {
         if (data.success === 1) {
-          console.log('Upload successful:', data.file.url)
-          
           // Update hidden field with medium ID
           const hiddenField = document.querySelector('input[name*="featured_medium_id"]')
           if (hiddenField) {
             hiddenField.value = data.medium_id
-            console.log('Set featured_medium_id:', data.medium_id)
+            hiddenField.dispatchEvent(new Event('change', { bubbles: true }))
           }
           
           // Update preview

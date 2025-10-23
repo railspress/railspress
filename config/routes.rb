@@ -875,6 +875,10 @@ Rails.application.routes.draw do
     get 'plugins/:plugin_identifier/:page_slug', to: 'plugin_pages#show', as: 'plugin_page'
     patch 'plugins/:plugin_identifier/:page_slug', to: 'plugin_pages#update'
     post 'plugins/:plugin_identifier/:page_slug/:action_name', to: 'plugin_pages#action', as: 'plugin_page_action'
+    
+    # Plugin Proxy (for plugin handlers)
+    post 'plugins/:plugin_id/:action_name', to: 'plugin_proxy#proxy', as: 'plugin_proxy'
+    get 'plugins/:plugin_id/:action_name/*path', to: 'plugin_proxy#proxy'
   end
   
   # Plugin Routes (dynamically loaded)

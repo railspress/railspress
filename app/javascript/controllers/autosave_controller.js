@@ -155,18 +155,6 @@ export default class extends Controller {
       // Add autosave parameter
       formData.append('autosave', 'true')
       
-      // Debug: Log featured_medium_id and featured_image_file
-      console.log('Autosave - featured_medium_id:', formData.get('post[featured_medium_id]'))
-      console.log('Autosave - featured_image_file:', formData.get('post[featured_image_file]') ? 'File attached' : 'No file')
-      
-      // Debug: Log all form fields
-      const allFields = Array.from(formData.entries()).map(([key, val]) => ({ 
-        key, 
-        value: val instanceof File ? `File: ${val.name}` : val 
-      }))
-      console.log('Autosave - All form fields:', allFields)
-      console.log('Autosave - Featured image fields:', allFields.filter(f => f.key.includes('featured')))
-      
       // Determine if this is a new post or existing post
       // Check if URL ends with a number (existing post) or is the base posts path
       const isNewPost = this.urlValue.includes('posts') && !this.urlValue.match(/\/\d+$/)

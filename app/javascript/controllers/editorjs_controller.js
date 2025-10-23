@@ -227,7 +227,10 @@ export default class extends Controller {
             } : undefined,
             undo: window.Undo ? {
               class: window.Undo
-            } : undefined
+            } : undefined,
+            
+            // Plugin tools injection
+            ...(window.pluginEditorJsTools || {})
           }).filter(([key, value]) => value !== undefined)
         ),
         
@@ -366,6 +369,21 @@ export default class extends Controller {
             html += `<li><input type="checkbox" ${checked} disabled> ${item.text}</li>`
           })
           html += '</ul>'
+          break
+        
+        case 'uppy':
+          if (block.data.files && block.data.files.length > 0) {
+            html += '<div class="uploaded-files">'
+            block.data.files.forEach(file => {
+              if (file.type && file.type.startsWith('image/')) {
+                const caption = file.caption || file.name;
+                html += `<figure><img src="${file.url}" alt="${file.name}"><figcaption>${this.escapeHTML(caption)}</figcaption></figure>`
+              } else {
+                html += `<p><a href="${file.url}" download="${file.name}" class="file-download">${file.name}</a></p>`
+              }
+            })
+            html += '</div>'
+          }
           break
         
         default:
