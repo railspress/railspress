@@ -32,8 +32,7 @@ export default class extends Controller {
 
     // Check if Editor.js is available
     if (typeof window.EditorJS === 'undefined') {
-      console.error('Editor.js not available, showing fallback')
-      this.showFallbackEditor()
+      console.error('Editor.js not available.')
       return
     }
 
@@ -257,7 +256,6 @@ export default class extends Controller {
       })
     } catch (error) {
       console.error('Editor.js initialization failed:', error)
-      this.showFallbackEditor()
     }
   }
 
@@ -467,50 +465,6 @@ export default class extends Controller {
     window.dispatchEvent(event)
   }
 
-  showFallbackEditor() {
-    const container = this.element.querySelector('.editorjs-container')
-    if (container) {
-      container.innerHTML = `
-        <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 mb-4">
-          <p class="font-medium mb-2">📝 Using Rich Text Editor</p>
-          <p class="text-sm">Editor.js is loading... Using a rich text editor with formatting toolbar.</p>
-        </div>
-        <div class="rich-text-fallback">
-          <div class="toolbar flex gap-2 mb-2 p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-t-lg">
-            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('bold', false, null); document.querySelector('.rich-text-editor').focus()" title="Bold (Ctrl+B)">
-              <strong>B</strong>
-            </button>
-            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('italic', false, null); document.querySelector('.rich-text-editor').focus()" title="Italic (Ctrl+I)">
-              <em>I</em>
-            </button>
-            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('underline', false, null); document.querySelector('.rich-text-editor').focus()" title="Underline (Ctrl+U)">
-              <u>U</u>
-            </button>
-            <div class="border-l border-[#3a3a3a] mx-1"></div>
-            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('formatBlock', false, 'h2'); document.querySelector('.rich-text-editor').focus()" title="Heading">
-              H1
-            </button>
-            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="document.execCommand('insertUnorderedList', false, null); document.querySelector('.rich-text-editor').focus()" title="List">
-              ≡
-            </button>
-            <button type="button" class="px-3 py-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded hover:bg-[#3a3a3a] text-white" onclick="const url = prompt('Enter URL:'); if (url) document.execCommand('createLink', false, url); document.querySelector('.rich-text-editor').focus()" title="Link">
-              🔗
-            </button>
-          </div>
-          <div class="rich-text-editor min-h-[400px] p-4 bg-[#0a0a0a] border border-[#2a2a2a] rounded-b-lg text-white focus:outline-none focus:border-indigo-500" contenteditable="true">
-            ${this.contentValue || '<p>Start writing...</p>'}
-          </div>
-        </div>
-      `
-      
-      // Add event listener to update hidden input
-      const editor = container.querySelector('.rich-text-editor')
-      if (editor && this.hasInputTarget) {
-        editor.addEventListener('input', () => {
-          this.inputTarget.value = editor.innerHTML
-        })
-      }
-    }
-  }
+  
 }
 

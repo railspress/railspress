@@ -1,0 +1,119 @@
+/* --------- Trix Editor Styling --------- */
+
+/* Ensure minimum font size of 16px */
+trix-editor {
+  font-size: 16px;
+}
+
+/* Trix Dark Theme (default) */
+trix-toolbar {
+  background-color: #1a1a1a !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 0.5rem 0.5rem 0.5rem 0.5rem !important;
+  color: #ffffff !important;
+  padding: 0.5rem !important;
+}
+
+trix-toolbar .trix-button {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+  margin: 0.125rem !important;
+  transition: all 0.15s ease !important;
+}
+
+trix-toolbar .trix-button:hover {
+  background-color: #2a2a2a !important;
+  color: #ffffff !important;
+}
+
+trix-toolbar .trix-button.trix-active {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+trix-toolbar .trix-button-group {
+  border: none !important;
+  margin: 0 0.25rem !important;
+}
+
+trix-toolbar .trix-button-group::after {
+  content: '' !important;
+  display: none !important;
+}
+
+trix-editor {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+  border: 1px solid #2a2a2a !important;
+  border-top: none !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
+  min-height: calc(100vh - 300px) !important;
+  padding: 1rem !important;
+  font-size: 1.125rem !important;
+  line-height: 1.75 !important;
+}
+
+trix-toolbar .trix-button--icon {
+   -webkit-filter: invert(50%);
+}
+
+/* Trix Light Theme */
+.editor--light trix-toolbar {
+  background-color: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  color: #374151 !important;
+  padding: 0.5rem !important;
+}
+
+.editor--light trix-toolbar .trix-button {
+  color: #374151 !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+  margin: 0.125rem !important;
+  transition: all 0.15s ease !important;
+}
+
+.editor--light trix-toolbar .trix-button:hover {
+  background-color: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.editor--light trix-toolbar .trix-button.trix-active {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.editor--light trix-toolbar .trix-button-group {
+  border: none !important;
+  margin: 0 0.25rem !important;
+}
+
+.editor--light trix-toolbar .trix-button-group::after {
+  content: '' !important;
+  display: none !important;
+}
+
+.editor--light trix-editor {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-radius: 0 0 0.5rem 0.5rem !important;
+  padding: 1rem !important;
+  font-size: 1.125rem !important;
+  line-height: 1.75 !important;
+}
+
+.trix-editor-wrapper {
+  width: 708px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+

@@ -1,0 +1,83 @@
+/* --------- Write Page Styling --------- */
+
+/* Hide sidebar initially to prevent flash */
+[data-sidebar-collapsed-value="true"] {
+  width: 0px !important;
+  overflow: hidden !important;
+}
+
+[data-sidebar-collapsed-value="true"] [data-sidebar-target="content"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* When sidebar is collapsed, expand main content to full width */
+.sidebar-collapsed [data-sidebar-collapsed-value="true"] {
+  width: 0px !important;
+  overflow: hidden !important;
+}
+
+.sidebar-collapsed .flex-1.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.sidebar-collapsed .max-w-4xl.mx-auto.px-8.py-12 {
+  max-width: 100% !important;
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
+}
+
+/* Make editors full width when sidebar is collapsed */
+.sidebar-collapsed .codex-editor__redactor,
+.sidebar-collapsed .ck-content,
+.sidebar-collapsed trix-editor {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.sidebar-collapsed .ce-block__content,
+.sidebar-collapsed .ck-editor__editable,
+.sidebar-collapsed .ck-editor__editable_inline {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* Theme variables (use global admin vars) */
+:root {
+  --input-bg: var(--admin-bg-primary);
+  --input-border: var(--admin-border);
+  --input-text: var(--admin-text-primary);
+}
+
+/* Unified form control styling via vars */
+.form-control {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  color: var(--input-text) !important;
+}
+
+/* Save Button Styles - Inverted colors for light/dark themes */
+.save-button {
+  background-color: var(--color-gray-800) !important;
+  color: var(--color-gray-200) !important;
+  border: 1px solid var(--color-gray-600) !important;
+}
+
+.save-button:hover {
+  background-color: var(--color-gray-700) !important;
+  color: white !important;
+}
+
+/* Light theme overrides */
+[data-theme="light"] .save-button {
+  background-color: var(--color-gray-100) !important;
+  color: var(--color-gray-800) !important;
+  border: 1px solid var(--color-gray-300) !important;
+}
+
+[data-theme="light"] .save-button:hover {
+  background-color: var(--color-gray-200) !important;
+  color: var(--color-gray-900) !important;
+}
+

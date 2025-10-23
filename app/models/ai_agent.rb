@@ -11,9 +11,13 @@ class AiAgent < ApplicationRecord
   validates :name, presence: true
   validates :agent_type, presence: true, inclusion: { in: AGENT_TYPES }
   validates :ai_provider, presence: true
+  validates :slug, presence: true, uniqueness: true
+  
+  before_validation :generate_slug, if: :new_record?
   
   scope :active, -> { where(active: true) }
   scope :by_type, ->(type) { where(agent_type: type) }
+  scope :by_slug, ->(slug) { where(slug: slug) }
   scope :ordered, -> { order(:position, :name) }
   
   after_initialize :set_defaults, if: :new_record?
@@ -143,6 +147,10 @@ class AiAgent < ApplicationRecord
   def set_defaults
     self.active = true if active.nil?
     self.position = 0 if position.nil?
+  end
+  
+  def generate_slug
+    self.slug ||= agent_type
   end
   
   def calculate_tokens(prompt, response)

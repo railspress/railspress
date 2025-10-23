@@ -19,9 +19,7 @@ class RedisConfig
         url: connection_url,
         timeout: 5,
         connect_timeout: 5,
-        reconnect_attempts: 3,
-        reconnect_delay: 0.5,
-        reconnect_delay_max: 2.0
+        reconnect_attempts: 3
       }
     end
   
@@ -31,8 +29,6 @@ class RedisConfig
         timeout: 5,
         connect_timeout: 5,
         reconnect_attempts: 3,
-        reconnect_delay: 0.5,
-        reconnect_delay_max: 2.0,
         expires_in: 1.hour,
         namespace: 'railspress:cache'
       }
@@ -44,8 +40,6 @@ class RedisConfig
         timeout: 5,
         connect_timeout: 5,
         reconnect_attempts: 3,
-        reconnect_delay: 0.5,
-        reconnect_delay_max: 2.0,
         namespace: 'railspress:sessions'
       }
     end

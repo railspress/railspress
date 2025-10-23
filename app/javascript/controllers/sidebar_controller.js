@@ -27,7 +27,7 @@ export default class extends Controller {
 
     if (this.collapsedValue) {
       if (rootContainer) {
-        rootContainer.classList.add('sidebar-collapsed')
+        //rootContainer.classList.add('sidebar-collapsed')
       }
       // Collapse sidebar - show only tiny floating circle
       this.element.style.width = '0px'
@@ -58,7 +58,7 @@ export default class extends Controller {
       }
     } else {
       if (rootContainer) {
-        rootContainer.classList.remove('sidebar-collapsed')
+        //rootContainer.classList.remove('sidebar-collapsed')
       }
       // Expand sidebar
       this.element.style.width = '20rem' // w-80 = 20rem

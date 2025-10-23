@@ -10,6 +10,7 @@
   
   <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "admin", "data-turbo-track": "reload" %>
   
   <!-- Inter Font (preconnect only, defer actual loading) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,24 +21,30 @@
   <!-- Load ONLY user's preferred editor assets (JS + CSS) -->
   <% case current_user&.editor_preference || 'editorjs' %>
   <% when 'editorjs' %>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.31.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@1.8.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.5.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.7.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.2.2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.3.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@1.3.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.5.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@1.3.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.4.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/editorjs-undo@2.0.28"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.9.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@2.5.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@1.5.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@2.5.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/attaches@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.5.0"></script>
+    
+    
+  
+  <!-- Editor.js Tools -->
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/attaches@latest"></script>
+
+  <!-- Editor.js Core -->
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
 
   <% when 'ckeditor5' %>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
@@ -148,22 +155,6 @@
       border-radius: 0.5rem 0.5rem 0 0 !important;
     }
     
-    /* Simple editor styles */
-    .simple-editor textarea {
-      background: transparent !important;
-      color: var(--admin-text-primary) !important;
-      border: none !important;
-      outline: none !important;
-      font-size: 18px;
-      line-height: 1.6;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
-    }
-    
-    .simple-editor textarea:focus {
-      border: none !important;
-      box-shadow: none !important;
-      outline: none !important;
-    }
     
     /* Editor.js styles */
     .editorjs-container {

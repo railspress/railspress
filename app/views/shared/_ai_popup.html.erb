@@ -234,7 +234,8 @@ function openAiPopup() {
   if (savedReply) {
     generatedContent = savedReply;
     document.getElementById('aiResult').value = savedReply;
-    document.getElementById('aiResultPreview').innerHTML = savedReply;
+    const previewHtml = renderEditorJSPreview(savedReply);
+    document.getElementById('aiResultPreview').innerHTML = previewHtml;
     document.getElementById('resultSection').classList.remove('hidden');
     document.getElementById('insertButton').classList.remove('hidden');
   }
@@ -243,16 +244,18 @@ function openAiPopup() {
 function openAiPopupWithPostWriter(event) {
   if (event) event.preventDefault();
   openAiPopup();
-  // Auto-select Post Writer agent after a brief delay to ensure UI is ready
+  
   setTimeout(() => {
+    // Always use post_writer agent (generates HTML for all editors)
+    const agentType = 'post_writer';
+    
+    // Auto-select post_writer agent FIRST (before hiding sections)
+    selectAgent(agentType);
+    
     // Hide the agent selection section
     document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2').closest('.mb-6').style.display = 'none';
     
-    // Hide the "Selected: Post Writer" info at bottom
-    document.getElementById('selectedAgentInfo').style.display = 'none';
-    
-    // Auto-select Post Writer agent
-    selectAgent('post_writer');
+    // selectedAgentInfo is already hidden by resetPopup() in openAiPopup()
     
     // Load saved prompt and response
     const savedPrompt = localStorage.getItem('aipostprompt_' + getPostId());
@@ -265,7 +268,8 @@ function openAiPopupWithPostWriter(event) {
     if (savedReply) {
       generatedContent = savedReply;
       document.getElementById('aiResult').value = savedReply;
-      document.getElementById('aiResultPreview').innerHTML = savedReply;
+      const previewHtml = renderEditorJSPreview(savedReply);
+      document.getElementById('aiResultPreview').innerHTML = previewHtml;
       document.getElementById('resultSection').classList.remove('hidden');
       document.getElementById('insertButton').classList.remove('hidden');
     }
@@ -301,6 +305,69 @@ function resetPopup() {
   document.getElementById('errorMessage').textContent = '';
 }
 
+// Convert EditorJS JSON to HTML for preview
+function renderEditorJSPreview(jsonContent) {
+  try {
+    const data = JSON.parse(jsonContent);
+    if (!data.blocks || !Array.isArray(data.blocks)) {
+      return jsonContent; // Not valid EditorJS JSON, return as-is
+    }
+    
+    let html = '';
+    data.blocks.forEach(block => {
+      switch (block.type) {
+        case 'header':
+          html += `<h${block.data.level}>${block.data.text}</h${block.data.level}>`;
+          break;
+        case 'paragraph':
+          html += `<p>${block.data.text}</p>`;
+          break;
+        case 'list':
+          const tag = block.data.style === 'ordered' ? 'ol' : 'ul';
+          html += `<${tag}>`;
+          block.data.items.forEach(item => {
+            html += `<li>${item}</li>`;
+          });
+          html += `</${tag}>`;
+          break;
+        case 'quote':
+          html += `<blockquote><p>${block.data.text}</p>`;
+          if (block.data.caption) {
+            html += `<cite>${block.data.caption}</cite>`;
+          }
+          html += `</blockquote>`;
+          break;
+        case 'code':
+          html += `<pre><code>${escapeHtml(block.data.code)}</code></pre>`;
+          break;
+        case 'delimiter':
+          html += '<hr>';
+          break;
+        case 'warning':
+          html += `<div class="warning-box"><strong>${block.data.title}</strong><p>${block.data.message}</p></div>`;
+          break;
+        case 'checklist':
+          html += '<ul class="checklist">';
+          block.data.items.forEach(item => {
+            const checked = item.checked ? 'checked' : '';
+            html += `<li class="checklist-item"><input type="checkbox" ${checked} disabled> ${item.text}</li>`;
+          });
+          html += '</ul>';
+          break;
+      }
+    });
+    return html;
+  } catch (e) {
+    return jsonContent; // Not JSON, return as-is
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 function selectAgent(agentType) {
   selectedAgent = agentType;
   const config = agentConfigs[agentType];
@@ -312,8 +379,10 @@ function selectAgent(agentType) {
   });
   
   const selectedOption = document.querySelector(`[data-agent="${agentType}"]`);
-  selectedOption.classList.remove('border-[#2a2a2a]');
-  selectedOption.classList.add('border-indigo-500', 'bg-indigo-500/5');
+  if (selectedOption) {
+    selectedOption.classList.remove('border-[#2a2a2a]');
+    selectedOption.classList.add('border-indigo-500', 'bg-indigo-500/5');
+  }
   
   // Update input section
   document.getElementById('inputLabel').textContent = config.inputLabel;
@@ -329,8 +398,8 @@ function selectAgent(agentType) {
   // Show/hide additional options
   if (config.showOptions) {
     document.getElementById('additionalOptions').classList.remove('hidden');
-    // Auto-expand additional options for Post Writer
-    if (agentType === 'post_writer') {
+    // Auto-expand additional options for Post Writer and EditorJS Writer
+    if (agentType === 'post_writer' || agentType === 'editorjs_writer') {
       document.getElementById('additionalOptionsContent').classList.remove('hidden');
     }
   } else {
@@ -340,7 +409,8 @@ function selectAgent(agentType) {
   // Show input section and generate button
   document.getElementById('inputSection').classList.remove('hidden');
   document.getElementById('generateButton').classList.remove('hidden');
-  document.getElementById('selectedAgentInfo').classList.remove('hidden');
+  // Don't show selectedAgentInfo when called from openAiPopupWithPostWriter (it will be hidden)
+  // document.getElementById('selectedAgentInfo').classList.remove('hidden');
   document.getElementById('selectedAgentName').textContent = config.name;
   
   // Save prompt to localStorage as user types (debounced)
@@ -394,8 +464,10 @@ async function generateContent() {
     if (data.success) {
       generatedContent = data.result;
       document.getElementById('aiResult').value = generatedContent;
-      // Render HTML in the preview
-      document.getElementById('aiResultPreview').innerHTML = generatedContent;
+      
+      // Render preview based on agent type
+      const previewHtml = renderEditorJSPreview(generatedContent);
+      document.getElementById('aiResultPreview').innerHTML = previewHtml;
       
       // Save response to localStorage
       localStorage.setItem('aipostreply_' + getPostId(), generatedContent);
@@ -440,48 +512,21 @@ async function insertContent() {
       const controller = window.Stimulus.getControllerForElementAndIdentifier(editorjsElement, 'editorjs');
       if (controller && controller.editor) {
         try {
-          // Clear existing content and insert as plain text first
-          controller.editor.blocks.clear();
+          // Import HTML to EditorJS converter
+          const { htmlToEditorJS } = await import('editorjs_converter');
           
-          // Use EditorJS renderFromHTML method
-          await controller.editor.blocks.renderFromHTML(generatedContent);
+          // Convert HTML to EditorJS JSON
+          const editorJSData = htmlToEditorJS(generatedContent);
+          console.log('Converted HTML to EditorJS:', editorJSData);
           
+          // Insert into EditorJS
+          await controller.editor.render(editorJSData);
           closeAiPopup();
           return;
         } catch (error) {
           console.error('EditorJS insertion failed:', error);
-          // Fall through to fallback method
+          alert('Failed to insert content: ' + error.message);
         }
-      }
-    }
-    
-    // Fallback: try to find EditorJS instance directly
-    const editorjsInstance = document.querySelector('[data-controller*="editorjs"]')?.editorjsInstance;
-    if (editorjsInstance) {
-      try {
-        editorjsInstance.blocks.clear();
-        await editorjsInstance.blocks.renderFromHTML(generatedContent);
-        closeAiPopup();
-        return;
-      } catch (error) {
-        console.error('EditorJS fallback insertion failed:', error);
-      }
-    }
-    
-    // Last resort: try to find any EditorJS instance on the page
-    const editorjsContainer = document.querySelector('[data-controller*="editorjs"]');
-    if (editorjsContainer && window.EditorJS) {
-      try {
-        // Look for EditorJS instance in the container's data attributes or global scope
-        const editorInstance = editorjsContainer.editorjsInstance || window.editorjsInstance;
-        if (editorInstance) {
-          editorInstance.blocks.clear();
-          await editorInstance.blocks.renderFromHTML(generatedContent);
-          closeAiPopup();
-          return;
-        }
-      } catch (error) {
-        console.error('EditorJS global fallback insertion failed:', error);
       }
     }
   } else if (editorType === 'trix') {
@@ -570,6 +615,89 @@ async function insertContent() {
 
 #aiResultPreview:first-child h2 {
   margin-top: 0;
+}
+
+#aiResultPreview hr {
+  border: none;
+  border-top: 1px solid #2a2a2a;
+  margin: 1rem 0;
+}
+
+#aiResultPreview ul, #aiResultPreview ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  color: #d1d5db;
+}
+
+#aiResultPreview li {
+  margin: 0.25rem 0;
+}
+
+#aiResultPreview blockquote {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-left: 3px solid #6366f1;
+  background-color: rgba(99, 102, 241, 0.05);
+  color: #d1d5db;
+}
+
+#aiResultPreview blockquote cite {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+#aiResultPreview pre {
+  background-color: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+#aiResultPreview code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #60a5fa;
+}
+
+#aiResultPreview .warning-box {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: rgba(234, 179, 8, 0.1);
+  border-left: 3px solid #eab308;
+  border-radius: 0.375rem;
+}
+
+#aiResultPreview .warning-box strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #fbbf24;
+}
+
+#aiResultPreview .warning-box p {
+  margin: 0;
+  color: #d1d5db;
+}
+
+#aiResultPreview .checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+#aiResultPreview .checklist-item {
+  display: flex;
+  align-items: start;
+  margin: 0.5rem 0;
+  color: #d1d5db;
+}
+
+#aiResultPreview .checklist-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+  margin-top: 0.125rem;
 }
 </style>
 

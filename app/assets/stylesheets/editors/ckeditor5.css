@@ -1,0 +1,123 @@
+/* --------- CKEditor 5 Editor Styling --------- */
+
+/* Ensure minimum font size of 16px */
+.ck-content,
+.ck-editor__editable,
+.ck-editor__editable_inline {
+  font-size: 16px;
+}
+
+/* CKEditor 5 Dark Theme (default) */
+.ck-content,
+.ck-editor__editable,
+.ck-editor__editable_inline {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border-color: #2a2a2a !important;
+  min-height: calc(100vh - 300px) !important;
+  border: 0px !important;
+}
+
+.ck-toolbar {
+  background-color: #1a1a1a !important;
+  border: 1px solid #2a2a2a !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  color: #ffffff !important;
+  padding: 0.5rem !important;
+}
+
+.ck-toolbar__separator {
+  background-color: #2a2a2a !important;
+}
+
+.ck-button {
+  color: #ffffff !important;
+}
+
+.ck-button:hover {
+  background-color: #2a2a2a !important;
+}
+
+.ck-button.ck-on {
+  background-color: #1e3a8a !important;
+  color: #ffffff !important;
+}
+
+/* Dropdown menu styling */
+.ck-dropdown__panel {
+  background-color: #1a1a1a !important;
+  border-color: #2a2a2a !important;
+}
+
+.ck-list__item .ck-button {
+  color: #ffffff !important;
+}
+
+.ck-list__item .ck-button:hover {
+  background-color: #2a2a2a !important;
+}
+
+.ck-button__label {
+  color: #ffffff !important;
+}
+
+/* CKEditor 5 Light Theme */
+.editor--light .ck-content,
+.editor--light .ck-editor__editable,
+.editor--light .ck-editor__editable_inline {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: #e5e7eb !important;
+}
+
+.editor--light .ck-toolbar {
+  background-color: #f9fafb !important;
+  border-color: #e5e7eb !important;
+}
+
+.editor--light .ck-toolbar__separator {
+  background-color: #d1d5db !important;
+}
+
+.editor--light .ck-button {
+  color: #374151 !important;
+}
+
+.editor--light .ck-button:hover {
+  background-color: #e5e7eb !important;
+}
+
+.editor--light .ck-button.ck-on {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+/* Dropdown menu styling - Light theme */
+.editor--light .ck-dropdown__panel {
+  background-color: #f9fafb !important;
+  border-color: #e5e7eb !important;
+}
+
+.editor--light .ck-list__item .ck-button {
+  color: #374151 !important;
+}
+
+.editor--light .ck-list__item .ck-button:hover {
+  background-color: #e5e7eb !important;
+}
+
+.editor--light .ck-button__label {
+  color: #374151 !important;
+}
+
+
+.ckeditor5-editor {
+  width: 708px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ck-powered-by__label {
+  display: none !important;
+}

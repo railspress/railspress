@@ -103,7 +103,7 @@ class Api::V1::AiAgentsController < ApplicationController
     user_input = params[:user_input] || ""
     context = params[:context] || {}
     
-    agent = AiAgent.active.find_by(agent_type: agent_type)
+    agent = AiAgent.active.find_by(slug: agent_type)
     
     unless agent
       render json: {

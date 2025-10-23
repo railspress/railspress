@@ -52,7 +52,7 @@
               <svg class="w-3 h-3 text-green-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
               </svg>
-              <span class="autosave-text">All changes saved</span>
+              <span class="autosave-text"></span>
             </div>
           </div>
           
@@ -102,7 +102,9 @@
       <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Title + Editor Container -->
         <div class="flex-1 overflow-y-auto">
-        <div class="max-w-4xl ml-0 px-8 py-12">
+        <div class="ml-0 px-8 py-12">
+
+        <div class="post-title-container">
           <!-- Title Input -->
           <%= f.text_field :title, 
               value: (@post.auto_draft_status? && @post.title == 'Untitled') ? '' : @post.title,
@@ -110,9 +112,10 @@
               placeholder: "Untitled",
               autofocus: !@post.persisted?,
               data: { autosave_target: "title", slug_generator_target: "title", action: "input->slug-generator#generateSlug" } %>
+        </div>
           
           <!-- Content Editor (Dynamic based on user preference) -->
-          <div class="min-h-[calc(100vh-300px)]">
+          <div style="min-height: calc(100vh - 30px) !important;">
             <%= render 'shared/content_editor_simple', 
                 form: f,
                 content: @post.content.to_s,

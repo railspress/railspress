@@ -12,6 +12,8 @@ pin "@rails/actioncable", to: "actioncable.esm.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from "app/javascript/channels", under: "channels"
 
+pin "editorjs_converter", to: "editorjs_converter.js"
+
 pin "trix"
 
 pin "tabulator-tables", to: "https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/js/tabulator_esm.min.js"

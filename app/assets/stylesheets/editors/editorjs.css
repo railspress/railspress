@@ -1,0 +1,463 @@
+/* --------- EditorJS Editor Styling --------- */
+
+/* --------- Quick theme tokens --------- */
+:root {
+  --ce-bg: #0b0b0b;
+  --ce-text: #fff;
+  --ce-muted: #b8b8b8;
+  --ce-border: #1f1f1f;
+  --ce-hover: #151515;
+  --ce-accent: #7c5cff;
+  --ce-focus: #2a2a2a;
+  --ce-shadow: 0 12px 28px rgba(0,0,0,.55);
+  --ce-select-bg: rgba(124, 92, 255, 0.28); /* highlight background */
+  --ce-select-fg: #fff;                     /* highlighted text color */
+  --ce-caret: #7c5cff;                       /* text caret color */
+  --ce-block-focus: #0b0b0b;                 /* focused block bg */
+  --ce-block-hover: #121212;                 /* hover bg (optional) */
+  --ce-focus-ring: 0 0 0 2px rgba(124,92,255,.35); /* keyboard focus ring */
+}
+
+.editorjs--light {
+  --ce-select-bg: rgba(124, 92, 255, 0.18);
+  --ce-select-fg: #111;
+  --ce-caret: #3a2bb3;
+  --ce-block-focus: #f6f6f8;
+  --ce-block-hover: #fafafa;
+  --ce-focus-ring: 0 0 0 2px rgba(58,43,179,.28);
+}
+
+
+
+
+/* --------- Core popovers (toolbox, block settings, conversion) --------- */
+.ce-popover,
+.ce-inline-toolbar,
+.ce-conversion-toolbar,
+.ce-settings {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+  box-shadow: var(--ce-shadow) !important;
+  backdrop-filter: saturate(120%) blur(6px);
+  z-index: 9999; /* keep above other UI */
+}
+
+/* Popover container + sections */
+.ce-popover__container,
+.ce-popover__items,
+.ce-popover__scroll {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border-color: var(--ce-border) !important;
+}
+
+/* Search field in the toolbox */
+.ce-popover__search .cdx-search-field,
+.ce-popover__search .cdx-search-field input {
+  background: var(--ce-focus) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+.ce-popover__search .cdx-search-field input::placeholder {
+  color: var(--ce-muted) !important;
+}
+
+/* Toolbox items (icon + label) — supports both old/new item class names */
+.ce-popover-item,
+.ce-popover__item {
+  background: transparent !important;
+  color: var(--ce-text) !important;
+  border-radius: 10px;
+}
+.ce-popover-item:hover,
+.ce-popover__item:hover,
+.ce-popover-item:focus-visible,
+.ce-popover__item:focus-visible {
+  background: var(--ce-hover) !important;
+  outline: none;
+}
+
+/* Item icon + title */
+.ce-popover-item__icon,
+.ce-popover__item-icon {
+  background: var(--ce-focus) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+.ce-popover-item__icon svg,
+.ce-popover__item-icon svg {
+  fill: var(--ce-text) !important;
+  stroke: var(--ce-text) !important;
+}
+.ce-popover-item__title,
+.ce-popover__item-label {
+  color: var(--ce-text) !important;
+}
+.ce-popover-item__secondary-title,
+.ce-popover__item-secondary {
+  color: var(--ce-muted) !important;
+}
+
+/* Divider lines inside popovers */
+.ce-popover__items > *.ce-popover__items-separator,
+.ce-popover .ce-popover__separator {
+  background: var(--ce-border) !important;
+}
+
+/* --------- Inline toolbar (bold/italic/link/etc.) --------- */
+.ce-inline-toolbar,
+.ce-inline-toolbar--showed {
+  background: var(--ce-bg) !important;
+  border-color: var(--ce-border) !important;
+}
+.ce-inline-tool {
+  color: var(--ce-text) !important;
+}
+.ce-inline-tool:hover,
+.ce-inline-tool--active {
+  background: var(--ce-hover) !important;
+}
+.ce-inline-toolbar .ce-link-input {
+  background: var(--ce-focus) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+
+/* --------- Conversion toolbar (change block type) --------- */
+.ce-conversion-toolbar__label {
+  color: var(--ce-muted) !important;
+}
+.ce-conversion-toolbar__action {
+  color: var(--ce-text) !important;
+}
+.ce-conversion-toolbar__action:hover,
+.ce-conversion-toolbar__action--selected {
+  background: var(--ce-hover) !important;
+}
+
+/* --------- Block settings (three-dots menu) --------- */
+.ce-settings,
+.ce-settings__plugin-zone {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border-color: var(--ce-border) !important;
+}
+.ce-settings .ce-settings__button,
+.ce-settings .ce-settings__button:hover {
+  color: var(--ce-text) !important;
+  background: transparent !important;
+}
+.ce-settings .ce-settings__button:hover {
+  background: var(--ce-hover) !important;
+}
+
+/* --------- Toolbox triggers (plus + settings) --------- */
+.ce-toolbar__plus,
+.ce-toolbar__settings-btn {
+  background: var(--ce-focus) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+}
+.ce-toolbar__plus:hover,
+.ce-toolbar__settings-btn:hover {
+  background: var(--ce-hover) !important;
+  border-color: var(--ce-accent) !important;
+}
+
+/* --------- Tooltips --------- */
+.ce-tooltip {
+  background: var(--ce-bg) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+  box-shadow: var(--ce-shadow) !important;
+}
+
+/* --------- Scrollbars inside popovers --------- */
+.ce-popover__items::-webkit-scrollbar {
+  width: 10px;
+}
+.ce-popover__items::-webkit-scrollbar-track {
+  background: var(--ce-bg);
+}
+.ce-popover__items::-webkit-scrollbar-thumb {
+  background: var(--ce-focus);
+  border: 2px solid var(--ce-bg);
+  border-radius: 8px;
+}
+
+/* --------- Safety: catch-all for future class name tweaks --------- */
+:where([class^="ce-popover"], [class*=" ce-popover"], .ce-inline-toolbar, .ce-conversion-toolbar)
+  * {
+  color: inherit;
+}
+
+/* Apply custom selection colors inside Editor.js */
+.codex-editor, .codex-editor * {
+  caret-color: var(--ce-caret);
+}
+.codex-editor *::selection {
+  background: var(--ce-select-bg);
+  color: var(--ce-select-fg);
+}
+.codex-editor *::-moz-selection {
+  background: var(--ce-select-bg);
+  color: var(--ce-select-fg);
+}
+
+/* Editor.js block focus/hover (prevents that default whitish flash) */
+.ce-block {
+  transition: background-color .12s ease;
+}
+.ce-block:hover {
+  background: var(--ce-block-hover);
+}
+.ce-block--focused,
+.ce-block.ce-block--selected,
+.ce-block:focus-within {
+  outline: none;
+}
+
+.ce-block--selected .ce-block__content {
+    background: var(--ce-block-focus) !important;
+}
+
+/* Paragraph + header content area so the whole line doesn't look "selected" */
+.ce-block__content,
+.ce-paragraph,
+.ce-header {
+  text-shadow: none; /* keep text crisp on custom selection */
+}
+
+/* Optional: reduce accidental line-wide selection when clicking "tunes" area */
+.ce-toolbar__settings-btn,
+.ce-toolbar__plus {
+  -webkit-tap-highlight-color: transparent; /* mobile */
+}
+
+/* --------- EditorJS Content Block Typography --------- */
+
+/* Light theme adjustments */
+.editorjs--light .cdx-warning {
+  background: rgba(251, 191, 36, 0.15);
+}
+
+.editorjs--light .cdx-warning__title {
+  color: #d97706;
+}
+
+.codex-editor {
+    padding-left: 20px !important;
+}
+
+.ce-block__content {
+    border: 1px solid var(--ce-block-focus) !important;
+}
+
+.codex-editor__redactor,
+.ce-block__content,
+.ce-toolbar__content {
+  max-width: 90vw ;
+  width: 708px;
+}
+
+.ce-block {
+  font-size: 16px;
+  max-width: 100%;
+  width: 708px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#post_title {
+    font-size: clamp(32px, 1.5vw, 44px);
+    padding-left: 5px;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 700;
+}
+
+.post-title-container {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 708px;
+}
+
+/* Headings - EditorJS wraps headings in h1-h6 with .ce-header class */
+h1.ce-header,
+h2.ce-header,
+h3.ce-header,
+h4.ce-header,
+h5.ce-header,
+h6.ce-header {
+  color: var(--ce-text);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+h1.ce-header { font-size: 2.5rem; }
+h2.ce-header { font-size: 2rem; }
+h3.ce-header { font-size: 1.75rem; }
+h4.ce-header { font-size: 1.5rem; }
+h5.ce-header { font-size: 1.25rem; }
+h6.ce-header { font-size: 1.125rem; }
+
+/* Paragraphs */
+.ce-paragraph {
+  color: var(--ce-text);
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+/* Lists */
+.cdx-list,
+.cdx-list__item {
+  color: var(--ce-text);
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+.cdx-list {
+  margin: 0.75em 0;
+  padding-left: 1.5rem;
+}
+
+.cdx-list__item {
+  margin: 0.5em 0;
+}
+
+/* Quotes */
+.cdx-quote {
+  color: var(--ce-text);
+  font-size: 1.25rem;
+  line-height: 1.75;
+  font-style: italic;
+  border-left: 4px solid var(--ce-accent);
+  padding-left: 1.5rem;
+  margin: 1.5em 0;
+}
+
+.cdx-quote__text {
+  color: var(--ce-text);
+  margin-bottom: 0.5em;
+}
+
+.cdx-quote__caption {
+  color: var(--ce-muted);
+  font-size: 0.875rem;
+  font-style: normal;
+}
+
+/* Code blocks */
+.ce-code__textarea {
+  background: var(--ce-focus) !important;
+  color: var(--ce-text) !important;
+  border: 1px solid var(--ce-border) !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 0.75em 0;
+}
+
+/* Delimiter */
+.ce-delimiter {
+  color: var(--ce-muted);
+  text-align: center;
+  margin: 2em 0;
+}
+
+/* Warning/Alert blocks */
+.cdx-warning {
+  background: rgba(251, 191, 36, 0.1);
+  border-left: 4px solid #fbbf24;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1em 0;
+}
+
+.cdx-warning__title {
+  color: #fbbf24;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+}
+
+.cdx-warning__message {
+  color: var(--ce-text);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Tables */
+.tc-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.tc-table__cell {
+  border: 1px solid var(--ce-border);
+  padding: 0.75rem;
+  color: var(--ce-text);
+  background: var(--ce-focus);
+}
+
+.tc-table__row:first-child .tc-table__cell {
+  font-weight: 600;
+  background: var(--ce-hover);
+}
+
+/* Checklist */
+.cdx-checklist__item {
+  color: var(--ce-text);
+  font-size: 1.125rem;
+  line-height: 1.75;
+  margin: 0.5em 0;
+}
+
+.cdx-checklist__item-checkbox {
+  border: 2px solid var(--ce-border);
+  background: var(--ce-focus);
+}
+
+.cdx-checklist__item--checked .cdx-checklist__item-text {
+  color: var(--ce-muted);
+  text-decoration: line-through;
+}
+
+/* Links */
+.ce-paragraph a,
+.cdx-list a {
+  color: var(--ce-accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(124, 92, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.ce-paragraph a:hover,
+.cdx-list a:hover {
+  text-decoration-color: var(--ce-accent);
+  opacity: 0.8;
+}
+
+/* Bold, Italic, etc. */
+.ce-paragraph b,
+.ce-paragraph strong {
+  font-weight: 700;
+  color: var(--ce-text);
+}
+
+.ce-paragraph i,
+.ce-paragraph em {
+  font-style: italic;
+}
+
+.ce-paragraph code {
+  background: var(--ce-focus);
+  color: var(--ce-accent);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.9em;
+}
+

@@ -458,13 +458,14 @@ puts ""
 # ============================================
 puts "🤖 Creating default AI agents..."
 
-# Get the first AI provider (should be created in ai_providers seeds)
-default_provider = AiProvider.first
+# Get the active AI provider (should be created in ai_providers seeds)
+default_provider = AiProvider.find_by(active: true) || AiProvider.find_by(provider_type: 'cohere')
 
 if default_provider
   default_agents = [
     {
       name: "Content Summarizer",
+      slug: "content_summarizer",
       description: "Summarizes long content into concise, readable summaries",
       agent_type: "content_summarizer",
       prompt: "You are a content summarizer. Your task is to create clear, concise summaries of the provided content while maintaining the key points and context. Focus on the main ideas and important details.",
@@ -478,12 +479,13 @@ if default_provider
     },
     {
       name: "Post Writer",
+      slug: "post_writer",
       description: "Helps create engaging blog posts and articles",
       agent_type: "post_writer",
       prompt: "You are a professional blog post writer. Your task is to create engaging, well-structured blog posts based on the provided topic or outline. Write in a conversational yet professional tone.",
       content: "Create blog posts that are:\n- Well-structured with clear headings\n- Engaging and easy to read\n- SEO-friendly\n- Include relevant examples\n- Have a strong conclusion",
       guidelines: "Write in a conversational tone that connects with readers. Use active voice and short paragraphs.",
-      rules: "Always fact-check information and cite sources when possible.",
+      rules: "Always fact-check information and cite sources when possible.\nNever add information not present in the source material.\nReturn only valid HTML. Valid tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>, <blockquote>, <code>, <pre>.\nDo NOT wrap HTML in markdown code blocks. Return raw HTML directly.\nDo NOT return a full HTML document (e.g., no <html>, <head>, <body> tags). Return only the content within the body.",
       tasks: "Write compelling blog posts that inform and engage readers.",
       master_prompt: "You are an expert content writer with extensive experience in creating viral blog posts and articles.",
       active: true,
@@ -491,6 +493,7 @@ if default_provider
     },
     {
       name: "Comments Analyzer",
+      slug: "comments_analyzer",
       description: "Analyzes comment sentiment and provides insights",
       agent_type: "comments_analyzer",
       prompt: "You are a comments analyzer. Your task is to analyze the sentiment and content of comments to provide insights about audience engagement and feedback.",
@@ -504,6 +507,7 @@ if default_provider
     },
     {
       name: "SEO Analyzer",
+      slug: "seo_analyzer",
       description: "Analyzes content for SEO optimization opportunities",
       agent_type: "seo_analyzer",
       prompt: "You are an SEO specialist. Your task is to analyze content and provide specific recommendations for improving search engine optimization.",
@@ -518,7 +522,8 @@ if default_provider
   ]
 
   default_agents.each do |agent_attrs|
-    agent = AiAgent.find_or_create_by!(name: agent_attrs[:name]) do |a|
+    agent = AiAgent.find_or_create_by!(slug: agent_attrs[:slug]) do |a|
+      a.name = agent_attrs[:name]
       a.description = agent_attrs[:description]
       a.agent_type = agent_attrs[:agent_type]
       a.prompt = agent_attrs[:prompt]

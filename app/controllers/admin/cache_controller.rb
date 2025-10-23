@@ -34,7 +34,7 @@ class Admin::CacheController < Admin::BaseController
       :file_cache_path, :memory_cache_size,
       # Legacy fields from old Redis form
       :url, :cache_url, :session_url, :timeout, :connect_timeout,
-      :reconnect_attempts, :reconnect_delay, :reconnect_delay_max,
+      :reconnect_attempts,
       :cache_expires_in, :session_expires_in, :commit
     )
 

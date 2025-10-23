@@ -2,7 +2,7 @@ class AiHelper
   class << self
     # Execute an AI agent by type
     def execute_agent(agent_type, user_input = "", context = {})
-      agent = AiAgent.active.find_by(agent_type: agent_type)
+      agent = AiAgent.active.find_by(slug: agent_type)
       return { success: false, error: "No active agent found for type: #{agent_type}" } unless agent
       
       begin
@@ -63,12 +63,12 @@ class AiHelper
     
     # Check if an agent type is available
     def agent_available?(agent_type)
-      AiAgent.active.exists?(agent_type: agent_type)
+      AiAgent.active.exists?(slug: agent_type)
     end
     
     # Get agent info
     def agent_info(agent_type)
-      agent = AiAgent.active.find_by(agent_type: agent_type)
+      agent = AiAgent.active.find_by(slug: agent_type)
       return nil unless agent
       
       {

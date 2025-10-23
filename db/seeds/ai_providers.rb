@@ -11,7 +11,7 @@ openai_provider = AiProvider.find_or_create_by!(name: 'OpenAI GPT-4') do |provid
   provider.model_identifier = 'gpt-4o'
   provider.max_tokens = 4000
   provider.temperature = 0.7
-  provider.active = true
+  provider.active = false
   provider.position = 1
 end
 
@@ -25,7 +25,7 @@ openai_35_provider = AiProvider.find_or_create_by!(name: 'OpenAI GPT-3.5 Turbo')
   provider.model_identifier = 'gpt-3.5-turbo'
   provider.max_tokens = 4000
   provider.temperature = 0.7
-  provider.active = true
+  provider.active = false
   provider.position = 2
 end
 
@@ -39,7 +39,7 @@ anthropic_provider = AiProvider.find_or_create_by!(name: 'Anthropic Claude') do 
   provider.model_identifier = 'claude-3-5-sonnet-20241022'
   provider.max_tokens = 4000
   provider.temperature = 0.7
-  provider.active = true
+  provider.active = false
   provider.position = 3
 end
 
@@ -53,7 +53,7 @@ google_provider = AiProvider.find_or_create_by!(name: 'Google Gemini') do |provi
   provider.model_identifier = 'gemini-1.5-pro'
   provider.max_tokens = 4000
   provider.temperature = 0.7
-  provider.active = true
+  provider.active = false
   provider.position = 4
 end
 
