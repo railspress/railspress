@@ -73,6 +73,8 @@
 .ai-left-sidebar {
   flex-shrink: 0;
   transition: width 0.3s ease-in-out;
+  position: fixed;
+  top: 42px;
 }
 
 .ai-sidebar-content {

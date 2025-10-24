@@ -35,7 +35,7 @@ export default class extends Controller {
     } else {
       // Expand sidebar
       this.element.style.width = '400px'
-      this.element.style.overflow = 'auto'
+      this.element.style.overflow = 'visible'
       contentEl.style.opacity = '1'
       contentEl.style.pointerEvents = 'auto'
       

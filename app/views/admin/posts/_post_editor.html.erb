@@ -141,7 +141,7 @@
       <div class="ai-left-sidebar transition-all duration-300"
            data-controller="ai-sidebar"
            data-ai-sidebar-collapsed-value="true"
-           style="width: 0; border-right: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); position: fixed; top: 60px; bottom: 0; left: 0; overflow: hidden; z-index: 10;">
+           style="width: 0; border-right: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: calc(100vh - 50px); overflow: hidden;">
         
         <div class="ai-sidebar-content h-full" data-ai-sidebar-target="content" style="width: 400px; opacity: 0; pointer-events: none;">
           <%= render 'shared/ai_chat_widget',
@@ -209,7 +209,7 @@
       </div>
     
       <!-- Right Sidebar: Settings -->
-      <div class="w-80 transition-all duration-300 sidebar-scroll" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); position: fixed; top: 60px; bottom: 0; right: 0; overflow-y: auto; z-index: 10;">
+      <div class="w-80 transition-all duration-300 sidebar-scroll" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: 100vh; overflow-y: auto;">
       
       <div class="p-6 space-y-8" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
         
