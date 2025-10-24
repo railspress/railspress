@@ -105,7 +105,7 @@ Rails.application.configure do
   
   # Hot reloading for CSS/JS changes
   #config.middleware.insert_after ActionDispatch::Static, Hotwire::Livereload::Middleware
-  config.hotwire_livereload.reload_method = :turbo_stream
+  config.hotwire_livereload.reload_method = :page_reload
   
   # Optimized listen paths to avoid problematic directories
   config.hotwire_livereload.listen_paths = [

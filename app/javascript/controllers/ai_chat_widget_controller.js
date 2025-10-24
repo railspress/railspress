@@ -197,31 +197,51 @@ export default class extends Controller {
     
     // Copy button
     const copyBtn = document.createElement('button')
+    copyBtn.type = 'button'
     copyBtn.className = 'ai-chat-action-icon'
     copyBtn.title = 'Copy'
     copyBtn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>'
-    copyBtn.addEventListener('click', () => this.copyMessage(bubble, eventId))
+    copyBtn.addEventListener('click', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      this.copyMessage(bubble, eventId)
+    })
     
     // Insert button
     const insertBtn = document.createElement('button')
+    insertBtn.type = 'button'
     insertBtn.className = 'ai-chat-action-icon'
     insertBtn.title = 'Insert to editor'
     insertBtn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>'
-    insertBtn.addEventListener('click', () => this.insertMessage(bubble, eventId))
+    insertBtn.addEventListener('click', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      this.insertMessage(bubble, eventId)
+    })
     
     // Like button
     const likeBtn = document.createElement('button')
+    likeBtn.type = 'button'
     likeBtn.className = 'ai-chat-action-icon'
     likeBtn.title = 'Like'
     likeBtn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>'
-    likeBtn.addEventListener('click', () => this.likeMessage(bubble, eventId))
+    likeBtn.addEventListener('click', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      this.likeMessage(bubble, eventId)
+    })
     
     // Unlike button
     const unlikeBtn = document.createElement('button')
+    unlikeBtn.type = 'button'
     unlikeBtn.className = 'ai-chat-action-icon'
     unlikeBtn.title = 'Dislike'
     unlikeBtn.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" /></svg>'
-    unlikeBtn.addEventListener('click', () => this.unlikeMessage(bubble, eventId))
+    unlikeBtn.addEventListener('click', (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+      this.unlikeMessage(bubble, eventId)
+    })
     
     actionsDiv.appendChild(copyBtn)
     actionsDiv.appendChild(insertBtn)
@@ -598,19 +618,19 @@ export default class extends Controller {
       console.error('Failed to copy:', err)
     })
   }
-  
-  insertMessage(bubble, eventId) {
+
+   async insertMessage(bubble, eventId) {
+
     const contentDiv = bubble.querySelector('.ai-chat-bubble-content')
     if (!contentDiv) return
+
+    const generatedContent = this.displayHtmlRawValue ? contentDiv.innerHTML : contentDiv.textContent
     
-    const content = this.displayHtmlRawValue ? contentDiv.innerHTML : contentDiv.textContent
-    
-    // Use callback if provided
     if (this.insertCallbackValue) {
       try {
         const callback = new Function('return ' + this.insertCallbackValue)()
         if (typeof callback === 'function') {
-          callback(content)
+          callback(generatedContent)
         }
       } catch (e) {
         console.error('Failed to execute insert callback:', e)
@@ -618,17 +638,63 @@ export default class extends Controller {
       this.sendFeedback(eventId, 'insert')
       return
     }
+
+    // Detect editor type from the wrapper
+    const editorWrapper = document.querySelector('[data-editor-type]');
+    const editorType = editorWrapper ? editorWrapper.dataset.editorType : null;
     
-    // Fallback to target selector
-    if (!this.targetSelectorValue) return
+    // Try different insertion methods based on editor type
+    if (editorType === 'editorjs') {
+      // Find EditorJS controller
+      const editorjsElement = document.querySelector('[data-controller*="editorjs"]');
+      if (editorjsElement) {
+        const controller = window.Stimulus.getControllerForElementAndIdentifier(editorjsElement, 'editorjs');
+        if (controller && controller.editor) {
+          try {
+            // Import HTML to EditorJS converter
+            const { htmlToEditorJS } = await import('editorjs_converter');
+            
+            // Convert HTML to EditorJS JSON
+            const editorJSData = htmlToEditorJS(generatedContent);
+            console.log('Converted HTML to EditorJS:', editorJSData);
+            
+            // Insert into EditorJS
+            await controller.editor.render(editorJSData);
+            
+            // Trigger saveContent to populate content_json field
+            if (controller.saveContent) {
+              await controller.saveContent();
+            }
+            
+            return;
+          } catch (error) {
+            console.error('EditorJS insertion failed:', error);
+            alert('Failed to insert content: ' + error.message);
+          }
+        }
+      }
+    } else if (editorType === 'trix') {
+      // Find Trix editor
+      const trixEditor = document.querySelector('trix-editor');
+      if (trixEditor) {
+        trixEditor.editor.loadHTML(generatedContent);
+        return;
+      }
+    } else if (editorType === 'ckeditor5') {
+      // Find CKEditor instance
+      const ckElement = document.querySelector('[data-controller*="ckeditor5"]');
+      if (ckElement) {
+        const controller = window.Stimulus.getControllerForElementAndIdentifier(ckElement, 'ckeditor5');
+        if (controller && controller.editor) {
+          controller.editor.setData(generatedContent);
+          return;
+        }
+      }
+    }
     
-    const target = document.querySelector(this.targetSelectorValue)
-    if (!target) return
-    
-    target.value = content
-    target.dispatchEvent(new Event('input', { bubbles: true }))
-    this.sendFeedback(eventId, 'insert')
   }
+  
+  
   
   likeMessage(bubble, eventId) {
     console.log('Message liked')
