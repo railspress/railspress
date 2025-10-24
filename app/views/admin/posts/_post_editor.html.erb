@@ -151,6 +151,7 @@
         <div class="ai-sidebar-content h-full w-full" data-ai-sidebar-target="content" style="opacity: 0; pointer-events: none;">
           <%= render 'shared/ai_chat_widget',
               agent_slug: 'post_writer',
+              allow_agent_switch: true,
               height: '100%',
               recall_conversation: true,
               show_greeting: false,
@@ -161,13 +162,36 @@
               display_html_raw: true,
               show_close_button: true,
               close_button_callback:  'toggleAiSidebar',
-              background_color: '#131313',
-              header_color: '#131313',
-              textbar_color: '#131313',
-              user_bubble_color: '#4F46E5',
-              agent_bubble_color: '#2a2a2a',
-              accent_color: '#1E1E1E'
+              background_color: 'var(--admin-bg-primary)',
+              header_color: 'var(--admin-bg-primary)',
+              textbar_color: 'var(--admin-bg-primary)',
+              user_bubble_color: 'var(--admin-primary)',
+              agent_bubble_color: 'var(--admin-bg-secondary)',
+              accent_color: 'var(--admin-bg-tertiary)'
           %>
+          <style>
+            /* Override chat widget CSS variables to use theme colors */
+            .ai-chat-widget {
+              --chat-text: var(--admin-text-primary);
+              --chat-text-muted: var(--admin-text-tertiary);
+              --chat-border: var(--admin-border);
+              --chat-accent: var(--admin-primary);
+            }
+            
+            /* Send button should have proper contrast */
+            .ai-chat-widget .ai-chat-send {
+              background: var(--admin-primary) !important;
+              color: white !important;
+              border-top-left-radius: 0 !important;
+              border-bottom-left-radius: 0 !important;
+            }
+            
+            /* Bot avatar should use primary color */
+            .ai-chat-widget .ai-chat-message.agent .ai-chat-avatar {
+              background: var(--admin-primary) !important;
+              color: white !important;
+            }
+          </style>
         </div>
       </div>
       
