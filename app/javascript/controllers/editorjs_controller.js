@@ -251,14 +251,15 @@ export default class extends Controller {
   }
 
   notifyAutosave() {
-    // Find the autosave controller and notify it of changes
-    const autosaveController = this.application.getControllerForElementAndIdentifier(
-      document.querySelector('[data-controller*="autosave"]'), 
-      'autosave'
-    )
-    if (autosaveController) {
-      autosaveController.handleChange()
+    
+    
+
+    const autosaveElement = document.querySelector('[data-controller*="autosave"]')
+    if (autosaveElement) {
+      autosaveElement.dispatchEvent(new CustomEvent('editor:content-changed'))
+      console.log('Autosave controller notified of content changes');
     }
+
   }
 
   disconnect() {

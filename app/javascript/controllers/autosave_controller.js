@@ -104,12 +104,12 @@ export default class extends Controller {
       clearTimeout(this.debounceTimer)
     }
     
-    // Start new debounce timer - save after 5 seconds of inactivity
+    // Start new debounce timer - save after 2 seconds of inactivity
     this.debounceTimer = setTimeout(() => {
       if (this.hasChanges && !this.isSaving) {
         this.save()
       }
-    }, 5000) // 5 seconds
+    }, 2000) 
   }
 
   startPeriodicSave() {
@@ -180,6 +180,7 @@ export default class extends Controller {
         // SUCCESS - clear localStorage and exit offline mode
         this.clearLocalStorage()
         this.setOfflineMode(false)
+        console.log('Autosave successful');
         
         // If this was a new post, update the URL for future saves
         if (isNewPost && data.id && data.edit_url) {

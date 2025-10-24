@@ -612,7 +612,7 @@ export default class extends Controller {
     const content = this.displayHtmlRawValue ? contentDiv.innerHTML : contentDiv.textContent
     navigator.clipboard.writeText(content).then(() => {
       // Could show a toast notification here
-      console.log('Message copied to clipboard')
+      showToast('Message copied to clipboard')
       this.sendFeedback(eventId, 'copy')
     }).catch(err => {
       console.error('Failed to copy:', err)
