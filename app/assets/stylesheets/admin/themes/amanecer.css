@@ -36,6 +36,27 @@
   --admin-error-border: rgba(239, 68, 68, 0.25);
   --admin-info-light: rgba(59, 130, 246, 0.12);
   --admin-info-border: rgba(59, 130, 246, 0.25);
+  
+  /* Link Colors - Readable on light background */
+  --admin-link: #2563eb;  /* Blue-600 */
+  --admin-link-hover: #1d4ed8;  /* Blue-700 */
+  
+  /* Button Text */
+  --admin-btn-text: #ffffff;
+  --admin-btn-secondary-text: var(--admin-text-primary);
+  
+  /* Typography Hierarchy */
+  --admin-heading: var(--admin-text-primary);  /* Dark black */
+  --admin-body: var(--admin-text-secondary);   /* Dark gray */
+  
+  /* Interactive Elements */
+  --admin-text-interactive: #2563eb;  /* Links, clickable items */
+  
+  /* Component States */
+  --admin-text-disabled: #9ca3af;
+  --admin-text-error: #dc2626;
+  --admin-text-success: #059669;
+  --admin-text-warning: #d97706;
 }
 
 /* Tailwind class overrides - Make them use theme colors */
@@ -79,6 +100,36 @@ input, select, textarea {
 
 input::placeholder, textarea::placeholder {
   color: #a0aec0 !important;
+}
+
+/* Links - Use theme link color instead of user's primary */
+.text-indigo-600, .text-indigo-400, a.text-indigo-600 {
+  color: var(--admin-link) !important;
+}
+
+.text-indigo-600:hover, .text-indigo-400:hover, a.text-indigo-600:hover {
+  color: var(--admin-link-hover) !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--admin-heading) !important;
+}
+
+/* Body text */
+p, .prose {
+  color: var(--admin-body) !important;
+}
+
+/* Button text */
+.btn-primary {
+  color: var(--admin-btn-text) !important;
+}
+
+/* Sidebar section headers - should be readable when expanded */
+.sidebar-section-header .sidebar-text.text-gray-400,
+.sidebar-section-header span.text-gray-400 {
+  color: var(--admin-text-primary) !important;
 }
 
 /* Sidebar text for light theme */

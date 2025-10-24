@@ -4,9 +4,11 @@ module Admin::TableHelper
     html = '<div class="table-actions">'
     
     if actions.include?(:view)
-      # Show frontend view in same tab
-      html += link_to('', blog_post_path(resource.slug), 
-                      class: 'btn-view', title: 'View', target: '_self')
+      # Show frontend view in same tab (only if resource has a slug)
+      if resource.respond_to?(:slug) && resource.slug.present?
+        html += link_to('', blog_post_path(resource.slug), 
+                        class: 'btn-view', title: 'View', target: '_self')
+      end
     end
     
     if actions.include?(:edit)

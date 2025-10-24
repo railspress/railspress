@@ -3,6 +3,10 @@ module AppearanceHelper
   def user_customization_css
     primary_color = SiteSetting.get('primary_color', '#6366F1')
     secondary_color = SiteSetting.get('secondary_color', '#8B5CF6')
+    link_color = SiteSetting.get('link_color', '')
+    heading_color = SiteSetting.get('heading_color', '')
+    body_color = SiteSetting.get('body_color', '')
+    button_text_color = SiteSetting.get('button_text_color', '')
     heading_font = SiteSetting.get('heading_font', 'Inter')
     body_font = SiteSetting.get('body_font', 'Inter')
     paragraph_font = SiteSetting.get('paragraph_font', 'Inter')
@@ -21,23 +25,24 @@ module AppearanceHelper
           --admin-secondary-hover: #{darken_color(secondary_color, 8)};
           --admin-secondary-light: #{hex_to_rgba(secondary_color, 0.1)};
           
+          #{link_color.present? ? "/* User's custom link color (overrides theme) */\n--admin-link: #{link_color};\n--admin-link-hover: #{lighten_color(link_color, 10)};" : ''}
+          #{heading_color.present? ? "/* User's custom heading color */\n--admin-heading: #{heading_color};" : ''}
+          #{body_color.present? ? "/* User's custom body text color */\n--admin-body: #{body_color};" : ''}
+          #{button_text_color.present? ? "/* User's custom button text color */\n--admin-btn-text: #{button_text_color};" : ''}
+          
           /* User's fonts */
           --font-heading: #{heading_font};
           --font-body: #{body_font};
           --font-paragraph: #{paragraph_font};
         }
         
-        /* Apply user's brand colors to Tailwind classes */
-        .bg-indigo-600, .bg-primary {
+        /* Apply user's brand colors ONLY to buttons and badges, NOT text */
+        .bg-indigo-600, .bg-primary, .btn-primary {
           background-color: var(--color-primary) !important;
         }
         
         .hover\\:bg-indigo-700:hover {
           background-color: var(--admin-primary-hover) !important;
-        }
-        
-        .text-indigo-600, .text-indigo-400 {
-          color: var(--color-primary) !important;
         }
         
         .border-indigo-500, .focus\\:ring-indigo-500:focus {
@@ -51,6 +56,8 @@ module AppearanceHelper
         .bg-purple-600 {
           background-color: var(--color-secondary) !important;
         }
+        
+        /* DO NOT override .text-indigo-600 - let theme handle link colors */
         
         /* Apply user's fonts */
         h1, h2, h3, h4, h5, h6 {

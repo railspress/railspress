@@ -79,15 +79,15 @@
       <!-- Color Accents -->
       <div class="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6">
         <h2 class="text-xl font-semibold text-white mb-2">Color Accents</h2>
-        <p class="text-sm text-gray-400 mb-6">Customize primary and secondary colors</p>
+        <p class="text-sm text-gray-400 mb-6">Customize colors for buttons, links, and UI elements</p>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Primary Color -->
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-3">
-              Primary Color
+              Primary Color (Buttons)
             </label>
-            <p class="text-xs text-gray-500 mb-3">Used for buttons, links, active states</p>
+            <p class="text-xs text-gray-500 mb-3">Used for button backgrounds, badges, active states</p>
             <div class="flex items-center gap-3">
               <%= color_field_tag 'settings[primary_color]', @settings[:primary_color], 
                   class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer',
@@ -129,6 +129,75 @@
               <button type="button" onclick="setSecondaryColor('#EF4444')" class="w-8 h-8 rounded-full bg-red-600 border-2 border-[#2a2a2a] hover:border-red-400" title="Red"></button>
               <button type="button" onclick="setSecondaryColor('#14B8A6')" class="w-8 h-8 rounded-full bg-teal-600 border-2 border-[#2a2a2a] hover:border-teal-400" title="Teal"></button>
             </div>
+          </div>
+        </div>
+        
+        <!-- Link Color -->
+        <div class="mt-6 pt-6 border-t border-[#2a2a2a]">
+          <label class="block text-sm font-medium text-gray-300 mb-3">
+            Link Color
+          </label>
+          <p class="text-xs text-gray-500 mb-3">Color for text links (post titles, clickable items)</p>
+          <div class="flex items-center gap-3">
+            <%= color_field_tag 'settings[link_color]', @settings[:link_color] || '#60a5fa', 
+                class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+            <%= text_field_tag 'settings[link_color_text]', @settings[:link_color] || '#60a5fa', 
+                class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                onchange: "document.querySelector('input[name=\"settings[link_color]\"]').value = this.value" %>
+          </div>
+          
+          <!-- Link Color Presets -->
+          <div class="mt-3 flex gap-2">
+            <button type="button" onclick="setLinkColor('#60a5fa')" class="w-8 h-8 rounded-full bg-blue-400 border-2 border-[#2a2a2a] hover:border-blue-300" title="Blue-400 (Dark themes)"></button>
+            <button type="button" onclick="setLinkColor('#2563eb')" class="w-8 h-8 rounded-full bg-blue-600 border-2 border-[#2a2a2a] hover:border-blue-500" title="Blue-600 (Light themes)"></button>
+            <button type="button" onclick="setLinkColor('#3B82F6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-[#2a2a2a] hover:border-blue-400" title="Blue-500"></button>
+            <button type="button" onclick="setLinkColor('#8B5CF6')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-[#2a2a2a] hover:border-purple-400" title="Purple"></button>
+            <button type="button" onclick="setLinkColor('#EC4899')" class="w-8 h-8 rounded-full bg-pink-500 border-2 border-[#2a2a2a] hover:border-pink-400" title="Pink"></button>
+          </div>
+        </div>
+        
+        <!-- Heading Color -->
+        <div class="mt-6 pt-6 border-t border-[#2a2a2a]">
+          <label class="block text-sm font-medium text-gray-300 mb-3">
+            Heading Color
+          </label>
+          <p class="text-xs text-gray-500 mb-3">Color for headings (H1, H2, H3, etc.)</p>
+          <div class="flex items-center gap-3">
+            <%= color_field_tag 'settings[heading_color]', @settings[:heading_color] || '#ffffff', 
+                class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+            <%= text_field_tag 'settings[heading_color_text]', @settings[:heading_color] || '#ffffff', 
+                class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                onchange: "document.querySelector('input[name=\"settings[heading_color]\"]').value = this.value" %>
+          </div>
+        </div>
+        
+        <!-- Body Text Color -->
+        <div class="mt-6 pt-6 border-t border-[#2a2a2a]">
+          <label class="block text-sm font-medium text-gray-300 mb-3">
+            Body Text Color
+          </label>
+          <p class="text-xs text-gray-500 mb-3">Color for paragraphs and general text</p>
+          <div class="flex items-center gap-3">
+            <%= color_field_tag 'settings[body_color]', @settings[:body_color] || '#e8e8e8', 
+                class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+            <%= text_field_tag 'settings[body_color_text]', @settings[:body_color] || '#e8e8e8', 
+                class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                onchange: "document.querySelector('input[name=\"settings[body_color]\"]').value = this.value" %>
+          </div>
+        </div>
+        
+        <!-- Button Text Color -->
+        <div class="mt-6 pt-6 border-t border-[#2a2a2a]">
+          <label class="block text-sm font-medium text-gray-300 mb-3">
+            Button Text Color
+          </label>
+          <p class="text-xs text-gray-500 mb-3">Text color inside primary buttons</p>
+          <div class="flex items-center gap-3">
+            <%= color_field_tag 'settings[button_text_color]', @settings[:button_text_color] || '#ffffff', 
+                class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+            <%= text_field_tag 'settings[button_text_color_text]', @settings[:button_text_color] || '#ffffff', 
+                class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                onchange: "document.querySelector('input[name=\"settings[button_text_color]\"]').value = this.value" %>
           </div>
         </div>
       </div>
@@ -214,6 +283,9 @@
           <p class="text-base mb-4" style="font-family: <%= @settings[:paragraph_font] %>; color: #d1d5db;">
             This is how paragraph text will look with your selected fonts. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
           </p>
+          <a href="#" class="text-base font-medium mb-4 block" style="color: <%= @settings[:link_color] || '#60a5fa' %>; font-family: <%= @settings[:body_font] %>;">
+            Link Example (Post Title)
+          </a>
           <button type="button" class="px-4 py-2 rounded-lg text-white font-medium" style="background-color: <%= @settings[:primary_color] %>; font-family: <%= @settings[:body_font] %>;">
             Primary Button
           </button>
@@ -253,6 +325,18 @@
 </div>
 
 <!-- Appearance preview functionality is now handled by the Stimulus controller -->
+
+<script>
+  function setSecondaryColor(color) {
+    document.querySelector('input[name="settings[secondary_color]"]').value = color;
+    document.querySelector('input[name="settings[secondary_color_text]"]').value = color;
+  }
+  
+  function setLinkColor(color) {
+    document.querySelector('input[name="settings[link_color]"]').value = color;
+    document.querySelector('input[name="settings[link_color_text]"]').value = color;
+  }
+</script>
 
 <style>
   /* Color scheme radio button styling - works without Tailwind peer dependency */

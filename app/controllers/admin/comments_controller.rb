@@ -37,53 +37,35 @@ class Admin::CommentsController < Admin::BaseController
             title: "",
             formatter: "rowSelection",
             titleFormatter: "rowSelection",
-            width: 40,
-            headerSort: false
+            width: "5%",
+            headerSort: false,
+            hozAlign: "center",
+            headerHozAlign: "center"
           },
           {
             title: "Author",
             field: "author_name",
-            width: 150,
+            width: "20%",
             formatter: "html"
           },
           {
             title: "Comment",
             field: "content",
-            width: 250,
-            formatter: "html"
-          },
-          {
-            title: "Type",
-            field: "type",
-            width: 80,
+            width: "35%",
             formatter: "html"
           },
           {
             title: "In Response To",
             field: "commentable_title",
-            width: 150,
+            width: "20%",
             formatter: "html"
-          },
-          {
-            title: "Status",
-            field: "status",
-            width: 100,
-            formatter: "html"
-          },
-          {
-            title: "IP",
-            field: "author_ip",
-            width: 120
-          },
-          {
-            title: "Browser",
-            field: "browser_info",
-            width: 100
           },
           {
             title: "Date",
             field: "created_at",
-            width: 150,
+            width: "10%",
+            hozAlign: "center",
+            headerHozAlign: "center",
             formatter: "datetime",
             formatterParams: {
               inputFormat: "YYYY-MM-DDTHH:mm:ss.SSSZ",
@@ -93,9 +75,11 @@ class Admin::CommentsController < Admin::BaseController
           {
             title: "Actions",
             field: "actions",
-            width: 120,
+            width: "10%",
             headerSort: false,
-            formatter: "html"
+            formatter: "html",
+            hozAlign: "center",
+            headerHozAlign: "center"
           }
         ]
       end
@@ -210,13 +194,7 @@ class Admin::CommentsController < Admin::BaseController
           author_name: format_author_name(comment),
           author_email: comment.author_email,
           content: format_content(comment.content),
-          type: format_comment_type(comment.comment_type),
-          status: format_status_badge(comment.status),
-          status_raw: comment.status,
-          commentable_type: comment.commentable_type,
-          commentable_title: comment.commentable&.title || 'Unknown',
-          author_ip: comment.author_ip,
-          browser_info: comment.browser_info,
+          commentable_title: format_commentable_title(comment),
           created_at: comment.created_at.iso8601,
           actions: format_actions(comment),
           edit_url: edit_admin_comment_path(comment),
@@ -227,46 +205,38 @@ class Admin::CommentsController < Admin::BaseController
     end
     
     def format_actions(comment)
-      # Comments table: view, edit, delete
-      helpers.format_table_actions(comment, [:view, :edit, :delete])
+      # Comments table: edit, delete (no view since comments don't have slugs)
+      helpers.format_table_actions(comment, [:edit, :delete])
     end
     
     def format_author_name(comment)
+      edit_url = edit_admin_comment_path(comment)
       if comment.user.present?
-        "<div class='flex flex-col'>
-          <span class='font-medium text-gray-900'>#{comment.user.name}</span>
-          <span class='text-xs text-gray-500'>(#{comment.author_name})</span>
-        </div>"
+        "<a href=\"#{edit_url}\" class=\"text-indigo-600 hover:text-indigo-900 font-medium\">#{comment.user.name}</a>"
       else
-        "<span class='font-medium text-gray-900'>#{comment.author_name}</span>"
+        "<a href=\"#{edit_url}\" class=\"text-indigo-600 hover:text-indigo-900 font-medium\">#{comment.author_name}</a>"
+      end
+    end
+    
+    def format_commentable_title(comment)
+      return '<span class="text-gray-400">Unknown</span>' unless comment.commentable.present?
+      
+      title = comment.commentable.title
+      
+      # Link to the commentable's edit page
+      if comment.commentable.is_a?(Post)
+        url = edit_admin_post_path(comment.commentable)
+        "<a href=\"#{url}\" class=\"text-indigo-600 hover:text-indigo-900\">#{title}</a>"
+      elsif comment.commentable.is_a?(Page)
+        url = edit_admin_page_path(comment.commentable)
+        "<a href=\"#{url}\" class=\"text-indigo-600 hover:text-indigo-900\">#{title}</a>"
+      else
+        title
       end
     end
     
     def format_content(content)
       truncated = content.length > 100 ? content[0..100] + '...' : content
-      "<div class='text-sm text-gray-700'>#{truncated}</div>"
-    end
-    
-    def format_comment_type(type)
-      type_map = {
-        'comment' => { class: 'bg-blue-100 text-blue-800', label: 'Comment' },
-        'pingback' => { class: 'bg-purple-100 text-purple-800', label: 'Pingback' },
-        'trackback' => { class: 'bg-orange-100 text-orange-800', label: 'Trackback' }
-      }
-      
-      type_info = type_map[type] || { class: 'bg-gray-100 text-gray-800', label: type&.capitalize || 'Unknown' }
-      "<span class='px-2 py-1 text-xs font-medium rounded-full #{type_info[:class]}'>#{type_info[:label]}</span>"
-    end
-    
-    def format_status_badge(status)
-      status_map = {
-        'approved' => { class: 'bg-green-100 text-green-800', label: 'Approved' },
-        'pending' => { class: 'bg-yellow-100 text-yellow-800', label: 'Pending' },
-        'spam' => { class: 'bg-red-100 text-red-800', label: 'Spam' },
-        'trash' => { class: 'bg-gray-100 text-gray-800', label: 'Trash' }
-      }
-      
-      status_info = status_map[status] || { class: 'bg-gray-100 text-gray-800', label: status&.capitalize || 'Unknown' }
-      "<span class='px-2 py-1 text-xs font-medium rounded-full #{status_info[:class]}'>#{status_info[:label]}</span>"
+      "<div class='text-sm'>#{truncated}</div>"
     end
 end
