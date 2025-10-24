@@ -82,13 +82,7 @@
       }
     </style>
     
-    <!-- NEW APPEARANCE SYSTEM -->
-    <%= stylesheet_link_tag "admin_base", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "admin/themes/#{current_color_scheme}", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
-    <%= user_customization_css %>
-    
-    <!-- OLD SYSTEM (keep for comparison) -->
+    <!-- Dynamic Appearance CSS -->
     <%= dynamic_appearance_css %>
     <%= javascript_importmap_tags %>
     
