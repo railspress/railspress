@@ -1,0 +1,65 @@
+/* Onyx Theme - Pure Black Professional */
+
+:root {
+  /* Backgrounds - Pure black scheme */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #111111;
+  --admin-bg-app: #000000;
+  --admin-bg-primary: #0a0a0a;
+  --admin-bg-secondary: #111111;
+  --admin-bg-tertiary: #141414;
+  --admin-bg-elevated: #1a1a1a;
+  
+  /* Borders */
+  --border-color: #1a1a1a;
+  --admin-border-subtle: #1a1a1a;
+  --admin-border: #2a2a2a;
+  --admin-border-strong: #333333;
+  
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #e8e8e8;
+  --text-muted: #6b7280;
+  --admin-text-primary: #ffffff;
+  --admin-text-secondary: #e8e8e8;
+  --admin-text-tertiary: #a8a8a8;
+  --admin-text-muted: #9ca3af;
+  --admin-text-placeholder: #6b7280;
+  
+  /* Status Colors - Dark theme variants */
+  --admin-success-light: rgba(16, 185, 129, 0.1);
+  --admin-success-border: rgba(16, 185, 129, 0.2);
+  --admin-warning-light: rgba(245, 158, 11, 0.1);
+  --admin-warning-border: rgba(245, 158, 11, 0.2);
+  --admin-error-light: rgba(239, 68, 68, 0.1);
+  --admin-error-border: rgba(239, 68, 68, 0.2);
+  --admin-info-light: rgba(59, 130, 246, 0.1);
+  --admin-info-border: rgba(59, 130, 246, 0.2);
+}
+
+/* Tailwind class overrides - Make them use theme colors */
+.bg-\[\#0a0a0a\], .bg-\[\#111111\] {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-\[\#1a1a1a\] {
+  background-color: var(--bg-secondary) !important;
+}
+
+.border-\[\#2a2a2a\] {
+  border-color: var(--border-color) !important;
+}
+
+.text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-300, .text-gray-400 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-500, .text-gray-600 {
+  color: var(--text-muted) !important;
+}
+

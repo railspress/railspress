@@ -8,32 +8,20 @@
     <!-- Tailwind CSS - Use Rails asset pipeline in production -->
     <% if Rails.env.development? %>
       <script src="https://cdn.tailwindcss.com"></script>
-    <% else %>
-      <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <% end %>
     
-    <!-- Custom Admin Styles -->
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    
+    <!-- Admin Theme CSS - Loads selected color scheme -->
+    <%= stylesheet_link_tag "admin/themes/#{current_color_scheme}", "data-turbo-track": "reload" %>
+    
+    <!-- User Customizations (colors & fonts) -->
+    <%= user_customization_css %>
+    
+    <!-- Login Page Styles -->
     <style>
-      <%
-        # Get current color scheme
-        color_scheme = SiteSetting.get('color_scheme', 'onyx')
-        scheme_colors = color_scheme_colors(color_scheme)
-        is_light_theme = color_scheme == 'amanecer'
-      %>
-      :root {
-        --admin-bg-primary: <%= scheme_colors[:bg_primary] %>;
-        --admin-bg-secondary: <%= scheme_colors[:bg_secondary] %>;
-        --admin-bg-tertiary: <%= scheme_colors[:bg_tertiary] %>;
-        --admin-border: <%= scheme_colors[:border_color] %>;
-        --admin-text-primary: <%= is_light_theme ? '#000000' : '#ffffff' %>;
-        --admin-text-secondary: <%= is_light_theme ? '#6b7280' : '#a0a0a0' %>;
-        --admin-text-tertiary: <%= is_light_theme ? '#9ca3af' : '#6b6b6b' %>;
-        --admin-accent-primary: #6366f1;
-        --admin-accent-hover: #7c3aed;
-      }
-      
       body {
-        background: var(--admin-bg-primary);
+        background: var(--admin-bg-app);
         min-height: 100vh;
         color: var(--admin-text-primary);
       }
@@ -44,18 +32,18 @@
       }
       
       .admin-logo {
-        color: var(--admin-accent-primary);
+        color: var(--admin-primary);
       }
       
       .btn-primary {
-        background: var(--admin-accent-primary);
+        background: var(--admin-primary);
         transition: all 0.3s ease;
       }
       
       .btn-primary:hover {
-        background: var(--admin-accent-hover);
+        background: var(--admin-primary-hover);
         transform: translateY(-1px);
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 8px 20px var(--admin-primary-light);
       }
       
       .form-input {
@@ -66,8 +54,8 @@
       }
       
       .form-input:focus {
-        border-color: var(--admin-accent-primary);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        border-color: var(--admin-primary);
+        box-shadow: 0 0 0 3px var(--admin-primary-light);
         outline: none;
       }
       

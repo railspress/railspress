@@ -1,0 +1,97 @@
+/* Amanecer Theme - Clean Light */
+
+:root {
+  /* Backgrounds - Light scheme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #f1f3f5;
+  --admin-bg-app: #ffffff;
+  --admin-bg-primary: #f8f9fa;
+  --admin-bg-secondary: #f1f3f5;
+  --admin-bg-tertiary: #e9ecef;
+  --admin-bg-elevated: #ffffff;
+  
+  /* Borders */
+  --border-color: #e9ecef;
+  --admin-border-subtle: #e9ecef;
+  --admin-border: #dee2e6;
+  --admin-border-strong: #ced4da;
+  
+  /* Text - Dark colors for light theme */
+  --text-primary: #1a202c;
+  --text-secondary: #2d3748;
+  --text-muted: #718096;
+  --admin-text-primary: #1a202c;
+  --admin-text-secondary: #2d3748;
+  --admin-text-tertiary: #4a5568;
+  --admin-text-muted: #718096;
+  --admin-text-placeholder: #a0aec0;
+  
+  /* Status Colors - Light theme variants */
+  --admin-success-light: rgba(16, 185, 129, 0.12);
+  --admin-success-border: rgba(16, 185, 129, 0.25);
+  --admin-warning-light: rgba(245, 158, 11, 0.12);
+  --admin-warning-border: rgba(245, 158, 11, 0.25);
+  --admin-error-light: rgba(239, 68, 68, 0.12);
+  --admin-error-border: rgba(239, 68, 68, 0.25);
+  --admin-info-light: rgba(59, 130, 246, 0.12);
+  --admin-info-border: rgba(59, 130, 246, 0.25);
+}
+
+/* Tailwind class overrides - Make them use theme colors */
+.bg-\[\#0a0a0a\], .bg-\[\#111111\] {
+  background-color: var(--bg-secondary) !important;
+}
+
+.bg-\[\#1a1a1a\] {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.border-\[\#2a2a2a\] {
+  border-color: var(--border-color) !important;
+}
+
+.text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-300, .text-gray-400 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-500, .text-gray-600 {
+  color: var(--text-muted) !important;
+}
+
+/* Light theme specific overrides */
+body, .text-white {
+  color: #1a202c !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #1a202c !important;
+}
+
+input, select, textarea {
+  color: #1a202c !important;
+  background-color: #ffffff !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #a0aec0 !important;
+}
+
+/* Sidebar text for light theme */
+nav a, nav span {
+  color: #4a5568 !important;
+}
+
+nav a:hover {
+  color: #1a202c !important;
+}
+
+/* Top bar */
+header {
+  border-bottom-color: #e2e8f0 !important;
+}
+

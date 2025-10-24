@@ -19,10 +19,11 @@
     
     <%= debugbar_head  if defined? Debugbar %>
 
-    <%= stylesheet_link_tag "admin/shared", "data-turbo-track": "reload" %>
+    <!-- Admin Theme CSS - Loads selected color scheme -->
+    <%= stylesheet_link_tag "admin/themes/#{current_color_scheme}", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "admin_toggle_switches", "data-turbo-track": "reload" %>
     
-
+    <!-- Tabulator -->
     <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/css/tabulator.min.css" rel="stylesheet">
     <%= stylesheet_link_tag "tabulator_custom", "data-turbo-track": "reload" %>
     
@@ -35,70 +36,51 @@
     
     <!-- Tabulator JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.2.1/dist/js/tabulator.min.js"></script>
+    
     <style>
-      /* CSS Variables for Tabulator Theme */
-      :root {
-        --bg-primary: #0a0a0a;
-        --bg-secondary: #1a1a1a;
-        --bg-tertiary: #2a2a2a;
-        --text-primary: #ffffff;
-        --text-secondary: #e5e5e5;
-        --text-muted: #9ca3af;
-        --border-color: #2a2a2a;
-        --color-primary: #6366f1;
-      }
-
-      /* SweetAlert2 Dark Theme Customization */
+      /* SweetAlert2 Theme Customization - Uses CSS variables from theme */
       .swal2-popup {
-        background: #1a1a1a !important;
-        border: 1px solid #2a2a2a !important;
+        background: var(--admin-bg-secondary) !important;
+        border: 1px solid var(--admin-border) !important;
       }
       .swal2-title {
-        color: #ffffff !important;
+        color: var(--admin-text-primary) !important;
       }
       .swal2-html-container {
-        color: #e5e5e5 !important;
+        color: var(--admin-text-secondary) !important;
       }
       .swal2-confirm {
-        background-color: #6366f1 !important;
+        background-color: var(--admin-primary) !important;
       }
       .swal2-confirm:hover {
-        background-color: #4f46e5 !important;
+        background-color: var(--admin-primary-hover) !important;
       }
       .swal2-cancel {
-        background-color: #374151 !important;
+        background-color: var(--admin-bg-elevated) !important;
       }
       .swal2-cancel:hover {
-        background-color: #4b5563 !important;
+        background-color: var(--admin-bg-tertiary) !important;
       }
       .swal2-input, .swal2-textarea {
-        background: #0a0a0a !important;
-        border: 1px solid #2a2a2a !important;
-        color: #ffffff !important;
+        background: var(--admin-bg-primary) !important;
+        border: 1px solid var(--admin-border) !important;
+        color: var(--admin-text-primary) !important;
       }
       .swal2-input:focus, .swal2-textarea:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1) !important;
+        border-color: var(--admin-primary) !important;
+        box-shadow: 0 0 0 2px var(--admin-primary-light) !important;
       }
     </style>
     
-    <!-- Dynamic Appearance CSS -->
-    <%= dynamic_appearance_css %>
+    <!-- User Customizations (colors & fonts) -->
+    <%= user_customization_css %>
     <%= javascript_importmap_tags %>
     
     <style>
-      /* Dark theme variables */
+      /* Utility variables for backward compatibility */
       :root {
-        --bg-primary: #0a0a0a;
-        --bg-secondary: #111111;
-        --bg-tertiary: #1a1a1a;
-        --bg-hover: #222222;
-        --border-color: #2a2a2a;
-        --text-primary: #ffffff;
-        --text-secondary: #a0a0a0;
-        --text-tertiary: #6b6b6b;
-        --accent-primary: #6366f1;
-        --accent-hover: #7c3aed;
+        --accent-primary: var(--admin-primary);
+        --accent-hover: var(--admin-primary-hover);
         --success: #10b981;
         --warning: #f59e0b;
         --danger: #ef4444;
@@ -364,7 +346,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
           </svg>
-          <span class="sidebar-text">Dashboard</span>
+          <span class="sidebar-text text-sm font-semibold text-gray-400">Dashboard</span>
         <% end %>
 
         <!-- Content Section -->
