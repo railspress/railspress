@@ -666,6 +666,7 @@ export default class extends Controller {
               await controller.saveContent();
             }
             
+      this.sendFeedback(eventId, 'insert')
             return;
           } catch (error) {
             console.error('EditorJS insertion failed:', error);
@@ -678,6 +679,7 @@ export default class extends Controller {
       const trixEditor = document.querySelector('trix-editor');
       if (trixEditor) {
         trixEditor.editor.loadHTML(generatedContent);
+        this.sendFeedback(eventId, 'insert')
         return;
       }
     } else if (editorType === 'ckeditor5') {
@@ -687,6 +689,7 @@ export default class extends Controller {
         const controller = window.Stimulus.getControllerForElementAndIdentifier(ckElement, 'ckeditor5');
         if (controller && controller.editor) {
           controller.editor.setData(generatedContent);
+          this.sendFeedback(eventId, 'insert')
           return;
         }
       }
