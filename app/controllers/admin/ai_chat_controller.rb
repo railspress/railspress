@@ -14,6 +14,7 @@ class Admin::AiChatController < Admin::BaseController
     session_uuid = params[:session_uuid]
     show_greeting = params[:show_greeting] == 'true'
     settings = JSON.parse(params[:settings] || '{}')
+    content = JSON.parse(params[:content] || '{}')
     
     service = AdminChatService.new(
       agent_slug: agent_slug,
@@ -32,7 +33,8 @@ class Admin::AiChatController < Admin::BaseController
         message: message,
         conversation_history: history,
         show_greeting: show_greeting,
-        settings: settings
+        settings: settings,
+        content: content
       ) do |chunk|
         if chunk
           response.stream.write("data: #{JSON.generate({chunk: chunk, done: false})}\n\n")

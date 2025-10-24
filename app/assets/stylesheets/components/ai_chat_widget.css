@@ -17,6 +17,7 @@
   flex-direction: column;
   border: 1px solid var(--chat-border);
   overflow: hidden;
+  position: relative; /* Make it a positioning context for overlay */
 }
 
 .ai-chat-header {
@@ -430,8 +431,7 @@
   left: 0;
   right: 0;
   bottom: 100px; /* Above input area */
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(8px);
+  background: var(--chat-bg);
   z-index: 100;
   overflow-y: auto;
 }
@@ -543,6 +543,104 @@
 }
 
 .ai-chat-settings-save:hover {
+  opacity: 0.9;
+}
+
+/* Content Button */
+.ai-chat-content-btn {
+  background: none;
+  border: none;
+  color: var(--chat-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.ai-chat-content-btn:hover {
+  color: var(--chat-text);
+}
+
+/* Content Overlay */
+.ai-chat-content-overlay {
+  position: absolute;
+  top: 53px; /* Below header */
+  left: 0;
+  right: 0;
+  bottom: 100px; /* Above input area */
+  background: var(--chat-bg);
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.ai-chat-content-content {
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.ai-chat-content-title {
+  color: var(--chat-text);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.ai-chat-content-textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--chat-agent-bubble);
+  border: 1px solid var(--chat-border);
+  border-radius: 6px;
+  color: var(--chat-text);
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+  margin-bottom: 20px;
+}
+
+.ai-chat-content-textarea:focus {
+  outline: none;
+  border-color: var(--chat-accent);
+}
+
+.ai-chat-content-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ai-chat-content-close,
+.ai-chat-content-save {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ai-chat-content-close {
+  background: transparent;
+  border: 1px solid var(--chat-border);
+  color: var(--chat-text-muted);
+}
+
+.ai-chat-content-close:hover {
+  background: var(--chat-agent-bubble);
+  color: var(--chat-text);
+}
+
+.ai-chat-content-save {
+  background: var(--chat-accent);
+  border: none;
+  color: white;
+}
+
+.ai-chat-content-save:hover {
   opacity: 0.9;
 }
 

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["messages", "input", "send", "header", "menu", "settingsOverlay", "settingTone", "settingLength", "settingTemperature", "settingMaxTokens", "advancedFields", "modeToggleText", "temperatureValue"]
+  static targets = ["messages", "input", "send", "header", "menu", "settingsOverlay", "settingTone", "settingLength", "settingTemperature", "settingMaxTokens", "advancedFields", "modeToggleText", "temperatureValue", "contentOverlay", "contentTextarea"]
   static values = {
     agentSlug: String,
     targetSelector: String,
@@ -9,6 +9,9 @@ export default class extends Controller {
     recallConversation: Boolean,
     showGreeting: Boolean,
     showSettings: Boolean,
+    addContent: Boolean,
+    showCloseButton: Boolean,
+    closeButtonCallback: String,
     backgroundColor: String,
     userBubbleColor: String,
     agentBubbleColor: String,
@@ -22,6 +25,7 @@ export default class extends Controller {
     this.currentEventId = null
     this.eventSource = null
     this.settings = this.loadSettings()
+    this.content = ''
     this.setupColors()
     
     // Try to recall session from localStorage
@@ -38,6 +42,11 @@ export default class extends Controller {
     // Setup settings if enabled
     if (this.showSettingsValue) {
       this.setupSettings()
+    }
+    
+    // Setup content if enabled
+    if (this.addContentValue) {
+      this.setupContent()
     }
     
     // Close menu when clicking outside
@@ -199,6 +208,11 @@ export default class extends Controller {
       formData.append('settings', JSON.stringify(this.getSettingsContext()))
     }
     
+    // Include content if available
+    if (this.addContentValue && this.content) {
+      formData.append('content', JSON.stringify(this.getContentContext()))
+    }
+    
     if (this.sessionUuid) {
       formData.append('session_uuid', this.sessionUuid)
     }
@@ -312,7 +326,21 @@ export default class extends Controller {
   }
 
   closeWidget() {
-    this.element.remove()
+    // If callback is provided, call it instead of removing the element
+    if (this.closeButtonCallbackValue) {
+      try {
+        const callbackFunc = new Function('return ' + this.closeButtonCallbackValue)()
+        if (typeof callbackFunc === 'function') {
+          callbackFunc()
+        }
+      } catch (e) {
+        console.error('Error executing close button callback:', e)
+        // Fallback to default behavior
+        this.element.remove()
+      }
+    } else {
+      this.element.remove()
+    }
   }
 
   insertToTarget() {
@@ -371,6 +399,13 @@ export default class extends Controller {
     if (this.showSettingsValue) {
       this.saveSettingsToStorage(this.settings)
       this.applySettings(this.settings)
+    }
+    
+    // Clear content
+    this.content = ''
+    if (this.addContentValue) {
+      this.clearContentFromStorage()
+      this.applyContent('')
     }
     
     // Clear all messages
@@ -569,6 +604,19 @@ export default class extends Controller {
           title.textContent = data.agent_info.name
         }
       }
+      
+      // Load content for this session
+      if (this.addContentValue) {
+        const loadedContent = this.loadContent()
+        if (loadedContent && loadedContent.sessionUuid === this.sessionUuid) {
+          this.content = loadedContent.content
+          this.applyContent(this.content)
+        } else {
+          // Session doesn't match, clear content
+          this.content = ''
+          this.clearContentFromStorage()
+        }
+      }
 
       // Render recalled messages
       this.conversationHistory.forEach((msg, index) => {
@@ -618,7 +666,14 @@ export default class extends Controller {
     if (!this.hasSettingsOverlayTarget) return
     
     const overlay = this.settingsOverlayTarget
-    overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none'
+    const isOpening = overlay.style.display === 'none'
+    
+    // Close content overlay if opening settings
+    if (isOpening && this.hasContentOverlayTarget) {
+      this.contentOverlayTarget.style.display = 'none'
+    }
+    
+    overlay.style.display = isOpening ? 'block' : 'none'
   }
 
   closeSettings() {
@@ -641,9 +696,15 @@ export default class extends Controller {
   saveSettings() {
     const settings = {
       tone: this.settingToneTarget.value,
-      length: this.settingLengthTarget.value,
-      temperature: parseFloat(this.settingTemperatureTarget.value),
-      maxTokens: parseInt(this.settingMaxTokensTarget.value)
+      length: this.settingLengthTarget.value
+    }
+    
+    // Only include advanced settings if targets exist
+    if (this.hasSettingTemperatureTarget) {
+      settings.temperature = parseFloat(this.settingTemperatureTarget.value)
+    }
+    if (this.hasSettingMaxTokensTarget) {
+      settings.maxTokens = parseInt(this.settingMaxTokensTarget.value)
     }
     
     this.settings = settings
@@ -698,11 +759,93 @@ export default class extends Controller {
   }
 
   getSettingsContext() {
-    return {
+    const context = {
       tone: this.settings.tone,
-      length: this.settings.length,
-      temperature: this.settings.temperature,
-      max_tokens: this.settings.maxTokens
+      length: this.settings.length
+    }
+    
+    // Only include advanced settings if present
+    if (this.settings.temperature !== undefined) {
+      context.temperature = this.settings.temperature
+    }
+    if (this.settings.maxTokens !== undefined) {
+      context.max_tokens = this.settings.maxTokens
+    }
+    
+    return context
+  }
+  
+  // Content Management
+  setupContent() {
+    if (!this.addContentValue) return
+    this.applyContent(this.content)
+  }
+  
+  toggleContent() {
+    if (!this.hasContentOverlayTarget) return
+    
+    const overlay = this.contentOverlayTarget
+    const isOpening = overlay.style.display === 'none'
+    
+    // Close settings overlay if opening content
+    if (isOpening && this.hasSettingsOverlayTarget) {
+      this.settingsOverlayTarget.style.display = 'none'
+    }
+    
+    overlay.style.display = isOpening ? 'block' : 'none'
+  }
+  
+  closeContent() {
+    if (this.hasContentOverlayTarget) {
+      this.contentOverlayTarget.style.display = 'none'
+    }
+  }
+  
+  saveContent() {
+    const content = this.contentTextareaTarget.value
+    
+    this.content = content
+    this.saveContentToStorage(content)
+    this.closeContent()
+  }
+  
+  loadContent() {
+    const key = `ai_chat_content_${this.agentSlugValue}`
+    const stored = localStorage.getItem(key)
+    
+    if (stored) {
+      try {
+        return JSON.parse(stored)
+      } catch (e) {
+        console.error('Failed to parse content:', e)
+      }
+    }
+    
+    return null
+  }
+  
+  saveContentToStorage(content) {
+    const key = `ai_chat_content_${this.agentSlugValue}`
+    const data = {
+      content: content,
+      sessionUuid: this.sessionUuid
+    }
+    localStorage.setItem(key, JSON.stringify(data))
+  }
+  
+  clearContentFromStorage() {
+    const key = `ai_chat_content_${this.agentSlugValue}`
+    localStorage.removeItem(key)
+  }
+  
+  applyContent(content) {
+    if (!this.addContentValue || !this.hasContentTextareaTarget) return
+    this.contentTextareaTarget.value = content || ''
+  }
+  
+  getContentContext() {
+    return {
+      content: this.content
     }
   }
 }

@@ -13,6 +13,10 @@
   recall_conversation = local_assigns[:recall_conversation] || false
   show_greeting = local_assigns[:show_greeting] || true
   show_settings = local_assigns[:show_settings] || false
+  settings_mode = local_assigns[:settings_mode] || 'basic' # 'basic' or 'advanced'
+  add_content = local_assigns[:add_content] || false
+  show_close_button = local_assigns[:show_close_button] != false # default true
+  close_button_callback = local_assigns[:close_button_callback]
   
   # Raise error if agent_slug is not provided
   raise "agent_slug is required" unless agent_slug
@@ -26,6 +30,9 @@
     data-ai-chat-widget-recall-conversation-value="<%= recall_conversation %>"
     data-ai-chat-widget-show-greeting-value="<%= show_greeting %>"
     data-ai-chat-widget-show-settings-value="<%= show_settings %>"
+    data-ai-chat-widget-add-content-value="<%= add_content %>"
+    data-ai-chat-widget-show-close-button-value="<%= show_close_button %>"
+    <% if close_button_callback %>data-ai-chat-widget-close-button-callback-value="<%= close_button_callback %>"<% end %>
     data-ai-chat-widget-background-color-value="<%= background_color %>"
      data-ai-chat-widget-user-bubble-color-value="<%= user_bubble_color %>"
      data-ai-chat-widget-agent-bubble-color-value="<%= agent_bubble_color %>"
@@ -36,6 +43,16 @@
   <div class="ai-chat-header" data-ai-chat-widget-target="header">
     <h3 class="ai-chat-title"><%= title %></h3>
     <div class="ai-chat-header-actions">
+      <% if add_content %>
+      <button type="button" 
+              class="ai-chat-content-btn"
+              data-action="click->ai-chat-widget#toggleContent"
+              title="Additional Content">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+      </button>
+      <% end %>
       <% if show_settings %>
       <button type="button" 
               class="ai-chat-settings-btn"
@@ -71,6 +88,7 @@
           </button>
         </div>
       </div>
+      <% if show_close_button %>
       <button type="button" 
               class="ai-chat-close"
               data-action="click->ai-chat-widget#closeWidget"
@@ -79,6 +97,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
+      <% end %>
     </div>
   </div>
   
@@ -148,8 +167,9 @@
         </select>
       </div>
       
-      <!-- Advanced Fields (initially hidden) -->
-      <div class="ai-chat-settings-advanced" data-ai-chat-widget-target="advancedFields" style="display: none;">
+      <% if settings_mode == 'advanced' %>
+      <!-- Advanced Fields (visible by default in advanced mode) -->
+      <div class="ai-chat-settings-advanced" data-ai-chat-widget-target="advancedFields" style="display: block;">
         <!-- Temperature -->
         <div class="ai-chat-settings-field">
           <label for="ai-chat-setting-temperature">Temperature</label>
@@ -177,15 +197,7 @@
                  data-ai-chat-widget-target="settingMaxTokens">
         </div>
       </div>
-      
-      <!-- Mode Toggle -->
-      <div class="ai-chat-settings-field">
-        <button type="button" 
-                class="ai-chat-settings-mode-toggle"
-                data-action="click->ai-chat-widget#toggleAdvanced">
-          <span data-ai-chat-widget-target="modeToggleText">Show Advanced</span>
-        </button>
-      </div>
+      <% end %>
       
       <!-- Actions -->
       <div class="ai-chat-settings-actions">
@@ -197,6 +209,37 @@
         <button type="button" 
                 class="ai-chat-settings-save"
                 data-action="click->ai-chat-widget#saveSettings">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+  <% end %>
+  
+  <% if add_content %>
+  <!-- Content Overlay -->
+  <div class="ai-chat-content-overlay" data-ai-chat-widget-target="contentOverlay" style="display: none;">
+    <div class="ai-chat-content-content">
+      <h4 class="ai-chat-content-title">Additional Content</h4>
+      
+      <!-- Content Textarea -->
+      <textarea 
+        id="ai-chat-content-textarea"
+        class="ai-chat-content-textarea"
+        data-ai-chat-widget-target="contentTextarea"
+        placeholder="Enter additional content, rules, guidelines, etc."
+        rows="8"></textarea>
+      
+      <!-- Actions -->
+      <div class="ai-chat-content-actions">
+        <button type="button" 
+                class="ai-chat-content-close"
+                data-action="click->ai-chat-widget#closeContent">
+          Close
+        </button>
+        <button type="button" 
+                class="ai-chat-content-save"
+                data-action="click->ai-chat-widget#saveContent">
           Save
         </button>
       </div>

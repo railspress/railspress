@@ -91,6 +91,12 @@ class AiAgent < ApplicationRecord
         
         parts << settings_instructions.join("\n") if settings_instructions.any?
       end
+      
+      # Add content if present
+      content_text = context_hash.delete(:content) || context_hash.delete('content')
+      if content_text.present?
+        parts << "Additional Content:\n#{content_text}"
+      end
     end
     
     parts.join("\n\n")
