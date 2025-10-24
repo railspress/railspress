@@ -25,6 +25,9 @@ class Upload < ApplicationRecord
   scope :permanent, -> { where(temporary: [false, nil]) }
   scope :expired, -> { where('expires_at < ?', Time.current) }
   scope :active, -> { where('expires_at IS NULL OR expires_at > ?', Time.current) }
+  scope :public_files, -> { where(public: true) }
+  scope :private_files, -> { where(public: [false, nil]) }
+  scope :by_source, ->(source) { where(source: source) }
   
   # Callbacks
   after_commit :trigger_upload_hooks, on: [:create, :update], if: -> { file.attached? }
@@ -110,6 +113,18 @@ class Upload < ApplicationRecord
   
   def mark_permanent!
     update!(temporary: false, expires_at: nil)
+  end
+  
+  def public?
+    public == true
+  end
+  
+  def mark_public!
+    update!(public: true)
+  end
+  
+  def mark_private!
+    update!(public: false)
   end
   
   # Variant methods

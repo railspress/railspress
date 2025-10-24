@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["messages", "input", "send", "header", "menu", "settingsOverlay", "settingTone", "settingLength", "settingTemperature", "settingMaxTokens", "advancedFields", "modeToggleText", "temperatureValue", "contentOverlay", "contentTextarea", "attachModal", "attachInput", "attachedFilesList", "attachmentChips"]
+  static targets = ["messages", "input", "send", "header", "menu", "settingsOverlay", "settingAgent", "settingTone", "settingLength", "settingTemperature", "settingMaxTokens", "advancedFields", "modeToggleText", "temperatureValue", "contentOverlay", "contentTextarea", "attachModal", "attachInput", "attachedFilesList", "attachmentChips"]
   static values = {
     agentSlug: String,
     targetSelector: String,
@@ -11,13 +11,22 @@ export default class extends Controller {
     showSettings: Boolean,
     addContent: Boolean,
     allowAttachments: Boolean,
+    allowAgentSwitch: Boolean,
     showCloseButton: Boolean,
     closeButtonCallback: String,
     backgroundColor: String,
     userBubbleColor: String,
     agentBubbleColor: String,
     accentColor: String,
-    displayHtmlRaw: Boolean
+    displayHtmlRaw: Boolean,
+    userAvatarUrl: String,
+    botAvatarUrl: String,
+    userName: String,
+    userId: String,
+    userEmail: String,
+    userRole: String,
+    headerColor: String,
+    textbarColor: String
   }
 
   async connect() {
@@ -78,6 +87,22 @@ export default class extends Controller {
     if (this.accentColorValue) {
       root.style.setProperty('--chat-accent', this.accentColorValue)
     }
+    
+    // Header color override
+    if (this.hasHeaderColorValue && this.headerColorValue) {
+      const header = this.headerTarget
+      if (header) {
+        header.style.backgroundColor = this.headerColorValue
+      }
+    }
+    
+    // Textbar color override
+    if (this.hasTextbarColorValue && this.textbarColorValue) {
+      const inputArea = root.querySelector('.ai-chat-input-area')
+      if (inputArea) {
+        inputArea.style.backgroundColor = this.textbarColorValue
+      }
+    }
   }
 
   async sendMessage() {
@@ -103,7 +128,15 @@ export default class extends Controller {
     
     const avatar = document.createElement('div')
     avatar.className = 'ai-chat-avatar'
-    avatar.textContent = role === 'user' ? 'U' : 'AI'
+    
+    // Use custom avatar if provided, otherwise use initials
+    if (role === 'user' && this.hasUserAvatarUrlValue && this.userAvatarUrlValue) {
+      avatar.innerHTML = `<img src="${this.userAvatarUrlValue}" alt="User" />`
+    } else if (role === 'agent' && this.hasBotAvatarUrlValue && this.botAvatarUrlValue) {
+      avatar.innerHTML = `<img src="${this.botAvatarUrlValue}" alt="AI" />`
+    } else {
+      avatar.textContent = role === 'user' ? 'U' : 'AI'
+    }
     
     const bubble = document.createElement('div')
     bubble.className = 'ai-chat-bubble'
@@ -130,7 +163,13 @@ export default class extends Controller {
     
     const avatar = document.createElement('div')
     avatar.className = 'ai-chat-avatar'
-    avatar.textContent = 'AI'
+    
+    // Use custom bot avatar if provided, otherwise use 'AI' text
+    if (this.hasBotAvatarUrlValue && this.botAvatarUrlValue) {
+      avatar.innerHTML = `<img src="${this.botAvatarUrlValue}" alt="AI" />`
+    } else {
+      avatar.textContent = 'AI'
+    }
     
     const bubble = document.createElement('div')
     bubble.className = 'ai-chat-bubble'
@@ -204,6 +243,24 @@ export default class extends Controller {
     formData.append('message', message)
     formData.append('conversation_history', JSON.stringify(this.conversationHistory))
     formData.append('show_greeting', isGreetingRequest ? 'true' : 'false')
+    
+    // Include user info if available
+    const userInfo = {}
+    if (this.hasUserNameValue && this.userNameValue) {
+      userInfo.name = this.userNameValue
+    }
+    if (this.hasUserIdValue && this.userIdValue) {
+      userInfo.id = this.userIdValue
+    }
+    if (this.hasUserEmailValue && this.userEmailValue) {
+      userInfo.email = this.userEmailValue
+    }
+    if (this.hasUserRoleValue && this.userRoleValue) {
+      userInfo.role = this.userRoleValue
+    }
+    if (Object.keys(userInfo).length > 0) {
+      formData.append('user_info', JSON.stringify(userInfo))
+    }
     
     // Include settings if available
     if (this.settings) {
@@ -668,8 +725,18 @@ export default class extends Controller {
   }
 
   // Settings Management
-  setupSettings() {
+  async setupSettings() {
     if (!this.showSettingsValue) return
+    
+    // Load agent list if agent switching is enabled
+    if (this.allowAgentSwitchValue && this.hasSettingAgentTarget) {
+      await this.loadAgents()
+      
+      // Setup agent change listener
+      this.settingAgentTarget.addEventListener('change', (e) => {
+        this.switchAgent(e.target.value)
+      })
+    }
     
     // Load settings from localStorage
     this.applySettings(this.settings)
@@ -680,6 +747,92 @@ export default class extends Controller {
         this.temperatureValueTarget.textContent = e.target.value
       })
     }
+  }
+  
+  async loadAgents() {
+    try {
+      const response = await fetch('/admin/ai_agents.json')
+      if (!response.ok) throw new Error('Failed to load agents')
+      
+      const agents = await response.json()
+      const select = this.settingAgentTarget
+      
+      // Clear existing options
+      select.innerHTML = ''
+      
+      // Add options
+      agents.forEach(agent => {
+        const option = document.createElement('option')
+        option.value = agent.slug
+        option.textContent = agent.name
+        if (agent.slug === this.agentSlugValue) {
+          option.selected = true
+        }
+        select.appendChild(option)
+      })
+    } catch (error) {
+      console.error('Failed to load agents:', error)
+    }
+  }
+  
+  async switchAgent(newAgentSlug) {
+    // Don't switch if it's the same agent
+    if (newAgentSlug === this.agentSlugValue) return
+    
+    // Close current session if it exists
+    if (this.sessionUuid) {
+      await this.closeSession()
+    }
+    
+    // Clear conversation history
+    this.conversationHistory = []
+    this.sessionUuid = null
+    this.currentEventId = null
+    
+    // Clear messages
+    this.messagesTarget.innerHTML = ''
+    
+    // Clear attachments if enabled
+    this.attachedFiles = []
+    if (this.allowAttachmentsValue) {
+      this.renderAttachedFiles()
+    }
+    
+    // Clear content if enabled
+    this.content = ''
+    if (this.addContentValue) {
+      this.applyContent('')
+    }
+    
+    // Update agent slug
+    this.agentSlugValue = newAgentSlug
+    
+    // Clear localStorage for this agent
+    if (this.recallConversationValue) {
+      this.clearSessionFromStorage()
+    }
+    
+    // Load agent info and update title
+    try {
+      const response = await fetch(`/admin/ai_chat/agent_info?agent_slug=${newAgentSlug}`)
+      if (response.ok) {
+        const agentInfo = await response.json()
+        const title = this.headerTarget.querySelector('.ai-chat-title')
+        if (title && agentInfo.name) {
+          title.textContent = agentInfo.name
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load agent info:', error)
+    }
+    
+    // Request greeting for new agent
+    if (this.showGreetingValue !== false) {
+      this.requestGreeting()
+    }
+    
+    // Close settings overlay
+    this.closeSettings()
   }
 
   toggleSettings() {
@@ -907,6 +1060,7 @@ export default class extends Controller {
   async uploadFile(file) {
     const formData = new FormData()
     formData.append('file', file)
+    formData.append('agent_slug', this.agentSlugValue)
     
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
     

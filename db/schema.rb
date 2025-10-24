@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_24_053521) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_24_061513) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -141,8 +141,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_24_053521) do
     t.string "uuid"
     t.decimal "temperature", precision: 3, scale: 2
     t.integer "max_tokens"
+    t.boolean "system_required", default: false, null: false
     t.index ["ai_provider_id"], name: "index_ai_agents_on_ai_provider_id"
     t.index ["slug"], name: "index_ai_agents_on_slug", unique: true
+    t.index ["system_required"], name: "index_ai_agents_on_system_required"
     t.index ["uuid"], name: "index_ai_agents_on_uuid", unique: true
   end
 
@@ -1475,7 +1477,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_24_053521) do
     t.text "variants"
     t.boolean "temporary", default: false
     t.datetime "expires_at"
+    t.boolean "public", default: false
+    t.string "source"
+    t.string "tags"
     t.index ["expires_at"], name: "index_uploads_on_expires_at"
+    t.index ["public"], name: "index_uploads_on_public"
+    t.index ["source"], name: "index_uploads_on_source"
     t.index ["storage_provider_id"], name: "index_uploads_on_storage_provider_id"
     t.index ["temporary"], name: "index_uploads_on_temporary"
     t.index ["tenant_id"], name: "index_uploads_on_tenant_id"

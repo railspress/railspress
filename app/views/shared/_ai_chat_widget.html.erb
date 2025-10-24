@@ -18,6 +18,20 @@
   show_close_button = local_assigns[:show_close_button] != false # default true
   close_button_callback = local_assigns[:close_button_callback]
   allow_attachments = local_assigns[:allow_attachments] || false
+  allow_agent_switch = local_assigns[:allow_agent_switch] || false
+  
+  # Avatar and user settings
+  user_avatar_url = local_assigns[:user_avatar_url] || nil
+  bot_avatar_url = local_assigns[:bot_avatar_url] || nil
+  user_name = local_assigns[:user_name] || nil
+  user_id = local_assigns[:user_id] || nil
+  user_email = local_assigns[:user_email] || nil
+  user_role = local_assigns[:user_role] || nil
+  
+  # Widget styling settings
+  rounded_corners = local_assigns[:rounded_corners] || true
+  header_color = local_assigns[:header_color] || nil
+  textbar_color = local_assigns[:textbar_color] || nil
   
   # Raise error if agent_slug is not provided
   raise "agent_slug is required" unless agent_slug
@@ -33,6 +47,7 @@
     data-ai-chat-widget-show-settings-value="<%= show_settings %>"
     data-ai-chat-widget-add-content-value="<%= add_content %>"
     data-ai-chat-widget-allow-attachments-value="<%= allow_attachments %>"
+    data-ai-chat-widget-allow-agent-switch-value="<%= allow_agent_switch %>"
     data-ai-chat-widget-show-close-button-value="<%= show_close_button %>"
     <% if close_button_callback %>data-ai-chat-widget-close-button-callback-value="<%= close_button_callback %>"<% end %>
     data-ai-chat-widget-background-color-value="<%= background_color %>"
@@ -40,21 +55,20 @@
      data-ai-chat-widget-agent-bubble-color-value="<%= agent_bubble_color %>"
      data-ai-chat-widget-accent-color-value="<%= accent_color %>"
      data-ai-chat-widget-display-html-raw-value="<%= display_html_raw %>"
-     style="--chat-height: <%= height %>;">
+     <% if user_avatar_url %>data-ai-chat-widget-user-avatar-url-value="<%= user_avatar_url %>"<% end %>
+     <% if bot_avatar_url %>data-ai-chat-widget-bot-avatar-url-value="<%= bot_avatar_url %>"<% end %>
+     <% if user_name %>data-ai-chat-widget-user-name-value="<%= user_name %>"<% end %>
+     <% if user_id %>data-ai-chat-widget-user-id-value="<%= user_id %>"<% end %>
+     <% if user_email %>data-ai-chat-widget-user-email-value="<%= user_email %>"<% end %>
+     <% if user_role %>data-ai-chat-widget-user-role-value="<%= user_role %>"<% end %>
+     <% if header_color %>data-ai-chat-widget-header-color-value="<%= header_color %>"<% end %>
+     <% if textbar_color %>data-ai-chat-widget-textbar-color-value="<%= textbar_color %>"<% end %>
+     style="--chat-height: <%= height %>;<% if !rounded_corners %>--chat-border-radius: 0;<% end %>"
+     class="<%= 'no-rounded-corners' unless rounded_corners %>">
   
   <div class="ai-chat-header" data-ai-chat-widget-target="header">
     <h3 class="ai-chat-title"><%= title %></h3>
     <div class="ai-chat-header-actions">
-      <% if add_content %>
-      <button type="button" 
-              class="ai-chat-content-btn"
-              data-action="click->ai-chat-widget#toggleContent"
-              title="Additional Content">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-        </svg>
-      </button>
-      <% end %>
       <% if show_settings %>
       <button type="button" 
               class="ai-chat-settings-btn"
@@ -116,29 +130,41 @@
   
   <div class="ai-chat-input-area">
     <div class="ai-chat-input-wrapper">
-      <% if allow_attachments %>
-      <button type="button"
-              class="ai-chat-attach-btn"
-              data-action="click->ai-chat-widget#openAttachmentModal"
-              title="Attach file">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-        </svg>
-      </button>
-      <% end %>
       <textarea 
         class="ai-chat-input"
         data-ai-chat-widget-target="input"
         placeholder="Type your message..."
         rows="1"
         data-action="keydown->ai-chat-widget#handleKeyDown"></textarea>
-      <button 
-        type="button"
-        class="ai-chat-send"
-        data-ai-chat-widget-target="send"
-        data-action="click->ai-chat-widget#sendMessage">
-        Send
-      </button>
+      <div class="ai-chat-input-right-buttons">
+        <% if add_content %>
+        <button type="button"
+                class="ai-chat-content-btn"
+                data-action="click->ai-chat-widget#toggleContent"
+                title="Additional Content">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </button>
+        <% end %>
+        <% if allow_attachments %>
+        <button type="button"
+                class="ai-chat-attach-btn"
+                data-action="click->ai-chat-widget#openAttachmentModal"
+                title="Attach file">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+        </button>
+        <% end %>
+        <button 
+          type="button"
+          class="ai-chat-send"
+          data-ai-chat-widget-target="send"
+          data-action="click->ai-chat-widget#sendMessage">
+          Send
+        </button>
+      </div>
     </div>
     
     <% if target_selector %>
@@ -158,6 +184,18 @@
   <div class="ai-chat-settings-overlay" data-ai-chat-widget-target="settingsOverlay" style="display: none;">
     <div class="ai-chat-settings-content">
       <h4 class="ai-chat-settings-title">Settings</h4>
+      
+      <% if allow_agent_switch %>
+      <!-- Agent -->
+      <div class="ai-chat-settings-field">
+        <label for="ai-chat-setting-agent">Agent</label>
+        <select id="ai-chat-setting-agent" 
+                class="ai-chat-settings-select"
+                data-ai-chat-widget-target="settingAgent">
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+      <% end %>
       
       <!-- Tone -->
       <div class="ai-chat-settings-field">
@@ -278,7 +316,7 @@
                id="ai-chat-attach-input"
                class="ai-chat-attach-input"
                data-ai-chat-widget-target="attachInput"
-               accept="image/*,application/pdf,text/plain,.docx"
+               accept="image/*,application/pdf,text/plain,.docx,.heic,.heif"
                multiple
                data-action="change->ai-chat-widget#handleFileSelect">
         <label for="ai-chat-attach-input" class="ai-chat-attach-label">

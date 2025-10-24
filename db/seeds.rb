@@ -500,7 +500,8 @@ if default_provider
       active: true,
       position: 2,
       temperature: 0.7,
-      max_tokens: 3000
+      max_tokens: 3000,
+      system_required: true
     },
     {
       name: "Comments Analyzer",
@@ -554,14 +555,16 @@ if default_provider
       a.position = agent_attrs[:position]
       a.temperature = agent_attrs[:temperature]
       a.max_tokens = agent_attrs[:max_tokens]
+      a.system_required = agent_attrs[:system_required] || false
       a.ai_provider = default_provider
     end
     
-    # Update greeting, temperature, and max_tokens if they don't exist or are blank
+    # Update greeting, temperature, max_tokens, and system_required if they don't exist or are blank
     update_attrs = {}
     update_attrs[:greeting] = agent_attrs[:greeting] if agent.greeting.blank?
     update_attrs[:temperature] = agent_attrs[:temperature] if agent.temperature.nil?
     update_attrs[:max_tokens] = agent_attrs[:max_tokens] if agent.max_tokens.nil?
+    update_attrs[:system_required] = agent_attrs[:system_required] if agent.system_required.nil? && agent_attrs[:system_required].present?
     
     agent.update!(update_attrs) if update_attrs.any?
     

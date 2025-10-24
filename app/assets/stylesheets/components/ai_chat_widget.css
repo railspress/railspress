@@ -11,13 +11,17 @@
 
 .ai-chat-widget {
   background: var(--chat-bg);
-  border-radius: 12px;
+  border-radius: var(--chat-border-radius, 12px);
   height: var(--chat-height, 600px);
   display: flex;
   flex-direction: column;
   border: 1px solid var(--chat-border);
   overflow: hidden;
   position: relative; /* Make it a positioning context for overlay */
+}
+
+.ai-chat-widget.no-rounded-corners {
+  border-radius: 0;
 }
 
 .ai-chat-header {
@@ -111,6 +115,13 @@
   font-weight: 600;
   font-size: 14px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ai-chat-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .ai-chat-message.user .ai-chat-avatar {
@@ -253,9 +264,9 @@
 }
 
 .ai-chat-input-wrapper {
+  position: relative;
   display: flex;
-  gap: 8px;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .ai-chat-input {
@@ -264,12 +275,23 @@
   border: 1px solid var(--chat-border);
   border-radius: 8px;
   padding: 10px 14px;
+  padding-right: 140px; /* Space for buttons */
   color: var(--chat-text);
   font-size: 14px;
   resize: none;
   min-height: 44px;
   max-height: 120px;
   font-family: inherit;
+}
+
+.ai-chat-input-right-buttons {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 
 .ai-chat-input:focus {
@@ -552,15 +574,17 @@
   border: none;
   color: var(--chat-text-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  border-radius: 4px;
 }
 
 .ai-chat-content-btn:hover {
   color: var(--chat-text);
+  background: var(--chat-agent-bubble);
 }
 
 /* Content Overlay */
@@ -650,15 +674,17 @@
   border: none;
   color: var(--chat-text-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  border-radius: 4px;
 }
 
 .ai-chat-attach-btn:hover {
   color: var(--chat-text);
+  background: var(--chat-agent-bubble);
 }
 
 /* Attachments Chips Container */

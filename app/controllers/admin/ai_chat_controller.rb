@@ -1,7 +1,7 @@
 class Admin::AiChatController < Admin::BaseController
   include ActionController::Live
   
-  skip_before_action :verify_authenticity_token, only: [:stream]
+  skip_before_action :verify_authenticity_token, only: [:stream, :upload_attachment]
   
   def stream
     response.headers['Content-Type'] = 'text/event-stream'
@@ -16,6 +16,7 @@ class Admin::AiChatController < Admin::BaseController
     settings = JSON.parse(params[:settings] || '{}')
     content = JSON.parse(params[:content] || '{}')
     attachments = JSON.parse(params[:attachments] || '[]')
+    user_info = JSON.parse(params[:user_info] || '{}')
     
     service = AdminChatService.new(
       agent_slug: agent_slug,
@@ -36,7 +37,8 @@ class Admin::AiChatController < Admin::BaseController
         show_greeting: show_greeting,
         settings: settings,
         content: content,
-        attachments: attachments
+        attachments: attachments,
+        user_info: user_info
       ) do |chunk|
         if chunk
           response.stream.write("data: #{JSON.generate({chunk: chunk, done: false})}\n\n")
@@ -106,6 +108,7 @@ class Admin::AiChatController < Admin::BaseController
   
   def upload_attachment
     file = params[:file]
+    agent_slug = params[:agent_slug]
     
     unless file
       render json: { error: 'No file provided' }, status: :bad_request
@@ -119,23 +122,36 @@ class Admin::AiChatController < Admin::BaseController
     end
     
     # Validate file type
-    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif', 'application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
     unless allowed_types.include?(file.content_type)
       render json: { error: 'File type not allowed' }, status: :bad_request
       return
     end
     
-    # Create upload record
+    # Find active storage provider
+    storage_provider = StorageProvider.find_by(active: true) || StorageProvider.first
+    
+    # Get agent name for tags
+    agent_name = 'Unknown Agent'
+    if agent_slug.present?
+      agent = AiAgent.find_by(slug: agent_slug)
+      agent_name = agent.name if agent
+    end
+    
+    # Create upload record and attach file
     upload = Upload.create!(
       title: file.original_filename,
       user: current_user,
       tenant: current_tenant,
+      storage_provider: storage_provider,
       temporary: true,
-      expires_at: 24.hours.from_now
-    )
-    
-    # Attach file
-    upload.file.attach(file)
+      expires_at: 1.hour.from_now,
+      public: true,
+      source: "#{agent_slug}_session",
+      tags: "#{agent_name} Uploads"
+    ) do |u|
+      u.file.attach(file)
+    end
     
     # Return file data
     render json: {

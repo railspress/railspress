@@ -5,7 +5,7 @@ class AdminChatService
     @session = find_or_create_session(session_uuid)
   end
   
-  def stream_chat(message:, conversation_history: [], show_greeting: false, settings: {}, content: {}, attachments: [])
+  def stream_chat(message:, conversation_history: [], show_greeting: false, settings: {}, content: {}, attachments: [], user_info: {})
     # If this is a new session and greeting is requested, stream it first
     if show_greeting && @session.event_count == 0 && @agent.greeting.present?
       @agent.greeting.chars.each do |char|
@@ -23,11 +23,14 @@ class AdminChatService
     # Return nil if no message provided (shouldn't happen but safety check)
     return { response_event_id: nil, session_uuid: @session.uuid } if message.blank?
     
-    # Log user intent
+    # Log user intent with user info if provided
+    intent_payload = { text: message, channel: "web" }
+    intent_payload[:user_info] = user_info if user_info.present?
+    
     intent_event = @session.log(
       event_type: "intent",
       subtype: "user_text",
-      payload: { text: message, channel: "web" }
+      payload: intent_payload
     )
 
     full_response = ""
@@ -53,6 +56,17 @@ class AdminChatService
     # Add attachments if present
     if attachments.present? && attachments.any?
       context[:attachments] = attachments
+      
+      # Log attachment event
+      @session.log(
+        event_type: "action",
+        subtype: "attach_files",
+        summary: "Attached #{attachments.length} file(s)",
+        payload: {
+          file_count: attachments.length,
+          files: attachments.map { |f| { name: f['name'], type: f['type'], size: f['size'] } }
+        }
+      )
     end
     
     @agent.execute_streaming(message, context, @user) do |chunk|

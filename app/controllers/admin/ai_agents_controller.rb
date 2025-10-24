@@ -4,6 +4,20 @@ class Admin::AiAgentsController < Admin::BaseController
   # GET /admin/ai_agents
   def index
     @ai_agents = AiAgent.includes(:ai_provider).ordered
+    
+    respond_to do |format|
+      format.html
+      format.json do
+        render json: @ai_agents.active.map { |agent|
+          {
+            id: agent.id,
+            name: agent.name,
+            slug: agent.slug,
+            description: agent.description
+          }
+        }
+      end
+    end
   end
   
   # GET /admin/ai_agents/usage
@@ -46,11 +60,20 @@ class Admin::AiAgentsController < Admin::BaseController
   
   # GET /admin/ai_agents/:id/edit
   def edit
+    if @ai_agent.system_required?
+      redirect_to admin_ai_agents_path, alert: 'Cannot edit system-required agent.'
+      return
+    end
     @ai_providers = AiProvider.active.ordered
   end
   
   # PATCH/PUT /admin/ai_agents/:id
   def update
+    if @ai_agent.system_required?
+      redirect_to admin_ai_agents_path, alert: 'Cannot update system-required agent.'
+      return
+    end
+    
     @ai_providers = AiProvider.active.ordered
     
     if @ai_agent.update(ai_agent_params)
@@ -62,8 +85,16 @@ class Admin::AiAgentsController < Admin::BaseController
   
   # DELETE /admin/ai_agents/:id
   def destroy
-    @ai_agent.destroy
-    redirect_to admin_ai_agents_path, notice: 'AI Agent deleted successfully.'
+    if @ai_agent.system_required?
+      redirect_to admin_ai_agents_path, alert: 'Cannot delete system-required agent.'
+      return
+    end
+    
+    if @ai_agent.destroy
+      redirect_to admin_ai_agents_path, notice: 'AI Agent deleted successfully.'
+    else
+      redirect_to admin_ai_agents_path, alert: @ai_agent.errors.full_messages.join(', ')
+    end
   end
   
   # PATCH /admin/ai_agents/:id/toggle

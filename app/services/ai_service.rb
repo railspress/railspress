@@ -28,14 +28,14 @@ class AiService
     end
   end
   
-  def generate_streaming(prompt, &block)
+  def generate_streaming(prompt, attachments: [], &block)
     case @provider.provider_type
     when 'openai'
-      stream_openai(prompt, &block)
+      stream_openai(prompt, attachments: attachments, &block)
     when 'anthropic'
-      stream_anthropic(prompt, &block)
+      stream_anthropic(prompt, attachments: attachments, &block)
     when 'cohere'
-      stream_cohere(prompt, &block)
+      stream_cohere(prompt, attachments: attachments, &block)
     else
       # Fallback: simulate streaming by yielding word by word
       result = generate(prompt)
@@ -185,7 +185,7 @@ class AiService
     raise e
   end
   
-  def stream_openai(prompt, &block)
+  def stream_openai(prompt, attachments: [], &block)
     require 'net/http'
     require 'json'
     
@@ -197,9 +197,24 @@ class AiService
     request['Authorization'] = "Bearer #{@provider.api_key}"
     request['Content-Type'] = 'application/json'
     
+    # Build content array for multi-modal support
+    content = [{ type: "text", text: prompt }]
+    
+    # Add image attachments if present
+    if attachments.present?
+      attachments.each do |att|
+        if att['type']&.start_with?('image/') && att['url']
+          content << {
+            type: "image_url",
+            image_url: { url: att['url'] }
+          }
+        end
+      end
+    end
+    
     body = {
       model: @provider.model_identifier,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: content }],
       max_tokens: max_tokens,
       temperature: temperature,
       stream: true
@@ -231,7 +246,7 @@ class AiService
     raise e
   end
   
-  def stream_anthropic(prompt, &block)
+  def stream_anthropic(prompt, attachments: [], &block)
     require 'net/http'
     require 'json'
     
@@ -244,11 +259,29 @@ class AiService
     request['Content-Type'] = 'application/json'
     request['anthropic-version'] = '2023-06-01'
     
+    # Build content array for multi-modal support
+    content = [{ type: "text", text: prompt }]
+    
+    # Add image attachments if present
+    if attachments.present?
+      attachments.each do |att|
+        if att['type']&.start_with?('image/') && att['url']
+          content << {
+            type: "image",
+            source: {
+              type: "url",
+              url: att['url']
+            }
+          }
+        end
+      end
+    end
+    
     body = {
       model: @provider.model_identifier,
       max_tokens: max_tokens,
       temperature: temperature,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: content }],
       stream: true
     }
     
@@ -277,7 +310,7 @@ class AiService
     raise e
   end
   
-  def stream_cohere(prompt, &block)
+  def stream_cohere(prompt, attachments: [], &block)
     require 'net/http'
     require 'json'
     
@@ -289,9 +322,21 @@ class AiService
     request['Authorization'] = "Bearer #{@provider.api_key}"
     request['Content-Type'] = 'application/json'
     
+    # Note: Cohere doesn't support images, but we can include image URLs in the prompt for context
+    prompt_with_attachments = prompt.dup
+    if attachments.present?
+      image_attachments = attachments.select { |att| att['type']&.start_with?('image/') && att['url'] }
+      if image_attachments.any?
+        prompt_with_attachments += "\n\nAttached Images:\n"
+        image_attachments.each do |att|
+          prompt_with_attachments += "- #{att['name']}: #{att['url']}\n"
+        end
+      end
+    end
+    
     body = {
       model: @provider.model_identifier,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: prompt_with_attachments }],
       max_tokens: max_tokens.to_i,
       temperature: temperature.to_f,
       stream: true

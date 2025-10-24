@@ -26,6 +26,7 @@ class AiAgent < ApplicationRecord
   
   before_create :generate_uuid
   after_initialize :set_defaults, if: :new_record?
+  before_destroy :prevent_system_required_deletion
   
   # Use agent-specific settings if present, otherwise use defaults
   def effective_temperature
@@ -98,21 +99,8 @@ class AiAgent < ApplicationRecord
         parts << "Additional Content:\n#{content_text}"
       end
       
-      # Add attachments if present
-      attachments_data = context_hash.delete(:attachments) || context_hash.delete('attachments')
-      if attachments_data.present? && attachments_data.is_a?(Array)
-        attachment_info = []
-        attachments_data.each do |att|
-          if att['type']&.start_with?('image/')
-            attachment_info << "Image: #{att['name']} (#{att['url']})"
-          elsif att['type'] == 'application/pdf' || att['type'] == 'text/plain' || att['type']&.include?('wordprocessingml')
-            attachment_info << "Document: #{att['name']} (#{att['url']})"
-          else
-            attachment_info << "File: #{att['name']} (#{att['type']})"
-          end
-        end
-        parts << "Attached Files:\n#{attachment_info.join("\n")}" if attachment_info.any?
-      end
+      # Note: Attachments are handled separately and passed directly to AI service
+      # They are not included in the text prompt for better vision model support
     end
     
     parts.join("\n\n")
@@ -171,13 +159,17 @@ class AiAgent < ApplicationRecord
   
   def execute_streaming(user_input = "", context = {}, user = nil, &block)
     start_time = Time.current
+    
+    # Extract attachments from context before building prompt
+    attachments = context.delete(:attachments) || context.delete('attachments')
+    
     prompt_text = full_prompt(user_input, context)
     executing_user = user || User.first
     
     begin
       full_response = ""
       
-      AiService.new(ai_provider, self).generate_streaming(prompt_text) do |chunk|
+      AiService.new(ai_provider, self).generate_streaming(prompt_text, attachments: attachments) do |chunk|
         full_response += chunk if chunk
         yield chunk if block_given?
       end
@@ -338,6 +330,15 @@ class AiAgent < ApplicationRecord
       tokens * 0.000015 # Rough estimate for Claude
     else
       tokens * 0.00001 # Default estimate
+    end
+  end
+  
+  private
+  
+  def prevent_system_required_deletion
+    if system_required?
+      errors.add(:base, "Cannot delete system-required agent")
+      throw :abort
     end
   end
 end
