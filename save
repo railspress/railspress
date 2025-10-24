@@ -35,6 +35,16 @@ echo -e "${BLUE}📦 Backing up database...${NC}"
 if [ -f "storage/development.sqlite3" ]; then
   cp storage/development.sqlite3 "$BACKUP_FILE"
   echo -e "${GREEN}✅ Database backed up to: $BACKUP_FILE${NC}"
+  
+  # Clean up old backups if total size exceeds 1GB
+  TOTAL_SIZE=$(du -sm "$BACKUP_DIR" | cut -f1)
+  if [ "$TOTAL_SIZE" -gt 1024 ]; then
+    echo -e "${BLUE}🧹 Cleaning up old backups (total size: ${TOTAL_SIZE}MB > 1GB)...${NC}"
+    # Keep only the 5 most recent backups
+    ls -t "$BACKUP_DIR"/database-*.sqlite3 | tail -n +6 | xargs rm -f
+    REMAINING=$(ls -1 "$BACKUP_DIR"/database-*.sqlite3 2>/dev/null | wc -l | tr -d ' ')
+    echo -e "${GREEN}✅ Kept $REMAINING most recent backups${NC}"
+  fi
 else
   echo -e "${RED}⚠️  No database file found at storage/development.sqlite3${NC}"
 fi
