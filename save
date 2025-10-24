@@ -40,10 +40,20 @@ if [ -f "storage/development.sqlite3" ]; then
   TOTAL_SIZE=$(du -sm "$BACKUP_DIR" | cut -f1)
   if [ "$TOTAL_SIZE" -gt 1024 ]; then
     echo -e "${BLUE}🧹 Cleaning up old backups (total size: ${TOTAL_SIZE}MB > 1GB)...${NC}"
-    # Keep only the 5 most recent backups
-    ls -t "$BACKUP_DIR"/database-*.sqlite3 | tail -n +6 | xargs rm -f
+    # Delete oldest backups one by one until under 950MB
+    while [ "$TOTAL_SIZE" -gt 950 ]; do
+      OLDEST=$(ls -t "$BACKUP_DIR"/database-*.sqlite3 | tail -1)
+      if [ -f "$OLDEST" ]; then
+        rm -f "$OLDEST"
+        echo -e "  Deleted: $(basename $OLDEST)"
+        TOTAL_SIZE=$(du -sm "$BACKUP_DIR" | cut -f1)
+      else
+        break
+      fi
+    done
     REMAINING=$(ls -1 "$BACKUP_DIR"/database-*.sqlite3 2>/dev/null | wc -l | tr -d ' ')
-    echo -e "${GREEN}✅ Kept $REMAINING most recent backups${NC}"
+    NEW_SIZE=$(du -sm "$BACKUP_DIR" | cut -f1)
+    echo -e "${GREEN}✅ Cleaned up to ${NEW_SIZE}MB ($REMAINING backups remaining)${NC}"
   fi
 else
   echo -e "${RED}⚠️  No database file found at storage/development.sqlite3${NC}"

@@ -8,7 +8,7 @@
   form = local_assigns.fetch(:form, nil)
 %>
 
-<div class="content-editor-wrapper" data-editor-type="<%= editor_type %>" data-autosave-target="content">
+<div class="content-editor-wrapper" data-controller="content-editor" data-editor-type="<%= editor_type %>" data-autosave-target="content">
   <% if editor_type == 'editorjs' %>
     <%= render 'shared/editors/editorjs', 
         content: content, 

@@ -19,6 +19,7 @@
   close_button_callback = local_assigns[:close_button_callback]
   allow_attachments = local_assigns[:allow_attachments] || false
   allow_agent_switch = local_assigns[:allow_agent_switch] || false
+  clear_conversation_on_switch = local_assigns[:clear_conversation_on_switch] || false
   
   # Avatar and user settings
   user_avatar_url = local_assigns[:user_avatar_url] || nil
@@ -49,6 +50,7 @@
     data-ai-chat-widget-allow-attachments-value="<%= allow_attachments %>"
     data-ai-chat-widget-allow-agent-switch-value="<%= allow_agent_switch %>"
     data-ai-chat-widget-show-close-button-value="<%= show_close_button %>"
+    data-ai-chat-widget-clear-conversation-on-switch-value="<%= clear_conversation_on_switch %>"
     <% if close_button_callback %>data-ai-chat-widget-close-button-callback-value="<%= close_button_callback %>"<% end %>
     data-ai-chat-widget-background-color-value="<%= background_color %>"
      data-ai-chat-widget-user-bubble-color-value="<%= user_bubble_color %>"

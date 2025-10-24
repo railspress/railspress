@@ -26,7 +26,8 @@ export default class extends Controller {
     userEmail: String,
     userRole: String,
     headerColor: String,
-    textbarColor: String
+    textbarColor: String,
+    clearConversationOnSwitch: Boolean
   }
 
   async connect() {
@@ -47,7 +48,7 @@ export default class extends Controller {
     // Try to recall session from localStorage
     if (this.recallConversationValue) {
       const hasRecalled = await this.recallSession()
-      // If no session was recalled and greeting is enabled, request greeting from server
+      // Only request greeting if no messages exist (no session was recalled)
       if (!hasRecalled && this.showGreetingValue !== false) {
         this.requestGreeting()
       }
@@ -65,12 +66,6 @@ export default class extends Controller {
       this.setupContent()
     }
     
-    // Auto-capture editor content as context (hidden, doesn't affect manual content)
-    this.captureEditorContent().then(editorContent => {
-      if (editorContent) {
-        this.editorContent = editorContent
-      }
-    })
     
     // Close menu when clicking outside
     document.addEventListener('click', this.handleClickOutside.bind(this))
@@ -83,9 +78,9 @@ export default class extends Controller {
     }
   }
 
-  requestGreeting() {
+  async requestGreeting() {
     // Stream greeting from server with empty message
-    this.startStreaming('', true) // Second param indicates greeting request
+    await this.startStreaming('', true) // Second param indicates greeting request
   }
 
   setupColors() {
@@ -134,7 +129,7 @@ export default class extends Controller {
     this.conversationHistory.push({ role: 'user', content: message })
     
     // Start streaming
-    this.startStreaming(message)
+    await this.startStreaming(message)
   }
 
   addMessage(role, content) {
@@ -266,7 +261,7 @@ export default class extends Controller {
     bubble.appendChild(actionsDiv)
   }
 
-  startStreaming(message, isGreetingRequest = false) {
+  async startStreaming(message, isGreetingRequest = false) {
     this.sendTarget.disabled = true
     
     // Create agent message bubble
@@ -302,9 +297,10 @@ export default class extends Controller {
       formData.append('settings', JSON.stringify(this.getSettingsContext()))
     }
     
-    // Include content if available
-    if (this.addContentValue && this.content) {
-      formData.append('content', JSON.stringify(this.getContentContext()))
+    // Always include editor content if available
+    const contentContext = await this.getContentContext()
+    if (Object.keys(contentContext).length > 0) {
+      formData.append('content', JSON.stringify(contentContext))
     }
     
     // Include attachments if available
@@ -522,12 +518,7 @@ export default class extends Controller {
       this.applyContent('')
     }
     
-    // Re-capture current editor content for new chat
-    this.captureEditorContent().then(editorContent => {
-      if (editorContent) {
-        this.editorContent = editorContent
-      }
-    })
+    // Editor content will be captured on demand when needed
     
     // Clear attachments
     this.attachedFiles = []
@@ -650,7 +641,6 @@ export default class extends Controller {
   }
 
    async insertMessage(bubble, eventId) {
-
     const contentDiv = bubble.querySelector('.ai-chat-bubble-content')
     if (!contentDiv) return
 
@@ -676,62 +666,32 @@ export default class extends Controller {
       return
     }
 
-    // Detect editor type from the wrapper
-    const editorWrapper = document.querySelector('[data-editor-type]');
-    const editorType = editorWrapper ? editorWrapper.dataset.editorType : null;
-    
-    // Try different insertion methods based on editor type
-    if (editorType === 'editorjs') {
-      // Find EditorJS controller
-      const editorjsElement = document.querySelector('[data-controller*="editorjs"]');
-      if (editorjsElement) {
-        const controller = window.Stimulus.getControllerForElementAndIdentifier(editorjsElement, 'editorjs');
-        if (controller && controller.editor) {
-          try {
-            // Import HTML to EditorJS converter
-            const { htmlToEditorJS } = await import('editorjs_converter');
-            
-            // Convert HTML to EditorJS JSON
-            const editorJSData = htmlToEditorJS(contentToInsert);
-            console.log('Converted HTML to EditorJS:', editorJSData);
-            
-            // Insert into EditorJS
-            await controller.editor.render(editorJSData);
-            
-            // Trigger saveContent to populate content_json field
-            if (controller.saveContent) {
-              await controller.saveContent();
-            }
-            
-      this.sendFeedback(eventId, 'insert')
-            return;
-          } catch (error) {
-            console.error('EditorJS insertion failed:', error);
-            alert('Failed to insert content: ' + error.message);
-          }
-        }
-      }
-    } else if (editorType === 'trix') {
-      // Find Trix editor
-      const trixEditor = document.querySelector('trix-editor');
-      if (trixEditor) {
-        trixEditor.editor.loadHTML(contentToInsert);
-        this.sendFeedback(eventId, 'insert')
-        return;
-      }
-    } else if (editorType === 'ckeditor5') {
-      // Find CKEditor instance
-      const ckElement = document.querySelector('[data-controller*="ckeditor5"]');
-      if (ckElement) {
-        const controller = window.Stimulus.getControllerForElementAndIdentifier(ckElement, 'ckeditor5');
-        if (controller && controller.editor) {
-          controller.editor.setData(contentToInsert);
+    // Use the unified content editor controller
+    try {
+      const editorWrapper = document.querySelector('[data-controller*="content-editor"]')
+      console.log('[AI Chat] Looking for content editor wrapper:', editorWrapper)
+      
+      if (editorWrapper) {
+        const contentEditor = this.application.getControllerForElementAndIdentifier(editorWrapper, 'content-editor')
+        console.log('[AI Chat] Content editor controller found:', contentEditor)
+        console.log('[AI Chat] Editor type:', contentEditor?.editorType)
+        
+        if (contentEditor) {
+          console.log('[AI Chat] Inserting content:', contentToInsert)
+          await contentEditor.setHtml(contentToInsert)
+          console.log('[AI Chat] Content inserted successfully')
           this.sendFeedback(eventId, 'insert')
-          return;
+          return
+        } else {
+          console.warn('[AI Chat] Content editor controller not found')
         }
+      } else {
+        console.warn('[AI Chat] Content editor wrapper not found')
       }
+    } catch (error) {
+      console.error('[AI Chat] Failed to insert content via unified editor:', error)
+      alert('Failed to insert content: ' + error.message)
     }
-    
   }
   
   extractFirstHeading(htmlContent) {
@@ -911,6 +871,15 @@ export default class extends Controller {
     if (this.allowAgentSwitchValue && this.hasSettingAgentTarget) {
       await this.loadAgents()
       
+      // Check if user previously selected a different agent
+      const savedAgent = this.getSelectedAgent()
+      if (savedAgent && savedAgent !== this.agentSlugValue) {
+        // Silently switch to the saved agent
+        await this.switchAgent(savedAgent)
+        // Update the dropdown to reflect the saved agent
+        this.settingAgentTarget.value = savedAgent
+      }
+      
       // Setup agent change listener
       this.settingAgentTarget.addEventListener('change', (e) => {
         this.switchAgent(e.target.value)
@@ -958,12 +927,7 @@ export default class extends Controller {
     // Don't switch if it's the same agent
     if (newAgentSlug === this.agentSlugValue) return
     
-    // Close current session if it exists
-    if (this.sessionUuid) {
-      await this.closeSession()
-    }
-    
-    // Clear conversation history
+    // Clear conversation history and UI
     this.conversationHistory = []
     this.sessionUuid = null
     this.currentEventId = null
@@ -986,10 +950,8 @@ export default class extends Controller {
     // Update agent slug
     this.agentSlugValue = newAgentSlug
     
-    // Clear localStorage for this agent
-    if (this.recallConversationValue) {
-      this.clearSessionFromStorage()
-    }
+    // Save selected agent to localStorage
+    this.saveSelectedAgent(newAgentSlug)
     
     // Load agent info and update title
     try {
@@ -1005,13 +967,29 @@ export default class extends Controller {
       console.error('Failed to load agent info:', error)
     }
     
-    // Request greeting for new agent
-    if (this.showGreetingValue !== false) {
+    // Recall conversation for this agent unless clearing is enabled
+    let hasRecalledConversation = false
+    if (this.recallConversationValue && !this.clearConversationOnSwitchValue) {
+      hasRecalledConversation = await this.recallSession()
+    }
+    
+    // Only request greeting if no conversation was recalled
+    if (!hasRecalledConversation && this.showGreetingValue !== false) {
       this.requestGreeting()
     }
     
     // Close settings overlay
     this.closeSettings()
+  }
+
+  saveSelectedAgent(agentSlug) {
+    const key = `ai_chat_agent_${this.getPostUuid()}`
+    localStorage.setItem(key, agentSlug)
+  }
+
+  getSelectedAgent() {
+    const key = `ai_chat_agent_${this.getPostUuid()}`
+    return localStorage.getItem(key)
   }
 
   toggleSettings() {
@@ -1195,7 +1173,7 @@ export default class extends Controller {
     this.contentTextareaTarget.value = content || ''
   }
   
-  getContentContext() {
+  async getContentContext() {
     const context = {}
     
     // Include manual content if provided
@@ -1203,72 +1181,47 @@ export default class extends Controller {
       context.manual_content = this.content
     }
     
-    // Include auto-captured editor content if available
-    if (this.editorContent) {
-      context.editor_content = this.editorContent
+    // Capture title and editor content, then combine them
+    const titleField = document.querySelector('textarea[name*="title"]')
+    const title = titleField && titleField.value.trim() ? titleField.value.trim() : ''
+    
+    const editorContent = await this.captureEditorContent()
+    
+    // Combine title and editor content into a single content field for the API
+    if (title || editorContent) {
+      let combinedContent = ''
+      if (title) {
+        combinedContent += `Title: ${title}\n\n`
+      }
+      if (editorContent) {
+        combinedContent += editorContent
+      }
+      context.content = combinedContent
     }
     
     return context
   }
   
-  captureEditorContent() {
-    const editorWrapper = document.querySelector('[data-editor-type]')
-    const editorType = editorWrapper ? editorWrapper.dataset.editorType : null
-    
-    if (!editorType) return Promise.resolve('')
-    
+  async captureEditorContent() {
     try {
-      if (editorType === 'editorjs') {
-        const editorjsElement = document.querySelector('[data-controller*="editorjs"]')
-        if (editorjsElement) {
-          const controller = window.Stimulus.getControllerForElementAndIdentifier(editorjsElement, 'editorjs')
-          if (controller && controller.editor) {
-            return controller.editor.save().then(outputData => {
-              return this.convertEditorJSToText(outputData)
-            })
-          }
-        }
-      } else if (editorType === 'trix') {
-        const trixEditor = document.querySelector('trix-editor')
-        if (trixEditor && trixEditor.editor) {
-          return Promise.resolve(trixEditor.editor.getDocument().toString())
-        }
-      } else if (editorType === 'ckeditor5') {
-        const ckElement = document.querySelector('[data-controller*="ckeditor5"]')
-        if (ckElement) {
-          const controller = window.Stimulus.getControllerForElementAndIdentifier(ckElement, 'ckeditor5')
-          if (controller && controller.editor) {
-            return Promise.resolve(controller.editor.getData())
-          }
+      // Use the unified content editor controller
+      const editorWrapper = document.querySelector('[data-controller*="content-editor"]')
+      if (editorWrapper) {
+        const contentEditor = this.application.getControllerForElementAndIdentifier(editorWrapper, 'content-editor')
+        if (contentEditor) {
+          // Get text content from the editor
+          const text = await contentEditor.getText()
+          console.log('[AI Chat] Captured editor content:', text.substring(0, 100))
+          return text
         }
       }
     } catch (error) {
-      console.error('Failed to capture editor content:', error)
+      console.error('[AI Chat] Failed to capture editor content:', error)
     }
     
-    return Promise.resolve('')
+    return ''
   }
-  
-  convertEditorJSToText(editorData) {
-    if (!editorData || !editorData.blocks) return ''
     
-    return editorData.blocks.map(block => {
-      switch (block.type) {
-        case 'header':
-          return block.data.text
-        case 'paragraph':
-          return block.data.text
-        case 'list':
-          return block.data.items.join('\n')
-        case 'quote':
-          return `"${block.data.text}" - ${block.data.caption || ''}`
-        case 'code':
-          return block.data.code
-        default:
-          return block.data.text || ''
-      }
-    }).filter(text => text.trim()).join('\n\n')
-  }
   
   // Attachment Management
   openAttachmentModal() {
