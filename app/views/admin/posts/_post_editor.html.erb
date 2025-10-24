@@ -141,7 +141,7 @@
       <div class="ai-left-sidebar transition-all duration-300"
            data-controller="ai-sidebar"
            data-ai-sidebar-collapsed-value="true"
-           style="width: 0; border-right: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: 100vh; overflow: hidden;">
+           style="width: 0; border-right: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: calc(100vh - 50px); overflow: hidden;">
         
         <div class="ai-sidebar-content h-full" data-ai-sidebar-target="content" style="width: 400px; opacity: 0; pointer-events: none;">
           <%= render 'shared/ai_chat_widget',
@@ -152,10 +152,16 @@
               show_settings: true,
               add_content: true,
               allow_attachments: true,
-              title: 'AI Assistant',
+              title: 'Post Writer',
               display_html_raw: false,
               show_close_button: false,
-              insert_callback: 'insertAiContentToEditor'
+              insert_callback: 'insertAiContentToEditor',
+              background_color: '#131313',
+              header_color: '#131313',
+              textbar_color: '#131313',
+              user_bubble_color: '#4F46E5',
+              agent_bubble_color: '#2a2a2a',
+              accent_color: '#1E1E1E'
           %>
         </div>
       </div>
