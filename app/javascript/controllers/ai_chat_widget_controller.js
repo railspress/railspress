@@ -39,6 +39,10 @@ export default class extends Controller {
     this.attachedFiles = []
     this.setupColors()
     
+    // Listen for scroll requests
+    this.boundHandleScrollRequest = this.handleScrollRequest.bind(this)
+    this.element.addEventListener('scroll-chat-widget', this.boundHandleScrollRequest)
+    
     // Try to recall session from localStorage
     if (this.recallConversationValue) {
       const hasRecalled = await this.recallSession()
@@ -66,6 +70,9 @@ export default class extends Controller {
 
   disconnect() {
     this.closeStream()
+    if (this.boundHandleScrollRequest) {
+      this.element.removeEventListener('scroll-chat-widget', this.boundHandleScrollRequest)
+    }
   }
 
   requestGreeting() {
@@ -406,7 +413,15 @@ export default class extends Controller {
   }
 
   scrollToBottom() {
+    console.log('Scrolling to bottom')
     this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight
+  }
+
+  handleScrollRequest(event) {
+    // Scroll to bottom when requested
+    requestAnimationFrame(() => {
+      this.scrollToBottom()
+    })
   }
 
   handleKeyDown(event) {

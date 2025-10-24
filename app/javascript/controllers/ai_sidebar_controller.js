@@ -33,6 +33,11 @@ export default class extends Controller {
       // Expand sidebar
       contentEl.style.opacity = '1'
       contentEl.style.pointerEvents = 'auto'
+      
+      // Dispatch event to notify chat widget to scroll
+      this.element.dispatchEvent(new CustomEvent('scroll-chat-widget', {
+        bubbles: true
+      }))
     }
   }
 }
