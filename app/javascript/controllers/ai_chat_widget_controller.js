@@ -642,7 +642,31 @@ export default class extends Controller {
 
   // localStorage methods
   getStorageKey() {
-    return `chat_session_${this.agentSlugValue}`
+    const postUuid = this.getPostUuid()
+    return `ai_chat_session_${this.agentSlugValue}_${postUuid}`
+  }
+
+  getPostUuid() {
+    // Try to get from post form data attribute
+    const form = document.querySelector('form[data-post-id]')
+    if (form && form.dataset.postId && form.dataset.postId !== 'new') {
+      return form.dataset.postId
+    }
+    
+    // Try to get from any form element with data-post-id
+    const anyForm = document.querySelector('[data-post-id]')
+    if (anyForm && anyForm.dataset.postId && anyForm.dataset.postId !== 'new') {
+      return anyForm.dataset.postId
+    }
+    
+    // Try to get from URL
+    const urlMatch = window.location.pathname.match(/\/posts\/(\d+)/)
+    if (urlMatch) {
+      return urlMatch[1]
+    }
+    
+    // Fallback for new posts
+    return 'new'
   }
 
   saveSessionToStorage() {

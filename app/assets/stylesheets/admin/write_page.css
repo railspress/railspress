@@ -69,3 +69,20 @@
   color: inherit !important;
 }
 
+/* AI Left Sidebar */
+.ai-left-sidebar {
+  flex-shrink: 0;
+  transition: width 0.3s ease-in-out;
+}
+
+.ai-sidebar-content {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Override chat widget styles for sidebar */
+.ai-left-sidebar .ai-chat-widget {
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
