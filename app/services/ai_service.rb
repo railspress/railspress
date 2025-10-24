@@ -18,6 +18,28 @@ class AiService
     end
   end
   
+  def generate_streaming(prompt, &block)
+    case @provider.provider_type
+    when 'openai'
+      stream_openai(prompt, &block)
+    when 'anthropic'
+      stream_anthropic(prompt, &block)
+    when 'cohere'
+      stream_cohere(prompt, &block)
+    else
+      # Fallback: simulate streaming by yielding word by word
+      result = generate(prompt)
+      if block_given?
+        # Simulate streaming by yielding word by word
+        words = result.to_s.split(/\s+/)
+        words.each do |word|
+          yield "#{word} "
+          sleep 0.01 # Small delay to simulate streaming
+        end
+      end
+    end
+  end
+  
   private
   
   def call_openai(prompt)
@@ -150,6 +172,157 @@ class AiService
       raise "Google API error: #{response.body}"
     end
   rescue => e
+    raise e
+  end
+  
+  def stream_openai(prompt, &block)
+    require 'net/http'
+    require 'json'
+    
+    uri = URI('https://api.openai.com/v1/chat/completions')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri)
+    request['Authorization'] = "Bearer #{@provider.api_key}"
+    request['Content-Type'] = 'application/json'
+    
+    body = {
+      model: @provider.model_identifier,
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: @provider.max_tokens,
+      temperature: @provider.temperature,
+      stream: true
+    }
+    
+    request.body = body.to_json
+    
+    http.request(request) do |response|
+      response.read_body do |chunk|
+        # Process Server-Sent Events from OpenAI
+        chunk.split("\n").each do |line|
+          next if line.strip.empty?
+          next unless line.start_with?('data: ')
+          
+          data = line[6..-1] # Remove 'data: ' prefix
+          next if data == '[DONE]'
+          
+          begin
+            parsed = JSON.parse(data)
+            content = parsed.dig('choices', 0, 'delta', 'content')
+            yield content if content && block_given?
+          rescue JSON::ParserError
+            # Skip malformed JSON
+          end
+        end
+      end
+    end
+  rescue => e
+    raise e
+  end
+  
+  def stream_anthropic(prompt, &block)
+    require 'net/http'
+    require 'json'
+    
+    uri = URI('https://api.anthropic.com/v1/messages')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri)
+    request['x-api-key'] = @provider.api_key
+    request['Content-Type'] = 'application/json'
+    request['anthropic-version'] = '2023-06-01'
+    
+    body = {
+      model: @provider.model_identifier,
+      max_tokens: @provider.max_tokens,
+      temperature: @provider.temperature,
+      messages: [{ role: "user", content: prompt }],
+      stream: true
+    }
+    
+    request.body = body.to_json
+    
+    http.request(request) do |response|
+      response.read_body do |chunk|
+        # Process Server-Sent Events from Anthropic
+        chunk.split("\n").each do |line|
+          next if line.strip.empty?
+          next unless line.start_with?('data: ')
+          
+          data = line[6..-1] # Remove 'data: ' prefix
+          
+          begin
+            parsed = JSON.parse(data)
+            content = parsed.dig('content_block', 'text')
+            yield content if content && block_given?
+          rescue JSON::ParserError
+            # Skip malformed JSON
+          end
+        end
+      end
+    end
+  rescue => e
+    raise e
+  end
+  
+  def stream_cohere(prompt, &block)
+    require 'net/http'
+    require 'json'
+    
+    uri = URI('https://api.cohere.ai/v2/chat')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri)
+    request['Authorization'] = "Bearer #{@provider.api_key}"
+    request['Content-Type'] = 'application/json'
+    
+    body = {
+      model: @provider.model_identifier,
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: @provider.max_tokens.to_i,
+      temperature: @provider.temperature.to_f,
+      stream: true
+    }
+    
+    request.body = body.to_json
+    
+    Rails.logger.info "Cohere streaming request: #{body.inspect}"
+    
+    http.request(request) do |response|
+      Rails.logger.info "Cohere streaming response code: #{response.code}"
+      
+      response.read_body do |chunk|
+        Rails.logger.debug "Cohere chunk received: #{chunk.inspect}"
+        
+        # Process Server-Sent Events from Cohere
+        chunk.split("\n").each do |line|
+          next if line.strip.empty?
+          next unless line.start_with?('data: ')
+          
+          data = line[6..-1] # Remove 'data: ' prefix
+          
+          begin
+            parsed = JSON.parse(data)
+            Rails.logger.debug "Cohere parsed event: #{parsed.inspect}"
+            
+            # Cohere V2 streaming format: look for content-delta events
+            if parsed['type'] == 'content-delta'
+              content = parsed.dig('delta', 'message', 'content', 'text')
+              Rails.logger.info "Cohere content extracted: #{content.inspect}"
+              yield content if content && block_given?
+            end
+          rescue JSON::ParserError => e
+            Rails.logger.error "Failed to parse Cohere data: #{e.message}"
+          end
+        end
+      end
+    end
+  rescue => e
+    Rails.logger.error "Cohere streaming error: #{e.message}"
+    Rails.logger.error e.backtrace.first(5).join("\n")
     raise e
   end
 end

@@ -206,17 +206,15 @@ class Admin::PostsController < Admin::BaseController
   def update
     @post = Post.find_by!(uuid: params[:id])
     
-    # Keep auto_draft posts as auto_draft during autosave
+    # Ensure auto_draft posts have a title during autosave
     if params[:autosave] == 'true' && @post.auto_draft_status?
-      # Force status to remain auto_draft during autosave
-      params[:post][:status] = 'auto_draft' if params[:post]
       # Ensure we have a title
       params[:post][:title] = 'Untitled' if params[:post] && params[:post][:title].blank?
     end
     
-    # Promote auto_draft to draft on manual save
+    # Promote auto_draft to draft on manual save (when user clicks save button)
     if !params[:autosave] && @post.auto_draft_status?
-      @post.status = :draft
+      @post.status = :draft unless params[:post] && params[:post][:status].present?
       @post.title = 'Untitled' if @post.title.blank?
     end
     

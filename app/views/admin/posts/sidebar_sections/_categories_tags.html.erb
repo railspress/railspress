@@ -22,10 +22,19 @@
   <div data-collapsible-target="content">
     <div class="mb-4">
       <label class="block text-xs font-medium mb-2" style="color: var(--admin-text-muted);">Categories</label>
-      <%= f.collection_select :category_ids, 
-          @categories, :id, :name,
-          { include_blank: 'Select categories' },
-          { multiple: true, class: "w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none form-control" } %>
+      <div class="content-channels">
+        <% @categories.each do |category| %>
+          <div class="channel-option">
+            <%= f.check_box :category_ids, 
+                { multiple: true, checked: @post.category.include?(category) }, 
+                category.id, 
+                nil %>
+            <label class="channel-label" for="post_category_ids_<%= category.id %>">
+              <%= category.name %>
+            </label>
+          </div>
+        <% end %>
+      </div>
     </div>
     
     <div>

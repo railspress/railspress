@@ -287,6 +287,13 @@ Rails.application.routes.draw do
     # AI Demo
     get 'ai_demo', to: 'ai_demo#index'
     
+    # AI Chat
+    post 'ai_chat/stream', to: 'ai_chat#stream'
+    post 'ai_chat/feedback', to: 'ai_chat#feedback'
+    post 'ai_chat/close_session', to: 'ai_chat#close_session'
+    get 'ai_chat/session', to: 'ai_chat#session'
+    get 'ai_chat/agent_info', to: 'ai_chat#agent_info'
+    
     resources :posts do
       collection do
         post :bulk_action

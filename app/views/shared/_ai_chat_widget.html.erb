@@ -1,0 +1,105 @@
+<%
+  # Default values
+  background_color = local_assigns[:background_color] || '#1a1a1a'
+  user_bubble_color = local_assigns[:user_bubble_color] || '#4F46E5'
+  agent_bubble_color = local_assigns[:agent_bubble_color] || '#2a2a2a'
+  accent_color = local_assigns[:accent_color] || '#4F46E5'
+  height = local_assigns[:height] || '600px'
+  agent_slug = local_assigns[:agent_slug]
+  title = local_assigns[:title] || 'AI Assistant'
+  target_selector = local_assigns[:target_selector]
+  insert_callback = local_assigns[:insert_callback]
+  display_html_raw = local_assigns[:display_html_raw] || false
+  recall_conversation = local_assigns[:recall_conversation] || false
+  show_greeting = local_assigns[:show_greeting] || true
+  
+  # Raise error if agent_slug is not provided
+  raise "agent_slug is required" unless agent_slug
+%>
+
+<div class="ai-chat-widget"
+     data-controller="ai-chat-widget"
+     data-ai-chat-widget-agent-slug-value="<%= agent_slug %>"
+     <% if target_selector %>data-ai-chat-widget-target-selector-value="<%= target_selector %>"<% end %>
+     <% if insert_callback %>data-ai-chat-widget-insert-callback-value="<%= insert_callback %>"<% end %>
+     data-ai-chat-widget-recall-conversation-value="<%= recall_conversation %>"
+     data-ai-chat-widget-show-greeting-value="<%= show_greeting %>"
+     data-ai-chat-widget-background-color-value="<%= background_color %>"
+     data-ai-chat-widget-user-bubble-color-value="<%= user_bubble_color %>"
+     data-ai-chat-widget-agent-bubble-color-value="<%= agent_bubble_color %>"
+     data-ai-chat-widget-accent-color-value="<%= accent_color %>"
+     data-ai-chat-widget-display-html-raw-value="<%= display_html_raw %>"
+     style="--chat-height: <%= height %>;">
+  
+  <div class="ai-chat-header" data-ai-chat-widget-target="header">
+    <h3 class="ai-chat-title"><%= title %></h3>
+    <div class="ai-chat-header-actions">
+      <div class="ai-chat-menu-wrapper">
+        <button type="button" 
+                class="ai-chat-menu-btn"
+                data-action="click->ai-chat-widget#toggleMenu"
+                title="Menu">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="5" cy="12" r="1.5" />
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="19" cy="12" r="1.5" />
+          </svg>
+        </button>
+        <div class="ai-chat-menu" data-ai-chat-widget-target="menu" style="display: none;">
+          <button type="button" 
+                  class="ai-chat-menu-item"
+                  data-action="click->ai-chat-widget#newChat">
+            New Chat
+          </button>
+          <button type="button" 
+                  class="ai-chat-menu-item"
+                  data-action="click->ai-chat-widget#downloadTranscript">
+            Download Transcript
+          </button>
+        </div>
+      </div>
+      <button type="button" 
+              class="ai-chat-close"
+              data-action="click->ai-chat-widget#closeWidget"
+              title="Close">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <div class="ai-chat-messages" data-ai-chat-widget-target="messages">
+    <!-- Messages will be added here dynamically -->
+  </div>
+  
+  <div class="ai-chat-input-area">
+    <div class="ai-chat-input-wrapper">
+      <textarea 
+        class="ai-chat-input"
+        data-ai-chat-widget-target="input"
+        placeholder="Type your message..."
+        rows="1"
+        data-action="keydown->ai-chat-widget#handleKeyDown"></textarea>
+      <button 
+        type="button"
+        class="ai-chat-send"
+        data-ai-chat-widget-target="send"
+        data-action="click->ai-chat-widget#sendMessage">
+        Send
+      </button>
+    </div>
+    
+    <% if target_selector %>
+    <div class="ai-chat-actions">
+      <button 
+        type="button"
+        class="ai-chat-action-btn"
+        data-action="click->ai-chat-widget#insertToTarget">
+        Insert to Editor
+      </button>
+    </div>
+    <% end %>
+  </div>
+</div>
+

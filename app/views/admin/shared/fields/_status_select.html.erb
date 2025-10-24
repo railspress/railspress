@@ -3,6 +3,9 @@
   <%= f.select :status, 
       options_for_select(statuses, record.status),
       {},
-      class: "post-field-input" %>
+      { 
+        class: "post-field-input",
+        data: { action: "change->autosave#handleChange" }
+      } %>
 </div>
 

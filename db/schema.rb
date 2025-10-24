@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_23_130122) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_24_034723) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -59,6 +59,68 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_23_130122) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "agent_events", force: :cascade do |t|
+    t.integer "agent_session_id", null: false
+    t.integer "target_event_id"
+    t.string "event_type", null: false
+    t.string "subtype"
+    t.text "summary"
+    t.json "payload", default: {}
+    t.integer "sequence"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_session_id", "created_at"], name: "index_agent_events_on_agent_session_id_and_created_at"
+    t.index ["agent_session_id", "event_type"], name: "index_agent_events_on_agent_session_id_and_event_type"
+    t.index ["agent_session_id"], name: "index_agent_events_on_agent_session_id"
+    t.index ["event_type"], name: "index_agent_events_on_event_type"
+    t.index ["target_event_id"], name: "index_agent_events_on_target_event_id"
+  end
+
+  create_table "agent_sessions", force: :cascade do |t|
+    t.integer "ai_agent_id", null: false
+    t.integer "ai_provider_id"
+    t.integer "user_id"
+    t.string "uuid", null: false
+    t.string "status", default: "open", null: false
+    t.string "channel"
+    t.json "metadata", default: {}
+    t.json "context", default: {}
+    t.integer "event_count", default: 0
+    t.datetime "last_event_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_agent_id", "status"], name: "index_agent_sessions_on_ai_agent_id_and_status"
+    t.index ["ai_agent_id"], name: "index_agent_sessions_on_ai_agent_id"
+    t.index ["ai_provider_id"], name: "index_agent_sessions_on_ai_provider_id"
+    t.index ["channel"], name: "index_agent_sessions_on_channel"
+    t.index ["status"], name: "index_agent_sessions_on_status"
+    t.index ["user_id", "status"], name: "index_agent_sessions_on_user_id_and_status"
+    t.index ["user_id"], name: "index_agent_sessions_on_user_id"
+    t.index ["uuid"], name: "index_agent_sessions_on_uuid", unique: true
+  end
+
+  create_table "ai_agent_memories", force: :cascade do |t|
+    t.integer "ai_agent_id"
+    t.integer "user_id"
+    t.string "key", null: false
+    t.json "value", default: {}
+    t.text "value_text"
+    t.text "embedding"
+    t.string "source"
+    t.string "memory_type"
+    t.json "metadata", default: {}
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_agent_id", "key"], name: "index_ai_agent_memories_on_ai_agent_id_and_key"
+    t.index ["ai_agent_id"], name: "index_ai_agent_memories_on_ai_agent_id"
+    t.index ["expires_at"], name: "index_ai_agent_memories_on_expires_at"
+    t.index ["key"], name: "index_ai_agent_memories_on_key"
+    t.index ["memory_type"], name: "index_ai_agent_memories_on_memory_type"
+    t.index ["user_id", "key"], name: "index_ai_agent_memories_on_user_id_and_key"
+    t.index ["user_id"], name: "index_ai_agent_memories_on_user_id"
+  end
+
   create_table "ai_agents", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -75,8 +137,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_23_130122) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "slug"
+    t.text "greeting"
+    t.string "uuid"
     t.index ["ai_provider_id"], name: "index_ai_agents_on_ai_provider_id"
     t.index ["slug"], name: "index_ai_agents_on_slug", unique: true
+    t.index ["uuid"], name: "index_ai_agents_on_uuid", unique: true
   end
 
   create_table "ai_providers", force: :cascade do |t|
@@ -91,6 +156,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_23_130122) do
     t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "system_default", default: false
   end
 
   create_table "ai_usages", force: :cascade do |t|
@@ -1537,6 +1603,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_23_130122) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_events", "agent_events", column: "target_event_id"
+  add_foreign_key "agent_events", "agent_sessions"
+  add_foreign_key "agent_sessions", "ai_agents"
+  add_foreign_key "agent_sessions", "ai_providers"
+  add_foreign_key "agent_sessions", "users"
+  add_foreign_key "ai_agent_memories", "ai_agents"
+  add_foreign_key "ai_agent_memories", "users"
   add_foreign_key "ai_agents", "ai_providers"
   add_foreign_key "ai_usages", "ai_agents"
   add_foreign_key "ai_usages", "users"

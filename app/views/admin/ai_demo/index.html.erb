@@ -1,9 +1,35 @@
 <%# AI Text Generator Demo Page %>
 
+<style>
+  /* Import the chat widget styles inline */
+  <%= File.read(Rails.root.join('app/assets/stylesheets/components/ai_chat_widget.css')) %>
+</style>
+
 <div class="max-w-4xl mx-auto p-6">
   <div class="mb-8">
     <h1 class="text-3xl font-bold text-white mb-2">AI Text Generator Demo</h1>
     <p class="text-gray-400">Test the AI text generation functionality with different agents and tones.</p>
+  </div>
+
+  <!-- Chat Widget Demo -->
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold text-white mb-4">Chat Widget Demo</h2>
+    <%= render 'shared/ai_chat_widget',
+        agent_slug: 'post_writer',
+        title: 'Post Writer',
+        insert_callback: 'function(content) { document.getElementById("chat_output").value = content; alert("Content inserted!"); }',
+        recall_conversation: true,
+        background_color: '#1a1a1a',
+        user_bubble_color: '#4F46E5',
+        agent_bubble_color: '#2a2a2a',
+        accent_color: '#8B5CF6',
+        height: '500px',
+        display_html_raw: true %>
+    
+    <textarea id="chat_output" 
+              rows="4"
+              class="w-full mt-4 px-4 py-3 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg"
+              placeholder="Accepted content will appear here..."></textarea>
   </div>
 
   <!-- Demo Form -->

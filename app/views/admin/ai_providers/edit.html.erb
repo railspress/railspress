@@ -101,6 +101,9 @@
 
         <%= toggle_switch(f, :active, 'Active', 
             description: 'Enable this provider for use') %>
+        
+        <%= toggle_switch(f, :system_default, 'System Default', 
+            description: 'This provider will be used by default when creating new AI agents. Only one provider can be system default.') %>
       </div>
     </div>
 

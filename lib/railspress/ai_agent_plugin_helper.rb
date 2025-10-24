@@ -12,11 +12,12 @@ module Railspress
     #     provider_type: 'openai'
     #   )
     def self.create_agent(name:, agent_type:, prompt:, provider_type: 'openai', **options)
-      # Find or create provider
-      provider = AiProvider.find_by(provider_type: provider_type, active: true)
+      # Find or create provider - prefer system_default, fallback to active
+      provider = AiProvider.find_by(provider_type: provider_type, system_default: true) ||
+                 AiProvider.find_by(provider_type: provider_type, active: true)
       
       unless provider
-        raise "No active AI provider found for type: #{provider_type}. Please configure one in Admin > AI Agents > Providers"
+        raise "No system default or active AI provider found for type: #{provider_type}. Please configure one in Admin > AI Agents > Providers"
       end
       
       # Create agent

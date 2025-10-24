@@ -9,12 +9,16 @@ class AiProvider < ApplicationRecord
   validates :model_identifier, presence: true
   validates :max_tokens, presence: true, numericality: { greater_than: 0 }
   validates :temperature, presence: true, numericality: { in: 0.0..2.0 }
+  validates :system_default, inclusion: { in: [true, false] }
+  validate :only_one_system_default, if: :system_default?
   
   scope :active, -> { where(active: true) }
   scope :by_type, ->(type) { where(provider_type: type) }
   scope :ordered, -> { order(:position, :name) }
+  scope :system_default, -> { where(system_default: true).first }
   
   after_initialize :set_defaults, if: :new_record?
+  before_save :unset_other_system_defaults, if: :system_default?
   
   def display_name
     "#{name} (#{provider_type.titleize})"
@@ -42,5 +46,15 @@ class AiProvider < ApplicationRecord
     self.temperature = 0.7 if temperature.nil?
     self.max_tokens = 4000 if max_tokens.nil?
     self.position = 0 if position.nil?
+  end
+  
+  def only_one_system_default
+    if system_default? && AiProvider.where(system_default: true).where.not(id: id).exists?
+      errors.add(:system_default, "can only be set for one provider at a time")
+    end
+  end
+  
+  def unset_other_system_defaults
+    AiProvider.where(system_default: true).where.not(id: id).update_all(system_default: false)
   end
 end

@@ -458,8 +458,13 @@ puts ""
 # ============================================
 puts "🤖 Creating default AI agents..."
 
-# Get the active AI provider (should be created in ai_providers seeds)
-default_provider = AiProvider.find_by(active: true) || AiProvider.find_by(provider_type: 'cohere')
+# Get the system default AI provider (should be created in ai_providers seeds)
+default_provider = AiProvider.find_by(system_default: true) || AiProvider.find_by(active: true) || AiProvider.find_by(provider_type: 'cohere')
+
+# Set the first provider as system_default if none exists
+if default_provider && !default_provider.system_default?
+  default_provider.update_column(:system_default, true)
+end
 
 if default_provider
   default_agents = [
@@ -474,6 +479,7 @@ if default_provider
       rules: "Never add information not present in the source material.",
       tasks: "Summarize the provided content effectively.",
       master_prompt: "You are an expert content summarizer with years of experience in creating clear, concise summaries.",
+      greeting: "Hi! I'm here to help you create concise summaries of your content. Just paste the text you'd like me to summarize, and I'll provide a clear, well-structured summary.",
       active: true,
       position: 1
     },
@@ -488,6 +494,7 @@ if default_provider
       rules: "Always fact-check information and cite sources when possible.\nNever add information not present in the source material.\nReturn only valid HTML. Valid tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>, <blockquote>, <code>, <pre>.\nDo NOT wrap HTML in markdown code blocks. Return raw HTML directly.\nDo NOT return a full HTML document (e.g., no <html>, <head>, <body> tags). Return only the content within the body.",
       tasks: "Write compelling blog posts that inform and engage readers.",
       master_prompt: "You are an expert content writer with extensive experience in creating viral blog posts and articles.",
+      greeting: "Hello! I'm your AI writing assistant. I can help you create engaging blog posts, articles, and content. What would you like to write about today?",
       active: true,
       position: 2
     },
@@ -502,6 +509,7 @@ if default_provider
       rules: "Respect privacy and avoid sharing personal information from comments.",
       tasks: "Provide actionable insights based on comment analysis.",
       master_prompt: "You are an expert in social media and community management with deep understanding of audience engagement.",
+      greeting: "Hi there! I'm your comments analyst. Share your comments or feedback, and I'll analyze the sentiment, themes, and engagement patterns to help you understand your audience better.",
       active: true,
       position: 3
     },
@@ -516,6 +524,7 @@ if default_provider
       rules: "Never recommend keyword stuffing or other black-hat techniques.",
       tasks: "Provide actionable SEO recommendations that improve search rankings.",
       master_prompt: "You are a certified SEO expert with proven track record of improving search rankings for various websites.",
+      greeting: "Welcome! I'm your SEO specialist. Share your content with me, and I'll analyze it for optimization opportunities, provide keyword suggestions, and recommend improvements to boost your search rankings.",
       active: true,
       position: 4
     }
@@ -532,9 +541,15 @@ if default_provider
       a.rules = agent_attrs[:rules]
       a.tasks = agent_attrs[:tasks]
       a.master_prompt = agent_attrs[:master_prompt]
+      a.greeting = agent_attrs[:greeting]
       a.active = agent_attrs[:active]
       a.position = agent_attrs[:position]
       a.ai_provider = default_provider
+    end
+    
+    # Update greeting if it doesn't exist or is blank
+    if agent.greeting.blank?
+      agent.update!(greeting: agent_attrs[:greeting])
     end
     
     puts "  ✅ AI Agent created: #{agent.name}"

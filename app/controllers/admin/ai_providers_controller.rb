@@ -71,7 +71,7 @@ class Admin::AiProvidersController < Admin::BaseController
   def ai_provider_params
     params.require(:ai_provider).permit(
       :name, :provider_type, :api_key, :api_url, :model_identifier,
-      :max_tokens, :temperature, :active, :position
+      :max_tokens, :temperature, :active, :system_default, :position
     )
   end
 end

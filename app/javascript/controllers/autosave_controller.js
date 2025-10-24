@@ -296,7 +296,6 @@ export default class extends Controller {
     }, 5000)
   }
 
-  // Manual save trigger
   saveNow() {
     this.save()
   }
