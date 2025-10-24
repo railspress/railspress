@@ -12,6 +12,7 @@
   display_html_raw = local_assigns[:display_html_raw] || false
   recall_conversation = local_assigns[:recall_conversation] || false
   show_greeting = local_assigns[:show_greeting] || true
+  show_settings = local_assigns[:show_settings] || false
   
   # Raise error if agent_slug is not provided
   raise "agent_slug is required" unless agent_slug
@@ -22,9 +23,10 @@
      data-ai-chat-widget-agent-slug-value="<%= agent_slug %>"
      <% if target_selector %>data-ai-chat-widget-target-selector-value="<%= target_selector %>"<% end %>
      <% if insert_callback %>data-ai-chat-widget-insert-callback-value="<%= insert_callback %>"<% end %>
-     data-ai-chat-widget-recall-conversation-value="<%= recall_conversation %>"
-     data-ai-chat-widget-show-greeting-value="<%= show_greeting %>"
-     data-ai-chat-widget-background-color-value="<%= background_color %>"
+    data-ai-chat-widget-recall-conversation-value="<%= recall_conversation %>"
+    data-ai-chat-widget-show-greeting-value="<%= show_greeting %>"
+    data-ai-chat-widget-show-settings-value="<%= show_settings %>"
+    data-ai-chat-widget-background-color-value="<%= background_color %>"
      data-ai-chat-widget-user-bubble-color-value="<%= user_bubble_color %>"
      data-ai-chat-widget-agent-bubble-color-value="<%= agent_bubble_color %>"
      data-ai-chat-widget-accent-color-value="<%= accent_color %>"
@@ -34,6 +36,17 @@
   <div class="ai-chat-header" data-ai-chat-widget-target="header">
     <h3 class="ai-chat-title"><%= title %></h3>
     <div class="ai-chat-header-actions">
+      <% if show_settings %>
+      <button type="button" 
+              class="ai-chat-settings-btn"
+              data-action="click->ai-chat-widget#toggleSettings"
+              title="Settings">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+      <% end %>
       <div class="ai-chat-menu-wrapper">
         <button type="button" 
                 class="ai-chat-menu-btn"
@@ -101,5 +114,94 @@
     </div>
     <% end %>
   </div>
+  
+  <% if show_settings %>
+  <!-- Settings Overlay -->
+  <div class="ai-chat-settings-overlay" data-ai-chat-widget-target="settingsOverlay" style="display: none;">
+    <div class="ai-chat-settings-content">
+      <h4 class="ai-chat-settings-title">Settings</h4>
+      
+      <!-- Tone -->
+      <div class="ai-chat-settings-field">
+        <label for="ai-chat-setting-tone">Tone</label>
+        <select id="ai-chat-setting-tone" 
+                class="ai-chat-settings-select"
+                data-ai-chat-widget-target="settingTone">
+          <option value="balanced">Balanced</option>
+          <option value="professional">Professional</option>
+          <option value="casual">Casual</option>
+          <option value="funny">Funny</option>
+          <option value="friendly">Friendly</option>
+          <option value="formal">Formal</option>
+        </select>
+      </div>
+      
+      <!-- Length -->
+      <div class="ai-chat-settings-field">
+        <label for="ai-chat-setting-length">Length</label>
+        <select id="ai-chat-setting-length" 
+                class="ai-chat-settings-select"
+                data-ai-chat-widget-target="settingLength">
+          <option value="short">Short</option>
+          <option value="medium">Medium</option>
+          <option value="long">Long</option>
+        </select>
+      </div>
+      
+      <!-- Advanced Fields (initially hidden) -->
+      <div class="ai-chat-settings-advanced" data-ai-chat-widget-target="advancedFields" style="display: none;">
+        <!-- Temperature -->
+        <div class="ai-chat-settings-field">
+          <label for="ai-chat-setting-temperature">Temperature</label>
+          <input type="range" 
+                 id="ai-chat-setting-temperature" 
+                 min="0" 
+                 max="1" 
+                 step="0.1" 
+                 value="0.7"
+                 class="ai-chat-settings-range"
+                 data-ai-chat-widget-target="settingTemperature">
+          <span class="ai-chat-settings-value" data-ai-chat-widget-target="temperatureValue">0.7</span>
+        </div>
+        
+        <!-- Max Tokens -->
+        <div class="ai-chat-settings-field">
+          <label for="ai-chat-setting-max-tokens">Max Tokens</label>
+          <input type="number" 
+                 id="ai-chat-setting-max-tokens" 
+                 min="100" 
+                 max="4000" 
+                 step="100" 
+                 value="1000"
+                 class="ai-chat-settings-input"
+                 data-ai-chat-widget-target="settingMaxTokens">
+        </div>
+      </div>
+      
+      <!-- Mode Toggle -->
+      <div class="ai-chat-settings-field">
+        <button type="button" 
+                class="ai-chat-settings-mode-toggle"
+                data-action="click->ai-chat-widget#toggleAdvanced">
+          <span data-ai-chat-widget-target="modeToggleText">Show Advanced</span>
+        </button>
+      </div>
+      
+      <!-- Actions -->
+      <div class="ai-chat-settings-actions">
+        <button type="button" 
+                class="ai-chat-settings-close"
+                data-action="click->ai-chat-widget#closeSettings">
+          Close
+        </button>
+        <button type="button" 
+                class="ai-chat-settings-save"
+                data-action="click->ai-chat-widget#saveSettings">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+  <% end %>
 </div>
 

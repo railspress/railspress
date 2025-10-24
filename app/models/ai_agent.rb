@@ -14,6 +14,8 @@ class AiAgent < ApplicationRecord
   validates :agent_type, presence: true, inclusion: { in: AGENT_TYPES }
   validates :ai_provider, presence: true
   validates :slug, presence: true, uniqueness: true
+  validates :temperature, numericality: { in: 0.0..2.0 }, allow_nil: true
+  validates :max_tokens, numericality: { greater_than: 0 }, allow_nil: true
   
   before_validation :generate_slug, if: :new_record?
   
@@ -24,6 +26,15 @@ class AiAgent < ApplicationRecord
   
   before_create :generate_uuid
   after_initialize :set_defaults, if: :new_record?
+  
+  # Use agent-specific settings if present, otherwise use defaults
+  def effective_temperature
+    temperature || 0.7
+  end
+  
+  def effective_max_tokens
+    max_tokens || 4000
+  end
   
   def full_prompt(user_input = "", context = {})
     parts = []
@@ -53,6 +64,10 @@ class AiAgent < ApplicationRecord
     if context.present?
       # Convert ActionController::Parameters to hash if needed
       context_hash = context.respond_to?(:to_unsafe_h) ? context.to_unsafe_h : context.to_h
+      
+      # Extract settings separately for better formatting
+      settings = context_hash.delete(:settings) || context_hash.delete('settings')
+      
       context_str = context_hash.map { |k, v| 
         if v.is_a?(Array)
           "#{k}: #{v.to_json}"
@@ -62,7 +77,20 @@ class AiAgent < ApplicationRecord
           "#{k}: #{v}"
         end
       }.join("\n")
-      parts << "Context:\n#{context_str}"
+      
+      parts << "Context:\n#{context_str}" if context_str.present?
+      
+      # Add settings instructions if present
+      if settings.present? && settings.is_a?(Hash)
+        settings_instructions = []
+        settings_instructions << "Writing Settings:" if settings.any?
+        settings_instructions << "Tone: #{settings[:tone]&.capitalize || settings['tone']&.capitalize}" if settings[:tone] || settings['tone']
+        settings_instructions << "Length: #{settings[:length]&.capitalize || settings['length']&.capitalize}" if settings[:length] || settings['length']
+        settings_instructions << "Temperature: #{settings[:temperature] || settings['temperature']}" if settings[:temperature] || settings['temperature']
+        settings_instructions << "Max Tokens: #{settings[:max_tokens] || settings['maxTokens']}" if settings[:max_tokens] || settings['maxTokens']
+        
+        parts << settings_instructions.join("\n") if settings_instructions.any?
+      end
     end
     
     parts.join("\n\n")
@@ -74,7 +102,7 @@ class AiAgent < ApplicationRecord
     executing_user = user || User.first # Fallback to first user if no user provided
     
     begin
-      result = AiService.new(ai_provider).generate(prompt_text)
+      result = AiService.new(ai_provider, self).generate(prompt_text)
       response_time = Time.current - start_time
       
       # Log successful usage
@@ -127,7 +155,7 @@ class AiAgent < ApplicationRecord
     begin
       full_response = ""
       
-      AiService.new(ai_provider).generate_streaming(prompt_text) do |chunk|
+      AiService.new(ai_provider, self).generate_streaming(prompt_text) do |chunk|
         full_response += chunk if chunk
         yield chunk if block_given?
       end
@@ -256,6 +284,10 @@ class AiAgent < ApplicationRecord
       default_provider = AiProvider.find_by(system_default: true)
       self.ai_provider = default_provider if default_provider
     end
+    
+    # Set temperature and max_tokens defaults
+    self.temperature ||= 0.7
+    self.max_tokens ||= 4000
   end
   
   def generate_slug

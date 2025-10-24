@@ -1,13 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["messages", "input", "send", "header", "menu"]
+  static targets = ["messages", "input", "send", "header", "menu", "settingsOverlay", "settingTone", "settingLength", "settingTemperature", "settingMaxTokens", "advancedFields", "modeToggleText", "temperatureValue"]
   static values = {
     agentSlug: String,
     targetSelector: String,
     insertCallback: String,
     recallConversation: Boolean,
     showGreeting: Boolean,
+    showSettings: Boolean,
     backgroundColor: String,
     userBubbleColor: String,
     agentBubbleColor: String,
@@ -20,6 +21,7 @@ export default class extends Controller {
     this.sessionUuid = null
     this.currentEventId = null
     this.eventSource = null
+    this.settings = this.loadSettings()
     this.setupColors()
     
     // Try to recall session from localStorage
@@ -31,6 +33,11 @@ export default class extends Controller {
       }
     } else if (this.showGreetingValue !== false) {
       this.requestGreeting()
+    }
+    
+    // Setup settings if enabled
+    if (this.showSettingsValue) {
+      this.setupSettings()
     }
     
     // Close menu when clicking outside
@@ -186,6 +193,11 @@ export default class extends Controller {
     formData.append('message', message)
     formData.append('conversation_history', JSON.stringify(this.conversationHistory))
     formData.append('show_greeting', isGreetingRequest ? 'true' : 'false')
+    
+    // Include settings if available
+    if (this.settings) {
+      formData.append('settings', JSON.stringify(this.getSettingsContext()))
+    }
     
     if (this.sessionUuid) {
       formData.append('session_uuid', this.sessionUuid)
@@ -348,6 +360,18 @@ export default class extends Controller {
     
     // Clear localStorage
     this.clearSessionFromStorage()
+    
+    // Reset settings to defaults
+    this.settings = {
+      tone: 'balanced',
+      length: 'medium',
+      temperature: 0.7,
+      maxTokens: 1000
+    }
+    if (this.showSettingsValue) {
+      this.saveSettingsToStorage(this.settings)
+      this.applySettings(this.settings)
+    }
     
     // Clear all messages
     this.messagesTarget.innerHTML = ''
@@ -572,6 +596,113 @@ export default class extends Controller {
       console.error('Failed to recall session:', error)
       this.clearSessionFromStorage()
       return false
+    }
+  }
+
+  // Settings Management
+  setupSettings() {
+    if (!this.showSettingsValue) return
+    
+    // Load settings from localStorage
+    this.applySettings(this.settings)
+    
+    // Setup temperature slider display
+    if (this.hasSettingTemperatureTarget) {
+      this.settingTemperatureTarget.addEventListener('input', (e) => {
+        this.temperatureValueTarget.textContent = e.target.value
+      })
+    }
+  }
+
+  toggleSettings() {
+    if (!this.hasSettingsOverlayTarget) return
+    
+    const overlay = this.settingsOverlayTarget
+    overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none'
+  }
+
+  closeSettings() {
+    if (this.hasSettingsOverlayTarget) {
+      this.settingsOverlayTarget.style.display = 'none'
+    }
+  }
+
+  toggleAdvanced() {
+    if (!this.hasAdvancedFieldsTarget || !this.hasModeToggleTextTarget) return
+    
+    const fields = this.advancedFieldsTarget
+    const toggleText = this.modeToggleTextTarget
+    
+    const isVisible = fields.style.display !== 'none'
+    fields.style.display = isVisible ? 'none' : 'block'
+    toggleText.textContent = isVisible ? 'Show Advanced' : 'Hide Advanced'
+  }
+
+  saveSettings() {
+    const settings = {
+      tone: this.settingToneTarget.value,
+      length: this.settingLengthTarget.value,
+      temperature: parseFloat(this.settingTemperatureTarget.value),
+      maxTokens: parseInt(this.settingMaxTokensTarget.value)
+    }
+    
+    this.settings = settings
+    this.saveSettingsToStorage(settings)
+    this.closeSettings()
+  }
+
+  loadSettings() {
+    const key = `ai_chat_settings_${this.agentSlugValue}`
+    const stored = localStorage.getItem(key)
+    
+    if (stored) {
+      try {
+        return JSON.parse(stored)
+      } catch (e) {
+        console.error('Failed to parse settings:', e)
+      }
+    }
+    
+    // Default settings
+    return {
+      tone: 'balanced',
+      length: 'medium',
+      temperature: 0.7,
+      maxTokens: 1000
+    }
+  }
+
+  saveSettingsToStorage(settings) {
+    const key = `ai_chat_settings_${this.agentSlugValue}`
+    localStorage.setItem(key, JSON.stringify(settings))
+  }
+
+  applySettings(settings) {
+    if (!this.showSettingsValue) return
+    
+    if (this.hasSettingToneTarget) {
+      this.settingToneTarget.value = settings.tone || 'balanced'
+    }
+    if (this.hasSettingLengthTarget) {
+      this.settingLengthTarget.value = settings.length || 'medium'
+    }
+    if (this.hasSettingTemperatureTarget) {
+      this.settingTemperatureTarget.value = settings.temperature || 0.7
+      if (this.hasTemperatureValueTarget) {
+        this.temperatureValueTarget.textContent = settings.temperature || 0.7
+      }
+    }
+    if (this.hasSettingMaxTokensTarget) {
+      this.settingMaxTokensTarget.value = settings.maxTokens || 1000
+    }
+  }
+
+  getSettingsContext() {
+    return {
+      tone: this.settings.tone,
+      length: this.settings.length,
+      temperature: this.settings.temperature,
+      max_tokens: this.settings.maxTokens
     }
   }
 }

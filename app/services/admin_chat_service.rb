@@ -5,7 +5,7 @@ class AdminChatService
     @session = find_or_create_session(session_uuid)
   end
   
-  def stream_chat(message:, conversation_history: [], show_greeting: false)
+  def stream_chat(message:, conversation_history: [], show_greeting: false, settings: {})
     # If this is a new session and greeting is requested, stream it first
     if show_greeting && @session.event_count == 0 && @agent.greeting.present?
       @agent.greeting.chars.each do |char|
@@ -40,7 +40,10 @@ class AdminChatService
     )
 
     # Build context hash for the agent
-    context = { conversation_history: conversation_history }
+    context = { 
+      conversation_history: conversation_history,
+      settings: settings
+    }
     
     @agent.execute_streaming(message, context, @user) do |chunk|
       full_response += chunk if chunk

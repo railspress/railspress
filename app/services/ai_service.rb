@@ -1,6 +1,16 @@
 class AiService
-  def initialize(provider)
+  def initialize(provider, agent = nil)
     @provider = provider
+    @agent = agent
+  end
+  
+  # Use agent-specific settings only (agents must have their own settings)
+  def temperature
+    @agent&.effective_temperature || 0.7
+  end
+  
+  def max_tokens
+    @agent&.effective_max_tokens || 4000
   end
   
   def generate(prompt)
@@ -57,8 +67,8 @@ class AiService
     body = {
       model: @provider.model_identifier,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: @provider.max_tokens,
-      temperature: @provider.temperature
+      max_tokens: max_tokens,
+      temperature: temperature
     }
     
     request.body = body.to_json
@@ -91,8 +101,8 @@ class AiService
     body = {
       model: @provider.model_identifier,
       message: prompt,
-      max_tokens: @provider.max_tokens.to_i,
-      temperature: @provider.temperature.to_f,
+      max_tokens: max_tokens.to_i,
+      temperature: temperature.to_f,
       stream: false
     }
     
@@ -123,8 +133,8 @@ class AiService
     
     body = {
       model: @provider.model_identifier,
-      max_tokens: @provider.max_tokens,
-      temperature: @provider.temperature,
+      max_tokens: max_tokens,
+      temperature: temperature,
       messages: [{ role: "user", content: prompt }]
     }
     
@@ -158,8 +168,8 @@ class AiService
         parts: [{ text: prompt }]
       }],
       generationConfig: {
-        maxOutputTokens: @provider.max_tokens,
-        temperature: @provider.temperature
+        maxOutputTokens: max_tokens,
+        temperature: temperature
       }
     }
     
@@ -190,8 +200,8 @@ class AiService
     body = {
       model: @provider.model_identifier,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: @provider.max_tokens,
-      temperature: @provider.temperature,
+      max_tokens: max_tokens,
+      temperature: temperature,
       stream: true
     }
     
@@ -236,8 +246,8 @@ class AiService
     
     body = {
       model: @provider.model_identifier,
-      max_tokens: @provider.max_tokens,
-      temperature: @provider.temperature,
+      max_tokens: max_tokens,
+      temperature: temperature,
       messages: [{ role: "user", content: prompt }],
       stream: true
     }
@@ -282,8 +292,8 @@ class AiService
     body = {
       model: @provider.model_identifier,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: @provider.max_tokens.to_i,
-      temperature: @provider.temperature.to_f,
+      max_tokens: max_tokens.to_i,
+      temperature: temperature.to_f,
       stream: true
     }
     

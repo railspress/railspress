@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_24_034723) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_24_044852) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -139,6 +139,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_24_034723) do
     t.string "slug"
     t.text "greeting"
     t.string "uuid"
+    t.decimal "temperature", precision: 3, scale: 2
+    t.integer "max_tokens"
     t.index ["ai_provider_id"], name: "index_ai_agents_on_ai_provider_id"
     t.index ["slug"], name: "index_ai_agents_on_slug", unique: true
     t.index ["uuid"], name: "index_ai_agents_on_uuid", unique: true
@@ -151,12 +153,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_24_034723) do
     t.string "api_url"
     t.string "model_identifier"
     t.integer "max_tokens"
-    t.decimal "temperature"
     t.boolean "active"
     t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "system_default", default: false
+    t.string "slug"
+    t.string "uuid"
+    t.index ["slug"], name: "index_ai_providers_on_slug", unique: true
+    t.index ["uuid"], name: "index_ai_providers_on_uuid", unique: true
   end
 
   create_table "ai_usages", force: :cascade do |t|

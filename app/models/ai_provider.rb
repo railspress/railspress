@@ -5,18 +5,22 @@ class AiProvider < ApplicationRecord
   
   validates :name, presence: true
   validates :provider_type, presence: true, inclusion: { in: PROVIDER_TYPES }
+  validates :slug, presence: true, uniqueness: true
+  validates :uuid, presence: true, uniqueness: true
   validates :api_key, presence: true
   validates :model_identifier, presence: true
   validates :max_tokens, presence: true, numericality: { greater_than: 0 }
-  validates :temperature, presence: true, numericality: { in: 0.0..2.0 }
   validates :system_default, inclusion: { in: [true, false] }
   validate :only_one_system_default, if: :system_default?
   
   scope :active, -> { where(active: true) }
   scope :by_type, ->(type) { where(provider_type: type) }
+  scope :by_slug, ->(slug) { where(slug: slug) }
   scope :ordered, -> { order(:position, :name) }
   scope :system_default, -> { where(system_default: true).first }
   
+  before_validation :generate_slug, if: :new_record?
+  before_validation :generate_uuid, if: :new_record?
   after_initialize :set_defaults, if: :new_record?
   before_save :unset_other_system_defaults, if: :system_default?
   
@@ -43,9 +47,16 @@ class AiProvider < ApplicationRecord
   
   def set_defaults
     self.active = true if active.nil?
-    self.temperature = 0.7 if temperature.nil?
     self.max_tokens = 4000 if max_tokens.nil?
     self.position = 0 if position.nil?
+  end
+  
+  def generate_slug
+    self.slug ||= provider_type
+  end
+  
+  def generate_uuid
+    self.uuid ||= SecureRandom.uuid
   end
   
   def only_one_system_default

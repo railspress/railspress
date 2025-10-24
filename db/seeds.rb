@@ -459,7 +459,7 @@ puts ""
 puts "🤖 Creating default AI agents..."
 
 # Get the system default AI provider (should be created in ai_providers seeds)
-default_provider = AiProvider.find_by(system_default: true) || AiProvider.find_by(active: true) || AiProvider.find_by(provider_type: 'cohere')
+default_provider = AiProvider.find_by(system_default: true) || AiProvider.find_by(active: true) || AiProvider.find_by(slug: 'cohere')
 
 # Set the first provider as system_default if none exists
 if default_provider && !default_provider.system_default?
@@ -481,7 +481,9 @@ if default_provider
       master_prompt: "You are an expert content summarizer with years of experience in creating clear, concise summaries.",
       greeting: "Hi! I'm here to help you create concise summaries of your content. Just paste the text you'd like me to summarize, and I'll provide a clear, well-structured summary.",
       active: true,
-      position: 1
+      position: 1,
+      temperature: 0.3,
+      max_tokens: 2000
     },
     {
       name: "Post Writer",
@@ -496,7 +498,9 @@ if default_provider
       master_prompt: "You are an expert content writer with extensive experience in creating viral blog posts and articles.",
       greeting: "Hello! I'm your AI writing assistant. I can help you create engaging blog posts, articles, and content. What would you like to write about today?",
       active: true,
-      position: 2
+      position: 2,
+      temperature: 0.7,
+      max_tokens: 3000
     },
     {
       name: "Comments Analyzer",
@@ -511,7 +515,9 @@ if default_provider
       master_prompt: "You are an expert in social media and community management with deep understanding of audience engagement.",
       greeting: "Hi there! I'm your comments analyst. Share your comments or feedback, and I'll analyze the sentiment, themes, and engagement patterns to help you understand your audience better.",
       active: true,
-      position: 3
+      position: 3,
+      temperature: 0.5,
+      max_tokens: 2500
     },
     {
       name: "SEO Analyzer",
@@ -526,7 +532,9 @@ if default_provider
       master_prompt: "You are a certified SEO expert with proven track record of improving search rankings for various websites.",
       greeting: "Welcome! I'm your SEO specialist. Share your content with me, and I'll analyze it for optimization opportunities, provide keyword suggestions, and recommend improvements to boost your search rankings.",
       active: true,
-      position: 4
+      position: 4,
+      temperature: 0.4,
+      max_tokens: 2500
     }
   ]
 
@@ -544,13 +552,18 @@ if default_provider
       a.greeting = agent_attrs[:greeting]
       a.active = agent_attrs[:active]
       a.position = agent_attrs[:position]
+      a.temperature = agent_attrs[:temperature]
+      a.max_tokens = agent_attrs[:max_tokens]
       a.ai_provider = default_provider
     end
     
-    # Update greeting if it doesn't exist or is blank
-    if agent.greeting.blank?
-      agent.update!(greeting: agent_attrs[:greeting])
-    end
+    # Update greeting, temperature, and max_tokens if they don't exist or are blank
+    update_attrs = {}
+    update_attrs[:greeting] = agent_attrs[:greeting] if agent.greeting.blank?
+    update_attrs[:temperature] = agent_attrs[:temperature] if agent.temperature.nil?
+    update_attrs[:max_tokens] = agent_attrs[:max_tokens] if agent.max_tokens.nil?
+    
+    agent.update!(update_attrs) if update_attrs.any?
     
     puts "  ✅ AI Agent created: #{agent.name}"
   end
