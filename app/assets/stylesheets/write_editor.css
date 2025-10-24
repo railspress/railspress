@@ -1,0 +1,8 @@
+/* Write Editor Styles */
+/* This file imports write-specific and editor styles */
+
+@import 'admin/write_page.css';
+@import 'editors/editorjs.css';
+@import 'editors/ckeditor5.css';
+@import 'editors/trix.css';
+

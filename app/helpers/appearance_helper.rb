@@ -1,5 +1,35 @@
 module AppearanceHelper
-  # Generate dynamic CSS based on appearance settings
+  # Generate minimal CSS for user customizations only
+  def user_customization_css
+    primary = SiteSetting.get('primary_color', '#6366F1')
+    secondary = SiteSetting.get('secondary_color', '#8B5CF6')
+    
+    <<~CSS
+      <style id="user-customizations">
+        :root {
+          --admin-primary: #{primary};
+          --admin-primary-hover: #{darken_color(primary, 8)};
+          --color-primary: #{primary};
+          
+          --admin-secondary: #{secondary};
+          --admin-secondary-hover: #{darken_color(secondary, 8)};
+          --color-secondary: #{secondary};
+          
+          --font-heading: #{SiteSetting.get('heading_font', 'Inter')};
+          --font-body: #{SiteSetting.get('body_font', 'Inter')};
+          --font-paragraph: #{SiteSetting.get('paragraph_font', 'Inter')};
+        }
+      </style>
+    CSS
+    .html_safe
+  end
+  
+  # Get current color scheme for theme loading
+  def current_color_scheme
+    SiteSetting.get('color_scheme', 'onyx')
+  end
+  
+  # Generate dynamic CSS based on appearance settings (OLD - keep for now)
   def dynamic_appearance_css
     color_scheme = SiteSetting.get('color_scheme', 'midnight')
     primary_color = SiteSetting.get('primary_color', '#6366F1')
