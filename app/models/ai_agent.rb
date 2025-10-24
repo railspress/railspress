@@ -97,6 +97,22 @@ class AiAgent < ApplicationRecord
       if content_text.present?
         parts << "Additional Content:\n#{content_text}"
       end
+      
+      # Add attachments if present
+      attachments_data = context_hash.delete(:attachments) || context_hash.delete('attachments')
+      if attachments_data.present? && attachments_data.is_a?(Array)
+        attachment_info = []
+        attachments_data.each do |att|
+          if att['type']&.start_with?('image/')
+            attachment_info << "Image: #{att['name']} (#{att['url']})"
+          elsif att['type'] == 'application/pdf' || att['type'] == 'text/plain' || att['type']&.include?('wordprocessingml')
+            attachment_info << "Document: #{att['name']} (#{att['url']})"
+          else
+            attachment_info << "File: #{att['name']} (#{att['type']})"
+          end
+        end
+        parts << "Attached Files:\n#{attachment_info.join("\n")}" if attachment_info.any?
+      end
     end
     
     parts.join("\n\n")

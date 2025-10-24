@@ -644,3 +644,212 @@
   opacity: 0.9;
 }
 
+/* Attachment Button */
+.ai-chat-attach-btn {
+  background: none;
+  border: none;
+  color: var(--chat-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.ai-chat-attach-btn:hover {
+  color: var(--chat-text);
+}
+
+/* Attachments Chips Container */
+.ai-chat-attachments {
+  padding: 8px 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  max-height: 100px;
+  background: var(--chat-bg);
+  border-top: 1px solid var(--chat-border);
+}
+
+/* Attachment Chip */
+.ai-chat-attachment-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--chat-agent-bubble);
+  border: 1px solid var(--chat-border);
+  border-radius: 16px;
+  font-size: 13px;
+  color: var(--chat-text);
+}
+
+.ai-chat-attachment-chip svg {
+  flex-shrink: 0;
+}
+
+.ai-chat-attachment-chip span {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-chat-attachment-remove {
+  background: none;
+  border: none;
+  color: var(--chat-text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 4px;
+  transition: all 0.2s;
+}
+
+.ai-chat-attachment-remove:hover {
+  color: var(--chat-text);
+}
+
+/* Attachment Modal */
+.ai-chat-attach-modal {
+  position: absolute;
+  top: 53px;
+  left: 0;
+  right: 0;
+  bottom: 100px;
+  background: var(--chat-bg);
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.ai-chat-attach-content {
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.ai-chat-attach-title {
+  color: var(--chat-text);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Dropzone */
+.ai-chat-attach-dropzone {
+  border: 2px dashed var(--chat-border);
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.ai-chat-attach-dropzone:hover {
+  border-color: var(--chat-accent);
+  background: var(--chat-agent-bubble);
+}
+
+.ai-chat-attach-input {
+  display: none;
+}
+
+.ai-chat-attach-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--chat-text-muted);
+}
+
+.ai-chat-attach-label svg {
+  color: var(--chat-accent);
+}
+
+.ai-chat-attach-label span {
+  font-size: 14px;
+}
+
+.ai-chat-attach-hint {
+  font-size: 12px;
+  color: var(--chat-text-muted);
+}
+
+/* File List */
+.ai-chat-attach-file-list {
+  margin-bottom: 20px;
+}
+
+.ai-chat-attach-file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--chat-agent-bubble);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.ai-chat-attach-file-item svg {
+  flex-shrink: 0;
+}
+
+.ai-chat-attach-file-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-chat-attach-file-item-name {
+  font-size: 14px;
+  color: var(--chat-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-chat-attach-file-item-size {
+  font-size: 12px;
+  color: var(--chat-text-muted);
+}
+
+.ai-chat-attach-file-remove {
+  background: none;
+  border: none;
+  color: var(--chat-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  transition: all 0.2s;
+}
+
+.ai-chat-attach-file-remove:hover {
+  color: var(--chat-accent);
+}
+
+/* Actions */
+.ai-chat-attach-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ai-chat-attach-close {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  border: 1px solid var(--chat-border);
+  color: var(--chat-text-muted);
+}
+
+.ai-chat-attach-close:hover {
+  background: var(--chat-agent-bubble);
+  color: var(--chat-text);
+}
+

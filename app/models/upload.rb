@@ -21,6 +21,10 @@ class Upload < ApplicationRecord
   # Scopes
   scope :quarantined, -> { where(quarantined: true) }
   scope :approved, -> { where(quarantined: [false, nil]) }
+  scope :temporary, -> { where(temporary: true) }
+  scope :permanent, -> { where(temporary: [false, nil]) }
+  scope :expired, -> { where('expires_at < ?', Time.current) }
+  scope :active, -> { where('expires_at IS NULL OR expires_at > ?', Time.current) }
   
   # Callbacks
   after_commit :trigger_upload_hooks, on: [:create, :update], if: -> { file.attached? }
@@ -86,6 +90,26 @@ class Upload < ApplicationRecord
   
   def reject!
     destroy!
+  end
+  
+  def temporary?
+    temporary == true
+  end
+  
+  def expired?
+    expires_at.present? && expires_at < Time.current
+  end
+  
+  def active?
+    !expired?
+  end
+  
+  def mark_temporary!(duration = 24.hours)
+    update!(temporary: true, expires_at: Time.current + duration)
+  end
+  
+  def mark_permanent!
+    update!(temporary: false, expires_at: nil)
   end
   
   # Variant methods

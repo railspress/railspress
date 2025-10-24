@@ -291,6 +291,7 @@ Rails.application.routes.draw do
     post 'ai_chat/stream', to: 'ai_chat#stream'
     post 'ai_chat/feedback', to: 'ai_chat#feedback'
     post 'ai_chat/close_session', to: 'ai_chat#close_session'
+    post 'ai_chat/upload_attachment', to: 'ai_chat#upload_attachment'
     get 'ai_chat/session', to: 'ai_chat#session'
     get 'ai_chat/agent_info', to: 'ai_chat#agent_info'
     

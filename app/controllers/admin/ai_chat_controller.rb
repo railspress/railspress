@@ -15,6 +15,7 @@ class Admin::AiChatController < Admin::BaseController
     show_greeting = params[:show_greeting] == 'true'
     settings = JSON.parse(params[:settings] || '{}')
     content = JSON.parse(params[:content] || '{}')
+    attachments = JSON.parse(params[:attachments] || '[]')
     
     service = AdminChatService.new(
       agent_slug: agent_slug,
@@ -34,7 +35,8 @@ class Admin::AiChatController < Admin::BaseController
         conversation_history: history,
         show_greeting: show_greeting,
         settings: settings,
-        content: content
+        content: content,
+        attachments: attachments
       ) do |chunk|
         if chunk
           response.stream.write("data: #{JSON.generate({chunk: chunk, done: false})}\n\n")
@@ -100,6 +102,51 @@ class Admin::AiChatController < Admin::BaseController
     render json: { success: true }
   rescue => e
     render json: { success: false, error: e.message }, status: :unprocessable_entity
+  end
+  
+  def upload_attachment
+    file = params[:file]
+    
+    unless file
+      render json: { error: 'No file provided' }, status: :bad_request
+      return
+    end
+    
+    # Validate file size (5MB max)
+    if file.size > 5.megabytes
+      render json: { error: 'File too large. Maximum size is 5MB.' }, status: :bad_request
+      return
+    end
+    
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    unless allowed_types.include?(file.content_type)
+      render json: { error: 'File type not allowed' }, status: :bad_request
+      return
+    end
+    
+    # Create upload record
+    upload = Upload.create!(
+      title: file.original_filename,
+      user: current_user,
+      tenant: current_tenant,
+      temporary: true,
+      expires_at: 24.hours.from_now
+    )
+    
+    # Attach file
+    upload.file.attach(file)
+    
+    # Return file data
+    render json: {
+      id: upload.id,
+      name: file.original_filename,
+      type: file.content_type,
+      url: upload.url,
+      size: file.size
+    }
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 end
 

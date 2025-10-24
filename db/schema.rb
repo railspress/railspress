@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_24_044852) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_24_053521) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -1473,7 +1473,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_24_044852) do
     t.boolean "quarantined"
     t.text "quarantine_reason"
     t.text "variants"
+    t.boolean "temporary", default: false
+    t.datetime "expires_at"
+    t.index ["expires_at"], name: "index_uploads_on_expires_at"
     t.index ["storage_provider_id"], name: "index_uploads_on_storage_provider_id"
+    t.index ["temporary"], name: "index_uploads_on_temporary"
     t.index ["tenant_id"], name: "index_uploads_on_tenant_id"
     t.index ["user_id"], name: "index_uploads_on_user_id"
   end

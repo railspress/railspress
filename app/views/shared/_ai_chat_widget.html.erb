@@ -17,6 +17,7 @@
   add_content = local_assigns[:add_content] || false
   show_close_button = local_assigns[:show_close_button] != false # default true
   close_button_callback = local_assigns[:close_button_callback]
+  allow_attachments = local_assigns[:allow_attachments] || false
   
   # Raise error if agent_slug is not provided
   raise "agent_slug is required" unless agent_slug
@@ -31,6 +32,7 @@
     data-ai-chat-widget-show-greeting-value="<%= show_greeting %>"
     data-ai-chat-widget-show-settings-value="<%= show_settings %>"
     data-ai-chat-widget-add-content-value="<%= add_content %>"
+    data-ai-chat-widget-allow-attachments-value="<%= allow_attachments %>"
     data-ai-chat-widget-show-close-button-value="<%= show_close_button %>"
     <% if close_button_callback %>data-ai-chat-widget-close-button-callback-value="<%= close_button_callback %>"<% end %>
     data-ai-chat-widget-background-color-value="<%= background_color %>"
@@ -105,8 +107,25 @@
     <!-- Messages will be added here dynamically -->
   </div>
   
+  <% if allow_attachments %>
+  <!-- Attached Files Chips -->
+  <div class="ai-chat-attachments" data-ai-chat-widget-target="attachmentChips" style="display: none;">
+    <!-- Attachment chips will be added here dynamically -->
+  </div>
+  <% end %>
+  
   <div class="ai-chat-input-area">
     <div class="ai-chat-input-wrapper">
+      <% if allow_attachments %>
+      <button type="button"
+              class="ai-chat-attach-btn"
+              data-action="click->ai-chat-widget#openAttachmentModal"
+              title="Attach file">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+        </svg>
+      </button>
+      <% end %>
       <textarea 
         class="ai-chat-input"
         data-ai-chat-widget-target="input"
@@ -241,6 +260,47 @@
                 class="ai-chat-content-save"
                 data-action="click->ai-chat-widget#saveContent">
           Save
+        </button>
+      </div>
+    </div>
+  </div>
+  <% end %>
+  
+  <% if allow_attachments %>
+  <!-- Attachment Modal -->
+  <div class="ai-chat-attach-modal" data-ai-chat-widget-target="attachModal" style="display: none;">
+    <div class="ai-chat-attach-content">
+      <h4 class="ai-chat-attach-title">Attach Files</h4>
+      
+      <!-- File Input -->
+      <div class="ai-chat-attach-dropzone">
+        <input type="file"
+               id="ai-chat-attach-input"
+               class="ai-chat-attach-input"
+               data-ai-chat-widget-target="attachInput"
+               accept="image/*,application/pdf,text/plain,.docx"
+               multiple
+               data-action="change->ai-chat-widget#handleFileSelect">
+        <label for="ai-chat-attach-input" class="ai-chat-attach-label">
+          <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <span>Click to upload or drag and drop</span>
+          <span class="ai-chat-attach-hint">PDF, TXT, DOCX, Images (Max 5MB)</span>
+        </label>
+      </div>
+      
+      <!-- File List -->
+      <div class="ai-chat-attach-file-list" data-ai-chat-widget-target="attachedFilesList">
+        <!-- Files will be added here dynamically -->
+      </div>
+      
+      <!-- Actions -->
+      <div class="ai-chat-attach-actions">
+        <button type="button" 
+                class="ai-chat-attach-close"
+                data-action="click->ai-chat-widget#closeAttachmentModal">
+          Close
         </button>
       </div>
     </div>

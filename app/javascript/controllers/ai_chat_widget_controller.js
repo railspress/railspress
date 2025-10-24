@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["messages", "input", "send", "header", "menu", "settingsOverlay", "settingTone", "settingLength", "settingTemperature", "settingMaxTokens", "advancedFields", "modeToggleText", "temperatureValue", "contentOverlay", "contentTextarea"]
+  static targets = ["messages", "input", "send", "header", "menu", "settingsOverlay", "settingTone", "settingLength", "settingTemperature", "settingMaxTokens", "advancedFields", "modeToggleText", "temperatureValue", "contentOverlay", "contentTextarea", "attachModal", "attachInput", "attachedFilesList", "attachmentChips"]
   static values = {
     agentSlug: String,
     targetSelector: String,
@@ -10,6 +10,7 @@ export default class extends Controller {
     showGreeting: Boolean,
     showSettings: Boolean,
     addContent: Boolean,
+    allowAttachments: Boolean,
     showCloseButton: Boolean,
     closeButtonCallback: String,
     backgroundColor: String,
@@ -26,6 +27,7 @@ export default class extends Controller {
     this.eventSource = null
     this.settings = this.loadSettings()
     this.content = ''
+    this.attachedFiles = []
     this.setupColors()
     
     // Try to recall session from localStorage
@@ -213,6 +215,11 @@ export default class extends Controller {
       formData.append('content', JSON.stringify(this.getContentContext()))
     }
     
+    // Include attachments if available
+    if (this.allowAttachmentsValue && this.attachedFiles.length > 0) {
+      formData.append('attachments', JSON.stringify(this.attachedFiles))
+    }
+    
     if (this.sessionUuid) {
       formData.append('session_uuid', this.sessionUuid)
     }
@@ -249,6 +256,13 @@ export default class extends Controller {
             this.addActionButtons(bubble)
             // Add agent message to conversation history after streaming completes
             this.conversationHistory.push({ role: 'assistant', content: accumulatedContent })
+            
+            // Clear attachments after sending
+            this.attachedFiles = []
+            if (this.allowAttachmentsValue) {
+              this.renderAttachedFiles()
+            }
+            
             return
           }
           
@@ -406,6 +420,12 @@ export default class extends Controller {
     if (this.addContentValue) {
       this.clearContentFromStorage()
       this.applyContent('')
+    }
+    
+    // Clear attachments
+    this.attachedFiles = []
+    if (this.allowAttachmentsValue) {
+      this.renderAttachedFiles()
     }
     
     // Clear all messages
@@ -846,6 +866,123 @@ export default class extends Controller {
   getContentContext() {
     return {
       content: this.content
+    }
+  }
+  
+  // Attachment Management
+  openAttachmentModal() {
+    if (!this.hasAttachModalTarget) return
+    this.attachModalTarget.style.display = 'block'
+  }
+  
+  closeAttachmentModal() {
+    if (this.hasAttachModalTarget) {
+      this.attachModalTarget.style.display = 'none'
+    }
+  }
+  
+  async handleFileSelect(event) {
+    const files = Array.from(event.target.files)
+    
+    for (const file of files) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`File ${file.name} is too large. Maximum size is 5MB.`)
+        continue
+      }
+      
+      // Upload file
+      const fileData = await this.uploadFile(file)
+      if (fileData) {
+        this.addAttachedFile(fileData)
+      }
+    }
+    
+    // Reset input
+    if (this.hasAttachInputTarget) {
+      this.attachInputTarget.value = ''
+    }
+  }
+  
+  async uploadFile(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+    
+    try {
+      const response = await fetch('/admin/ai_chat/upload_attachment', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': csrfToken
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+      
+      return await response.json()
+    } catch (error) {
+      console.error('File upload error:', error)
+      alert('Failed to upload file. Please try again.')
+      return null
+    }
+  }
+  
+  addAttachedFile(fileData) {
+    this.attachedFiles.push(fileData)
+    this.renderAttachedFiles()
+    this.closeAttachmentModal()
+  }
+  
+  removeAttachedFile(fileId) {
+    this.attachedFiles = this.attachedFiles.filter(f => f.id !== fileId)
+    this.renderAttachedFiles()
+  }
+  
+  renderAttachedFiles() {
+    if (!this.hasAttachmentChipsTarget) return
+    
+    const container = this.attachmentChipsTarget
+    
+    if (this.attachedFiles.length === 0) {
+      container.style.display = 'none'
+      return
+    }
+    
+    container.style.display = 'block'
+    container.innerHTML = ''
+    
+    this.attachedFiles.forEach(file => {
+      const chip = document.createElement('div')
+      chip.className = 'ai-chat-attachment-chip'
+      
+      const icon = this.getFileIcon(file.type)
+      const name = document.createElement('span')
+      name.textContent = file.name
+      
+      const removeBtn = document.createElement('button')
+      removeBtn.className = 'ai-chat-attachment-remove'
+      removeBtn.innerHTML = '×'
+      removeBtn.addEventListener('click', () => this.removeAttachedFile(file.id))
+      
+      chip.innerHTML = icon
+      chip.appendChild(name)
+      chip.appendChild(removeBtn)
+      
+      container.appendChild(chip)
+    })
+  }
+  
+  getFileIcon(type) {
+    if (type?.startsWith('image/')) {
+      return '<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>'
+    } else if (type === 'application/pdf') {
+      return '<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-9.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zm5 2h1v-1h-1v1zm6-2h1v-1h-1v1z"/></svg>'
+    } else {
+      return '<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>'
     }
   }
 }

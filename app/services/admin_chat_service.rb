@@ -5,7 +5,7 @@ class AdminChatService
     @session = find_or_create_session(session_uuid)
   end
   
-  def stream_chat(message:, conversation_history: [], show_greeting: false, settings: {}, content: {})
+  def stream_chat(message:, conversation_history: [], show_greeting: false, settings: {}, content: {}, attachments: [])
     # If this is a new session and greeting is requested, stream it first
     if show_greeting && @session.event_count == 0 && @agent.greeting.present?
       @agent.greeting.chars.each do |char|
@@ -48,6 +48,11 @@ class AdminChatService
     # Add content if present
     if content.present? && content['content'].present?
       context[:content] = content['content']
+    end
+    
+    # Add attachments if present
+    if attachments.present? && attachments.any?
+      context[:attachments] = attachments
     end
     
     @agent.execute_streaming(message, context, @user) do |chunk|
