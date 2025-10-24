@@ -384,9 +384,9 @@ class Post < ApplicationRecord
       'content' => content.to_s, # Convert ActionText to string
       'excerpt' => excerpt,
       'url' => url,
-      'author' => author,
-      'categories' => categories.to_a, # Convert AssociationRelation to array
-      'terms' => terms.to_a, # Convert AssociationRelation to array
+      'author' => author&.to_liquid,
+      'categories' => categories.map(&:to_liquid), # Convert Term objects to liquid hashes
+      'terms' => terms.map(&:to_liquid), # Convert Term objects to liquid hashes
       'published_at' => published_at,
       'created_at' => created_at,
       'updated_at' => updated_at,

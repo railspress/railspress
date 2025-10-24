@@ -218,11 +218,17 @@ class Admin::CommentsController < Admin::BaseController
           author_ip: comment.author_ip,
           browser_info: comment.browser_info,
           created_at: comment.created_at.iso8601,
+          actions: format_actions(comment),
           edit_url: edit_admin_comment_path(comment),
           show_url: admin_comment_path(comment),
           delete_url: nil
         }
       end
+    end
+    
+    def format_actions(comment)
+      # Comments table: view, edit, delete
+      helpers.format_table_actions(comment, [:view, :edit, :delete])
     end
     
     def format_author_name(comment)

@@ -55,6 +55,10 @@ class Medium < ApplicationRecord
     upload&.url
   end
   
+  def file
+    upload&.file
+  end
+  
   def file_attached?
     upload&.file&.attached?
   end

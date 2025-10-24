@@ -161,6 +161,24 @@ class User < ApplicationRecord
     save!
   end
 
+  # Convert User to Liquid-compatible hash
+  def to_liquid
+    {
+      'id' => id,
+      'name' => name,
+      'email' => email,
+      'role' => role,
+      'created_at' => created_at,
+      'updated_at' => updated_at,
+      'bio' => bio,
+      'website' => website,
+      'avatar_url' => avatar.attached? ? Rails.application.routes.url_helpers.url_for(avatar) : nil
+    }
+  end
+
+  # Make method public for Liquid access
+  public :to_liquid
+
   private
 
   def set_default_role

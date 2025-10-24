@@ -81,7 +81,7 @@ class Term < ApplicationRecord
       'taxonomy' => taxonomy&.name,
       'taxonomy_slug' => taxonomy&.slug,
       'parent_id' => parent_id,
-      'children' => children.to_a, # Convert AssociationRelation to array
+      'children' => children.map(&:to_liquid), # Convert Term objects to liquid hashes
       'metadata' => metadata || {}
     }
   end

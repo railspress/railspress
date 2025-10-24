@@ -12,15 +12,15 @@
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- Onyx (Default) -->
-          <label class="relative cursor-pointer">
+          <label class="relative cursor-pointer block color-scheme-option">
             <input type="radio" name="settings[color_scheme]" value="onyx" 
                    <%= 'checked' if @settings[:color_scheme] == 'onyx' %>
-                   class="sr-only peer">
-            <div class="border-2 border-[#2a2a2a] peer-checked:border-indigo-500 rounded-lg overflow-hidden transition">
+                   style="position: absolute; opacity: 0; width: 1px; height: 1px;">
+            <div class="border-2 border-[#2a2a2a] rounded-lg overflow-hidden transition">
               <div class="p-4 bg-[#0a0a0a]">
                 <div class="flex items-center justify-between mb-3">
                   <h3 class="font-semibold text-white">Onyx</h3>
-                  <div class="w-5 h-5 rounded-full border-2 border-white peer-checked:bg-indigo-500 peer-checked:border-indigo-500"></div>
+                  <div class="w-5 h-5 rounded-full border-2 border-white color-scheme-indicator"></div>
                 </div>
                 <div class="space-y-2">
                   <div class="h-8 bg-[#111111] rounded"></div>
@@ -33,15 +33,15 @@
           </label>
 
           <!-- Vallarta (Dark Blue) -->
-          <label class="relative cursor-pointer">
+          <label class="relative cursor-pointer block color-scheme-option">
             <input type="radio" name="settings[color_scheme]" value="vallarta"
                    <%= 'checked' if @settings[:color_scheme] == 'vallarta' %>
-                   class="sr-only peer">
-            <div class="border-2 border-[#2a2a2a] peer-checked:border-indigo-500 rounded-lg overflow-hidden transition">
+                   style="position: absolute; opacity: 0; width: 1px; height: 1px;">
+            <div class="border-2 border-[#2a2a2a] rounded-lg overflow-hidden transition">
               <div class="p-4 bg-[#0a1628]">
                 <div class="flex items-center justify-between mb-3">
                   <h3 class="font-semibold text-white">Vallarta</h3>
-                  <div class="w-5 h-5 rounded-full border-2 border-white"></div>
+                  <div class="w-5 h-5 rounded-full border-2 border-white color-scheme-indicator"></div>
                 </div>
                 <div class="space-y-2">
                   <div class="h-8 bg-[#0f1e3a] rounded"></div>
@@ -54,15 +54,15 @@
           </label>
 
           <!-- Amanecer (Light) -->
-          <label class="relative cursor-pointer">
+          <label class="relative cursor-pointer block color-scheme-option">
             <input type="radio" name="settings[color_scheme]" value="amanecer"
                    <%= 'checked' if @settings[:color_scheme] == 'amanecer' %>
-                   class="sr-only peer">
-            <div class="border-2 border-[#2a2a2a] peer-checked:border-indigo-500 rounded-lg overflow-hidden transition">
+                   style="position: absolute; opacity: 0; width: 1px; height: 1px;">
+            <div class="border-2 border-[#2a2a2a] rounded-lg overflow-hidden transition">
               <div class="p-4 bg-white">
                 <div class="flex items-center justify-between mb-3">
                   <h3 class="font-semibold text-gray-900">Amanecer</h3>
-                  <div class="w-5 h-5 rounded-full border-2 border-gray-900"></div>
+                  <div class="w-5 h-5 rounded-full border-2 border-gray-900 color-scheme-indicator"></div>
                 </div>
                 <div class="space-y-2">
                   <div class="h-8 bg-gray-100 rounded border border-gray-200"></div>
@@ -254,3 +254,19 @@
 
 <!-- Appearance preview functionality is now handled by the Stimulus controller -->
 
+<style>
+  /* Color scheme radio button styling - works without Tailwind peer dependency */
+  .color-scheme-option:has(input:checked) > div {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+  
+  .color-scheme-option:has(input:checked) .color-scheme-indicator {
+    background-color: #6366f1 !important;
+    border-color: #6366f1 !important;
+  }
+  
+  .color-scheme-option:hover {
+    opacity: 0.9;
+  }
+</style>

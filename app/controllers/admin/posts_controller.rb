@@ -40,42 +40,54 @@ class Admin::PostsController < Admin::BaseController
             title: "",
             formatter: "rowSelection",
             titleFormatter: "rowSelection",
-            width: 40,
-            headerSort: false
+            width: "5%",
+            headerSort: false,
+            hozAlign: "center",
+            headerHozAlign: "center"
           },
           {
             title: "Title",
             field: "title",
-            width: 300,
+            width: "35%",
             formatter: "html"
           },
           {
             title: "Author",
             field: "author_name",
-            width: 150
+            width: "10%",
+            hozAlign: "center",
+            headerHozAlign: "center"
           },
           {
             title: "Status",
             field: "status",
-            width: 100,
-            formatter: "html"
+            width: "10%",
+            formatter: "html",
+            hozAlign: "center",
+            headerHozAlign: "center"
           },
           {
             title: "Categories",
             field: "categories",
-            width: 150,
-            formatter: "html"
+            width: "10%",
+            formatter: "html",
+            hozAlign: "center",
+            headerHozAlign: "center"
           },
           {
             title: "Tags",
             field: "tags",
-            width: 150,
-            formatter: "html"
+            width: "10%",
+            formatter: "html",
+            hozAlign: "center",
+            headerHozAlign: "center"
           },
           {
             title: "Date",
             field: "created_at",
-            width: 150,
+            width: "10%",
+            hozAlign: "center",
+            headerHozAlign: "center",
             formatter: "datetime",
             formatterParams: {
               inputFormat: "YYYY-MM-DDTHH:mm:ss.SSSZ",
@@ -85,9 +97,11 @@ class Admin::PostsController < Admin::BaseController
           {
             title: "Actions",
             field: "actions",
-            width: 120,
+            width: "10%",
             headerSort: false,
-            formatter: "html"
+            formatter: "html",
+            hozAlign: "center",
+            headerHozAlign: "center"
           }
         ]
       end
@@ -393,13 +407,10 @@ class Admin::PostsController < Admin::BaseController
       end
     end
 
-    def format_actions(post)
-      actions = ''
-      actions += "<a href=\"#{edit_admin_post_path(post)}\" class=\"text-indigo-600 hover:text-indigo-900 mr-2\" title=\"Edit\">✏️</a>"
-      actions += "<a href=\"#{admin_post_path(post)}\" class=\"text-blue-600 hover:text-blue-900 mr-2\" title=\"View\">👁️</a>"
-      actions += "<a href=\"#{admin_post_path(post)}\" class=\"text-red-600 hover:text-red-900\" title=\"Delete\" data-confirm=\"Are you sure?\">🗑️</a>"
-      actions
-    end
+  def format_actions(post)
+    # Posts table: view (frontend), edit (write page), delete (trash)
+    helpers.format_table_actions(post, [:view, :edit, :delete])
+  end
     
     def choose_layout
       action_name == 'write' || action_name == 'write_new' ? 'write_fullscreen' : 'admin'

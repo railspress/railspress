@@ -290,6 +290,13 @@ export default class extends Controller {
 
   // Getters
   get bulkActionUrl() {
-    return this.settings.url.replace('/index', '/bulk_action')
+    const urlMap = {
+      'posts': '/admin/posts/bulk_action',
+      'pages': '/admin/pages/bulk_action',
+      'comments': '/admin/comments/bulk_action',
+      'webhooks': '/admin/webhooks/bulk_action',
+      'users': '/admin/users/bulk_action'
+    }
+    return urlMap[this.settings.tableType] || this.settings.url.replace('/index', '/bulk_action')
   }
 }

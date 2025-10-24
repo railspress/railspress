@@ -47,38 +47,36 @@ class Admin::PagesController < Admin::BaseController
           {
             title: "Title",
             field: "title",
-            width: 300,
-            formatter: "function(cell, formatterParams) { const data = cell.getRow().getData(); return '<a href=\"' + data.edit_url + '\" class=\"text-indigo-600 hover:text-indigo-900 font-medium\">' + data.title + '</a>'; }"
+            width: "50%",
+            formatter: "html"
           },
           {
             title: "Author",
             field: "author_name",
-            width: 150
+            width: "15%"
           },
           {
             title: "Status",
             field: "status",
-            width: 100,
-            formatter: "function(cell, formatterParams) { const value = cell.getValue(); const statusMap = { 'published': { class: 'bg-green-100 text-green-800', label: 'Published' }, 'draft': { class: 'bg-yellow-100 text-yellow-800', label: 'Draft' }, 'pending': { class: 'bg-blue-100 text-blue-800', label: 'Pending' }, 'trash': { class: 'bg-red-100 text-red-800', label: 'Trash' } }; const status = statusMap[value] || { class: 'bg-gray-100 text-gray-800', label: value }; return '<span class=\"px-2 py-1 text-xs font-medium rounded-full ' + status.class + '\">' + status.label + '</span>'; }"
-          },
-          {
-            title: "Template",
-            field: "template",
-            width: 120,
-            formatter: "function(cell, formatterParams) { const template = cell.getValue(); return template || '<span class=\"text-gray-400\">Default</span>'; }"
+            width: "15%",
+            formatter: "html"
           },
           {
             title: "Date",
             field: "created_at",
-            width: 150,
-            formatter: "function(cell, formatterParams) { const date = new Date(cell.getValue()); return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }"
+            width: "10%",
+            formatter: "datetime",
+            formatterParams: {
+              inputFormat: "YYYY-MM-DDTHH:mm:ss.SSSZ",
+              outputFormat: "DD/MM/YYYY HH:mm"
+            }
           },
           {
             title: "Actions",
             field: "actions",
-            width: 120,
+            width: "10%",
             headerSort: false,
-            formatter: "function(cell, formatterParams) { const data = cell.getRow().getData(); let actions = ''; if (data.edit_url) { actions += '<a href=\"' + data.edit_url + '\" class=\"text-indigo-600 hover:text-indigo-900 mr-2\" title=\"Edit\">✏️</a>'; } if (data.show_url) { actions += '<a href=\"' + data.show_url + '\" class=\"text-blue-600 hover:text-blue-900 mr-2\" title=\"View\">👁️</a>'; } if (data.delete_url) { actions += '<a href=\"' + data.delete_url + '\" class=\"text-red-600 hover:text-red-900\" title=\"Delete\" data-confirm=\"Are you sure?\">🗑️</a>'; } return actions; }"
+            formatter: "html"
           }
         ]
       end
@@ -199,14 +197,34 @@ class Admin::PagesController < Admin::BaseController
     @pages.map do |page|
       {
         id: page.id,
-        title: page.title,
+        title: "<a href=\"#{edit_admin_page_path(page)}\" class=\"text-indigo-600 hover:text-indigo-900 font-medium\">#{page.title}</a>",
         slug: page.slug,
-        status: page.status,
-        author: page.user.email.split('@').first,
-        created_at: page.created_at.strftime("%Y-%m-%d %H:%M"),
-        published_at: page.published_at&.strftime("%Y-%m-%d %H:%M"),
-        actions: view_context.link_to('Edit', edit_admin_page_path(page), class: 'text-indigo-400 hover:text-indigo-300')
+        status: format_status_badge(page.status),
+        status_raw: page.status,
+        author_name: page.user&.name || 'Unknown',
+        created_at: page.created_at.iso8601,
+        published_at: page.published_at&.iso8601,
+        actions: format_actions(page),
+        edit_url: edit_admin_page_path(page),
+        show_url: admin_page_path(page)
       }
     end
+  end
+
+  private
+
+  def format_status_badge(status)
+    status_map = {
+      'published' => { class: 'bg-green-100 text-green-800', label: 'Published' },
+      'draft' => { class: 'bg-yellow-100 text-yellow-800', label: 'Draft' },
+      'pending' => { class: 'bg-blue-100 text-blue-800', label: 'Pending' }
+    }
+    status_info = status_map[status] || { class: 'bg-gray-100 text-gray-800', label: status }
+    "<span class=\"px-2 py-1 text-xs font-medium rounded-full #{status_info[:class]}\">#{status_info[:label]}</span>"
+  end
+
+  def format_actions(page)
+    # Pages table: view, edit, delete
+    helpers.format_table_actions(page, [:view, :edit, :delete])
   end
 end

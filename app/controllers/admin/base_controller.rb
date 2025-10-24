@@ -4,6 +4,7 @@ class Admin::BaseController < ApplicationController
   after_action :clear_flash_messages
   
   layout 'admin'
+  helper Admin::TableHelper
   
   private
   
