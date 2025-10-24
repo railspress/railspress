@@ -8,8 +8,12 @@ export default class extends Controller {
   }
 
   connect() {
-    this.leftCollapsedValue = true; // Both start collapsed
-    this.rightCollapsedValue = true;
+    // Load saved states from localStorage
+    const savedLeftState = localStorage.getItem('editor-ai-sidebar-collapsed')
+    const savedRightState = localStorage.getItem('editor-right-sidebar-collapsed')
+    
+    this.leftCollapsedValue = savedLeftState !== null ? savedLeftState === 'true' : true
+    this.rightCollapsedValue = savedRightState !== null ? savedRightState === 'true' : true
     
     // Wait for DOM to be ready
     setTimeout(() => {
@@ -108,6 +112,8 @@ export default class extends Controller {
     const collapsed = event.detail.collapsed;
     console.log('Toggle left panel:', collapsed);
     this.leftCollapsedValue = collapsed;
+    // Save state to localStorage
+    localStorage.setItem('editor-ai-sidebar-collapsed', collapsed);
     this.updateSplitSizes();
   }
 
@@ -115,6 +121,8 @@ export default class extends Controller {
     const collapsed = event.detail.collapsed;
     console.log('Toggle right panel:', collapsed);
     this.rightCollapsedValue = collapsed;
+    // Save state to localStorage
+    localStorage.setItem('editor-right-sidebar-collapsed', collapsed);
     this.updateSplitSizes();
   }
 

@@ -296,15 +296,15 @@
 
 .ai-chat-input:focus {
   outline: none;
-  border-color: var(--chat-accent);
+  border-color: var(--admin-secondary);
 }
 
 .ai-chat-send {
-  background: var(--chat-accent);
+  background: var(--admin-primary);
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 5px 10px;
   cursor: pointer;
   font-weight: 500;
   transition: opacity 0.2s;

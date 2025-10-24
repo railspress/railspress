@@ -1,0 +1,65 @@
+#!/bin/bash
+# RailsPress Save Script
+# Usage: ./save "commit message"
+# Backs up database, adds, commits, and pushes
+
+set -e
+
+# Colors
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Check if commit message provided
+if [ -z "$1" ]; then
+  echo -e "${RED}❌ Error: Commit message required${NC}"
+  echo "Usage: ./save \"your commit message\""
+  exit 1
+fi
+
+COMMIT_MESSAGE="$1"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="backups"
+BACKUP_FILE="$BACKUP_DIR/database-$TIMESTAMP.sqlite3"
+
+echo -e "${BLUE}💾 RailsPress Save Script${NC}"
+echo "=========================="
+echo ""
+
+# Create backup directory if it doesn't exist
+mkdir -p "$BACKUP_DIR"
+
+# Step 1: Backup database
+echo -e "${BLUE}📦 Backing up database...${NC}"
+if [ -f "storage/development.sqlite3" ]; then
+  cp storage/development.sqlite3 "$BACKUP_FILE"
+  echo -e "${GREEN}✅ Database backed up to: $BACKUP_FILE${NC}"
+else
+  echo -e "${RED}⚠️  No database file found at storage/development.sqlite3${NC}"
+fi
+
+# Step 2: Add all changes
+echo -e "${BLUE}📝 Adding all changes...${NC}"
+git add -A
+CHANGED_FILES=$(git diff --cached --name-only | wc -l | tr -d ' ')
+echo -e "${GREEN}✅ Added $CHANGED_FILES files${NC}"
+
+# Step 3: Commit
+echo -e "${BLUE}💬 Committing changes...${NC}"
+git commit -m "$COMMIT_MESSAGE"
+echo -e "${GREEN}✅ Committed: $COMMIT_MESSAGE${NC}"
+
+# Step 4: Show summary
+echo ""
+echo -e "${GREEN}═══════════════════════════════════════${NC}"
+echo -e "${GREEN}✅ Save complete!${NC}"
+echo -e "${GREEN}═══════════════════════════════════════${NC}"
+echo ""
+echo "📦 Database backup: $BACKUP_FILE"
+echo "💬 Commit: $COMMIT_MESSAGE"
+echo "📊 Files changed: $CHANGED_FILES"
+echo ""
+echo "To push to remote: git push"
+echo ""
+

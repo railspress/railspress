@@ -7,6 +7,11 @@ export default class extends Controller {
 
   connect() {
     console.log("Sidebar controller connected")
+    // Load saved state from localStorage
+    const savedState = localStorage.getItem('editor-right-sidebar-collapsed')
+    if (savedState !== null) {
+      this.collapsedValue = savedState === 'true'
+    }
     // Ensure UI reflects initial state
     this.updateSidebar()
   }
@@ -14,6 +19,9 @@ export default class extends Controller {
   toggle() {
     this.collapsedValue = !this.collapsedValue
     this.updateSidebar()
+    
+    // Save state to localStorage
+    localStorage.setItem('editor-right-sidebar-collapsed', this.collapsedValue)
     
     // Dispatch event for split-panels controller
     window.dispatchEvent(new CustomEvent('split-panels:toggle-right', {

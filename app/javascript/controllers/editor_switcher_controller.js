@@ -33,26 +33,43 @@ export default class extends Controller {
 
     // Create menu element
     this.menu = document.createElement('div')
-    this.menu.className = 'absolute z-50 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700'
+    this.menu.className = 'absolute z-50 w-48 rounded-md'
     this.menu.style.bottom = '100%'
     this.menu.style.left = '0'
     this.menu.style.marginBottom = '4px'
+    this.menu.style.backgroundColor = 'var(--admin-bg-primary)'
+    this.menu.style.border = '1px solid var(--admin-border)'
+    this.menu.style.boxShadow = 'var(--admin-shadow-lg)'
 
     // Create menu items
     this.editors.forEach(editor => {
       const item = document.createElement('button')
-      item.className = `w-full text-left px-4 py-2 text-sm transition-colors rounded-md ${
-        editor.value === this.currentValue 
-          ? 'bg-indigo-600 dark:bg-indigo-600 text-white font-medium' 
-          : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
-      }`
+      item.className = 'w-full text-left px-4 py-2 text-sm transition-colors rounded-md'
+      
+      if (editor.value === this.currentValue) {
+        item.style.backgroundColor = 'var(--admin-primary)'
+        item.style.color = 'white'
+        item.style.fontWeight = '500'
+      } else {
+        item.style.color = 'var(--admin-text-primary)'
+        
+        // Add hover effect
+        item.addEventListener('mouseenter', () => {
+          item.style.backgroundColor = 'var(--admin-bg-secondary)'
+        })
+        item.addEventListener('mouseleave', () => {
+          item.style.backgroundColor = 'transparent'
+        })
+      }
+      
       item.textContent = editor.label
       item.dataset.action = 'click->editor-switcher#selectEditor'
       item.dataset.editorSwitcherEditorValue = editor.value
       
       if (editor.value === this.currentValue) {
         const check = document.createElement('span')
-        check.className = 'ml-2 text-white'
+        check.className = 'ml-2'
+        check.style.color = 'white'
         check.innerHTML = '✓'
         item.appendChild(check)
       }
@@ -221,13 +238,25 @@ export default class extends Controller {
 
   showLoading() {
     this.loadingDiv = document.createElement('div')
-    this.loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
-    this.loadingDiv.innerHTML = `
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex items-center space-x-3">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
-        <span class="text-gray-900 dark:text-white">Switching editor...</span>
-      </div>
-    `
+    this.loadingDiv.className = 'fixed inset-0 flex items-center justify-center z-50'
+    this.loadingDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+    
+    const loadingContent = document.createElement('div')
+    loadingContent.className = 'rounded-lg p-6 flex items-center space-x-3'
+    loadingContent.style.backgroundColor = 'var(--admin-bg-primary)'
+    
+    const spinner = document.createElement('div')
+    spinner.className = 'animate-spin rounded-full h-6 w-6 border-b-2'
+    spinner.style.borderColor = 'var(--admin-primary)'
+    spinner.style.borderTopColor = 'transparent'
+    
+    const text = document.createElement('span')
+    text.textContent = 'Switching editor...'
+    text.style.color = 'var(--admin-text-primary)'
+    
+    loadingContent.appendChild(spinner)
+    loadingContent.appendChild(text)
+    this.loadingDiv.appendChild(loadingContent)
     document.body.appendChild(this.loadingDiv)
   }
 
@@ -241,7 +270,9 @@ export default class extends Controller {
   showError(message) {
     // Simple error display - could be enhanced with toast notifications
     const errorDiv = document.createElement('div')
-    errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50'
+    errorDiv.className = 'fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50'
+    errorDiv.style.backgroundColor = 'var(--admin-error)'
+    errorDiv.style.color = 'white'
     errorDiv.textContent = message
     document.body.appendChild(errorDiv)
     

@@ -23,18 +23,18 @@
     <div data-collapsible-target="content">
       <div class="space-y-3 max-h-64 overflow-y-auto">
         <% @post.versions.limit(10).each_with_index do |version, index| %>
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+          <div class="rounded-lg p-3" style="background-color: var(--admin-bg-secondary);">
             <div class="flex items-center justify-between mb-2">
-              <div class="text-xs text-gray-600 dark:text-gray-400">
+              <div class="text-xs" style="color: var(--admin-text-tertiary);">
                 <%= version.created_at.strftime('%b %d, %H:%M') %>
               </div>
               <% if index == 0 %>
-                <span class="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded-full">Current</span>
+                <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--admin-success-light); color: var(--admin-success);">Current</span>
               <% else %>
-                <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 px-2 py-1 rounded-full">v<%= @post.versions_count - index %></span>
+                <span class="text-xs px-2 py-1 rounded-full" style="background-color: var(--admin-bg-tertiary); color: var(--admin-text-secondary);">v<%= @post.versions_count - index %></span>
               <% end %>
             </div>
-            <div class="text-xs text-gray-700 dark:text-gray-300 mb-2">
+            <div class="text-xs mb-2" style="color: var(--admin-text-secondary);">
               <%= @post.version_summary(version) %>
             </div>
             <% if index > 0 %>
@@ -44,7 +44,10 @@
                     confirm: 'Restore this version?',
                     turbo_confirm: 'Restore this version?'
                   },
-                  class: "w-full px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors" do %>
+                  class: "w-full px-3 py-1.5 text-xs rounded transition-colors",
+                  style: "background-color: var(--admin-primary); color: white;",
+                  onmouseover: "this.style.backgroundColor='var(--admin-primary-hover)'",
+                  onmouseout: "this.style.backgroundColor='var(--admin-primary)'" do %>
                 Restore
               <% end %>
             <% end %>

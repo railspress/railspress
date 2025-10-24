@@ -8,7 +8,7 @@ class AiAgent < ApplicationRecord
   has_many :meta_fields, as: :metable, dependent: :destroy
   include Metable
   
-  AGENT_TYPES = %w[content_summarizer post_writer comments_analyzer seo_analyzer].freeze
+  AGENT_TYPES = %w[content_summarizer post_writer comments_analyzer seo_analyzer content_improver].freeze
   
   validates :name, presence: true
   validates :agent_type, presence: true, inclusion: { in: AGENT_TYPES }

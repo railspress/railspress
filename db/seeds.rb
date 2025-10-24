@@ -39,6 +39,7 @@ admin = User.find_or_create_by!(email: 'admin@example.com') do |user|
   user.role = 'administrator'
   user.name = 'admin'
   user.tenant = default_tenant
+  user.editor_preference = 'editorjs'
 end
 
 # Update existing admin user to have tenant if it doesn't
@@ -132,7 +133,7 @@ hello_post = Post.find_or_create_by!(slug: 'hello-world') do |post|
   post.status = 'published'
   post.user = admin
   post.published_at = Time.current
-  post.tenant = default_tenant
+  post.tenant_id = default_tenant.id
 end
 
 # Assign to Uncategorized category
@@ -536,6 +537,23 @@ if default_provider
       position: 4,
       temperature: 0.4,
       max_tokens: 2500
+    },
+    {
+      name: "Content Improver",
+      slug: "content_improver",
+      description: "Improves content syntax, style, clarity, and engagement - incredibly smart like Notion AI",
+      agent_type: "content_improver",
+      prompt: "You are an elite content improver with exceptional linguistic intelligence, akin to Notion AI. Your task is to elevate content to its highest potential through intelligent syntax refinement, stylistic enhancement, and clarity optimization. You understand context deeply and suggest improvements that preserve the author's voice while dramatically enhancing readability and impact.",
+      content: "Improve content by:\n- Fixing syntax, grammar, and punctuation errors\n- Enhancing sentence structure and flow\n- Improving clarity and conciseness\n- Strengthening word choice and tone\n- Ensuring logical flow and coherence\n- Maintaining the author's original style and voice\n- Suggesting structural improvements\n- Enhancing engagement and readability\n- Optimizing for the intended audience",
+      guidelines: "Be sophisticated yet accessible. Your improvements should feel natural and enhance the author's intent, not replace it. Consider context, audience, and purpose in every suggestion.",
+      rules: "Never completely rewrite or change the core meaning.\nMaintain the author's voice and style.\nAlways preserve factual information.\nReturn only valid HTML. Valid tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>, <blockquote>, <code>, <pre>.\nDo NOT wrap HTML in markdown code blocks. Return raw HTML directly.\nDo NOT return a full HTML document (e.g., no <html>, <head>, <body> tags). Return only the content within the body.\nProvide both the improved version AND a brief explanation of key changes when requested.",
+      tasks: "Transform content into polished, professional, and engaging material while respecting the original author's intent and style.",
+      master_prompt: "You are a master content strategist and linguistic expert with an exceptionally refined understanding of syntax, semantics, rhetoric, and composition theory. Your improvements are thoughtful, context-aware, and elevate content without compromising authenticity. You combine the analytical precision of a copy editor with the creative intuition of a master storyteller.",
+      greeting: "👋 Hi! I'm your Content Improver - think of me as Notion AI's smart cousin! I'll help make your content shine by improving syntax, tightening sentences, enhancing clarity, and boosting engagement - all while keeping your unique voice intact. Share any content and I'll elevate it to the next level!",
+      active: true,
+      position: 5,
+      temperature: 0.6,
+      max_tokens: 4000
     }
   ]
 

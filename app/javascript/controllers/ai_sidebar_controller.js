@@ -5,12 +5,20 @@ export default class extends Controller {
   static values = { collapsed: Boolean }
 
   connect() {
+    // Load saved state from localStorage
+    const savedState = localStorage.getItem('editor-ai-sidebar-collapsed')
+    if (savedState !== null) {
+      this.collapsedValue = savedState === 'true'
+    }
     this.updateSidebar()
   }
 
   toggle() {
     this.collapsedValue = !this.collapsedValue
     this.updateSidebar()
+    
+    // Save state to localStorage
+    localStorage.setItem('editor-ai-sidebar-collapsed', this.collapsedValue)
     
     // Dispatch event for split-panels controller
     window.dispatchEvent(new CustomEvent('split-panels:toggle-left', {

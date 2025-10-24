@@ -36,6 +36,7 @@ export default class extends Controller {
     this.eventSource = null
     this.settings = this.loadSettings()
     this.content = ''
+    this.editorContent = ''  // Hidden field for auto-captured editor content
     this.attachedFiles = []
     this.setupColors()
     
@@ -63,6 +64,13 @@ export default class extends Controller {
     if (this.addContentValue) {
       this.setupContent()
     }
+    
+    // Auto-capture editor content as context (hidden, doesn't affect manual content)
+    this.captureEditorContent().then(editorContent => {
+      if (editorContent) {
+        this.editorContent = editorContent
+      }
+    })
     
     // Close menu when clicking outside
     document.addEventListener('click', this.handleClickOutside.bind(this))
@@ -514,6 +522,13 @@ export default class extends Controller {
       this.applyContent('')
     }
     
+    // Re-capture current editor content for new chat
+    this.captureEditorContent().then(editorContent => {
+      if (editorContent) {
+        this.editorContent = editorContent
+      }
+    })
+    
     // Clear attachments
     this.attachedFiles = []
     if (this.allowAttachmentsValue) {
@@ -641,11 +656,18 @@ export default class extends Controller {
 
     const generatedContent = this.displayHtmlRawValue ? contentDiv.innerHTML : contentDiv.textContent
     
+    // Extract heading and populate title if empty
+    const { heading, remainingContent, originalContent } = this.extractFirstHeading(generatedContent)
+    const titleWasPopulated = this.populateTitleIfEmpty(heading)
+    
+    // Use remainingContent (without heading) if title was populated, otherwise use original
+    const contentToInsert = titleWasPopulated ? remainingContent : originalContent
+    
     if (this.insertCallbackValue) {
       try {
         const callback = new Function('return ' + this.insertCallbackValue)()
         if (typeof callback === 'function') {
-          callback(generatedContent)
+          callback(contentToInsert)
         }
       } catch (e) {
         console.error('Failed to execute insert callback:', e)
@@ -670,7 +692,7 @@ export default class extends Controller {
             const { htmlToEditorJS } = await import('editorjs_converter');
             
             // Convert HTML to EditorJS JSON
-            const editorJSData = htmlToEditorJS(generatedContent);
+            const editorJSData = htmlToEditorJS(contentToInsert);
             console.log('Converted HTML to EditorJS:', editorJSData);
             
             // Insert into EditorJS
@@ -693,7 +715,7 @@ export default class extends Controller {
       // Find Trix editor
       const trixEditor = document.querySelector('trix-editor');
       if (trixEditor) {
-        trixEditor.editor.loadHTML(generatedContent);
+        trixEditor.editor.loadHTML(contentToInsert);
         this.sendFeedback(eventId, 'insert')
         return;
       }
@@ -703,13 +725,62 @@ export default class extends Controller {
       if (ckElement) {
         const controller = window.Stimulus.getControllerForElementAndIdentifier(ckElement, 'ckeditor5');
         if (controller && controller.editor) {
-          controller.editor.setData(generatedContent);
+          controller.editor.setData(contentToInsert);
           this.sendFeedback(eventId, 'insert')
           return;
         }
       }
     }
     
+  }
+  
+  extractFirstHeading(htmlContent) {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(htmlContent, 'text/html')
+    
+    // Find first h1 or h2
+    const heading = doc.querySelector('h1, h2')
+    
+    if (!heading) {
+      return { heading: null, remainingContent: htmlContent, originalContent: htmlContent }
+    }
+    
+    // Get plain text from heading
+    const headingText = heading.textContent.trim()
+    
+    // Clone document for remaining content (with heading removed)
+    const docWithoutHeading = doc.cloneNode(true)
+    const headingToRemove = docWithoutHeading.querySelector('h1, h2')
+    if (headingToRemove) {
+      headingToRemove.remove()
+    }
+    const remainingContent = docWithoutHeading.body.innerHTML
+    
+    // Return both versions: with and without heading
+    return { 
+      heading: headingText, 
+      remainingContent: remainingContent,
+      originalContent: htmlContent
+    }
+  }
+  
+  populateTitleIfEmpty(headingText) {
+    if (!headingText) return false
+    
+    const titleField = document.querySelector('textarea[name*="title"]')
+    if (!titleField) return false
+    
+    const currentTitle = titleField.value.trim()
+    if (currentTitle && currentTitle !== 'Untitled') return false
+    
+    titleField.value = headingText
+    titleField.dispatchEvent(new Event('input', { bubbles: true }))
+    
+    // Auto-resize title field
+    titleField.style.height = 'auto'
+    titleField.style.height = titleField.scrollHeight + 'px'
+    
+    return true
   }
   
   
@@ -1125,9 +1196,78 @@ export default class extends Controller {
   }
   
   getContentContext() {
-    return {
-      content: this.content
+    const context = {}
+    
+    // Include manual content if provided
+    if (this.content) {
+      context.manual_content = this.content
     }
+    
+    // Include auto-captured editor content if available
+    if (this.editorContent) {
+      context.editor_content = this.editorContent
+    }
+    
+    return context
+  }
+  
+  captureEditorContent() {
+    const editorWrapper = document.querySelector('[data-editor-type]')
+    const editorType = editorWrapper ? editorWrapper.dataset.editorType : null
+    
+    if (!editorType) return Promise.resolve('')
+    
+    try {
+      if (editorType === 'editorjs') {
+        const editorjsElement = document.querySelector('[data-controller*="editorjs"]')
+        if (editorjsElement) {
+          const controller = window.Stimulus.getControllerForElementAndIdentifier(editorjsElement, 'editorjs')
+          if (controller && controller.editor) {
+            return controller.editor.save().then(outputData => {
+              return this.convertEditorJSToText(outputData)
+            })
+          }
+        }
+      } else if (editorType === 'trix') {
+        const trixEditor = document.querySelector('trix-editor')
+        if (trixEditor && trixEditor.editor) {
+          return Promise.resolve(trixEditor.editor.getDocument().toString())
+        }
+      } else if (editorType === 'ckeditor5') {
+        const ckElement = document.querySelector('[data-controller*="ckeditor5"]')
+        if (ckElement) {
+          const controller = window.Stimulus.getControllerForElementAndIdentifier(ckElement, 'ckeditor5')
+          if (controller && controller.editor) {
+            return Promise.resolve(controller.editor.getData())
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to capture editor content:', error)
+    }
+    
+    return Promise.resolve('')
+  }
+  
+  convertEditorJSToText(editorData) {
+    if (!editorData || !editorData.blocks) return ''
+    
+    return editorData.blocks.map(block => {
+      switch (block.type) {
+        case 'header':
+          return block.data.text
+        case 'paragraph':
+          return block.data.text
+        case 'list':
+          return block.data.items.join('\n')
+        case 'quote':
+          return `"${block.data.text}" - ${block.data.caption || ''}`
+        case 'code':
+          return block.data.code
+        default:
+          return block.data.text || ''
+      }
+    }).filter(text => text.trim()).join('\n\n')
   }
   
   // Attachment Management
