@@ -69,7 +69,10 @@ class AdminChatService
       )
     end
     
-    @agent.execute_streaming(message, context, @user) do |chunk|
+    # Add HTML formatting rule to the message
+    formatted_message = message + "\n\nReturn only valid HTML. Valid tags: <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>, <blockquote>, <code>, <pre>, <img>. Do NOT wrap HTML in markdown code blocks. Return raw HTML directly. Do NOT return a full HTML document (e.g., no <html>, <head>, <body> tags). Return only the content within the body."
+    
+    @agent.execute_streaming(formatted_message, context, @user) do |chunk|
       full_response += chunk if chunk
       yield chunk if block_given?
     end

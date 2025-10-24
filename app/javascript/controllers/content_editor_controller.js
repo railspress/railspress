@@ -338,10 +338,22 @@ export default class extends Controller {
       const editorJSData = htmlToEditorJS(html)
       console.log('[ContentEditor] Converted HTML to EditorJS:', editorJSData)
       
-      // Render into EditorJS
-      console.log('[ContentEditor] Rendering into EditorJS...')
-      await this.editorController.editor.render(editorJSData)
-      console.log('[ContentEditor] Rendering complete')
+      // Check if editor has existing content
+      const currentData = await this.editorController.editor.save()
+      const hasExistingContent = currentData.blocks && currentData.blocks.length > 0
+      
+      if (hasExistingContent) {
+        // Insert blocks at the end (append)
+        console.log('[ContentEditor] Appending to existing content...')
+        for (const block of editorJSData.blocks) {
+          await this.editorController.editor.blocks.insert(block.type, block.data)
+        }
+      } else {
+        // Render fresh content (replace)
+        console.log('[ContentEditor] Rendering fresh content...')
+        await this.editorController.editor.render(editorJSData)
+      }
+      console.log('[ContentEditor] Insertion complete')
       
       // Trigger saveContent to populate content_json field
       if (this.editorController.saveContent) {
@@ -383,7 +395,20 @@ export default class extends Controller {
     }
 
     try {
-      this.trixEditor.editor.loadHTML(html)
+      // Check if editor has existing content
+      const currentHtml = this.trixEditor.editor.getDocument().toString()
+      const hasExistingContent = currentHtml.trim().length > 0
+      
+      if (hasExistingContent) {
+        // Append to existing content
+        console.log('[ContentEditor] Appending to existing Trix content...')
+        const combinedHtml = currentHtml + '\n\n' + html
+        this.trixEditor.editor.loadHTML(combinedHtml)
+      } else {
+        // Replace with new content
+        console.log('[ContentEditor] Rendering fresh Trix content...')
+        this.trixEditor.editor.loadHTML(html)
+      }
     } catch (error) {
       console.error('[ContentEditor] Failed to set Trix HTML:', error)
       throw error
@@ -398,7 +423,20 @@ export default class extends Controller {
     }
 
     try {
-      this.editorController.editor.setData(html)
+      // Check if editor has existing content
+      const currentHtml = this.editorController.editor.getData()
+      const hasExistingContent = currentHtml.trim().length > 0
+      
+      if (hasExistingContent) {
+        // Append to existing content
+        console.log('[ContentEditor] Appending to existing CKEditor5 content...')
+        const combinedHtml = currentHtml + '\n\n' + html
+        this.editorController.editor.setData(combinedHtml)
+      } else {
+        // Replace with new content
+        console.log('[ContentEditor] Rendering fresh CKEditor5 content...')
+        this.editorController.editor.setData(html)
+      }
     } catch (error) {
       console.error('[ContentEditor] Failed to set CKEditor5 HTML:', error)
       throw error
