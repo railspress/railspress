@@ -56,8 +56,7 @@ export default class extends Controller {
         AttachesTool: !!window.AttachesTool,
         Embed: !!window.Embed,
         InlineCode: !!window.InlineCode,
-        Marker: !!window.Marker,
-        Undo: !!window.Undo
+        Marker: !!window.Marker
       })
 
       this.editor = new window.EditorJS({
@@ -225,9 +224,6 @@ export default class extends Controller {
             marker: window.Marker ? {
               class: window.Marker
             } : undefined,
-            undo: window.Undo ? {
-              class: window.Undo
-            } : undefined,
             
             // Plugin tools injection
             ...(window.pluginEditorJsTools || {})
@@ -242,7 +238,18 @@ export default class extends Controller {
         
         onReady: () => {
           console.log('Editor.js is ready!')
-          this.setupKeyboardShortcuts()
+          
+          // Initialize Undo plugin after editor is ready
+          if (window.Undo) {
+            try {
+              new window.Undo({ editor: this.editor })
+              console.log('Undo plugin initialized')
+            } catch (error) {
+              console.warn('Failed to initialize Undo plugin:', error)
+            }
+          }
+          
+          
         }
       })
     } catch (error) {
@@ -416,15 +423,7 @@ export default class extends Controller {
     }
   }
 
-  setupKeyboardShortcuts() {
-    // CMD/CTRL + S to trigger form save
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault()
-        this.element.closest('form')?.requestSubmit()
-      }
-    })
-  }
+  
 
   // Focus on title input
   focusTitle() {

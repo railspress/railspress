@@ -108,12 +108,11 @@
           <!-- Small Save Button - Floppy Icon -->
           <button type="button" 
                   class="p-1.5 rounded-lg transition-all duration-200 save-button"
-                  data-action="click->autosave#saveNow"
-                  data-autosave-target="saveButton"
+                  onclick="window.savePost()"
                   style="background-color: transparent; color: var(--color-gray-500);"
                   onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
                   onmouseout="this.style.backgroundColor='transparent'"
-                  title="Save">
+                  title="Save (⌘S)">
             <!-- Floppy Icon -->
             <svg class="w-4 h-4" data-autosave-target="saveIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9"/>

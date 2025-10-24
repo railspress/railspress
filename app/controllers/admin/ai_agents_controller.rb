@@ -13,7 +13,8 @@ class Admin::AiAgentsController < Admin::BaseController
             id: agent.id,
             name: agent.name,
             slug: agent.slug,
-            description: agent.description
+            description: agent.description,
+            agent_type: agent.agent_type
           }
         }
       end

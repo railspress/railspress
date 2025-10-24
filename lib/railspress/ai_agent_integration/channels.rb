@@ -10,7 +10,7 @@ module Railspress
         return content unless channel
 
         # Get AI agent for content generation
-        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(agent_type: 'content_optimizer')
+        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(slug: 'content_improver')
         return content unless agent&.active?
 
         # Get channel-specific settings
@@ -45,7 +45,7 @@ module Railspress
         channel = Railspress::PluginApi::Channels.find_channel(channel_slug)
         return nil unless channel
 
-        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(agent_type: 'seo_analyzer')
+        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(slug: 'seo_analyzer')
         return nil unless agent&.active?
 
         settings = Railspress::PluginApi::Channels.channel_settings(channel_slug)
@@ -65,7 +65,7 @@ module Railspress
         channel = Railspress::PluginApi::Channels.find_channel(channel_slug)
         return nil unless channel
 
-        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(agent_type: 'post_writer')
+        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(slug: 'post_writer')
         return nil unless agent&.active?
 
         settings = Railspress::PluginApi::Channels.channel_settings(channel_slug)
@@ -82,7 +82,7 @@ module Railspress
 
       # Analyze content performance across channels
       def self.analyze_channel_performance(resource_type, resource_id, ai_agent_name = nil)
-        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(agent_type: 'comments_analyzer')
+        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(slug: 'comments_analyzer')
         return {} unless agent&.active?
 
         analysis = {}
@@ -106,7 +106,7 @@ module Railspress
 
       # Generate channel-specific recommendations
       def self.generate_recommendations(resource_type, resource_id, ai_agent_name = nil)
-        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(agent_type: 'seo_analyzer')
+        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(slug: 'seo_analyzer')
         return {} unless agent&.active?
 
         recommendations = {}
@@ -130,7 +130,7 @@ module Railspress
 
       # Auto-create channel overrides based on AI analysis
       def self.auto_create_overrides(resource_type, resource_id, ai_agent_name = nil)
-        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(agent_type: 'content_optimizer')
+        agent = ai_agent_name ? AiAgent.find_by(name: ai_agent_name) : AiAgent.find_by(slug: 'content_improver')
         return [] unless agent&.active?
 
         created_overrides = []

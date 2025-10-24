@@ -632,11 +632,16 @@ export default class extends Controller {
     
     const content = this.displayHtmlRawValue ? contentDiv.innerHTML : contentDiv.textContent
     navigator.clipboard.writeText(content).then(() => {
-      // Could show a toast notification here
-      showToast('Message copied to clipboard')
+      // Dispatch toast event
+      document.dispatchEvent(new CustomEvent('toast:show', {
+        detail: { message: 'Response copied to clipboard' }
+      }))
       this.sendFeedback(eventId, 'copy')
     }).catch(err => {
       console.error('Failed to copy:', err)
+      document.dispatchEvent(new CustomEvent('toast:show', {
+        detail: { message: 'Failed to copy' }
+      }))
     })
   }
 
@@ -908,16 +913,18 @@ export default class extends Controller {
       // Clear existing options
       select.innerHTML = ''
       
-      // Add options
-      agents.forEach(agent => {
-        const option = document.createElement('option')
-        option.value = agent.slug
-        option.textContent = agent.name
-        if (agent.slug === this.agentSlugValue) {
-          option.selected = true
-        }
-        select.appendChild(option)
-      })
+      // Add options - filter to only show content_generator agents
+      agents
+        .filter(agent => agent.agent_type === 'content_generator')
+        .forEach(agent => {
+          const option = document.createElement('option')
+          option.value = agent.slug
+          option.textContent = agent.name
+          if (agent.slug === this.agentSlugValue) {
+            option.selected = true
+          }
+          select.appendChild(option)
+        })
     } catch (error) {
       console.error('Failed to load agents:', error)
     }

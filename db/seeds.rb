@@ -101,25 +101,7 @@ end
 
 puts "  ✅ Tag taxonomy (flat) - Empty until used"
 
-# Post Format taxonomy (flat, available but empty)
-format_taxonomy = Taxonomy.find_or_create_by!(slug: 'post_format') do |t|
-  t.name = 'Post Format'
-  t.singular_name = 'Format'
-  t.plural_name = 'Formats'
-  t.description = 'Post format types (video, audio, gallery, etc.)'
-  t.hierarchical = false
-  t.object_types = ['Post']
-  t.settings = {
-    'show_in_menu' => false,
-    'show_in_api' => true,
-    'show_ui' => true,
-    'public' => false
-  }
-  t.tenant = default_tenant
-end
 
-puts "  ✅ Post Format taxonomy (flat) - Available but empty"
-puts ""
 
 # ============================================
 # 4. POSTS
@@ -470,27 +452,10 @@ end
 if default_provider
   default_agents = [
     {
-      name: "Content Summarizer",
-      slug: "content_summarizer",
-      description: "Summarizes long content into concise, readable summaries",
-      agent_type: "content_summarizer",
-      prompt: "You are a content summarizer. Your task is to create clear, concise summaries of the provided content while maintaining the key points and context. Focus on the main ideas and important details.",
-      content: "Create summaries that are:\n- 20-30% of original length\n- Easy to read and understand\n- Include all key points\n- Maintain original tone when appropriate",
-      guidelines: "Always maintain factual accuracy and preserve the original meaning.",
-      rules: "Never add information not present in the source material.",
-      tasks: "Summarize the provided content effectively.",
-      master_prompt: "You are an expert content summarizer with years of experience in creating clear, concise summaries.",
-      greeting: "Hi! I'm here to help you create concise summaries of your content. Just paste the text you'd like me to summarize, and I'll provide a clear, well-structured summary.",
-      active: true,
-      position: 1,
-      temperature: 0.3,
-      max_tokens: 2000
-    },
-    {
       name: "Post Writer",
       slug: "post_writer",
       description: "Helps create engaging blog posts and articles",
-      agent_type: "post_writer",
+      agent_type: "content_generator",
       prompt: "You are a professional blog post writer. Your task is to create engaging, well-structured blog posts based on the provided topic or outline. Write in a conversational yet professional tone.",
       content: "Create blog posts that are:\n- Well-structured with clear headings\n- Engaging and easy to read\n- SEO-friendly\n- Include relevant examples\n- Have a strong conclusion",
       guidelines: "Write in a conversational tone that connects with readers. Use active voice and short paragraphs.",
@@ -505,10 +470,27 @@ if default_provider
       system_required: true
     },
     {
+      name: "Content Summarizer",
+      slug: "content_summarizer",
+      description: "Summarizes long content into concise, readable summaries",
+      agent_type: "content_generator",
+      prompt: "You are a content summarizer. Your task is to create clear, concise summaries of the provided content while maintaining the key points and context. Focus on the main ideas and important details.",
+      content: "Create summaries that are:\n- 20-30% of original length\n- Easy to read and understand\n- Include all key points\n- Maintain original tone when appropriate",
+      guidelines: "Always maintain factual accuracy and preserve the original meaning.",
+      rules: "Never add information not present in the source material.",
+      tasks: "Summarize the provided content effectively.",
+      master_prompt: "You are an expert content summarizer with years of experience in creating clear, concise summaries.",
+      greeting: "Hi! I'm here to help you create concise summaries of your content. Just paste the text you'd like me to summarize, and I'll provide a clear, well-structured summary.",
+      active: true,
+      position: 1,
+      temperature: 0.3,
+      max_tokens: 2000
+    },
+    {
       name: "Comments Analyzer",
       slug: "comments_analyzer",
       description: "Analyzes comment sentiment and provides insights",
-      agent_type: "comments_analyzer",
+      agent_type: "internal_tool",
       prompt: "You are a comments analyzer. Your task is to analyze the sentiment and content of comments to provide insights about audience engagement and feedback.",
       content: "Analyze comments for:\n- Overall sentiment (positive, negative, neutral)\n- Key themes and topics\n- Engagement patterns\n- Suggestions for improvement",
       guidelines: "Be objective and provide constructive insights based on the data.",
@@ -525,7 +507,7 @@ if default_provider
       name: "SEO Analyzer",
       slug: "seo_analyzer",
       description: "Analyzes content for SEO optimization opportunities",
-      agent_type: "seo_analyzer",
+      agent_type: "analyzer",
       prompt: "You are an SEO specialist. Your task is to analyze content and provide specific recommendations for improving search engine optimization.",
       content: "Analyze and provide recommendations for:\n- Keyword optimization\n- Meta descriptions\n- Heading structure\n- Content length and quality\n- Internal linking opportunities",
       guidelines: "Focus on white-hat SEO techniques that provide long-term value.",
@@ -542,7 +524,7 @@ if default_provider
       name: "Content Improver",
       slug: "content_improver",
       description: "Improves content syntax, style, clarity, and engagement - incredibly smart like Notion AI",
-      agent_type: "content_improver",
+      agent_type: "content_generator",
       prompt: "You are an elite content improver with exceptional linguistic intelligence, akin to Notion AI. Your task is to elevate content to its highest potential through intelligent syntax refinement, stylistic enhancement, and clarity optimization. You understand context deeply and suggest improvements that preserve the author's voice while dramatically enhancing readability and impact.",
       content: "Improve content by:\n- Fixing syntax, grammar, and punctuation errors\n- Enhancing sentence structure and flow\n- Improving clarity and conciseness\n- Strengthening word choice and tone\n- Ensuring logical flow and coherence\n- Maintaining the author's original style and voice\n- Suggesting structural improvements\n- Enhancing engagement and readability\n- Optimizing for the intended audience",
       guidelines: "Be sophisticated yet accessible. Your improvements should feel natural and enhance the author's intent, not replace it. Consider context, audience, and purpose in every suggestion.",
@@ -554,6 +536,23 @@ if default_provider
       position: 5,
       temperature: 0.6,
       max_tokens: 4000
+    },
+    {
+      name: "Content Researcher",
+      slug: "content_researcher",
+      description: "Helps gather accurate, concise, and well-structured information for blog posts, news articles, and guides",
+      agent_type: "content_generator",
+      prompt: "You are Railspress's Content Researcher Agent. Your job is to help creators, writers, and editors gather accurate, concise, and well-structured information for blog posts, news articles, and guides.",
+      content: "Provide information that is:\n- Factual and verified from multiple perspectives\n- Well-structured with clear sections\n- Concise and relevant (no filler)\n- Contextualized with relevant subtopics\n- Includes potential story angles\n- Notes data freshness for time-sensitive topics",
+      guidelines: "Always verify facts and summarize from multiple perspectives. Keep tone neutral and informative unless the user asks otherwise.",
+      rules: "Always verify facts and summarize from multiple perspectives.\nReturn only reliable, relevant information. No filler.\nRespond ONLY with valid HTML.\nValid tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a>, <blockquote>, <code>, <pre>.\nDo NOT wrap HTML in markdown or code blocks.\nDo NOT return a full HTML document (no <html>, <head>, or <body>).\nKeep tone neutral and informative unless the user asks otherwise.\nWhen given a query, infer the intent and expand with relevant subtopics, data, and potential story angles.\nIf the topic is time-sensitive, include a short note about data freshness with specific dates.\nStructure output with clear sections.",
+      tasks: "Gather accurate information and present it in a structured, research-ready format for content creators.",
+      master_prompt: "You are an expert researcher with extensive experience in fact-checking, information synthesis, and content strategy. You excel at gathering reliable information from multiple sources and presenting it in a clear, structured format.",
+      greeting: "Hello! I'm your Content Researcher. I help you gather accurate, well-structured information for your articles and blog posts. What topic would you like me to research for you?",
+      active: true,
+      position: 6,
+      temperature: 0.3,
+      max_tokens: 3000
     }
   ]
 

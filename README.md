@@ -2,9 +2,9 @@
 
 # 🚀 RailsPress
 
-### **The Ultimate Ruby on Rails CMS**
+### **The Most Advanced AI-Integrated Content Creation Platform**
 
-![RailsPress Builder](docs/screenshots/pagebuilder.png)
+![RailsPress AI Studio](docs/screenshots/admin-post-studio.png)
 
 [![Ruby](https://img.shields.io/badge/Ruby-3.3.9+-red.svg)](https://www.ruby-lang.org/)
 [![Rails](https://img.shields.io/badge/Rails-7.1+-red.svg)](https://rubyonrails.org/)
@@ -40,6 +40,20 @@ RailsPress combines the **familiarity of WordPress** with the **power and elegan
 - Advanced theme versioning and rollback
 
 ## 🆕 **Major Updates & New Features**
+
+### **🤖 AI-Powered Post Studio**
+The most advanced AI-integrated content creation experience:
+
+- **Sidebar AI Assistant** - Real-time AI collaboration with streaming responses
+- **Multi-Agent Support** - Switch between specialized AI agents (Post Writer, SEO Optimizer, etc.)
+- **Smart Content Insertion** - One-click insertion of AI-generated content into your editor
+- **Attachment Support** - Upload images, PDFs, and documents for AI context
+- **Session Memory** - AI remembers your conversation throughout the writing process
+- **Context Awareness** - AI understands your current post title and content
+- **Tone & Style Controls** - Customize AI output with tone, length, and temperature settings
+- **Real-time Toast Notifications** - Instant feedback for all actions
+- **Advanced Editor.js Integration** - Notion-style block-based editing with AI
+- **HTML Raw Display** - Rich formatting support in AI responses
 
 ### **🔒 GDPR Compliance System**
 RailsPress now includes a comprehensive GDPR compliance system that rivals enterprise solutions:
@@ -116,15 +130,27 @@ Privacy-first analytics that rivals Plausible and Fathom:
 
 #### **Built-in AI Agents**
 - ✅ **Content Summarizer** - Auto-generate post summaries
-- ✅ **Post Writer** - AI-powered content creation
+- ✅ **Post Writer** - AI-powered content creation with streaming
 - ✅ **Comments Analyzer** - Sentiment analysis and moderation
 - ✅ **SEO Analyzer** - Content optimization suggestions
 
 #### **AI Provider Support**
-- ✅ **OpenAI** (GPT-3.5, GPT-4)
-- ✅ **Anthropic** (Claude)
-- ✅ **Cohere** (Command, Generate)
-- ✅ **Google** (PaLM, Gemini)
+- ✅ **OpenAI** (GPT-3.5, GPT-4, GPT-4o)
+- ✅ **Anthropic** (Claude 3.5 Sonnet)
+- ✅ **Cohere** (Command R+)
+- ✅ **Google** (Gemini 1.5 Pro)
+
+#### **Advanced AI Features**
+- ✅ **Streaming responses** for real-time content generation
+- ✅ **Chat widget UI** with sidebar integration
+- ✅ **Multi-agent switching** without losing context
+- ✅ **Session management** with conversation history
+- ✅ **File attachments** for AI processing
+- ✅ **Context injection** (title, current content, user info)
+- ✅ **Feedback system** (like/dislike, copy, insert)
+- ✅ **Content extraction** from editor automatically
+- ✅ **Smart title generation** from AI-generated content
+- ✅ **Toast notifications** for user feedback
 
 #### **Plugin Integration**
 - ✅ **Easy agent creation** from plugins
@@ -248,24 +274,31 @@ Privacy-first analytics that rivals Plausible and Fathom:
 
 ---
 
-#### **Notion-Style Editor**
+#### **Notion-Style AI-Powered Editor**
 - ✅ **Full-screen writing mode** with minimal interface
+- ✅ **Sidebar AI Assistant** with streaming responses
 - ✅ **Editor.js integration** for block-based content creation
 - ✅ **15+ block types** (headers, lists, quotes, code, images, tables)
-- ✅ **Auto-save functionality** as you type
-- ✅ **Keyboard shortcuts** for power users
+- ✅ **Smart auto-save** as you type with visual indicators
+- ✅ **Keyboard shortcuts** for power users (⌘S to save, ⌘Enter to publish)
 - ✅ **Clean JSON output** perfect for APIs
 - ✅ **Dark mode support** with automatic detection
 - ✅ **Media support** (images, files, YouTube, Vimeo embeds)
 - ✅ **Inline formatting** (bold, italic, underline, code, highlight)
+- ✅ **AI content insertion** with one-click integration
+- ✅ **Session persistence** across page reloads
+- ✅ **File attachments** for AI context
+- ✅ **Smart title generation** from AI content
 
 #### **Writing Features**
 - ✅ **Large title input** (40px font, bold weight)
 - ✅ **Clean canvas** with centered 700px max-width
 - ✅ **Sticky toolbar** with glassmorphism effect
-- ✅ **Floating save indicator** with green confirmation
+- ✅ **Floating save indicator** with real-time status
+- ✅ **Toast notifications** for user feedback
+- ✅ **AI chat sidebar** with collapsible panel
 - ✅ **Status badges** (Draft/Published) with minimal design
-- ✅ **Real-time collaboration** ready
+- ✅ **Multi-agent AI support** with easy switching
 - ✅ **Mobile-responsive** writing interface
 - ✅ **Accessibility features** built-in
 
@@ -556,6 +589,8 @@ Switch themes in `Admin → Themes`. Files live under `app/themes/`. Theme versi
 ![MCP Settings](docs/screenshots/admin-mcp-settings.png)
 
 ![Content Channels](docs/screenshots/admin-content-channels.png)
+
+![AI-Powered Post Studio](docs/screenshots/admin-post-studio.png)
 
 ![Distraction-Free Editor](docs/screenshots/admin-distraction-free-editor.png)
 
@@ -968,8 +1003,8 @@ bundle exec rspec
 - 📺 **Content channels** for multi-platform distribution
 
 ### **For Content Creators**
-- ✍️ **Rich text editing** with Trix
-- 🤖 **AI-powered** content assistance
+- ✍️ **Rich text editing** with multiple editor options
+- 🤖 **AI-powered content creation** with streaming and side-by-side collaboration
 - 📱 **Responsive** admin interface
 - 🎯 **SEO optimization** built-in
 - 📊 **Analytics integration** ready
@@ -979,6 +1014,9 @@ bundle exec rspec
 - 📺 **Multi-platform** content distribution
 - ✍️ **Distraction-free writing** with Notion-style editor
 - 📊 **Privacy-first analytics** without data collection
+- 💬 **AI chat widget** with session memory and file attachments
+- ⚡ **Smart auto-save** with visual feedback
+- 🎭 **Multi-agent AI** switching for specialized content generation
 
 ### **For Businesses**
 - 🏢 **Enterprise-ready** with multi-tenancy

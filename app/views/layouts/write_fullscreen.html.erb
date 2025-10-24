@@ -315,6 +315,55 @@
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
       z-index: 1000;
     }
+    
+    /* Toast Notification Styles */
+    .toast-container {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .toast-container.toast-show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    
+    .toast-container.toast-hide {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+    
+    .toast-message {
+      background: var(--admin-bg-elevated);
+      color: var(--admin-text-primary);
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: var(--admin-shadow-xl);
+      border: 1px solid var(--admin-border-strong);
+    }
+    
+    /* Dark theme specific */
+    .dark .toast-message {
+      background: #363636;
+      color: #ffffff;
+      border-color: #4a4a4a;
+    }
+    
+    /* Light theme specific */
+    :root:not(.dark) .toast-message {
+      background: #363636;
+      color: #ffffff;
+      border-color: #4a4a4a;
+    }
   </style>
 </head>
 
@@ -330,6 +379,15 @@
        created_at: @post.created_at.iso8601
      }.to_json %>">
   <%= yield %>
+  
+  <!-- Toast Notification -->
+  <div data-controller="toast">
+    <div class="toast-container" data-toast-target="container">
+      <div class="toast-message" data-toast-target="message">
+        Success
+      </div>
+    </div>
+  </div>
   
   <!-- Split.js JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>

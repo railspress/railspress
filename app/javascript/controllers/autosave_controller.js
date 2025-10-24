@@ -78,13 +78,19 @@ export default class extends Controller {
     // Listen for custom editor events
     document.addEventListener('editor:content-changed', () => this.handleChange())
 
+    // Expose global save function for buttons outside the form
+    window.savePost = () => {
+      this.saveNow()
+    }
+    
     // Listen for keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        console.log('Saving now')
         e.preventDefault()
         this.saveNow()
       }
-    })
+    }, true)
 
     // Warn user before leaving if there are unsaved changes
     window.addEventListener('beforeunload', (e) => {
@@ -298,24 +304,30 @@ export default class extends Controller {
   }
 
   saveNow() {
+    console.log('Saving now')
     this.save()
+
+    window.toast('Saved')
   }
 
   // Offline mode methods
   setOfflineMode(isOffline) {
     this.isOfflineMode = isOffline
     
-    const indicator = document.querySelector('.autosave-indicator')
-    if (!indicator) return
+    const text = document.querySelector('.autosave-text')
+    if (!text) return
     
     if (isOffline) {
-      indicator.innerHTML = '<span class="text-orange-500">⚠ Offline Mode</span>'
+      text.textContent = '⚠ Offline Mode'
+      text.classList.remove('text-gray-400', 'dark:text-gray-500', 'text-green-500')
+      text.classList.add('text-orange-500')
       
       // Start syncing changes to localStorage
       this.startOfflineSync()
     } else {
       // Stop syncing to localStorage
       // Note: autosave will handle showing "All changes saved"
+      text.classList.remove('text-orange-500')
       this.stopOfflineSync()
     }
   }
