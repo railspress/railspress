@@ -1,46 +1,14 @@
 /* --------- Write Page Styling --------- */
 
-/* Hide sidebar initially to prevent flash */
-[data-sidebar-collapsed-value="true"] {
-  width: 0px !important;
-  overflow: hidden !important;
-}
-
+/* Handle sidebar content visibility (opacity only, no width manipulation) */
 [data-sidebar-collapsed-value="true"] [data-sidebar-target="content"] {
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
-/* When sidebar is collapsed, expand main content to full width */
-.sidebar-collapsed [data-sidebar-collapsed-value="true"] {
-  width: 0px !important;
-  overflow: hidden !important;
-}
-
-.sidebar-collapsed .flex-1.flex.overflow-hidden > .flex-1.flex.flex-col.overflow-hidden {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-.sidebar-collapsed .max-w-4xl.mx-auto.px-8.py-12 {
-  max-width: 100% !important;
-  padding-left: 3rem !important;
-  padding-right: 3rem !important;
-}
-
-/* Make editors full width when sidebar is collapsed */
-.sidebar-collapsed .codex-editor__redactor,
-.sidebar-collapsed .ck-content,
-.sidebar-collapsed trix-editor {
-  max-width: 100% !important;
-  width: 100% !important;
-}
-
-.sidebar-collapsed .ce-block__content,
-.sidebar-collapsed .ck-editor__editable,
-.sidebar-collapsed .ck-editor__editable_inline {
-  max-width: 100% !important;
-  width: 100% !important;
+[data-ai-sidebar-collapsed-value="true"] [data-ai-sidebar-target="content"] {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Theme variables (use global admin vars) */
@@ -69,16 +37,51 @@
   color: inherit !important;
 }
 
-/* AI Left Sidebar */
-.ai-left-sidebar {
+/* All panels inherit 100% height from parent container */
+.ai-left-sidebar,
+.sidebar-scroll,
+[data-split-panel="middle"],
+[data-split-panels-target="middlePanel"] {
+  height: 100% !important;
   flex-shrink: 0;
-  transition: width 0.3s ease-in-out;
-  position: fixed;
-  top: 42px;
+}
+
+/* AI Left Sidebar - no scroll on container */
+.ai-left-sidebar {
+  overflow: hidden !important;
+}
+
+/* Right Sidebar - no scroll on container */
+.sidebar-scroll {
+  overflow: hidden !important;
 }
 
 .ai-sidebar-content {
   transition: opacity 0.3s ease-in-out;
+}
+
+/* Split.js Gutters */
+.gutter {
+  background-color: var(--admin-border);
+  cursor: col-resize;
+  transition: background-color 0.2s ease;
+  width: 1px !important;
+  cursor: col-resize;
+}
+
+.gutter:hover {
+  background-color: var(--admin-text-tertiary);
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+  background-color: var(--admin-border);
+}
+
+/* Ensure panels collapse properly */
+.ai-left-sidebar[style*="width: 0"],
+.sidebar-scroll[style*="width: 0"] {
+  min-width: 0 !important;
 }
 
 /* Override chat widget styles for sidebar */

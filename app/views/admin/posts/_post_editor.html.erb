@@ -26,12 +26,10 @@
 })();
 </script>
 
-<div class="h-screen flex flex-col sidebar-collapsed" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
+<div class="h-screen flex flex-col sidebar-collapsed overflow-hidden" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
   
-  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex flex-col", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @post.persisted?, slug_generator_status_value: @post.status, post_id: @post.persisted? ? @post.id : 'new' } do |f| %>
-    
-    <!-- Ultra Minimal Top Bar (Full Width) -->
-    <div class="px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
+  <!-- Ultra Minimal Top Bar (Full Width) - Fixed at top -->
+  <div class="px-6 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
         <%= link_to admin_posts_path, class: "flex items-center gap-2 transition-colors duration-200 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300", style: "", onmouseover: "", onmouseout: "" do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
@@ -133,17 +131,24 @@
             </svg>
           </button>
         </div>
-    </div>
+  </div>
+  
+  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex flex-col overflow-hidden", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @post.persisted?, slug_generator_status_value: @post.status, post_id: @post.persisted? ? @post.id : 'new' } do |f| %>
     
     <!-- Main Content Area (Editor + Sidebar) -->
-    <div class="flex-1 flex overflow-hidden">
+    <div class="flex-1 flex overflow-hidden" 
+         style="margin-top: 50px; height: calc(100vh - 50px);"
+         data-controller="split-panels"
+         data-action="split-panels:toggle-left@window->split-panels#toggleLeftPanel split-panels:toggle-right@window->split-panels#toggleRightPanel">
       <!-- Left Sidebar: AI Assistant -->
-      <div class="ai-left-sidebar transition-all duration-300"
+      <div class="ai-left-sidebar"
            data-controller="ai-sidebar"
            data-ai-sidebar-collapsed-value="true"
-           style="width: 0; border-right: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: calc(100vh - 50px); overflow: hidden;">
+           data-split-panels-target="leftPanel"
+           data-split-panel="left"
+           style="border-right: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); overflow: hidden;">
         
-        <div class="ai-sidebar-content h-full" data-ai-sidebar-target="content" style="width: 400px; opacity: 0; pointer-events: none;">
+        <div class="ai-sidebar-content h-full w-full" data-ai-sidebar-target="content" style="opacity: 0; pointer-events: none;">
           <%= render 'shared/ai_chat_widget',
               agent_slug: 'post_writer',
               height: '100%',
@@ -166,8 +171,8 @@
         </div>
       </div>
       
-      <!-- Left: Main Editor Area -->
-      <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Middle: Main Editor Area -->
+      <div class="flex-1 flex flex-col overflow-hidden" data-split-panels-target="middlePanel" data-split-panel="middle">
         <!-- Title + Editor Container -->
         <div class="flex-1 overflow-y-auto">
         <div class="ml-0 px-8 py-12">
@@ -209,9 +214,15 @@
       </div>
     
       <!-- Right Sidebar: Settings -->
-      <div class="w-80 transition-all duration-300 sidebar-scroll" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); height: 100vh; overflow-y: auto;">
+      <div class="sidebar-scroll" 
+           data-controller="sidebar" 
+           data-action="toggle-sidebar@window->sidebar#toggle" 
+           data-sidebar-collapsed-value="true" 
+           data-split-panels-target="rightPanel"
+           data-split-panel="right"
+           style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); overflow: hidden;">
       
-      <div class="p-6 space-y-8" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
+      <div class="p-6 space-y-8 h-full overflow-y-auto" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
         
         <%= render 'admin/posts/sidebar_sections/post', f: f %>
         

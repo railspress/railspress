@@ -11,6 +11,11 @@ export default class extends Controller {
   toggle() {
     this.collapsedValue = !this.collapsedValue
     this.updateSidebar()
+    
+    // Dispatch event for split-panels controller
+    window.dispatchEvent(new CustomEvent('split-panels:toggle-left', {
+      detail: { collapsed: this.collapsedValue }
+    }))
   }
 
   collapsedValueChanged() {
@@ -19,30 +24,15 @@ export default class extends Controller {
 
   updateSidebar() {
     const contentEl = this.contentTarget
-    const mainContent = document.querySelector('.flex-1.flex.flex-col.overflow-hidden')
     
     if (this.collapsedValue) {
       // Collapse sidebar
-      this.element.style.width = '0'
-      this.element.style.overflow = 'hidden'
       contentEl.style.opacity = '0'
       contentEl.style.pointerEvents = 'none'
-      
-      // Expand main content
-      if (mainContent) {
-        mainContent.style.marginLeft = '0'
-      }
     } else {
       // Expand sidebar
-      this.element.style.width = '400px'
-      this.element.style.overflow = 'visible'
       contentEl.style.opacity = '1'
       contentEl.style.pointerEvents = 'auto'
-      
-      // Push main content
-      if (mainContent) {
-        mainContent.style.marginLeft = '0'
-      }
     }
   }
 }

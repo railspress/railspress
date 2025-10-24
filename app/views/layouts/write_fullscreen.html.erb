@@ -12,6 +12,9 @@
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "admin", "data-turbo-track": "reload" %>
   
+  <!-- Split.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.css">
+  
   <!-- Inter Font (preconnect only, defer actual loading) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -324,5 +327,8 @@
        created_at: @post.created_at.iso8601
      }.to_json %>">
   <%= yield %>
+  
+  <!-- Split.js JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>
 </body>
 </html>
