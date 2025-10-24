@@ -7,6 +7,13 @@ module AppearanceHelper
     heading_color = SiteSetting.get('heading_color', '')
     body_color = SiteSetting.get('body_color', '')
     button_text_color = SiteSetting.get('button_text_color', '')
+    
+    # Button-specific settings
+    primary_button_bg = SiteSetting.get('primary_button_bg', primary_color)
+    primary_button_text = SiteSetting.get('primary_button_text', '#ffffff')
+    secondary_button_bg = SiteSetting.get('secondary_button_bg', secondary_color)
+    secondary_button_text = SiteSetting.get('secondary_button_text', '#ffffff')
+    
     heading_font = SiteSetting.get('heading_font', 'Inter')
     body_font = SiteSetting.get('body_font', 'Inter')
     paragraph_font = SiteSetting.get('paragraph_font', 'Inter')
@@ -25,6 +32,12 @@ module AppearanceHelper
           --admin-secondary-hover: #{darken_color(secondary_color, 8)};
           --admin-secondary-light: #{hex_to_rgba(secondary_color, 0.1)};
           
+          /* Button-specific colors */
+          --admin-primary-button-bg: #{primary_button_bg};
+          --admin-primary-button-text: #{primary_button_text};
+          --admin-secondary-button-bg: #{secondary_button_bg};
+          --admin-secondary-button-text: #{secondary_button_text};
+          
           #{link_color.present? ? "/* User's custom link color (overrides theme) */\n--admin-link: #{link_color};\n--admin-link-hover: #{lighten_color(link_color, 10)};" : ''}
           #{heading_color.present? ? "/* User's custom heading color */\n--admin-heading: #{heading_color};" : ''}
           #{body_color.present? ? "/* User's custom body text color */\n--admin-body: #{body_color};" : ''}
@@ -36,9 +49,15 @@ module AppearanceHelper
           --font-paragraph: #{paragraph_font};
         }
         
-        /* Apply user's brand colors ONLY to buttons and badges, NOT text */
+        /* Apply user's button colors */
         .bg-indigo-600, .bg-primary, .btn-primary {
-          background-color: var(--color-primary) !important;
+          background-color: var(--admin-primary-button-bg) !important;
+          color: var(--admin-primary-button-text) !important;
+        }
+        
+        .btn-secondary {
+          background-color: var(--admin-secondary-button-bg) !important;
+          color: var(--admin-secondary-button-text) !important;
         }
         
         .hover\\:bg-indigo-700:hover {

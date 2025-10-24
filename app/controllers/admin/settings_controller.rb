@@ -425,6 +425,18 @@ class Admin::SettingsController < Admin::BaseController
       primary_color: SiteSetting.get('primary_color', '#6366F1'),
       secondary_color: SiteSetting.get('secondary_color', '#8B5CF6'),
       
+      # Link and Text Colors
+      link_color: SiteSetting.get('link_color', ''),
+      heading_color: SiteSetting.get('heading_color', ''),
+      body_color: SiteSetting.get('body_color', ''),
+      button_text_color: SiteSetting.get('button_text_color', ''),
+      
+      # Button Colors
+      primary_button_bg: SiteSetting.get('primary_button_bg', ''),
+      primary_button_text: SiteSetting.get('primary_button_text', ''),
+      secondary_button_bg: SiteSetting.get('secondary_button_bg', ''),
+      secondary_button_text: SiteSetting.get('secondary_button_text', ''),
+      
       # Typography
       heading_font: SiteSetting.get('heading_font', 'Inter'),
       body_font: SiteSetting.get('body_font', 'Inter'),

@@ -57,6 +57,13 @@
   --admin-text-error: #f87171;
   --admin-text-success: #34d399;
   --admin-text-warning: #fbbf24;
+  
+  /* Card/Surface Colors */
+  --card: #1a1a2e;
+  --elevated: #252540;
+  --border: #2a2a3e;
+  --muted: #9ca3af;
+  --primary: #ffffff;
 }
 
 /* Tailwind class overrides - Make them use theme colors */
@@ -112,5 +119,26 @@ p, .prose {
 .sidebar-section-header .sidebar-text.text-gray-400,
 .sidebar-section-header span.text-gray-400 {
   color: var(--admin-text-primary) !important;
+}
+
+/* Card overrides */
+.bg-card {
+  background-color: var(--card) !important;
+}
+
+.bg-elevated {
+  background-color: var(--elevated) !important;
+}
+
+.border-border {
+  border-color: var(--border) !important;
+}
+
+.text-muted {
+  color: var(--muted) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
 }
 

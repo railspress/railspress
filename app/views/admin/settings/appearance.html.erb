@@ -186,18 +186,77 @@
           </div>
         </div>
         
-        <!-- Button Text Color -->
+        <!-- Primary Button Controls -->
         <div class="mt-6 pt-6 border-t border-[#2a2a2a]">
-          <label class="block text-sm font-medium text-gray-300 mb-3">
-            Button Text Color
-          </label>
-          <p class="text-xs text-gray-500 mb-3">Text color inside primary buttons</p>
-          <div class="flex items-center gap-3">
-            <%= color_field_tag 'settings[button_text_color]', @settings[:button_text_color] || '#ffffff', 
-                class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
-            <%= text_field_tag 'settings[button_text_color_text]', @settings[:button_text_color] || '#ffffff', 
-                class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
-                onchange: "document.querySelector('input[name=\"settings[button_text_color]\"]').value = this.value" %>
+          <h3 class="text-lg font-semibold text-white mb-4">Primary Button</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Primary Button Background -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-3">
+                Primary Button Background
+              </label>
+              <p class="text-xs text-gray-500 mb-3">Background color for primary buttons</p>
+              <div class="flex items-center gap-3">
+                <%= color_field_tag 'settings[primary_button_bg]', @settings[:primary_button_bg] || @settings[:primary_color] || '#6366F1', 
+                    class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+                <%= text_field_tag 'settings[primary_button_bg_text]', @settings[:primary_button_bg] || @settings[:primary_color] || '#6366F1', 
+                    class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                    onchange: "document.querySelector('input[name=\"settings[primary_button_bg]\"]').value = this.value" %>
+              </div>
+            </div>
+            
+            <!-- Primary Button Text -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-3">
+                Primary Button Text
+              </label>
+              <p class="text-xs text-gray-500 mb-3">Text color inside primary buttons</p>
+              <div class="flex items-center gap-3">
+                <%= color_field_tag 'settings[primary_button_text]', @settings[:primary_button_text] || '#ffffff', 
+                    class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+                <%= text_field_tag 'settings[primary_button_text_input]', @settings[:primary_button_text] || '#ffffff', 
+                    class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                    onchange: "document.querySelector('input[name=\"settings[primary_button_text]\"]').value = this.value" %>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Secondary Button Controls -->
+        <div class="mt-6 pt-6 border-t border-[#2a2a2a]">
+          <h3 class="text-lg font-semibold text-white mb-4">Secondary Button</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Secondary Button Background -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-3">
+                Secondary Button Background
+              </label>
+              <p class="text-xs text-gray-500 mb-3">Background color for secondary buttons</p>
+              <div class="flex items-center gap-3">
+                <%= color_field_tag 'settings[secondary_button_bg]', @settings[:secondary_button_bg] || @settings[:secondary_color] || '#8B5CF6', 
+                    class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+                <%= text_field_tag 'settings[secondary_button_bg_text]', @settings[:secondary_button_bg] || @settings[:secondary_color] || '#8B5CF6', 
+                    class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                    onchange: "document.querySelector('input[name=\"settings[secondary_button_bg]\"]').value = this.value" %>
+              </div>
+            </div>
+            
+            <!-- Secondary Button Text -->
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-3">
+                Secondary Button Text
+              </label>
+              <p class="text-xs text-gray-500 mb-3">Text color inside secondary buttons</p>
+              <div class="flex items-center gap-3">
+                <%= color_field_tag 'settings[secondary_button_text]', @settings[:secondary_button_text] || '#ffffff', 
+                    class: 'h-12 w-20 rounded-lg border-2 border-[#2a2a2a] cursor-pointer' %>
+                <%= text_field_tag 'settings[secondary_button_text_input]', @settings[:secondary_button_text] || '#ffffff', 
+                    class: 'flex-1 px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                    onchange: "document.querySelector('input[name=\"settings[secondary_button_text]\"]').value = this.value" %>
+              </div>
+            </div>
           </div>
         </div>
       </div>
