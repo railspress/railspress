@@ -105,14 +105,14 @@ Rails.application.configure do
   
   # Hot reloading for CSS/JS changes
   #config.middleware.insert_after ActionDispatch::Static, Hotwire::Livereload::Middleware
-  config.hotwire_livereload.reload_method = :page_reload
+  config.hotwire_livereload.reload_method = :morph
   
   # Optimized listen paths to avoid problematic directories
   config.hotwire_livereload.listen_paths = [
     Rails.root.join("app/assets/stylesheets"),
     Rails.root.join("app/javascript"),
-    Rails.root.join("app/views"),
-    Rails.root.join("app/assets/builds")
+    Rails.root.join("app/views")
+    # Rails.root.join("app/assets/builds")
   ]
   
   # Add error handling for livereload

@@ -11,6 +11,10 @@ export default class extends Controller {
       this.collapsedValue = savedState === 'true'
     }
     this.updateSidebar()
+
+    window.toggleAiSidebar = () => {
+      this.toggle()
+    }
   }
 
   toggle() {

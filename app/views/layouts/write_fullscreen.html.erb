@@ -396,6 +396,23 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function navigateToPostPreview() {
+      window.open('<%= @post.preview_url %>', '_blank');
+    }
+  </script>
+
+  <!-- Command Palette -->
+  <%= render 'shared/command_palette',
+      shortcut_set: 'write',
+      theme: {
+        bg_color: 'var(--admin-bg-app)',
+        text_color: 'var(--admin-text-primary)',
+        selected_bg: 'var(--admin-color-primary)',
+        border_color: 'var(--admin-border)',
+        selected_bg: 'var(--admin-border-strong)'
+      } %>
   
   <!-- Split.js JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>

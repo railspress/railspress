@@ -887,6 +887,15 @@ Rails.application.routes.draw do
     # Plugin Proxy (for plugin handlers)
     post 'plugins/:plugin_id/:action_name', to: 'plugin_proxy#proxy', as: 'plugin_proxy'
     get 'plugins/:plugin_id/:action_name/*path', to: 'plugin_proxy#proxy'
+    
+    # Command Palette API
+    resource :search, only: [] do
+      get :autocomplete, on: :collection
+    end
+    
+    namespace :api do
+      resources :shortcuts, only: [:index]
+    end
   end
   
   # Plugin Routes (dynamically loaded)

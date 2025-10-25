@@ -83,14 +83,7 @@ export default class extends Controller {
       this.saveNow()
     }
     
-    // Listen for keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        console.log('Saving now')
-        e.preventDefault()
-        this.saveNow()
-      }
-    }, true)
+    
 
     // Warn user before leaving if there are unsaved changes
     window.addEventListener('beforeunload', (e) => {

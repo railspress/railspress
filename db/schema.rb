@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_24_115911) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_25_041718) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -1153,6 +1153,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_24_115911) do
     t.integer "tenant_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "shortcut_set", default: "global"
+    t.string "keybinding"
+    t.index ["keybinding"], name: "index_shortcuts_on_keybinding"
+    t.index ["shortcut_set"], name: "index_shortcuts_on_shortcut_set"
     t.index ["tenant_id"], name: "index_shortcuts_on_tenant_id"
   end
 

@@ -1,592 +1,393 @@
-// Global Command Palette Controller
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["dialog", "input", "results", "empty"]
+  static targets = [
+    "modal", "backdrop", "search", "results",
+    "shortcutsList", "shortcutsSection",
+    "postsList", "postsSection",
+    "pagesList", "pagesSection",
+    "taxonomiesList", "taxonomiesSection",
+    "usersList", "usersSection",
+    "emptyState", "item", "itemTemplate"
+  ]
+  
+  static values = {
+    set: String
+  }
   
   connect() {
-    this.commands = []
-    this.filteredCommands = []
+    this.shortcuts = []
+    this.allItems = []
     this.selectedIndex = 0
-    this.isEnabled = true
+    this.searchDebounce = null
+    this.isOpen = false
     
-    // Check if command palette should be disabled on this page
-    if (this.element.dataset.disabled === 'true') {
-      this.isEnabled = false
-    }
-    
-    // Load commands
-    this.loadCommands()
-    
-    // Global keyboard listener (only if enabled)
-    document.addEventListener('keydown', this.handleGlobalKeyboard.bind(this))
+    // Load shortcuts FIRST, then register keyboard listeners
+    this.loadShortcuts().then(() => {
+      this.registerKeyboardListeners()
+    })
   }
   
   disconnect() {
-    document.removeEventListener('keydown', this.handleGlobalKeyboard.bind(this))
-  }
-  
-  // Handle keyboard shortcut based on settings
-  async handleGlobalKeyboard(event) {
-    // Don't interfere if disabled
-    if (!this.isEnabled) return
-    
-    // Don't interfere if user is typing in an input field
-    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.contentEditable === 'true') {
-      return
-    }
-    
-    // Don't interfere if Monaco Editor is focused
-    if (event.target.closest('.monaco-editor') || event.target.closest('[data-controller*="theme-editor"]')) {
-      return
-    }
-    
-    // Don't interfere if command palette is already open
-    const dialog = document.querySelector('[data-command-palette-target="dialog"]')
-    if (dialog && !dialog.classList.contains('hidden')) {
-      return
-    }
-    
-    // Get the configured shortcut (default to cmd+k)
-    const shortcut = await this.getShortcut()
-    
-    if (this.matchesShortcut(event, shortcut)) {
-      event.preventDefault()
-      event.stopPropagation()
-      this.open()
+    if (this.boundKeydownHandler) {
+      document.removeEventListener('keydown', this.boundKeydownHandler)
     }
   }
   
-  // Get the configured shortcut from the page
-  async getShortcut() {
-    // Check if there's a data attribute with the shortcut
-    const shortcut = document.querySelector('[data-command-palette]')?.dataset.shortcut
-    if (shortcut) return shortcut
-    
-    // Try to get from settings via meta tag or API
+  async loadShortcuts() {
     try {
-      const response = await fetch('/admin/settings/shortcuts.json')
-      if (response.ok) {
-        const data = await response.json()
-        return data.command_palette_shortcut || 'cmd+k'
-      }
+      const response = await fetch(`/admin/api/shortcuts?set=${this.setValue}`)
+      const data = await response.json()
+      this.shortcuts = data.shortcuts
+      console.log(`Loaded ${this.shortcuts.length} shortcuts for set: ${this.setValue}`)
+      this.renderShortcuts()
     } catch (error) {
-      console.warn('Could not load shortcut settings:', error)
+      console.error('Failed to load shortcuts:', error)
+    }
+  }
+  
+  registerKeyboardListeners() {
+    this.boundKeydownHandler = this.handleGlobalKeydown.bind(this)
+    document.addEventListener('keydown', this.boundKeydownHandler)
+    console.log('Keyboard listeners registered')
+  }
+  
+  handleGlobalKeydown(e) {
+    // Don't intercept if typing in input/textarea (except when palette is open)
+    if (!this.isOpen && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+      return
     }
     
-    return 'cmd+k'
-  }
-  
-  // Check if the event matches the configured shortcut
-  matchesShortcut(event, shortcut) {
-    switch(shortcut) {
-      case 'cmd+k':
-        return event.metaKey && event.key === 'k'
-      case 'ctrl+k':
-        return event.ctrlKey && event.key === 'k'
-      case 'cmd+shift+p':
-        return event.metaKey && event.shiftKey && event.key === 'P'
-      case 'ctrl+shift+p':
-        return event.ctrlKey && event.shiftKey && event.key === 'P'
-      case 'cmd+i':
-        return event.metaKey && event.key === 'i'
-      case 'ctrl+i':
-        return event.ctrlKey && event.key === 'i'
-      default:
-        return event.metaKey && event.key === 'k' // fallback to cmd+k
-    }
-  }
-  
-  // Open command palette
-  open() {
-    const dialog = document.querySelector('[data-command-palette-target="dialog"]')
-    const input = document.querySelector('[data-command-palette-target="input"]')
+    // Convert event to keybinding string
+    const keybinding = this.getKeybindingString(e)
     
-    if (dialog && input) {
-      dialog.classList.remove('hidden')
-      input.focus()
-      input.value = ''
-      this.search()
-      
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden'
-    }
-  }
-  
-  // Close command palette
-  close() {
-    const dialog = document.querySelector('[data-command-palette-target="dialog"]')
-    if (dialog) {
-      dialog.classList.add('hidden')
-    }
-    document.body.style.overflow = ''
-  }
-  
-  // Handle keyboard in dialog
-  handleKeyboard(event) {
-    switch(event.key) {
-      case 'Escape':
-        event.preventDefault()
-        this.close()
-        break
-      case 'ArrowDown':
-        event.preventDefault()
-        this.selectNext()
-        break
-      case 'ArrowUp':
-        event.preventDefault()
-        this.selectPrevious()
-        break
-      case 'Enter':
-        event.preventDefault()
-        this.execute()
-        break
-    }
-  }
-  
-  // Search/filter commands
-  search() {
-    const input = document.querySelector('[data-command-palette-target="input"]')
-    const query = input ? input.value.toLowerCase().trim() : ''
+    // Find matching shortcut in database
+    const shortcut = this.shortcuts.find(s => s.keybinding === keybinding)
     
-    if (query === '') {
-      this.filteredCommands = this.commands
+    if (shortcut) {
+      e.preventDefault()
+      this.executeAction(shortcut)
+    }
+  }
+  
+  getKeybindingString(e) {
+    let key = e.key.toLowerCase()
+    
+    // Normalize special keys
+    const keyMap = {
+      ' ': 'space',
+      'arrowup': 'up',
+      'arrowdown': 'down',
+      'arrowleft': 'left',
+      'arrowright': 'right',
+      'escape': 'esc',
+      'enter': 'enter'
+    }
+    
+    key = keyMap[key] || key
+    
+    // Build modifier prefix
+    let modifiers = []
+    if (e.metaKey || e.ctrlKey) modifiers.push('cmd')
+    if (e.altKey) modifiers.push('alt')
+    if (e.shiftKey) modifiers.push('shift')
+    
+    return modifiers.length > 0 ? `${modifiers.join('+')}+${key}` : key
+  }
+  
+  executeAction(shortcut) {
+    console.log('Executing shortcut:', shortcut.name)
+    
+    if (shortcut.action_type === 'navigate') {
+      window.Turbo.visit(shortcut.action_value)
+    } else if (shortcut.action_type === 'execute') {
+      this.executeMethod(shortcut.action_value)
+    }
+  }
+  
+  executeMethod(methodName) {
+    // Try to call window function first
+    if (typeof window[methodName] === 'function') {
+      window[methodName]()
+    } else if (typeof this[methodName] === 'function') {
+      this[methodName]()
     } else {
-      this.filteredCommands = this.commands.filter(cmd => 
-        cmd.title.toLowerCase().includes(query) ||
-        cmd.description.toLowerCase().includes(query) ||
-        cmd.category.toLowerCase().includes(query) ||
-        (cmd.keywords && cmd.keywords.some(k => k.toLowerCase().includes(query)))
-      )
+      console.warn(`Method ${methodName} not found in window or command palette controller`)
     }
-    
-    this.selectedIndex = 0
-    this.render()
   }
   
-  // Navigate selection
-  selectNext() {
-    if (this.selectedIndex < this.filteredCommands.length - 1) {
-      this.selectedIndex++
-      this.render()
-      this.scrollToSelected()
+  // ============================================
+  // ACTION METHODS (called from database)
+  // ============================================
+  
+  openPalette() {
+    this.isOpen = true
+    this.element.classList.remove('hidden')
+    this.searchTarget.value = ''
+    this.searchTarget.focus()
+    this.renderShortcuts()
+    this.hideAllSections()
+    this.shortcutsSectionTarget.classList.remove('hidden')
+  }
+  
+  closePalette() {
+    this.isOpen = false
+    this.element.classList.add('hidden')
+    this.searchTarget.value = ''
+  }
+  
+  // ============================================
+  // SEARCH & RENDERING
+  // ============================================
+  
+  async search(e) {
+    const query = e.target.value.trim()
+    
+    if (!query) {
+      this.renderShortcuts()
+      this.hideAllSections()
+      this.shortcutsSectionTarget.classList.remove('hidden')
+      return
     }
+    
+    // Filter shortcuts locally
+    this.filterShortcuts(query)
+    
+    // Debounce search API call
+    clearTimeout(this.searchDebounce)
+    this.searchDebounce = setTimeout(async () => {
+      await this.searchContent(query)
+    }, 300)
+  }
+  
+  async searchContent(query) {
+    try {
+      const response = await fetch(
+        `/admin/search/autocomplete?q=${encodeURIComponent(query)}`
+      )
+      const data = await response.json()
+      
+      // Render all results
+      this.renderPosts(data.posts || [])
+      this.renderPages(data.pages || [])
+      this.renderTaxonomies(data.taxonomies || [])
+      this.renderUsers(data.users || [])
+      
+      // Show/hide sections
+      this.toggleSection(this.postsSectionTarget, data.posts?.length > 0)
+      this.toggleSection(this.pagesSectionTarget, data.pages?.length > 0)
+      this.toggleSection(this.taxonomiesSectionTarget, data.taxonomies?.length > 0)
+      this.toggleSection(this.usersSectionTarget, data.users?.length > 0)
+      
+      // Show empty state if no results
+      const hasResults = (data.posts?.length + data.pages?.length + 
+                         data.taxonomies?.length + data.users?.length) > 0
+      this.emptyStateTarget.classList.toggle('hidden', hasResults)
+      
+    } catch (error) {
+      console.error('Search failed:', error)
+    }
+  }
+  
+  filterShortcuts(query) {
+    const filtered = this.shortcuts.filter(s => 
+      s.name.toLowerCase().includes(query.toLowerCase()) ||
+      s.description?.toLowerCase().includes(query.toLowerCase())
+    )
+    this.renderShortcuts(filtered)
+  }
+  
+  renderShortcuts(shortcuts = this.shortcuts) {
+    this.shortcutsListTarget.innerHTML = ''
+    
+    // Sort shortcuts: write-specific first (by id asc), then global (by id asc)
+    const sortedShortcuts = shortcuts.sort((a, b) => {
+      // First sort by shortcut_set: write first, then global
+      if (a.shortcut_set === 'write' && b.shortcut_set === 'global') return -1
+      if (a.shortcut_set === 'global' && b.shortcut_set === 'write') return 1
+      
+      // Within same set, sort by id ascending
+      return a.id - b.id
+    })
+    
+    sortedShortcuts.forEach(shortcut => {
+      const item = this.createItem({
+        icon: shortcut.icon || '⚡',
+        name: shortcut.name,
+        description: shortcut.description,
+        keybinding: shortcut.keybinding,
+        data: shortcut
+      })
+      this.shortcutsListTarget.appendChild(item)
+    })
+    this.updateAllItems()
+  }
+  
+  renderPosts(posts) {
+    this.postsListTarget.innerHTML = ''
+    posts.forEach(post => {
+      const item = this.createItem({
+        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+        name: post.title,
+        description: `${post.status} • Updated ${this.timeAgo(post.updated_at)}`,
+        keybinding: 'Post',
+        data: { action_type: 'navigate', action_value: post.url }
+      })
+      this.postsListTarget.appendChild(item)
+    })
+    this.updateAllItems()
+  }
+  
+  renderPages(pages) {
+    this.pagesListTarget.innerHTML = ''
+    pages.forEach(page => {
+      const item = this.createItem({
+        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+        name: page.title,
+        description: `${page.status} • Updated ${this.timeAgo(page.updated_at)}`,
+        keybinding: 'Page',
+        data: { action_type: 'navigate', action_value: page.url }
+      })
+      this.pagesListTarget.appendChild(item)
+    })
+    this.updateAllItems()
+  }
+  
+  renderTaxonomies(taxonomies) {
+    this.taxonomiesListTarget.innerHTML = ''
+    taxonomies.forEach(tax => {
+      const item = this.createItem({
+        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>',
+        name: tax.name,
+        description: `${tax.taxonomy} • ${tax.count} items`,
+        keybinding: 'Tag',
+        data: { action_type: 'navigate', action_value: tax.url }
+      })
+      this.taxonomiesListTarget.appendChild(item)
+    })
+    this.updateAllItems()
+  }
+  
+  renderUsers(users) {
+    this.usersListTarget.innerHTML = ''
+    users.forEach(user => {
+      const item = this.createItem({
+        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>',
+        name: user.name,
+        description: `${user.email} • ${user.role}`,
+        keybinding: 'User',
+        data: { action_type: 'navigate', action_value: user.url }
+      })
+      this.usersListTarget.appendChild(item)
+    })
+    this.updateAllItems()
+  }
+  
+  createItem({ icon, name, description, keybinding, data }) {
+    const template = this.itemTemplateTarget.content.cloneNode(true)
+    const item = template.querySelector('[data-command-palette-target="item"]')
+    
+    item.querySelector('[data-item-icon]').innerHTML = icon
+    item.querySelector('[data-item-name]').textContent = name
+    item.querySelector('[data-item-description]').textContent = description
+    item.querySelector('[data-item-keybinding]').textContent = keybinding || ''
+    item.dataset.itemData = JSON.stringify(data)
+    
+    return item
+  }
+  
+  // ============================================
+  // NAVIGATION
+  // ============================================
+  
+  navigate(e) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      e.stopPropagation()
+      this.selectNext()
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      e.stopPropagation()
+      this.selectPrevious()
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      e.stopPropagation()
+      this.executeSelected()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      e.stopPropagation()
+      this.closePalette()
+    }
+  }
+  
+  selectNext() {
+    this.selectedIndex = Math.min(this.selectedIndex + 1, this.allItems.length - 1)
+    this.updateSelection()
   }
   
   selectPrevious() {
-    if (this.selectedIndex > 0) {
-      this.selectedIndex--
-      this.render()
-      this.scrollToSelected()
-    }
+    this.selectedIndex = Math.max(this.selectedIndex - 1, 0)
+    this.updateSelection()
   }
   
-  // Execute selected command
-  execute() {
-    const command = this.filteredCommands[this.selectedIndex]
-    if (!command) return
-    
-    this.close()
-    
-    // Execute based on action type
-    if (command.action === 'navigate') {
-      window.location.href = command.url
-    } else if (command.action === 'navigate_blank') {
-      window.open(command.url, '_blank')
-    } else if (command.action === 'function') {
-      eval(command.function)
-    }
-  }
-  
-  // Click on command
-  selectCommand(event) {
-    const index = parseInt(event.currentTarget.dataset.index)
-    this.selectedIndex = index
-    this.execute()
-  }
-  
-  // Scroll selected into view
-  scrollToSelected() {
-    const results = document.querySelector('[data-command-palette-target="results"]')
-    if (results) {
-      const selected = results.querySelector('.command-item-selected')
-      if (selected) {
-        selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  updateSelection() {
+    this.allItems.forEach((item, index) => {
+      if (index === this.selectedIndex) {
+        item.classList.add('selected')
+        item.scrollIntoView({ block: 'nearest' })
+      } else {
+        item.classList.remove('selected')
       }
-    }
-  }
-  
-  // Group commands by category
-  groupByCategory(commands) {
-    return commands.reduce((acc, cmd) => {
-      if (!acc[cmd.category]) {
-        acc[cmd.category] = []
-      }
-      acc[cmd.category].push(cmd)
-      return acc
-    }, {})
-  }
-  
-  // Load all available commands
-  async loadCommands() {
-    // Load custom shortcuts from database
-    let customShortcuts = []
-    try {
-      const response = await fetch('/admin/tools/shortcuts.json')
-      if (response.ok) {
-        const data = await response.json()
-        customShortcuts = data.map(s => ({
-          category: s.category ? s.category.charAt(0).toUpperCase() + s.category.slice(1) : 'Custom',
-          icon: s.icon || '⚡',
-          title: s.name,
-          description: s.description || '',
-          action: s.action_type,
-          url: s.action_type === 'navigate' ? s.action_value : null,
-          execute: s.action_type === 'execute' ? s.action_value : null,
-          keywords: [s.name.toLowerCase()],
-          shortcut: s.keybinding
-        }))
-      }
-    } catch (error) {
-      console.error('Failed to load custom shortcuts:', error)
-    }
-    
-    // Merge custom shortcuts with default ones
-    this.commands = [
-      ...customShortcuts,
-      
-      // Navigation - matching screenshot exactly
-      {
-        category: 'NAVIGATION',
-        icon: '+',
-        title: 'Go to Inbox',
-        description: 'Navigate to the conversations inbox',
-        action: 'navigate',
-        url: '/admin/inbox',
-        keywords: ['inbox', 'conversations', 'messages']
-      },
-      {
-        category: 'NAVIGATION',
-        icon: '+',
-        title: 'Go to Dashboard',
-        description: 'Navigate to the admin dashboard',
-        action: 'navigate',
-        url: '/admin',
-        keywords: ['dashboard', 'home', 'admin']
-      },
-      {
-        category: 'NAVIGATION',
-        icon: '+',
-        title: 'Go to Quotes',
-        description: 'View all quotes',
-        action: 'navigate',
-        url: '/admin/quotes',
-        keywords: ['quotes', 'estimates', 'pricing']
-      },
-      {
-        category: 'NAVIGATION',
-        icon: '+',
-        title: 'Go to Projects',
-        description: 'View all projects',
-        action: 'navigate',
-        url: '/admin/projects',
-        keywords: ['projects', 'work', 'tasks']
-      },
-      {
-        category: 'NAVIGATION',
-        icon: '+',
-        title: 'Go to Users',
-        description: 'View all users and contacts',
-        action: 'navigate',
-        url: '/admin/users',
-        keywords: ['users', 'contacts', 'people']
-      },
-      {
-        category: 'NAVIGATION',
-        icon: '+',
-        title: 'Go to Analytics',
-        description: 'View analytics and reports',
-        action: 'navigate',
-        url: '/admin/analytics',
-        keywords: ['analytics', 'reports', 'stats']
-      },
-      
-      // Content Management
-      {
-        category: 'CONTENT',
-        icon: '+',
-        title: 'All Posts',
-        description: 'View and manage posts',
-        action: 'navigate',
-        url: '/admin/posts',
-        keywords: ['posts', 'blog', 'articles']
-      },
-      {
-        category: 'CONTENT',
-        icon: '+',
-        title: 'All Pages',
-        description: 'View and manage pages',
-        action: 'navigate',
-        url: '/admin/pages',
-        keywords: ['pages', 'static']
-      },
-      {
-        category: 'CONTENT',
-        icon: '+',
-        title: 'Comments',
-        description: 'Moderate comments',
-        action: 'navigate',
-        url: '/admin/comments',
-        keywords: ['comments', 'moderation']
-      },
-      {
-        category: 'CONTENT',
-        icon: '+',
-        title: 'Media Library',
-        description: 'Browse uploaded files',
-        action: 'navigate',
-        url: '/admin/media',
-        keywords: ['media', 'images', 'files', 'library']
-      },
-      
-      // Organization
-      {
-        category: 'ORGANIZATION',
-        icon: '+',
-        title: 'Categories',
-        description: 'Manage post categories',
-        action: 'navigate',
-        url: '/admin/categories',
-        keywords: ['categories', 'taxonomy']
-      },
-      {
-        category: 'ORGANIZATION',
-        icon: '+',
-        title: 'Tags',
-        description: 'Manage post tags',
-        action: 'navigate',
-        url: '/admin/tags',
-        keywords: ['tags', 'taxonomy']
-      },
-      {
-        category: 'ORGANIZATION',
-        icon: '+',
-        title: 'Taxonomies',
-        description: 'Custom taxonomies',
-        action: 'navigate',
-        url: '/admin/taxonomies',
-        keywords: ['taxonomy', 'custom']
-      },
-      {
-        category: 'ORGANIZATION',
-        icon: '+',
-        title: 'Menus',
-        description: 'Manage navigation menus',
-        action: 'navigate',
-        url: '/admin/menus',
-        keywords: ['menu', 'navigation']
-      },
-      
-      // Appearance
-      {
-        category: 'APPEARANCE',
-        icon: '+',
-        title: 'Themes',
-        description: 'Manage site themes',
-        action: 'navigate',
-        url: '/admin/themes',
-        keywords: ['themes', 'appearance', 'design']
-      },
-      {
-        category: 'APPEARANCE',
-        icon: '+',
-        title: 'Customize Theme',
-        description: 'Visual theme editor',
-        action: 'navigate',
-        url: '/admin/template_customizer',
-        keywords: ['customize', 'editor', 'grapesjs']
-      },
-      {
-        category: 'APPEARANCE',
-        icon: '+',
-        title: 'Theme Editor',
-        description: 'Edit theme files',
-        action: 'navigate',
-        url: '/admin/theme_editor',
-        keywords: ['editor', 'code', 'files', 'monaco']
-      },
-      {
-        category: 'APPEARANCE',
-        icon: '+',
-        title: 'Widgets',
-        description: 'Manage widgets',
-        action: 'navigate',
-        url: '/admin/widgets',
-        keywords: ['widgets', 'sidebar']
-      },
-      
-      // Settings
-      {
-        category: 'SETTINGS',
-        icon: '+',
-        title: 'General Settings',
-        description: 'Site configuration',
-        action: 'navigate',
-        url: '/admin/settings/general',
-        keywords: ['settings', 'config', 'general']
-      },
-      {
-        category: 'SETTINGS',
-        icon: '+',
-        title: 'White Label',
-        description: 'Customize branding',
-        action: 'navigate',
-        url: '/admin/settings/white_label',
-        keywords: ['branding', 'white label', 'logo']
-      },
-      {
-        category: 'SETTINGS',
-        icon: '+',
-        title: 'Appearance',
-        description: 'Customize colors and fonts',
-        action: 'navigate',
-        url: '/admin/settings/appearance',
-        keywords: ['appearance', 'colors', 'fonts', 'theme']
-      },
-      {
-        category: 'SETTINGS',
-        icon: '+',
-        title: 'Email Settings',
-        description: 'Configure email',
-        action: 'navigate',
-        url: '/admin/settings/email',
-        keywords: ['email', 'smtp', 'mail']
-      },
-      
-      // System
-      {
-        category: 'SYSTEM',
-        icon: '+',
-        title: 'Users',
-        description: 'View and manage users',
-        action: 'navigate',
-        url: '/admin/users',
-        keywords: ['users', 'contacts', 'people']
-      },
-      {
-        category: 'SYSTEM',
-        icon: '+',
-        title: 'Updates',
-        description: 'Check for updates',
-        action: 'navigate',
-        url: '/admin/updates',
-        keywords: ['updates', 'version', 'upgrade']
-      },
-      {
-        category: 'SYSTEM',
-        icon: '+',
-        title: 'Webhooks',
-        description: 'Manage webhooks',
-        action: 'navigate',
-        url: '/admin/webhooks',
-        keywords: ['webhooks', 'api', 'integration']
-      },
-      {
-        category: 'SYSTEM',
-        icon: '+',
-        title: 'Email Logs',
-        description: 'View email history',
-        action: 'navigate',
-        url: '/admin/email_logs',
-        keywords: ['email', 'logs', 'mail']
-      }
-    ]
-    
-    this.search()
-  }
-  
-  // Render filtered results
-  render() {
-    const results = document.querySelector('[data-command-palette-target="results"]')
-    const empty = document.querySelector('[data-command-palette-target="empty"]')
-    
-    if (!results || !empty) return
-    
-    if (this.filteredCommands.length === 0) {
-      results.classList.add('hidden')
-      empty.classList.remove('hidden')
-      empty.innerHTML = `
-        <div class="text-center py-8">
-          <div class="text-4xl mb-3">🔍</div>
-          <div class="text-gray-400 text-sm">No commands found</div>
-          <div class="text-gray-600 text-xs mt-1">Try a different search term</div>
-        </div>
-      `
-      return
-    }
-    
-    results.classList.remove('hidden')
-    empty.classList.add('hidden')
-    
-    const grouped = this.groupByCategory(this.filteredCommands)
-    
-    let html = ''
-    Object.keys(grouped).forEach(category => {
-      html += `
-        <div class="mb-4">
-          <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            ${category}
-          </div>
-      `
-      
-      grouped[category].forEach(cmd => {
-        const globalIndex = this.filteredCommands.indexOf(cmd)
-        const isSelected = globalIndex === this.selectedIndex
-        
-        html += `
-          <div class="command-item ${isSelected ? 'command-item-selected' : ''}" 
-               data-index="${globalIndex}"
-               data-action="click->command-palette#selectCommand">
-            <div class="flex items-center flex-1">
-              <div class="command-icon">+</div>
-              <div class="flex-1">
-                <div class="command-title">${this.highlightMatch(cmd.title)}</div>
-                <div class="command-description">${cmd.description}</div>
-              </div>
-              <div class="command-action">Navigation</div>
-            </div>
-          </div>
-        `
-      })
-      
-      html += `</div>`
     })
+  }
+  
+  highlight(e) {
+    const item = e.currentTarget
+    this.selectedIndex = this.allItems.indexOf(item)
+    this.updateSelection()
+  }
+  
+  select(e) {
+    const item = e.currentTarget
+    this.selectedIndex = this.allItems.indexOf(item)
+    this.executeSelected()
+  }
+  
+  executeSelected() {
+    const selectedItem = this.allItems[this.selectedIndex]
+    if (!selectedItem) return
     
-    results.innerHTML = html
+    const data = JSON.parse(selectedItem.dataset.itemData)
+    this.executeAction(data)
+    this.closePalette()
   }
   
-  // Highlight search matches
-  highlightMatch(text) {
-    const input = document.querySelector('[data-command-palette-target="input"]')
-    const query = input ? input.value.toLowerCase().trim() : ''
-    if (!query) return text
-    
-    const regex = new RegExp(`(${query})`, 'gi')
-    return text.replace(regex, '<mark class="bg-yellow-400/30 text-white">$1</mark>')
+  updateAllItems() {
+    this.allItems = Array.from(this.element.querySelectorAll('[data-command-palette-target="item"]'))
+    this.selectedIndex = 0
+    this.updateSelection()
   }
   
-  // Disable command palette (useful for specific pages)
-  disable() {
-    this.isEnabled = false
+  hideAllSections() {
+    this.postsSectionTarget.classList.add('hidden')
+    this.pagesSectionTarget.classList.add('hidden')
+    this.taxonomiesSectionTarget.classList.add('hidden')
+    this.usersSectionTarget.classList.add('hidden')
+    this.emptyStateTarget.classList.add('hidden')
   }
   
-  // Enable command palette
-  enable() {
-    this.isEnabled = true
+  toggleSection(section, show) {
+    section.classList.toggle('hidden', !show)
   }
   
-  // Toggle command palette enabled state
-  toggle() {
-    this.isEnabled = !this.isEnabled
+  timeAgo(date) {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+    if (seconds < 60) return 'just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
   }
 }

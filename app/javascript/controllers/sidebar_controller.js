@@ -14,7 +14,12 @@ export default class extends Controller {
     }
     // Ensure UI reflects initial state
     this.updateSidebar()
+
+    window.togglePostSidebar = () => {
+      this.toggle()
+    }
   }
+  
 
   toggle() {
     this.collapsedValue = !this.collapsedValue

@@ -1,0 +1,104 @@
+<style>
+  [data-command-palette-target="item"].selected {
+    background-color: <%= theme[:selected_bg] || 'rgba(59, 130, 246, 0.1)' %> !important;
+  }
+</style>
+
+<div data-controller="command-palette" 
+     data-command-palette-set-value="<%= shortcut_set %>"
+     class="hidden">
+  
+  <!-- Backdrop -->
+  <div data-command-palette-target="backdrop" 
+       data-action="click->command-palette#closePalette"
+       class="fixed inset-0 bg-black/50 z-50"></div>
+  
+  <!-- Modal -->
+  <div data-command-palette-target="modal"
+       class="fixed top-20 left-1/2 -translate-x-1/2 w-full max-w-2xl z-50 rounded-lg shadow-2xl"
+       style="background: <%= theme[:bg_color] %>; border: 1px solid <%= theme[:border_color] %>">
+    
+    <!-- Search Input -->
+    <div class="p-4 border-b" style="border-color: <%= theme[:border_color] %>">
+      <div class="flex items-center gap-3">
+        <svg class="w-5 h-5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text"
+               data-command-palette-target="search"
+               data-action="input->command-palette#search keydown->command-palette#navigate"
+               placeholder="Type a command or search..."
+               class="w-full bg-transparent outline-none text-base"
+               style="color: <%= theme[:text_color] %>">
+      </div>
+    </div>
+    
+    <!-- Results List -->
+    <div data-command-palette-target="results" 
+         class="max-h-96 overflow-y-auto">
+      
+      <!-- Shortcuts Section -->
+      <div data-command-palette-target="shortcutsSection">
+        <div class="px-4 py-2 text-xs uppercase font-semibold opacity-50">Commands</div>
+        <div data-command-palette-target="shortcutsList"></div>
+      </div>
+      
+      <!-- Posts Section -->
+      <div data-command-palette-target="postsSection" class="hidden">
+        <div class="px-4 py-2 text-xs uppercase font-semibold opacity-50">Posts</div>
+        <div data-command-palette-target="postsList"></div>
+      </div>
+      
+      <!-- Pages Section -->
+      <div data-command-palette-target="pagesSection" class="hidden">
+        <div class="px-4 py-2 text-xs uppercase font-semibold opacity-50">Pages</div>
+        <div data-command-palette-target="pagesList"></div>
+      </div>
+      
+      <!-- Taxonomies Section -->
+      <div data-command-palette-target="taxonomiesSection" class="hidden">
+        <div class="px-4 py-2 text-xs uppercase font-semibold opacity-50">Categories & Tags</div>
+        <div data-command-palette-target="taxonomiesList"></div>
+      </div>
+      
+      <!-- Users Section -->
+      <div data-command-palette-target="usersSection" class="hidden">
+        <div class="px-4 py-2 text-xs uppercase font-semibold opacity-50">Users</div>
+        <div data-command-palette-target="usersList"></div>
+      </div>
+      
+      <!-- Empty State -->
+      <div data-command-palette-target="emptyState" class="hidden px-4 py-8 text-center opacity-50">
+        <p>No results found</p>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="px-4 py-3 border-t text-xs flex justify-between"
+         style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; opacity: 0.7;">
+      <div class="flex gap-4">
+        <span><kbd class="px-1.5 py-0.5 rounded" style="background: <%= theme[:border_color] %>">↑↓</kbd> Navigate</span>
+        <span><kbd class="px-1.5 py-0.5 rounded" style="background: <%= theme[:border_color] %>">↵</kbd> Select</span>
+        <span><kbd class="px-1.5 py-0.5 rounded" style="background: <%= theme[:border_color] %>">esc</kbd> Close</span>
+      </div>
+      <div class="opacity-50"><%= shortcut_set.titleize %> Palette</div>
+    </div>
+  </div>
+  
+  <!-- Item Template -->
+  <template data-command-palette-target="itemTemplate">
+    <div data-command-palette-target="item"
+         data-action="click->command-palette#select mouseenter->command-palette#highlight"
+         class="px-4 py-3 cursor-pointer flex items-center justify-between transition-colors hover:bg-opacity-10"
+         style="color: <%= theme[:text_color] %>">
+      <div class="flex items-center gap-3 flex-1 min-w-0">
+        <span data-item-icon class="text-lg flex-shrink-0"></span>
+        <div class="flex-1 min-w-0">
+          <div data-item-name class="font-medium truncate"></div>
+          <div data-item-description class="text-sm opacity-70 truncate"></div>
+        </div>
+      </div>
+      <span data-item-keybinding class="text-xs px-2 py-1 rounded opacity-50 flex-shrink-0 ml-2"></span>
+    </div>
+  </template>
+</div>
