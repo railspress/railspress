@@ -8,7 +8,9 @@ export default class extends Controller {
     "attachmentDetails", "previewImage", "fileInfo", "editLink", "deleteLink",
     "altText", "titleField", "caption", "description", "fileUrl", "setButton", "selectedMedia",
     "stockSearchInput", "stockProvider", "stockOrientation", "stockGrid", "stockLoading", "stockEmpty", "importButton",
-    "stockShowFilter", "stockBookmarkBtn", "stockBookmarkIcon", "stockBookmarkText"
+    "stockShowFilter", "stockBookmarkBtn", "stockBookmarkIcon", "stockBookmarkText",
+    "stockRightColumn", "stockDetails", "stockDetailsEmpty", "stockPreviewImage", "stockTitle", "stockDimensions",
+    "stockPhotographer", "stockSource", "stockDescription"
   ]
   
   static values = {
@@ -624,16 +626,36 @@ export default class extends Controller {
       item.dataset.photoData = JSON.stringify(photo)
       item.onclick = () => this.selectStockPhoto(item, photo)
       
+      const isBookmarked = this.bookmarkedPhotoIds.has(photo.id)
+      
       item.innerHTML = `
         <img src="${photo.thumbnail_url}" class="w-full h-full object-cover rounded" />
         <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-xs p-2">
           <p class="truncate">${photo.photographer}</p>
           <p class="text-gray-300 text-xs">${photo.source}</p>
         </div>
-        ${this.bookmarkedPhotoIds.has(photo.id) ? '<div class="bookmark-star absolute top-1 right-1 text-xl">⭐</div>' : ''}
+        <button type="button" 
+                class="bookmark-heart-btn absolute top-2 right-2 p-1 hover:bg-opacity-80 transition-all rounded-full z-10"
+                style="background: rgba(0,0,0,0.5);"
+                data-photo-id="${photo.id}"
+                data-is-bookmarked="${isBookmarked}">
+          <svg class="w-5 h-5" fill="${isBookmarked ? '#ef4444' : 'white'}" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+          </svg>
+        </button>
       `
       
       this.stockGridTarget.appendChild(item)
+      
+      // Attach click handler to heart button
+      const heartBtn = item.querySelector('.bookmark-heart-btn')
+      if (heartBtn) {
+        heartBtn.addEventListener('click', (e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          this.toggleBookmarkByHeart(e)
+        })
+      }
     })
   }
 
@@ -657,36 +679,27 @@ export default class extends Controller {
   }
   
   showStockPhotoInSidebar(photo) {
-    // Show attachment details
-    this.attachmentDetailsTarget.classList.remove('hidden')
+    // Hide empty state, show details
+    this.stockDetailsEmptyTarget.classList.add('hidden')
+    this.stockDetailsTarget.classList.remove('hidden')
     
-    // Populate with stock photo data
-    const nameElement = this.attachmentDetailsTarget.querySelector('[data-media-selector-target="attachmentName"]')
-    const dateElement = this.attachmentDetailsTarget.querySelector('[data-media-selector-target="attachmentDate"]')
-    const previewImage = this.previewImageTarget
+    // Populate stock photo data
+    this.stockTitleTarget.textContent = photo.title || photo.alt_description || 'Stock Photo'
+    this.stockDimensionsTarget.textContent = `${photo.width} × ${photo.height}px`
     
-    if (nameElement) nameElement.textContent = photo.title || photo.alt_description || 'Stock Photo'
-    if (dateElement) dateElement.textContent = `${photo.width} × ${photo.height}px`
+    this.stockPreviewImageTarget.src = photo.preview_url || photo.thumbnail_url
+    this.stockPreviewImageTarget.alt = photo.alt_description || photo.title || 'Stock Photo'
     
-    // Show large preview
-    if (previewImage) {
-      previewImage.src = photo.preview_url || photo.thumbnail_url
-      previewImage.classList.remove('hidden')
-    }
+    this.stockPhotographerTarget.textContent = photo.photographer
+    this.stockPhotographerTarget.href = photo.photographer_url || '#'
     
-    // Update metadata fields
-    this.altTextTarget.value = photo.alt_description || ''
-    this.titleFieldTarget.value = photo.title || ''
-    this.descriptionTarget.value = `Photo by ${photo.photographer} on ${photo.source}`
-    this.fileUrlTarget.value = photo.source_url
+    this.stockSourceTarget.textContent = photo.source
+    this.stockSourceTarget.href = photo.source_url || '#'
     
-    // Hide edit/delete links for stock photos
-    this.editLinkTarget?.classList.add('hidden')
-    this.deleteLinkTarget?.classList.add('hidden')
+    this.stockDescriptionTarget.textContent = photo.alt_description || photo.title || ''
     
-    // Show bookmark button
+    // Update bookmark button
     if (this.hasStockBookmarkBtnTarget) {
-      this.stockBookmarkBtnTarget.classList.remove('hidden')
       const isBookmarked = this.bookmarkedPhotoIds.has(photo.id)
       this.stockBookmarkIconTarget.textContent = isBookmarked ? '⭐' : '☆'
       this.stockBookmarkTextTarget.textContent = isBookmarked ? 'Bookmarked' : 'Bookmark Photo'
@@ -712,10 +725,17 @@ export default class extends Controller {
       const data = await response.json()
       
       if (data.success) {
-        // Auto-bookmarked on import
-        if (data.bookmarked && this.selectedStockPhoto) {
-          this.bookmarkedPhotoIds.add(this.selectedStockPhoto.id)
-          this.updateStarIndicators()
+        // Remove bookmark from UI if the photo was bookmarked
+        if (this.selectedStockPhoto && this.bookmarkedPhotoIds.has(this.selectedStockPhoto.id)) {
+          this.bookmarkedPhotoIds.delete(this.selectedStockPhoto.id)
+          // Update the heart icon if we're still on the stock photos tab
+          const photoElement = this.stockGridTarget.querySelector(`[data-photo-id="${this.selectedStockPhoto.id}"]`)?.closest('[data-stock-photo-id]')
+          if (photoElement) {
+            const heartBtn = photoElement.querySelector('.bookmark-heart-btn svg')
+            if (heartBtn) {
+              heartBtn.setAttribute('fill', 'white')
+            }
+          }
         }
         
         // Switch to Media Library tab
@@ -844,6 +864,55 @@ export default class extends Controller {
         existingStar.remove()
       }
     })
+  }
+  
+  async toggleBookmarkByHeart(event) {
+    event.preventDefault()
+    event.stopPropagation()
+    
+    const button = event.currentTarget
+    const photoId = button.dataset.photoId
+    const photoElement = button.closest('[data-stock-photo-id]')
+    const photo = JSON.parse(photoElement.dataset.photoData)
+    const isBookmarked = this.bookmarkedPhotoIds.has(photoId)
+    
+    try {
+      if (isBookmarked) {
+        // Unbookmark
+        await fetch(`/admin/stock_photos/bookmark/${encodeURIComponent(photoId)}`, {
+          method: 'DELETE',
+          headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        this.bookmarkedPhotoIds.delete(photoId)
+        
+        // Update heart SVG
+        const svg = button.querySelector('svg')
+        svg.setAttribute('fill', 'white')
+        
+        // If filtering by bookmarked, reload the list
+        if (this.stockShowFilterTarget.value === 'bookmarked') {
+          this.loadBookmarks()
+        }
+      } else {
+        // Bookmark
+        await fetch('/admin/stock_photos/bookmark', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({ photo_data: JSON.stringify(photo) })
+        })
+        this.bookmarkedPhotoIds.add(photoId)
+        
+        // Update heart SVG
+        const svg = button.querySelector('svg')
+        svg.setAttribute('fill', '#ef4444')
+      }
+    } catch (error) {
+      console.error('Bookmark toggle error:', error)
+      alert('Failed to toggle bookmark')
+    }
   }
 }
 

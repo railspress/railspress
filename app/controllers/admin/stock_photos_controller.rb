@@ -20,34 +20,21 @@ class Admin::StockPhotosController < Admin::BaseController
 
   def import
     service = StockPhotoService.new
-    photo_data = JSON.parse(params[:photo_data]).with_indifferent_access
+    
+    # Parse the nested JSON string
+    photo_data = JSON.parse(params[:photo_data])
+    photo_data = photo_data.with_indifferent_access
     
     medium = service.import_as_external(photo_data, current_user)
     
     if medium
-      # Auto-bookmark the imported photo
-      bookmark = StockPhotoBookmark.find_or_create_by(
-        user: current_user,
-        provider_photo_id: photo_data[:id]
-      ) do |b|
-        b.provider = photo_data[:provider]
-        b.thumbnail_url = photo_data[:thumbnail_url]
-        b.preview_url = photo_data[:preview_url]
-        b.download_url = photo_data[:download_url]
-        b.width = photo_data[:width]
-        b.height = photo_data[:height]
-        b.photographer = photo_data[:photographer]
-        b.photographer_url = photo_data[:photographer_url]
-        b.source_url = photo_data[:source_url]
-        b.alt_description = photo_data[:alt_description]
-        b.title = photo_data[:title]
-        b.photo_data = photo_data.to_json
-      end
+      # Remove bookmark if it exists (imported photos don't need to be bookmarked)
+      bookmark = StockPhotoBookmark.find_by(user: current_user, provider_photo_id: photo_data[:id])
+      bookmark&.destroy
       
       render json: { 
         success: true, 
         medium: medium_json(medium),
-        bookmarked: bookmark.persisted?,
         message: 'Photo imported successfully'
       }
     else

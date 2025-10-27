@@ -196,49 +196,41 @@
           
           <!-- Filters -->
           <div class="mb-4 flex gap-4">
-
-          <!-- Search -->
-          <div class="w-150">
-            <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-              Search media
-            </label>
-            <input type="text"
-                   data-media-selector-target="searchInput"
-                   data-action="input->media-selector#searchMedia"
-                   placeholder="Search media files..."
-                   class="w-full border rounded px-3 py-2 text-sm"
-                   style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
-          </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-                Filter media
-              </label>
-              <select data-media-selector-target="typeFilter"
-                      data-action="change->media-selector#filterMedia"
-                      class="border rounded px-3 py-2 text-sm"
-                      style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
-                <option value="all">All media items</option>
-                <option value="images">Images</option>
-                <option value="videos">Videos</option>
-                <option value="documents">Documents</option>
-              </select>
+            <!-- Search with inline button -->
+            <div class="relative w-150">
+              <input type="text"
+                     data-media-selector-target="searchInput"
+                     data-action="input->media-selector#searchMedia"
+                     placeholder="Search media files..."
+                     class="w-full border rounded px-3 py-2 pr-12 text-sm"
+                     style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+              <button type="button"
+                      data-action="click->media-selector#searchMedia"
+                      class="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 text-sm font-medium rounded-r"
+                      style="background: var(--admin-secondary); color: white; border-left: 1px solid <%= theme[:border_color] %>">
+                Search
+              </button>
             </div>
+
+            <select data-media-selector-target="typeFilter"
+                    data-action="change->media-selector#filterMedia"
+                    class="border rounded px-3 py-2 text-sm"
+                    style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+              <option value="all">All media items</option>
+              <option value="images">Images</option>
+              <option value="videos">Videos</option>
+              <option value="documents">Documents</option>
+            </select>
             
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-                Filter media
-              </label>
-              <select data-media-selector-target="dateFilter"
-                      data-action="change->media-selector#filterMedia"
-                      class="border rounded px-3 py-2 text-sm"
-                      style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
-                <option value="all">All dates</option>
-                <option value="today">Today</option>
-                <option value="week">This week</option>
-                <option value="month">This month</option>
-              </select>
-            </div>
+            <select data-media-selector-target="dateFilter"
+                    data-action="change->media-selector#filterMedia"
+                    class="border rounded px-3 py-2 text-sm"
+                    style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+              <option value="all">All dates</option>
+              <option value="today">Today</option>
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+            </select>
           </div>
           
           <!-- Media Grid -->
@@ -401,37 +393,37 @@
       </div>
       
       <!-- Stock Photos Tab Content -->
-      <div data-media-selector-target="stockTab" class="hidden flex-1 flex flex-col">
+      <div data-media-selector-target="stockTab" class="hidden flex-1 flex">
         
-        <!-- Search Bar -->
-        <div class="p-4 border-b" style="border-color: <%= theme[:border_color] %>">
-          <div class="flex gap-2">
-            <input type="text"
-                   data-media-selector-target="stockSearchInput"
-                   data-action="keyup->media-selector#searchStockPhotos keydown->media-selector#preventEnterSubmit"
-                   placeholder="Search stock photos..."
-                   class="flex-1 border rounded px-4 py-2"
-                   style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
-            <button type="button"
-                    data-action="click->media-selector#searchStockPhotos"
-                    class="px-6 py-2 rounded font-medium"
-                    style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">
-              Search
-            </button>
-          </div>
-          
-          <!-- Filters -->
-          <div class="flex gap-4 mt-3">
+        <!-- Left Column (Search and Grid) -->
+        <div class="flex-1 flex flex-col">
+          <!-- Search Bar and Filters -->
+          <div class="p-4 border-b" style="border-color: <%= theme[:border_color] %>">
+            <div class="flex gap-4">
+              <div class="relative flex-1">
+                <input type="text"
+                       data-media-selector-target="stockSearchInput"
+                       data-action="keyup->media-selector#searchStockPhotos keydown->media-selector#preventEnterSubmit"
+                       placeholder="Search stock photos..."
+                       class="w-full border rounded px-3 py-2 pr-12 text-sm"
+                       style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+                <button type="button"
+                        data-action="click->media-selector#searchStockPhotos"
+                        class="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1.5 text-sm font-medium rounded-r"
+                        style="background: var(--admin-secondary); color: white; border-left: 1px solid <%= theme[:border_color] %>">
+                  Search
+                </button>
+              </div>
             <select data-media-selector-target="stockShowFilter"
                     data-action="change->media-selector#filterStockPhotos"
-                    class="border rounded px-3 py-1 text-sm"
+                    class="border rounded px-3 py-2 text-sm"
                     style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
               <option value="all">Show: All</option>
               <option value="bookmarked">Show: Bookmarked</option>
             </select>
             
             <select data-media-selector-target="stockProvider"
-                    class="border rounded px-3 py-1 text-sm"
+                    class="border rounded px-3 py-2 text-sm"
                     style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
               <option value="all">All Providers</option>
               <option value="unsplash">Unsplash</option>
@@ -440,15 +432,15 @@
             </select>
             
             <select data-media-selector-target="stockOrientation"
-                    class="border rounded px-3 py-1 text-sm"
+                    class="border rounded px-3 py-2 text-sm"
                     style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
               <option value="">Any Orientation</option>
               <option value="landscape">Landscape</option>
               <option value="portrait">Portrait</option>
               <option value="square">Square</option>
             </select>
+            </div>
           </div>
-        </div>
         
         <!-- Results Grid -->
         <div class="flex-1 overflow-auto p-4">
@@ -468,7 +460,87 @@
             <p style="color: <%= theme[:text_color] %>">Search for stock photos to get started</p>
           </div>
         </div>
+        </div>
         
+        <!-- Right Column - Stock Photo Details -->
+        <div class="w-80 border-l overflow-auto p-4"
+             style="border-color: <%= theme[:border_color] %>"
+             data-media-selector-target="stockRightColumn">
+          
+          <!-- Stock Photo Details -->
+          <div data-media-selector-target="stockDetails" class="hidden">
+            <h3 class="text-xs font-bold uppercase mb-3" style="color: <%= theme[:text_color] %>">
+              Stock Photo Details
+            </h3>
+            
+            <!-- Large Preview -->
+            <div class="mb-4">
+              <img data-media-selector-target="stockPreviewImage" 
+                   class="w-full rounded"
+                   style="max-height: 300px; object-fit: contain; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            
+            <!-- Info -->
+            <div class="space-y-2 mb-4">
+              <div>
+                <p class="text-sm font-bold" style="color: <%= theme[:text_color] %>">
+                  <span data-media-selector-target="stockTitle"></span>
+                </p>
+              </div>
+              <div class="text-sm" style="color: <%= theme[:tab_inactive_text] %>">
+                <span data-media-selector-target="stockDimensions"></span>
+              </div>
+            </div>
+            
+            <!-- Metadata -->
+            <div class="space-y-3 mb-4">
+              <div>
+                <span class="text-xs font-semibold" style="color: <%= theme[:text_color] %>">Photographer:</span>
+                <div>
+                  <a data-media-selector-target="stockPhotographer" 
+                     href="#"
+                     target="_blank"
+                     class="text-sm block truncate"
+                     style="color: <%= theme[:link_color] %>">
+                    <!-- Populated by JS -->
+                  </a>
+                </div>
+              </div>
+              <div>
+                <span class="text-xs font-semibold" style="color: <%= theme[:text_color] %>">Source:</span>
+                <div>
+                  <a data-media-selector-target="stockSource"
+                     href="#"
+                     target="_blank"
+                     class="text-sm block truncate"
+                     style="color: <%= theme[:link_color] %>">
+                    <!-- Populated by JS -->
+                  </a>
+                </div>
+              </div>
+              <div class="text-xs" style="color: <%= theme[:tab_inactive_text] %>">
+                <p data-media-selector-target="stockDescription"></p>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="space-y-2">
+              <button type="button"
+                      data-action="click->media-selector#toggleBookmark"
+                      data-media-selector-target="stockBookmarkBtn"
+                      class="w-full text-left px-0 py-2 hover:opacity-80 transition-opacity text-sm"
+                      style="color: <%= theme[:text_color] %>">
+                <span data-media-selector-target="stockBookmarkIcon">☆</span>
+                <span data-media-selector-target="stockBookmarkText" class="ml-1">Bookmark Photo</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div data-media-selector-target="stockDetailsEmpty" class="text-center py-12">
+            <p class="text-sm" style="color: <%= theme[:tab_inactive_text] %>">Click a photo to view details</p>
+          </div>
+        </div>
       </div>
     </div>
     

@@ -219,6 +219,8 @@ class Admin::MediaController < Admin::BaseController
           caption: '', # Caption not currently in schema
           file_type: medium.content_type,
           file_size: medium.file_size,
+          width: medium.width,
+          height: medium.height,
           url: medium.url,
           thumbnail_url: medium.image? ? (medium.thumbnail_url || medium.url) : nil,
           quarantined: medium.quarantined?,
