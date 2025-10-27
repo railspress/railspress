@@ -316,6 +316,14 @@
                  style="color: <%= theme[:danger_color] %>">
                 Delete permanently
               </a>
+              <button type="button"
+                      data-action="click->media-selector#toggleBookmark"
+                      data-media-selector-target="stockBookmarkBtn"
+                      class="hidden w-full text-left px-0 py-2 hover:opacity-80 transition-opacity text-sm"
+                      style="color: <%= theme[:text_color] %>">
+                <span data-media-selector-target="stockBookmarkIcon">☆</span>
+                <span data-media-selector-target="stockBookmarkText" class="ml-1">Bookmark Photo</span>
+              </button>
             </div>
             
             <!-- Metadata Fields -->
@@ -414,6 +422,14 @@
           
           <!-- Filters -->
           <div class="flex gap-4 mt-3">
+            <select data-media-selector-target="stockShowFilter"
+                    data-action="change->media-selector#filterStockPhotos"
+                    class="border rounded px-3 py-1 text-sm"
+                    style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+              <option value="all">Show: All</option>
+              <option value="bookmarked">Show: Bookmarked</option>
+            </select>
+            
             <select data-media-selector-target="stockProvider"
                     class="border rounded px-3 py-1 text-sm"
                     style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">

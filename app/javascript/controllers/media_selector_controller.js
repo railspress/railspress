@@ -7,7 +7,8 @@ export default class extends Controller {
     "searchSection", "searchInput", "mediaGrid", "paginationInfo",
     "attachmentDetails", "previewImage", "fileInfo", "editLink", "deleteLink",
     "altText", "titleField", "caption", "description", "fileUrl", "setButton", "selectedMedia",
-    "stockSearchInput", "stockProvider", "stockOrientation", "stockGrid", "stockLoading", "stockEmpty", "importButton"
+    "stockSearchInput", "stockProvider", "stockOrientation", "stockGrid", "stockLoading", "stockEmpty", "importButton",
+    "stockShowFilter", "stockBookmarkBtn", "stockBookmarkIcon", "stockBookmarkText"
   ]
   
   static values = {
@@ -23,7 +24,10 @@ export default class extends Controller {
     this.mediaData = []
     this.allMediaData = []
     this.selectedStockPhoto = null
+    this.currentStockPhoto = null
     this.stockSearchQuery = this.loadStockSearchQuery() // Load saved search
+    this.bookmarkedPhotoIds = new Set() // Track bookmarked photo IDs
+    this.allStockPhotos = [] // Cache all search results
   }
 
   openDialog(event) {
@@ -598,6 +602,7 @@ export default class extends Controller {
       this.stockLoadingTarget.classList.add('hidden')
       
       if (data.photos && data.photos.length > 0) {
+        this.allStockPhotos = data.photos // Cache results
         this.renderStockPhotos(data.photos)
       } else {
         this.stockEmptyTarget.classList.remove('hidden')
@@ -615,6 +620,7 @@ export default class extends Controller {
     photos.forEach(photo => {
       const item = document.createElement('div')
       item.className = 'relative aspect-square bg-gray-100 rounded border-2 cursor-pointer transition-all hover:border-blue-400'
+      item.dataset.stockPhotoId = photo.id
       item.dataset.photoData = JSON.stringify(photo)
       item.onclick = () => this.selectStockPhoto(item, photo)
       
@@ -624,6 +630,7 @@ export default class extends Controller {
           <p class="truncate">${photo.photographer}</p>
           <p class="text-gray-300 text-xs">${photo.source}</p>
         </div>
+        ${this.bookmarkedPhotoIds.has(photo.id) ? '<div class="bookmark-star absolute top-1 right-1 text-xl">⭐</div>' : ''}
       `
       
       this.stockGridTarget.appendChild(item)
@@ -641,7 +648,49 @@ export default class extends Controller {
     
     // Store selected photo
     this.selectedStockPhoto = photo
+    this.currentStockPhoto = photo
+    
+    // Show details in sidebar
+    this.showStockPhotoInSidebar(photo)
+    
     this.importButtonTarget.disabled = false
+  }
+  
+  showStockPhotoInSidebar(photo) {
+    // Show attachment details
+    this.attachmentDetailsTarget.classList.remove('hidden')
+    
+    // Populate with stock photo data
+    const nameElement = this.attachmentDetailsTarget.querySelector('[data-media-selector-target="attachmentName"]')
+    const dateElement = this.attachmentDetailsTarget.querySelector('[data-media-selector-target="attachmentDate"]')
+    const previewImage = this.previewImageTarget
+    
+    if (nameElement) nameElement.textContent = photo.title || photo.alt_description || 'Stock Photo'
+    if (dateElement) dateElement.textContent = `${photo.width} × ${photo.height}px`
+    
+    // Show large preview
+    if (previewImage) {
+      previewImage.src = photo.preview_url || photo.thumbnail_url
+      previewImage.classList.remove('hidden')
+    }
+    
+    // Update metadata fields
+    this.altTextTarget.value = photo.alt_description || ''
+    this.titleFieldTarget.value = photo.title || ''
+    this.descriptionTarget.value = `Photo by ${photo.photographer} on ${photo.source}`
+    this.fileUrlTarget.value = photo.source_url
+    
+    // Hide edit/delete links for stock photos
+    this.editLinkTarget?.classList.add('hidden')
+    this.deleteLinkTarget?.classList.add('hidden')
+    
+    // Show bookmark button
+    if (this.hasStockBookmarkBtnTarget) {
+      this.stockBookmarkBtnTarget.classList.remove('hidden')
+      const isBookmarked = this.bookmarkedPhotoIds.has(photo.id)
+      this.stockBookmarkIconTarget.textContent = isBookmarked ? '⭐' : '☆'
+      this.stockBookmarkTextTarget.textContent = isBookmarked ? 'Bookmarked' : 'Bookmark Photo'
+    }
   }
 
   async importStockPhoto() {
@@ -663,6 +712,12 @@ export default class extends Controller {
       const data = await response.json()
       
       if (data.success) {
+        // Auto-bookmarked on import
+        if (data.bookmarked && this.selectedStockPhoto) {
+          this.bookmarkedPhotoIds.add(this.selectedStockPhoto.id)
+          this.updateStarIndicators()
+        }
+        
         // Switch to Media Library tab
         this.switchTab('library')
         
@@ -702,6 +757,93 @@ export default class extends Controller {
   clearStockSearchQuery() {
     localStorage.removeItem('stockPhotoSearchQuery')
     this.stockSearchQuery = ''
+  }
+  
+  // Bookmark methods
+  filterStockPhotos() {
+    const filterValue = this.stockShowFilterTarget.value
+    if (filterValue === 'bookmarked') {
+      this.loadBookmarks()
+    } else if (this.allStockPhotos.length > 0) {
+      this.renderStockPhotos(this.allStockPhotos)
+    }
+  }
+  
+  async loadBookmarks() {
+    this.stockLoadingTarget.classList.remove('hidden')
+    this.stockEmptyTarget.classList.add('hidden')
+    this.stockGridTarget.innerHTML = ''
+    
+    try {
+      const response = await fetch('/admin/stock_photos/bookmarks')
+      const data = await response.json()
+      this.stockLoadingTarget.classList.add('hidden')
+      
+      if (data.photos && data.photos.length > 0) {
+        this.renderStockPhotos(data.photos)
+        data.photos.forEach(p => this.bookmarkedPhotoIds.add(p.id))
+      } else {
+        this.stockEmptyTarget.classList.remove('hidden')
+      }
+    } catch (error) {
+      console.error('Failed to load bookmarks:', error)
+      this.stockLoadingTarget.classList.add('hidden')
+    }
+  }
+  
+  async toggleBookmark(event) {
+    event.preventDefault()
+    if (!this.currentStockPhoto) return
+    
+    const isBookmarked = this.bookmarkedPhotoIds.has(this.currentStockPhoto.id)
+    
+    try {
+      if (isBookmarked) {
+        await fetch(`/admin/stock_photos/bookmark/${encodeURIComponent(this.currentStockPhoto.id)}`, {
+          method: 'DELETE',
+          headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
+        })
+        this.bookmarkedPhotoIds.delete(this.currentStockPhoto.id)
+        this.stockBookmarkIconTarget.textContent = '☆'
+        this.stockBookmarkTextTarget.textContent = 'Bookmark Photo'
+        
+        if (this.stockShowFilterTarget.value === 'bookmarked') {
+          this.loadBookmarks()
+        }
+      } else {
+        await fetch('/admin/stock_photos/bookmark', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({ photo_data: JSON.stringify(this.currentStockPhoto) })
+        })
+        this.bookmarkedPhotoIds.add(this.currentStockPhoto.id)
+        this.stockBookmarkIconTarget.textContent = '⭐'
+        this.stockBookmarkTextTarget.textContent = 'Bookmarked'
+      }
+      this.updateStarIndicators()
+    } catch (error) {
+      console.error('Bookmark error:', error)
+    }
+  }
+  
+  updateStarIndicators() {
+    this.stockGridTarget.querySelectorAll('[data-stock-photo-id]').forEach(item => {
+      const photoId = item.dataset.stockPhotoId
+      const existingStar = item.querySelector('.bookmark-star')
+      const isBookmarked = this.bookmarkedPhotoIds.has(photoId)
+      
+      if (isBookmarked && !existingStar) {
+        const star = document.createElement('div')
+        star.className = 'bookmark-star absolute top-1 right-1 text-xl'
+        star.textContent = '⭐'
+        item.appendChild(star)
+      } else if (!isBookmarked && existingStar) {
+        existingStar.remove()
+      }
+    })
   }
 }
 

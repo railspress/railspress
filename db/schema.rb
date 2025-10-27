@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_27_065334) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_27_074356) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -1207,6 +1207,29 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_27_065334) do
     t.index ["tenant_id"], name: "index_slick_forms_on_tenant_id"
   end
 
+  create_table "stock_photo_bookmarks", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "tenant_id", null: false
+    t.string "provider", null: false
+    t.string "provider_photo_id", null: false
+    t.string "thumbnail_url"
+    t.string "preview_url"
+    t.string "download_url"
+    t.integer "width"
+    t.integer "height"
+    t.string "photographer"
+    t.string "photographer_url"
+    t.string "source_url"
+    t.string "alt_description"
+    t.string "title"
+    t.text "photo_data"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tenant_id"], name: "index_stock_photo_bookmarks_on_tenant_id"
+    t.index ["user_id", "provider_photo_id"], name: "index_bookmarks_on_user_and_provider_id", unique: true
+    t.index ["user_id"], name: "index_stock_photo_bookmarks_on_user_id"
+  end
+
   create_table "storage_providers", force: :cascade do |t|
     t.string "name"
     t.string "provider_type"
@@ -1729,6 +1752,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_27_065334) do
   add_foreign_key "shortcuts", "tenants"
   add_foreign_key "site_settings", "tenants"
   add_foreign_key "slick_form_submissions", "slick_forms"
+  add_foreign_key "stock_photo_bookmarks", "tenants"
+  add_foreign_key "stock_photo_bookmarks", "users"
   add_foreign_key "storage_providers", "tenants"
   add_foreign_key "subscribers", "tenants"
   add_foreign_key "taxonomies", "tenants"

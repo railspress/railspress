@@ -358,6 +358,9 @@ Rails.application.routes.draw do
     namespace :stock_photos do
       get :search
       post :import
+      get :bookmarks
+      post :bookmark
+      delete 'bookmark/:provider_photo_id', to: 'stock_photos#unbookmark'
     end
     
     # Image Optimization Analytics
