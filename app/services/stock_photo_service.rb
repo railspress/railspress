@@ -51,35 +51,34 @@ class StockPhotoService
     { photos: results, errors: errors }
   end
 
-  def download_and_import(photo_data, user)
-    # Download image from URL
-    downloaded_file = Down.download(photo_data[:download_url])
-    
-    # Create Upload record
+  def import_as_external(photo_data, user)
+    # Create Upload with external URL (hotlinked, per TOS requirements)
     upload = Upload.new(
       title: photo_data[:title] || photo_data[:alt_description] || 'Stock Photo',
-      user: user
+      description: "Photo by #{photo_data[:photographer]} on #{photo_data[:source]}",
+      user: user,
+      storage_provider: StorageProvider.active.first,
+      is_external: true,
+      external_url: photo_data[:download_url],
+      external_thumbnail_url: photo_data[:thumbnail_url],
+      external_preview_url: photo_data[:preview_url],
+      external_width: photo_data[:width],
+      external_height: photo_data[:height],
+      external_content_type: 'image/jpeg' # All stock photos are images
     )
-    upload.file.attach(io: downloaded_file, filename: "#{photo_data[:id]}.jpg")
-    upload.storage_provider = StorageProvider.active.first
     
-    if upload.save
-      # Create Medium record
-      medium = Medium.new(
-        title: photo_data[:title] || photo_data[:alt_description] || 'Stock Photo',
-        alt_text: photo_data[:alt_description],
-        description: "Photo by #{photo_data[:photographer]} on #{photo_data[:source]}. #{photo_data[:photographer_url]}",
-        user: user,
-        upload: upload
-      )
-      
-      medium.save ? medium : nil
-    else
-      nil
-    end
-  ensure
-    downloaded_file&.close
-    downloaded_file&.unlink
+    return nil unless upload.save
+    
+    # Create Medium record
+    medium = Medium.new(
+      title: photo_data[:title] || photo_data[:alt_description] || 'Stock Photo',
+      alt_text: photo_data[:alt_description],
+      description: "Photo by #{photo_data[:photographer]} on #{photo_data[:source]}. Source: #{photo_data[:source_url]}",
+      user: user,
+      upload: upload
+    )
+    
+    medium.save ? medium : nil
   end
 
   private
@@ -163,8 +162,8 @@ class StockPhotoService
       {
         id: "pexels_#{photo['id']}",
         provider: 'pexels',
-        thumbnail_url: photo['src']['small'],
-        preview_url: photo['src']['medium'],
+        thumbnail_url: photo['src']['medium'], # Changed from 'small' to 'medium' for higher resolution
+        preview_url: photo['src']['large'], # Changed from 'medium' to 'large' for better preview
         download_url: photo['src']['original'],
         width: photo['width'],
         height: photo['height'],
@@ -205,8 +204,8 @@ class StockPhotoService
       {
         id: "pixabay_#{photo['id']}",
         provider: 'pixabay',
-        thumbnail_url: photo['previewURL'],
-        preview_url: photo['webformatURL'],
+        thumbnail_url: photo['webformatURL'], # Changed from 'previewURL' to 'webformatURL' for higher resolution
+        preview_url: photo['largeImageURL'], # Changed from 'webformatURL' to 'largeImageURL' for better preview
         download_url: photo['largeImageURL'],
         width: photo['imageWidth'],
         height: photo['imageHeight'],

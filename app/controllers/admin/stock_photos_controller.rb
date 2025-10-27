@@ -22,7 +22,7 @@ class Admin::StockPhotosController < Admin::BaseController
     service = StockPhotoService.new
     photo_data = JSON.parse(params[:photo_data]).with_indifferent_access
     
-    medium = service.download_and_import(photo_data, current_user)
+    medium = service.import_as_external(photo_data, current_user)
     
     if medium
       render json: { 
@@ -46,11 +46,12 @@ class Admin::StockPhotosController < Admin::BaseController
       description: medium.description,
       file_type: medium.content_type,
       file_size: medium.file_size,
-      width: medium.file&.metadata&.dig('width'),
-      height: medium.file&.metadata&.dig('height'),
+      width: medium.width,
+      height: medium.height,
       url: medium.url,
-      thumbnail_url: medium.image? ? medium.url : nil,
-      created_at: medium.created_at.iso8601
+      thumbnail_url: medium.thumbnail_url || medium.url,
+      created_at: medium.created_at.iso8601,
+      is_external: medium.is_external?
     }
   end
 end

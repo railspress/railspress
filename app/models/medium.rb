@@ -63,6 +63,26 @@ class Medium < ApplicationRecord
     upload&.file&.attached?
   end
   
+  def thumbnail_url
+    upload&.thumbnail_url
+  end
+  
+  def preview_url
+    upload&.preview_url
+  end
+  
+  def width
+    upload&.width
+  end
+  
+  def height
+    upload&.height
+  end
+  
+  def is_external?
+    upload&.is_external? || false
+  end
+  
   def quarantined?
     upload&.quarantined?
   end

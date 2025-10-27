@@ -16,7 +16,8 @@ class Upload < ApplicationRecord
   
   # Validations
   validates :title, presence: true
-  validates :file, presence: true
+  validates :file, presence: true, unless: -> { is_external? }
+  validate :must_have_file_or_external_url
   
   # Scopes
   scope :quarantined, -> { where(quarantined: true) }
@@ -41,42 +42,84 @@ class Upload < ApplicationRecord
   
   # Methods
   def image?
-    file.attached? && file.content_type&.start_with?('image/')
+    if is_external?
+      external_content_type&.start_with?('image/')
+    else
+      file.attached? && file.content_type&.start_with?('image/')
+    end
   end
   
   def video?
-    file.attached? && file.content_type&.start_with?('video/')
+    if is_external?
+      external_content_type&.start_with?('video/')
+    else
+      file.attached? && file.content_type&.start_with?('video/')
+    end
   end
   
   def document?
-    file.attached? && file.content_type&.start_with?('application/')
+    if is_external?
+      external_content_type&.start_with?('application/')
+    else
+      file.attached? && file.content_type&.start_with?('application/')
+    end
   end
   
   def file_size
-    file.attached? ? file.byte_size : 0
+    if is_external?
+      0 # Unknown for external URLs
+    else
+      file.attached? ? file.byte_size : 0
+    end
   end
   
   def content_type
-    file.attached? ? file.content_type : nil
+    if is_external?
+      external_content_type || infer_content_type_from_external_url
+    else
+      file.attached? ? file.content_type : nil
+    end
   end
   
   def filename
-    file.attached? ? file.filename.to_s : nil
+    if is_external?
+      external_url&.split('/')&.last || "#{title}.jpg"
+    else
+      file.attached? ? file.filename.to_s : nil
+    end
   end
   
   def url
-    return nil unless file.attached?
-    
-    # Check if CDN is enabled
-    storage_config = StorageConfigurationService.new
-    if storage_config.cdn_enabled?
-      # Return CDN URL
-      cdn_base = storage_config.cdn_url.chomp('/')
-      "#{cdn_base}#{Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true)}"
+    if is_external?
+      external_url
+    elsif file.attached?
+      # Check if CDN is enabled
+      storage_config = StorageConfigurationService.new
+      if storage_config.cdn_enabled?
+        cdn_base = storage_config.cdn_url.chomp('/')
+        "#{cdn_base}#{Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true)}"
+      else
+        Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true)
+      end
     else
-      # Return regular Rails blob path
-      Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true)
+      nil
     end
+  end
+  
+  def thumbnail_url
+    is_external? ? external_thumbnail_url : url
+  end
+  
+  def preview_url
+    is_external? ? external_preview_url : url
+  end
+  
+  def width
+    is_external? ? external_width : file&.metadata&.dig('width')
+  end
+  
+  def height
+    is_external? ? external_height : file&.metadata&.dig('height')
   end
   
   def quarantined?
@@ -266,5 +309,27 @@ class Upload < ApplicationRecord
     # Configure storage based on current settings
     storage_config = StorageConfigurationService.new
     storage_config.configure_active_storage
+  end
+  
+  def must_have_file_or_external_url
+    if !file.attached? && external_url.blank?
+      errors.add(:base, 'Must have either a file attachment or external URL')
+    end
+  end
+  
+  def infer_content_type_from_external_url
+    return nil unless external_url
+    ext = File.extname(URI.parse(external_url).path).downcase
+    case ext
+    when '.jpg', '.jpeg' then 'image/jpeg'
+    when '.png' then 'image/png'
+    when '.gif' then 'image/gif'
+    when '.webp' then 'image/webp'
+    when '.mp4' then 'video/mp4'
+    when '.webm' then 'video/webm'
+    else 'image/jpeg' # default
+    end
+  rescue
+    'image/jpeg'
   end
 end

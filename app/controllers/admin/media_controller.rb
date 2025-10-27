@@ -220,13 +220,14 @@ class Admin::MediaController < Admin::BaseController
           file_type: medium.content_type,
           file_size: medium.file_size,
           url: medium.url,
-          thumbnail_url: medium.image? ? medium.url : nil,
+          thumbnail_url: medium.image? ? (medium.thumbnail_url || medium.url) : nil,
           quarantined: medium.quarantined?,
           quarantine_reason: medium.quarantine_reason,
           created_at: medium.created_at.iso8601,
           edit_url: edit_admin_medium_path(medium),
           show_url: admin_medium_path(medium),
-          delete_url: admin_medium_path(medium)
+          delete_url: admin_medium_path(medium),
+          is_external: medium.is_external? || false
         }
       end
     end

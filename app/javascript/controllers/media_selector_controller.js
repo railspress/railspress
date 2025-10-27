@@ -23,6 +23,7 @@ export default class extends Controller {
     this.mediaData = []
     this.allMediaData = []
     this.selectedStockPhoto = null
+    this.stockSearchQuery = this.loadStockSearchQuery() // Load saved search
   }
 
   openDialog(event) {
@@ -33,6 +34,11 @@ export default class extends Controller {
     this.selectedMediaData = []
     this.switchTab("upload")
     this.loadMediaLibrary()
+    
+    // Restore saved stock search query
+    if (this.stockSearchQuery && this.hasStockSearchInputTarget) {
+      this.stockSearchInputTarget.value = this.stockSearchQuery
+    }
     
     // Focus management
     document.body.style.overflow = "hidden"
@@ -547,6 +553,14 @@ export default class extends Controller {
     console.log('Upload success:', message)
   }
 
+  preventEnterSubmit(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      event.stopPropagation()
+      event.stopImmediatePropagation()
+    }
+  }
+
   // Stock Photo Methods
   async searchStockPhotos(event) {
     if (event) {
@@ -561,6 +575,9 @@ export default class extends Controller {
     
     const query = this.stockSearchInputTarget.value.trim()
     if (!query) return
+    
+    // Save the search query to localStorage
+    this.saveStockSearchQuery(query)
     
     this.stockLoadingTarget.classList.remove('hidden')
     this.stockEmptyTarget.classList.add('hidden')
@@ -668,6 +685,23 @@ export default class extends Controller {
       this.importButtonTarget.disabled = false
       this.importButtonTarget.textContent = 'Import Selected Photo'
     }
+  }
+  
+  // localStorage methods for stock search
+  saveStockSearchQuery(query) {
+    if (query && query.trim()) {
+      localStorage.setItem('stockPhotoSearchQuery', query)
+      this.stockSearchQuery = query
+    }
+  }
+  
+  loadStockSearchQuery() {
+    return localStorage.getItem('stockPhotoSearchQuery') || ''
+  }
+  
+  clearStockSearchQuery() {
+    localStorage.removeItem('stockPhotoSearchQuery')
+    this.stockSearchQuery = ''
   }
 }
 

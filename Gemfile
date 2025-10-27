@@ -204,5 +204,6 @@ end
 # HTTP client for API calls
 gem "httparty"
 
-# File download library
-gem "down"
+# File download library - removed, using hotlinking for stock photos per TOS
+# gem "down"
+

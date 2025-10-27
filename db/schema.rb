@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_25_041718) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_27_065334) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -1484,6 +1484,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_25_041718) do
     t.boolean "public", default: false
     t.string "source"
     t.string "tags"
+    t.string "external_url"
+    t.string "external_thumbnail_url"
+    t.string "external_preview_url"
+    t.boolean "is_external", default: false
+    t.integer "external_width"
+    t.integer "external_height"
+    t.string "external_content_type"
     t.index ["expires_at"], name: "index_uploads_on_expires_at"
     t.index ["public"], name: "index_uploads_on_public"
     t.index ["source"], name: "index_uploads_on_source"
