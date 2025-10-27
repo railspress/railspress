@@ -196,6 +196,20 @@
           
           <!-- Filters -->
           <div class="mb-4 flex gap-4">
+
+          <!-- Search -->
+          <div class="w-150">
+            <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+              Search media
+            </label>
+            <input type="text"
+                   data-media-selector-target="searchInput"
+                   data-action="input->media-selector#searchMedia"
+                   placeholder="Search media files..."
+                   class="w-full border rounded px-3 py-2 text-sm"
+                   style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+          </div>
+
             <div>
               <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
                 Filter media
@@ -246,18 +260,7 @@
              style="border-color: <%= theme[:border_color] %>"
              data-media-selector-target="rightColumn">
           
-          <!-- Search -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-              Search media
-            </label>
-            <input type="text"
-                   data-media-selector-target="searchInput"
-                   data-action="input->media-selector#searchMedia"
-                   placeholder="Search media files..."
-                   class="w-full border rounded px-3 py-2 text-sm"
-                   style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
-          </div>
+          
           
           <!-- Upload Progress -->
           <div data-media-selector-target="uploadProgress" class="hidden">
