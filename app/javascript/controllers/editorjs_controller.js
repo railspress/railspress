@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import MediaTool from "editorjs_media_tool"
 
 // Editor.js integration for distraction-free writing
 export default class extends Controller {
@@ -56,7 +57,8 @@ export default class extends Controller {
         AttachesTool: !!window.AttachesTool,
         Embed: !!window.Embed,
         InlineCode: !!window.InlineCode,
-        Marker: !!window.Marker
+        Marker: !!window.Marker,
+        Paragraph: !!window.Paragraph
       })
 
       this.editor = new window.EditorJS({
@@ -69,39 +71,10 @@ export default class extends Controller {
         tools: Object.fromEntries(
           Object.entries({
             // Essential paragraph tool (EditorJS requires this)
-            paragraph: {
-              class: window.Paragraph || class {
-                constructor({ data, config, api, readOnly }) {
-                  this.api = api
-                  this.readOnly = readOnly
-                  this.data = data || { text: '' }
-                }
-                
-                render() {
-                  const wrapper = document.createElement('div')
-                  wrapper.classList.add('ce-paragraph')
-                  wrapper.contentEditable = !this.readOnly
-                  wrapper.innerHTML = this.data.text || ''
-                  return wrapper
-                }
-                
-                save(blockContent) {
-                  return { text: blockContent.innerHTML }
-                }
-                
-                static get toolbox() {
-                  return {
-                    title: 'Paragraph',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 4h14M3 8h14M3 12h10M3 16h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
-                  }
-                }
-              },
-              inlineToolbar: true
-            },
+            
             // Header
             header: window.Header ? {
-              class: window.Header,
-              icon: '<svg width="18" height="18" xmlns="http://www.w3.org/2000/svg"><text x="1" y="14" font-size="14" font-family="sans-serif" font-weight="bold">H</text></svg>',
+              class: Header,
               inlineToolbar: ['marker', 'inlineCode', 'convertTo'],
               config: {
                 placeholder: 'Enter a header',
@@ -205,17 +178,8 @@ export default class extends Controller {
             } : undefined,
             // Embed
             embed: window.Embed ? {
-              class: window.Embed,
-              config: {
-                services: {
-                  youtube: true,
-                  codepen: true,
-                  instagram: true,
-                  twitter: true,
-                  vimeo: true,
-                  github: true
-                }
-              }
+              class: window.Embed
+              
             } : undefined,
             // Inline tools
             inlineCode: window.InlineCode ? {
@@ -224,6 +188,15 @@ export default class extends Controller {
             marker: window.Marker ? {
               class: window.Marker
             } : undefined,
+            
+            // Media tool
+            media: {
+              class: MediaTool,
+              config: {
+                dialogId: 'editorjs-media-selector',
+                callback: 'handleEditorJSMediaSelected'
+              }
+            },
             
             // Plugin tools injection
             ...(window.pluginEditorJsTools || {})
@@ -303,73 +276,26 @@ export default class extends Controller {
   convertToHTML(data) {
     if (!data || !data.blocks) return ''
     
+    let parser
+    if (edjsParser != undefined)
+    {
+      parser = new edjsParser(); 
+    }
+    else
+    {
+      console.log('edjsParser not found');
+      return '';
+    }
+    
     let html = ''
     
     data.blocks.forEach(block => {
       switch (block.type) {
-        case 'header':
-          html += `<h${block.data.level}>${block.data.text}</h${block.data.level}>`
-          break
-        
-        case 'paragraph':
-          html += `<p>${block.data.text}</p>`
-          break
-        
-        case 'list':
-          const tag = block.data.style === 'ordered' ? 'ol' : 'ul'
-          html += `<${tag}>`
-          block.data.items.forEach(item => {
-            html += `<li>${item}</li>`
-          })
-          html += `</${tag}>`
-          break
-        
-        case 'quote':
-          html += `<blockquote><p>${block.data.text}</p>`
-          if (block.data.caption) {
-            html += `<cite>${block.data.caption}</cite>`
-          }
-          html += `</blockquote>`
-          break
-        
-        case 'code':
-          html += `<pre><code>${this.escapeHTML(block.data.code)}</code></pre>`
-          break
-        
+
         case 'warning':
           html += `<div class="warning"><strong>${block.data.title}</strong><p>${block.data.message}</p></div>`
           break
-        
-        case 'delimiter':
-          html += '<hr>'
-          break
-        
-        case 'table':
-          html += '<table>'
-          block.data.content.forEach((row, i) => {
-            html += '<tr>'
-            row.forEach(cell => {
-              const tag = i === 0 && block.data.withHeadings ? 'th' : 'td'
-              html += `<${tag}>${cell}</${tag}>`
-            })
-            html += '</tr>'
-          })
-          html += '</table>'
-          break
-        
-        case 'image':
-          html += `<figure>`
-          html += `<img src="${block.data.file.url}" alt="${block.data.caption || ''}">`
-          if (block.data.caption) {
-            html += `<figcaption>${block.data.caption}</figcaption>`
-          }
-          html += `</figure>`
-          break
-        
-        case 'embed':
-          html += `<div class="embed">${block.data.embed}</div>`
-          break
-        
+
         case 'checklist':
           html += '<ul class="checklist">'
           block.data.items.forEach(item => {
@@ -393,12 +319,62 @@ export default class extends Controller {
             html += '</div>'
           }
           break
+
+        case 'media':
+          const media = block.data.media
+          if (!media) break
+          
+          // Get media type (could be 'type' or 'file_type')
+          const mediaType = media.type || media.file_type
+          
+          // Render based on media type
+          if (mediaType && mediaType.startsWith('image/')) {
+            // Image
+            const alt = this.escapeHTML(media.alt_text || media.title || '')
+            const caption = media.caption ? `<figcaption>${this.escapeHTML(media.caption)}</figcaption>` : ''
+            html += `<figure class="media-block media-image">
+              <img src="${media.url}" alt="${alt}" ${media.width ? `width="${media.width}"` : ''} ${media.height ? `height="${media.height}"` : ''}>
+              ${caption}
+            </figure>`
+          } else if (mediaType && mediaType.startsWith('video/')) {
+            // Video
+            const caption = media.caption ? `<figcaption>${this.escapeHTML(media.caption)}</figcaption>` : ''
+            html += `<figure class="media-block media-video">
+              <video controls src="${media.url}" ${media.width ? `width="${media.width}"` : ''} ${media.height ? `height="${media.height}"` : ''}></video>
+              ${caption}
+            </figure>`
+          } else {
+            // File/Document or default to image if URL suggests it's an image
+            const isImageUrl = media.url && /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(media.url)
+            
+            if (isImageUrl && !mediaType) {
+              // Assume it's an image from URL
+              const alt = this.escapeHTML(media.alt_text || media.title || '')
+              html += `<figure class="media-block media-image">
+                <img src="${media.url}" alt="${alt}">
+              </figure>`
+            } else {
+              // File/Document
+              const fileSize = media.file_size ? ` (${this.formatFileSize(media.file_size)})` : ''
+              html += `<div class="media-block media-file">
+                <a href="${media.url}" download="${media.title || 'file'}" class="file-download">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 2H13L17 6V16C17 16.5304 16.7893 17.0391 16.4142 17.4142C16.0391 17.7893 15.5304 18 15 18H5C4.46957 18 3.96086 17.7893 3.58579 17.4142C3.21071 17.0391 3 16.5304 3 16V4C3 3.46957 3.21071 2.96086 3.58579 2.58579C3.96086 2.21071 4.46957 2 5 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13 2V6H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  ${this.escapeHTML(media.title || 'File')}${fileSize}
+                </a>
+              </div>`
+            }
+          }
+          break
         
         default:
-          html += `<p>${block.data.text || ''}</p>`
+          html += parser.parseBlock(block);
       }
     })
     
+    console.log(html);
     return html
   }
 
@@ -406,6 +382,13 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = str
     return div.innerHTML
+  }
+
+  formatFileSize(bytes) {
+    if (!bytes) return ''
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(1024))
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
   }
 
   showSaveIndicator() {

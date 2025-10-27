@@ -354,6 +354,12 @@ Rails.application.routes.draw do
       end
     end
     
+    # Stock Photos
+    namespace :stock_photos do
+      get :search
+      post :import
+    end
+    
     # Image Optimization Analytics
     resources :image_optimization_analytics, path: 'media/optimization_analytics', only: [:index] do
       collection do

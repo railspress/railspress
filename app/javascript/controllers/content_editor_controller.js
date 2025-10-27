@@ -192,6 +192,8 @@ export default class extends Controller {
 
     try {
       const jsonData = await this.editorController.editor.save()
+
+      
       return this.convertEditorJSJsonToHtml(jsonData)
     } catch (error) {
       console.error('[ContentEditor] Failed to get EditorJS HTML:', error)
@@ -464,7 +466,9 @@ export default class extends Controller {
           const tag = block.data.style === 'ordered' ? 'ol' : 'ul'
           html += `<${tag}>`
           block.data.items.forEach(item => {
-            html += `<li>${item}</li>`
+            // Handle both string items and object items with 'content' property
+            const itemText = typeof item === 'string' ? item : (item.content || '')
+            html += `<li>${itemText}</li>`
           })
           html += `</${tag}>`
           break

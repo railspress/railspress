@@ -1,0 +1,115 @@
+<style>
+  [data-quick-search-target="item"].selected {
+    background-color: <%= local_assigns[:theme][:selected_bg] || 'rgba(59, 130, 246, 0.1)' %> !important;
+  }
+  
+  .quick-search-highlight {
+    background-color: yellow;
+    color: black;
+    padding: 2px 0;
+  }
+</style>
+
+<div data-controller="quick-search" 
+     data-quick-search-search-selectors-value="<%= (local_assigns[:search_selectors] || []).to_json %>"
+     data-quick-search-target-element-value="<%= local_assigns[:target_element] || '' %>"
+     data-quick-search-editor-controller-value="<%= local_assigns[:editor_controller] || '' %>"
+     class="hidden">
+  
+  <!-- Backdrop -->
+  <div data-quick-search-target="backdrop" 
+       data-action="click->quick-search#close"
+       class="fixed inset-0 bg-transparent z-40"></div>
+  
+  <!-- Modal -->
+  <div data-quick-search-target="modal"
+       class="absolute w-150 z-50 rounded-lg shadow-2xl"
+       style="background: <%= local_assigns[:theme][:bg_color] %>; 
+       border: 1px solid <%= local_assigns[:theme][:border_color] %>; 
+       box-shadow: <%= local_assigns[:theme][:box_shadow] %>; 
+       border-radius: <%= local_assigns[:theme][:border_radius] %>">
+    
+    <!-- Search Input -->
+    <div class="p-3" style="border-color: <%= local_assigns[:theme][:border_color] %>">
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text"
+               data-quick-search-target="search"
+               data-action="input->quick-search#search keydown->quick-search#navigate"
+               placeholder="Search..."
+               class="w-full bg-transparent outline-none text-sm"
+               style="color: <%= local_assigns[:theme][:text_color] %>">
+      </div>
+    </div>
+    
+    <!-- Results List (initially hidden) -->
+    <div data-quick-search-target="results" 
+         class="max-h-80 overflow-y-auto hidden">
+      
+      <!-- Local Results Section -->
+      <div data-quick-search-target="localSection" class="hidden">
+        <div class="px-3 py-2 text-xs uppercase font-semibold opacity-50">On This Page</div>
+        <div data-quick-search-target="localList"></div>
+      </div>
+      
+      <!-- Posts Section -->
+      <div data-quick-search-target="postsSection" class="hidden">
+        <div class="px-3 py-2 text-xs uppercase font-semibold opacity-50">Posts</div>
+        <div data-quick-search-target="postsList"></div>
+      </div>
+      
+      <!-- Pages Section -->
+      <div data-quick-search-target="pagesSection" class="hidden">
+        <div class="px-3 py-2 text-xs uppercase font-semibold opacity-50">Pages</div>
+        <div data-quick-search-target="pagesList"></div>
+      </div>
+      
+      <!-- Taxonomies Section -->
+      <div data-quick-search-target="taxonomiesSection" class="hidden">
+        <div class="px-3 py-2 text-xs uppercase font-semibold opacity-50">Categories & Tags</div>
+        <div data-quick-search-target="taxonomiesList"></div>
+      </div>
+      
+      <!-- Users Section -->
+      <div data-quick-search-target="usersSection" class="hidden">
+        <div class="px-3 py-2 text-xs uppercase font-semibold opacity-50">Users</div>
+        <div data-quick-search-target="usersList"></div>
+      </div>
+      
+      <!-- Empty State -->
+      <div data-quick-search-target="emptyState" class="hidden px-3 py-6 text-center opacity-50 text-sm">
+        <p>No results found</p>
+      </div>
+    </div>
+    
+    <!-- Footer (only shown when results visible) -->
+    <div data-quick-search-target="footer"
+         class="px-3 py-2 border-t text-xs flex justify-between hidden"
+         style="border-color: <%= local_assigns[:theme][:border_color] %>; color: <%= local_assigns[:theme][:text_color] %>; opacity: 0.7;">
+      <div class="flex gap-3">
+        <span><kbd class="px-1 py-0.5 rounded text-xs" style="background: <%= local_assigns[:theme][:border_color] %>">↑↓</kbd> Navigate</span>
+        <span><kbd class="px-1 py-0.5 rounded text-xs" style="background: <%= local_assigns[:theme][:border_color] %>">↵</kbd> Select</span>
+        <span><kbd class="px-1 py-0.5 rounded text-xs" style="background: <%= local_assigns[:theme][:border_color] %>">esc</kbd> Close</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Item Template -->
+  <template data-quick-search-target="itemTemplate">
+    <div data-quick-search-target="item"
+         data-action="click->quick-search#select mouseenter->quick-search#highlight"
+         class="px-3 py-2 cursor-pointer flex items-center justify-between transition-colors hover:bg-opacity-10 hover:bg-gray-500"
+         style="color: <%= local_assigns[:theme][:text_color] %>">
+      <div class="flex items-center gap-2 flex-1 min-w-0">
+        <span data-item-icon class="text-base flex-shrink-0"></span>
+        <div class="flex-1 min-w-0">
+          <div data-item-name class="font-medium truncate text-sm"></div>
+          <div data-item-description class="text-xs opacity-70 truncate"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+</div>
+

@@ -12,7 +12,7 @@
   --ce-shadow: 0 12px 28px rgba(0,0,0,.55);
   --ce-select-bg: darkgray; /* highlight background */
   --ce-select-fg: #000000;                     /* highlighted text color */
-  --ce-caret: #7c5cff;                       /* text caret color */
+  --ce-caret: #FFFFFF;                       /* text caret color */
   --ce-block-focus: transparent;                 /* focused block bg */
   --ce-block-hover: transparent;                 /* hover bg (optional) */
   --ce-focus-ring: 0 0 0 2px rgba(124,92,255,.35); /* keyboard focus ring */
@@ -256,14 +256,14 @@
 .codex-editor__redactor,
 .ce-block__content,
 .ce-toolbar__content {
-  max-width: 90vw ;
-  width: 708px;
+  max-width: 100% ;
+  width: 753px;
 }
 
 .ce-block {
   font-size: 16px;
   max-width: 100%;
-  width: 708px;
+  width: 753px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -279,7 +279,12 @@
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
-    width: 708px;
+    width: 753px;
+    padding-left: 50px;
+}
+
+.post-title-container textarea {
+  text-wrap: wrap;
 }
 
 /* Headings - EditorJS wraps headings in h1-h6 with .ce-header class */
@@ -459,5 +464,115 @@ h6.ce-header { font-size: 1.125rem; }
   border-radius: 0.25rem;
   font-family: 'Monaco', 'Menlo', monospace;
   font-size: 0.9em;
+}
+
+.codex-editor--narrow .ce-toolbar__actions {
+  left: -45px !important;
+  width: 60px !important;
+}
+
+.ce-toolbar__actions .ce-toolbar__actions--opened {
+  width: 60px !important;
+}
+
+/* Media Tool Styles */
+.media-tool-wrapper {
+  margin: 1rem 0;
+}
+
+.media-tool-empty {
+  cursor: pointer;
+  min-height: 200px;
+}
+
+.media-tool-content {
+  border: 1px solid var(--ce-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ce-focus);
+}
+
+.media-tool-btn-change,
+.media-tool-btn-remove {
+  transition: all 0.2s ease;
+}
+
+.media-tool-btn-change:hover {
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+.media-tool-btn-remove:hover {
+  background: rgba(185, 28, 28, 0.9) !important;
+}
+
+.media-tool-caption {
+  font-size: 0.875rem;
+  color: var(--ce-text);
+}
+
+/* Media Block Output Styles */
+.media-block {
+  margin: 1.5rem 0;
+}
+
+.media-image img,
+.media-video video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+.media-image figcaption,
+.media-video figcaption {
+  text-align: center;
+  color: var(--ce-muted);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.media-file {
+  padding: 1rem;
+  background: var(--ce-focus);
+  border: 1px solid var(--ce-border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.media-file:hover {
+  background: var(--ce-hover);
+  border-color: var(--ce-accent);
+}
+
+.file-download {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ce-accent);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.file-download:hover {
+  opacity: 0.8;
+}
+
+.file-download svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* Light theme media tool adjustments */
+.editorjs--light .media-tool-content {
+  background: #fafafa;
+}
+
+.editorjs--light .media-file {
+  background: #f6f6f8;
+}
+
+.editorjs--light .media-tool-caption {
+  color: #111;
 }
 

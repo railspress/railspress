@@ -15,6 +15,16 @@ tenant = Tenant.first
     keybinding: 'cmd+k'
   },
   {
+    name: 'Open Quick Search',
+    description: 'Open quick search widget',
+    action_type: 'execute',
+    action_value: 'toggleQuickSearch',
+    icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>',
+    category: 'system',
+    shortcut_set: 'global',
+    keybinding: 'cmd+/'
+  },
+  {
     name: 'Go to Dashboard',
     description: 'Navigate to admin dashboard',
     action_type: 'navigate',

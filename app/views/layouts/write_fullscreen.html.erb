@@ -61,8 +61,13 @@
     <%= Railspress::PluginSystem.do_action('editor_js_head_assets').html_safe %>
   <% end %>
 
+  <!-- Editor.js Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/editorjs-parser@1/build/Parser.browser.min.js"></script>
+
   <!-- Editor.js Core -->
   <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+  
 
   <!-- Initialize plugin tools -->
   <script>
@@ -100,36 +105,7 @@
   
   <%= javascript_importmap_tags %>
   
-  <!-- AI Popup Functions -->
-  <script>
-  function openAiPopupWithPostWriter(event) {
-    if (event) event.preventDefault();
-    
-    // Create and show AI popup modal
-    const modal = document.getElementById('aiPopupModal');
-    if (modal) {
-      modal.classList.remove('hidden');
-      
-      // Auto-select Post Writer agent after a brief delay
-      setTimeout(() => {
-        // Hide the agent selection section
-        const agentSection = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2')?.closest('.mb-6');
-        if (agentSection) agentSection.style.display = 'none';
-        
-        // Hide the "Selected: Post Writer" info at bottom
-        const selectedInfo = document.getElementById('selectedAgentInfo');
-        if (selectedInfo) selectedInfo.style.display = 'none';
-        
-        // Auto-select Post Writer agent
-        if (typeof selectAgent === 'function') {
-          selectAgent('post_writer');
-        }
-      }, 100);
-    } else {
-      alert('AI popup not available. Please refresh the page.');
-    }
-  }
-  </script>
+  
   
   <style>
     /* Full height layout for Write Editor */
@@ -185,7 +161,10 @@
     /* Editor.js styles */
     .editorjs-container {
       background: transparent !important;
-      display: flex;
+      width: 753px;
+      max-width: 90%;
+      margin-left:auto;
+      margin-right: auto;
       justify-content: center;
     }
     
@@ -409,9 +388,52 @@
       theme: {
         bg_color: 'var(--admin-bg-app)',
         text_color: 'var(--admin-text-primary)',
-        selected_bg: 'var(--admin-color-primary)',
         border_color: 'var(--admin-border)',
         selected_bg: 'var(--admin-border-strong)'
+      } %>
+  
+  <!-- Quick Search -->
+  <%= render 'shared/quick_search',
+      editor_controller: 'content-editor',
+      search_selectors: ['input[name="post[title]"]', 'textarea[name="post[content]"]', '.ce-paragraph', '.ce-header'],
+      theme: {
+        bg_color: 'var(--admin-search-bar-bg)',
+        text_color: 'var(--admin-text-primary)',
+        border_color: 'var(--admin-search-bar-border)',
+        selected_bg: 'var(--admin-border-strong)',
+        box_shadow: 'var(--admin-search-bar-shadow)',
+        border_radius: 'var(--admin-search-bar-radius)'
+      } %>
+  
+  <!-- EditorJS Media Selector Dialog -->
+  <%= render 'admin/shared/media_selector_dialog',
+      dialog_id: 'editorjs-media-selector',
+      dialog_title: 'Insert Media',
+      button_text: 'Insert into post',
+      on_select_callback: 'handleEditorJSMediaSelected',
+      allow_multi_select: true,
+      theme: {
+        bg_color: 'var(--admin-bg-app)',
+        text_color: 'var(--admin-text-primary)',
+        border_color: 'var(--admin-border)',
+        selected_bg: 'rgba(59, 130, 246, 0.1)',
+        button_bg: 'var(--admin-primary)',
+        button_hover_bg: 'var(--admin-primary-hover)',
+        button_text: 'white',
+        tab_active_bg: 'var(--admin-bg-elevated)',
+        tab_active_border: 'var(--admin-primary)',
+        tab_inactive_text: 'var(--admin-text-muted)',
+        upload_zone_bg: 'var(--admin-bg-secondary)',
+        upload_zone_border: 'var(--admin-border)',
+        upload_zone_active_bg: 'var(--admin-primary-light)',
+        upload_zone_active_border: 'var(--admin-primary)',
+        media_grid_item_bg: 'var(--admin-bg-elevated)',
+        media_grid_item_border: 'var(--admin-border)',
+        media_grid_item_selected_border: 'var(--admin-primary)',
+        link_color: 'var(--admin-info)',
+        link_hover_color: 'var(--admin-primary)',
+        danger_color: 'var(--admin-error)',
+        danger_hover_color: '#dc2626'
       } %>
   
   <!-- Split.js JavaScript -->

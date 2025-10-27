@@ -211,7 +211,7 @@
           <!-- Title Input -->
           <%= f.text_area :title, 
               value: (@post.auto_draft_status? && @post.title == 'Untitled') ? '' : @post.title,
-              class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-6 leading-tight resize-none",
+              class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-4 leading-tight resize-none",
               placeholder: "Untitled",
               autofocus: !@post.persisted?,
               rows: 1,
@@ -277,3 +277,21 @@
     </div>
   <% end %>
 </div>
+
+<script>
+// Auto-grow title textarea
+(function() {
+  const titleInput = document.querySelector('textarea[name*="title"]');
+  if (titleInput) {
+    // Auto-resize on input
+    titleInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+    
+    // Initial resize
+    titleInput.style.height = 'auto';
+    titleInput.style.height = titleInput.scrollHeight + 'px';
+  }
+})();
+</script>

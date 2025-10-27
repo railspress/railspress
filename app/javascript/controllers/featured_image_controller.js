@@ -1,99 +1,81 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["input", "preview"]
+  static targets = ["preview", "hiddenField"]
+  static values = { dialogId: String }
 
   connect() {
-    this.initializeEvents()
+    // Register global callback for media selector
+    window.handleFeaturedImageSelected = this.handleMediaSelected.bind(this)
   }
 
-  initializeEvents() {
-    const uploadPlaceholder = this.previewTarget.querySelector('[data-action="upload"]')
-    if (uploadPlaceholder) {
-      uploadPlaceholder.addEventListener('click', () => this.openFileDialog())
-    }
+  disconnect() {
+    window.handleFeaturedImageSelected = null
+  }
 
-    const replaceBtn = this.previewTarget.querySelector('[data-action="replace"]')
-    if (replaceBtn) {
-      replaceBtn.addEventListener('click', () => this.openFileDialog())
-    }
+  openMediaSelector(event) {
+    if (event) event.preventDefault()
+    
+    // Find the media selector dialog element
+    const dialog = document.getElementById(this.dialogIdValue)
+    if (!dialog) return
 
-    const removeBtn = this.previewTarget.querySelector('[data-action="remove"]')
-    if (removeBtn) {
-      removeBtn.addEventListener('click', () => this.removeImage())
+    // Get the media-selector controller 
+    let controller = this.application.getControllerForElementAndIdentifier(dialog, "media-selector")
+    
+    if (controller) {
+      try {
+        controller.openDialog()
+      } catch (error) {
+        console.error('Error calling openDialog:', error)
+        // Fallback: just show the dialog
+        dialog.classList.remove("hidden")
+      }
+    } else {
+      // Fallback: just show the dialog
+      dialog.classList.remove("hidden")
     }
   }
 
-  openFileDialog() {
-    this.inputTarget.click()
-  }
+  handleMediaSelected(mediaData) {
+    
+    // Update hidden field
+    if (this.hasHiddenFieldTarget) {
+      this.hiddenFieldTarget.value = mediaData.id
+      this.hiddenFieldTarget.dispatchEvent(new Event('change', { bubbles: true }))
+    }
 
-  preview(event) {
-    const input = event.target
-    if (input.files && input.files[0]) {
-      console.log('Featured image selected:', input.files[0].name, input.files[0].size)
-      
-      const file = input.files[0]
-      
-      // Upload immediately
-      const formData = new FormData()
-      formData.append('image', file)
-      
-      fetch('/admin/media/upload', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success === 1) {
-          // Update hidden field with medium ID
-          const hiddenField = document.querySelector('input[name*="featured_medium_id"]')
-          if (hiddenField) {
-            hiddenField.value = data.medium_id
-            hiddenField.dispatchEvent(new Event('change', { bubbles: true }))
-          }
-          
-          // Update preview
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            this.previewTarget.innerHTML = `
-              <img src="${e.target.result}" class="w-full h-full object-cover" />
-              <div class="featured-image-overlay">
-                <button type="button" class="featured-image-btn featured-image-btn-replace" data-action="replace">Replace</button>
-                <button type="button" class="featured-image-btn featured-image-btn-remove" data-action="remove">Remove</button>
-              </div>
-            `
-            this.initializeEvents()
-          }
-          reader.readAsDataURL(file)
-        } else {
-          console.error('Upload failed:', data.message)
-          alert('Failed to upload image: ' + data.message)
-        }
-      })
-      .catch(error => {
-        console.error('Upload error:', error)
-        alert('Failed to upload image')
-      })
+    // Update preview
+    if (mediaData.thumbnail_url) {
+      this.previewTarget.innerHTML = `
+        <img src="${mediaData.thumbnail_url}" class="w-full h-full object-cover" />
+        <div class="featured-image-overlay">
+          <button type="button" class="featured-image-btn featured-image-btn-replace" data-action="click->featured-image#openMediaSelector">Replace</button>
+          <button type="button" class="featured-image-btn featured-image-btn-remove" data-action="click->featured-image#removeImage">Remove</button>
+        </div>
+      `
+    } else if (mediaData.url) {
+      this.previewTarget.innerHTML = `
+        <img src="${mediaData.url}" class="w-full h-full object-cover" />
+        <div class="featured-image-overlay">
+          <button type="button" class="featured-image-btn featured-image-btn-replace" data-action="click->featured-image#openMediaSelector">Replace</button>
+          <button type="button" class="featured-image-btn featured-image-btn-remove" data-action="click->featured-image#removeImage">Remove</button>
+        </div>
+      `
     }
   }
 
   removeImage() {
     this.previewTarget.innerHTML = `
-      <div class="featured-image-upload-placeholder" data-action="upload">
+      <div class="featured-image-upload-placeholder" data-action="click->featured-image#openMediaSelector">
         Click to upload featured image
       </div>
     `
     
-    if (this.inputTarget) {
-      this.inputTarget.value = ''
-      this.inputTarget.dispatchEvent(new Event('change'))
+    if (this.hasHiddenFieldTarget) {
+      this.hiddenFieldTarget.value = ''
+      this.hiddenFieldTarget.dispatchEvent(new Event('change'))
     }
-    
-    this.initializeEvents()
   }
 }
 

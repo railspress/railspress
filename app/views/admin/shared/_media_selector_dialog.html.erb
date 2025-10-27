@@ -1,0 +1,478 @@
+<% 
+  # Theme defaults using CSS variables for automatic light/dark mode support
+  theme = {
+    bg_color: 'var(--admin-bg-app)',
+    text_color: 'var(--admin-text-primary)',
+    border_color: 'var(--admin-border)',
+    selected_bg: 'rgba(59, 130, 246, 0.1)',
+    button_bg: 'var(--admin-primary)',
+    button_hover_bg: 'var(--admin-primary-hover)',
+    button_text: 'white',
+    tab_active_bg: 'var(--admin-bg-elevated)',
+    tab_active_border: 'var(--admin-primary)',
+    tab_inactive_text: 'var(--admin-text-muted)',
+    upload_zone_bg: 'var(--admin-bg-secondary)',
+    upload_zone_border: 'var(--admin-border)',
+    upload_zone_active_bg: 'var(--admin-primary-light)',
+    upload_zone_active_border: 'var(--admin-primary)',
+    media_grid_item_bg: 'var(--admin-bg-elevated)',
+    media_grid_item_border: 'var(--admin-border)',
+    media_grid_item_selected_border: 'var(--admin-primary)',
+    link_color: 'var(--admin-info)',
+    link_hover_color: 'var(--admin-primary)',
+    danger_color: 'var(--admin-error)',
+    danger_hover_color: '#dc2626'
+  }.merge(local_assigns[:theme] || {})
+
+  # Default values
+  dialog_id = local_assigns[:dialog_id] || 'media-selector-dialog'
+  dialog_title = local_assigns[:dialog_title] || 'Featured image'
+  button_text = local_assigns[:button_text] || 'Set featured image'
+  on_select_callback = local_assigns[:on_select_callback] || 'handleMediaSelected'
+  allow_multi_select = local_assigns[:allow_multi_select] || false
+%>
+
+<style>
+  /* Media selector dialog styles - supports light/dark mode via CSS variables */
+  [data-media-selector-target="selectedMedia"] {
+    border-color: var(--admin-primary) !important;
+    border-width: 2px;
+  }
+  
+  [data-media-selector-target="tab"].active {
+    background: var(--admin-bg-elevated);
+    border-bottom-color: var(--admin-primary);
+    color: var(--admin-text-primary);
+    font-weight: 600;
+  }
+  
+  [data-media-selector-target="uploadZone"] {
+    background: var(--admin-bg-secondary);
+    border-color: var(--admin-border);
+  }
+  
+  [data-media-selector-target="uploadZone"].dragover {
+    background: var(--admin-primary-light);
+    border-color: var(--admin-primary);
+    border-width: 2px;
+    border-style: solid;
+  }
+  
+  /* Media grid item styles */
+  [data-media-id] {
+    background: var(--admin-bg-elevated);
+    border-color: var(--admin-border);
+    transition: all 0.2s ease;
+  }
+  
+  [data-media-id]:hover {
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 1px var(--admin-primary-light);
+  }
+  
+  /* Progress bar in dark mode */
+  .dark [data-media-selector-target="progressBar"] {
+    background: var(--admin-primary) !important;
+  }
+  
+  /* Input fields in dark mode */
+  .dark input, .dark textarea, .dark select {
+    background: var(--admin-bg-app) !important;
+    color: var(--admin-text-primary) !important;
+    border-color: var(--admin-border) !important;
+  }
+  
+  /* Links */
+  a {
+    color: var(--admin-info);
+  }
+  
+  a:hover {
+    color: var(--admin-primary);
+  }
+</style>
+
+<div data-controller="media-selector"
+     data-media-selector-callback-value="<%= on_select_callback %>"
+     data-media-selector-button-text-value="<%= button_text %>"
+     data-media-selector-allow-multi-select-value="<%= allow_multi_select %>"
+     class="hidden fixed inset-0 z-50 overflow-hidden"
+     data-media-selector-target="dialog"
+     id="<%= dialog_id %>">
+  
+  <!-- Backdrop -->
+  <div data-action="click->media-selector#closeDialog"
+       class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+       data-media-selector-target="backdrop"></div>
+  
+  <!-- Dialog -->
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vh] bg-white rounded-lg shadow-2xl flex flex-col"
+       style="background: <%= theme[:bg_color] %>; border: 1px solid <%= theme[:border_color] %>">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b"
+         style="border-color: <%= theme[:border_color] %>">
+      <h2 class="text-xl font-semibold" style="color: <%= theme[:text_color] %>">
+        <%= dialog_title %>
+      </h2>
+      <button data-action="click->media-selector#closeDialog"
+              class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="flex border-b" style="border-color: <%= theme[:border_color] %>">
+      <button data-media-selector-target="tab"
+              data-tab-name="upload"
+              data-action="click->media-selector#switchTab"
+              class="px-6 py-3 border-b-2 transition-all"
+              style="border-color: transparent; color: <%= theme[:tab_inactive_text] %>">
+        Upload files
+      </button>
+      <button data-media-selector-target="tab"
+              data-tab-name="library"
+              data-action="click->media-selector#switchTab"
+              class="px-6 py-3 border-b-2 transition-all"
+              style="border-color: transparent; color: <%= theme[:tab_inactive_text] %>">
+        Media Library
+      </button>
+      <button data-media-selector-target="tab"
+              data-tab-name="stock"
+              data-action="click->media-selector#switchTab"
+              class="px-6 py-3 border-b-2 transition-all"
+              style="border-color: transparent; color: <%= theme[:tab_inactive_text] %>">
+        Stock Photos
+      </button>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="flex-1 flex overflow-hidden">
+      
+      <!-- Upload Tab Content (Full Width) -->
+      <div data-media-selector-target="uploadTab" class="hidden w-full overflow-auto p-8" data-media-selector-target="leftColumn">
+        <div data-media-selector-target="uploadZone"
+             class="border-2 border-dashed rounded-xl p-16 text-center h-full flex flex-col items-center justify-center"
+             style="border-color: var(--admin-border); background: var(--admin-bg-secondary);"
+             data-action="dragover->media-selector#dragOver dragleave->media-selector#dragLeave drop->media-selector#drop">
+          
+          <svg class="w-20 h-20 mx-auto mb-6" style="color: var(--admin-text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          
+          <p class="text-xl font-semibold mb-2" style="color: var(--admin-text-primary);">
+            Drop files to upload
+          </p>
+          
+          <p class="text-sm mb-6" style="color: var(--admin-text-muted);">or</p>
+          
+          <button type="button"
+                  data-action="click->media-selector#selectFiles"
+                  class="px-6 py-3 rounded-lg font-medium transition-colors"
+                  style="background: var(--admin-primary); color: white;">
+            Select Files
+          </button>
+          
+          <p class="text-xs mt-6" style="color: var(--admin-text-muted);">
+            Maximum upload file size: 2 MB
+          </p>
+        </div>
+        
+        <!-- Hidden file input -->
+        <input type="file" 
+               data-media-selector-target="fileInput"
+               data-action="change->media-selector#handleFileSelect"
+               class="hidden"
+               multiple>
+      </div>
+      
+      <!-- Media Library Tab Content (Split Layout with Right Sidebar) -->
+      <div data-media-selector-target="libraryTab" class="hidden flex-1 flex">
+        
+        <!-- Left Column (Filters, Search, Media Grid) -->
+        <div class="flex-1 overflow-auto p-4" data-media-selector-target="leftColumn">
+          
+          <!-- Filters -->
+          <div class="mb-4 flex gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+                Filter media
+              </label>
+              <select data-media-selector-target="typeFilter"
+                      data-action="change->media-selector#filterMedia"
+                      class="border rounded px-3 py-2 text-sm"
+                      style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+                <option value="all">All media items</option>
+                <option value="images">Images</option>
+                <option value="videos">Videos</option>
+                <option value="documents">Documents</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+                Filter media
+              </label>
+              <select data-media-selector-target="dateFilter"
+                      data-action="change->media-selector#filterMedia"
+                      class="border rounded px-3 py-2 text-sm"
+                      style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+                <option value="all">All dates</option>
+                <option value="today">Today</option>
+                <option value="week">This week</option>
+                <option value="month">This month</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Media Grid -->
+          <div data-media-selector-target="mediaGrid"
+               class="grid grid-cols-4 gap-4 mb-4">
+            <!-- Media items will be inserted here -->
+          </div>
+          
+          <!-- Pagination Info -->
+          <div data-media-selector-target="paginationInfo"
+               class="text-center text-sm"
+               style="color: <%= theme[:tab_inactive_text] %>">
+            <!-- Will be updated by controller -->
+          </div>
+        </div>
+        
+        <!-- Right Column (Search, Upload Progress, Attachment Details) -->
+        <div class="w-80 border-l overflow-auto p-4"
+             style="border-color: <%= theme[:border_color] %>"
+             data-media-selector-target="rightColumn">
+          
+          <!-- Search -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+              Search media
+            </label>
+            <input type="text"
+                   data-media-selector-target="searchInput"
+                   data-action="input->media-selector#searchMedia"
+                   placeholder="Search media files..."
+                   class="w-full border rounded px-3 py-2 text-sm"
+                   style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+          </div>
+          
+          <!-- Upload Progress -->
+          <div data-media-selector-target="uploadProgress" class="hidden">
+            <div class="mb-4">
+              <h3 class="text-xs font-bold uppercase mb-3" style="color: <%= theme[:text_color] %>">
+                Uploading
+              </h3>
+              
+              <!-- Progress Bar -->
+              <div class="bg-gray-200 rounded-full h-2 mb-2">
+                <div data-media-selector-target="progressBar"
+                     class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                     style="width: 0%; background: <%= theme[:button_bg] %>"></div>
+              </div>
+              
+              <!-- File Info -->
+              <p data-media-selector-target="uploadFileInfo"
+                 class="text-sm"
+                 style="color: <%= theme[:text_color] %>">
+                <!-- Will be updated -->
+              </p>
+            </div>
+          </div>
+          
+          <!-- Attachment Details -->
+          <div data-media-selector-target="attachmentDetails" class="hidden">
+            <h3 class="text-xs font-bold uppercase mb-3" style="color: <%= theme[:text_color] %>">
+              Attachment Details
+            </h3>
+            
+            <!-- Preview Image -->
+            <div data-media-selector-target="previewImage" class="mb-4">
+              <!-- Will be updated -->
+            </div>
+            
+            <!-- File Info -->
+            <div class="space-y-2 mb-4" data-media-selector-target="fileInfo">
+              <!-- Will be updated -->
+            </div>
+            
+            <!-- Actions -->
+            <div class="mb-4 space-y-2">
+              <a data-media-selector-target="editLink"
+                 href="#"
+                 class="block text-sm"
+                 style="color: <%= theme[:link_color] %>">
+                Edit Image
+              </a>
+              <a data-media-selector-target="deleteLink"
+                 href="#"
+                 data-action="click->media-selector#deleteMedia"
+                 class="block text-sm"
+                 style="color: <%= theme[:danger_color] %>">
+                Delete permanently
+              </a>
+            </div>
+            
+            <!-- Metadata Fields -->
+            <div class="space-y-4">
+              <!-- Alt Text -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+                  Alt Text
+                </label>
+                <textarea data-media-selector-target="altText"
+                          rows="3"
+                          class="w-full border rounded px-3 py-2 text-sm"
+                          style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>"></textarea>
+                <p class="text-xs mt-1" style="color: <%= theme[:tab_inactive_text] %>">
+                  <a href="#" class="underline" style="color: <%= theme[:link_color] %>">
+                    Learn how to describe the purpose of the image. Leave empty if the image is purely decorative.
+                  </a>
+                </p>
+              </div>
+              
+              <!-- Title -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+                  Title
+                </label>
+                <input type="text"
+                       data-media-selector-target="titleField"
+                       class="w-full border rounded px-3 py-2 text-sm"
+                       style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+              </div>
+              
+              <!-- Caption -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+                  Caption
+                </label>
+                <textarea data-media-selector-target="caption"
+                          rows="2"
+                          class="w-full border rounded px-3 py-2 text-sm"
+                          style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>"></textarea>
+              </div>
+              
+              <!-- Description -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+                  Description
+                </label>
+                <textarea data-media-selector-target="description"
+                          rows="3"
+                          class="w-full border rounded px-3 py-2 text-sm"
+                          style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>"></textarea>
+              </div>
+              
+              <!-- File URL -->
+              <div>
+                <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
+                  File Url:
+                </label>
+                <div class="flex gap-2">
+                  <input type="text"
+                         data-media-selector-target="fileUrl"
+                         readonly
+                         class="flex-1 border rounded px-3 py-2 text-sm bg-gray-50"
+                         style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>">
+                  <button data-action="click->media-selector#copyUrl"
+                          class="px-3 py-2 border rounded text-sm transition-colors"
+                          style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+                    Copy URL
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Stock Photos Tab Content -->
+      <div data-media-selector-target="stockTab" class="hidden flex-1 flex flex-col">
+        
+        <!-- Search Bar -->
+        <div class="p-4 border-b" style="border-color: <%= theme[:border_color] %>">
+          <div class="flex gap-2">
+            <input type="text"
+                   data-media-selector-target="stockSearchInput"
+                   data-action="keyup->media-selector#searchStockPhotos"
+                   placeholder="Search stock photos..."
+                   class="flex-1 border rounded px-4 py-2"
+                   style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+            <button type="button"
+                    data-action="click->media-selector#searchStockPhotos"
+                    class="px-6 py-2 rounded font-medium"
+                    style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">
+              Search
+            </button>
+          </div>
+          
+          <!-- Filters -->
+          <div class="flex gap-4 mt-3">
+            <select data-media-selector-target="stockProvider"
+                    class="border rounded px-3 py-1 text-sm"
+                    style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+              <option value="all">All Providers</option>
+              <option value="unsplash">Unsplash</option>
+              <option value="pexels">Pexels</option>
+              <option value="pixabay">Pixabay</option>
+            </select>
+            
+            <select data-media-selector-target="stockOrientation"
+                    class="border rounded px-3 py-1 text-sm"
+                    style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>; background: <%= theme[:bg_color] %>">
+              <option value="">Any Orientation</option>
+              <option value="landscape">Landscape</option>
+              <option value="portrait">Portrait</option>
+              <option value="square">Square</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- Results Grid -->
+        <div class="flex-1 overflow-auto p-4">
+          <div data-media-selector-target="stockGrid"
+               class="grid grid-cols-4 gap-4">
+            <!-- Stock photos will be inserted here -->
+          </div>
+          
+          <!-- Loading State -->
+          <div data-media-selector-target="stockLoading" class="hidden text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2" style="border-color: <%= theme[:button_bg] %>"></div>
+            <p class="mt-2" style="color: <%= theme[:text_color] %>">Searching...</p>
+          </div>
+          
+          <!-- Empty State -->
+          <div data-media-selector-target="stockEmpty" class="hidden text-center py-12">
+            <p style="color: <%= theme[:text_color] %>">Search for stock photos to get started</p>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="flex justify-end px-6 py-4 border-t"
+         style="border-color: <%= theme[:border_color] %>">
+      <button type="button"
+              data-action="click->media-selector#setFeaturedImage"
+              data-media-selector-target="setButton"
+              class="px-6 py-2 rounded-lg font-medium transition-colors"
+              style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>"
+              disabled>
+        <%= button_text %>
+      </button>
+      <button type="button"
+              data-action="click->media-selector#importStockPhoto"
+              data-media-selector-target="importButton"
+              disabled
+              class="px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style="display: none; background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">
+        Import Selected Photo
+      </button>
+    </div>
+  </div>
+</div>
+

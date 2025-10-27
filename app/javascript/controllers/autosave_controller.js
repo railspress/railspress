@@ -88,9 +88,7 @@ export default class extends Controller {
     // Warn user before leaving if there are unsaved changes
     window.addEventListener('beforeunload', (e) => {
       if (this.hasChanges && !this.isSaving) {
-        e.preventDefault()
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?'
-        return e.returnValue
+        this.save()
       }
     })
   }

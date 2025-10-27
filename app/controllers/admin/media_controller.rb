@@ -27,19 +27,30 @@ class Admin::MediaController < Admin::BaseController
 
     if params[:media].present?
       params[:media].each do |index, media_params|
-        medium = Medium.new(
-          title: media_params[:title],
+        # Create Upload record first with file attachment
+        upload = Upload.new(
+          title: media_params[:file].original_filename,
           user: current_user
         )
+        upload.file.attach(media_params[:file])
+        upload.storage_provider = StorageProvider.active.first
         
-        if media_params[:file].present?
-          medium.file.attach(media_params[:file])
+        if upload.save
+          # Create Medium record linked to upload
+          medium = Medium.new(
+            title: media_params[:title] || media_params[:file].original_filename,
+            user: current_user,
+            upload: upload
+          )
           
           if medium.save
             uploaded_files << medium
           else
+            upload.destroy # Clean up if medium creation fails
             errors << "#{media_params[:file].original_filename}: #{medium.errors.full_messages.join(', ')}"
           end
+        else
+          errors << "#{media_params[:file].original_filename}: #{upload.errors.full_messages.join(', ')}"
         end
       end
     end
@@ -203,8 +214,12 @@ class Admin::MediaController < Admin::BaseController
           id: medium.id,
           filename: medium.filename,
           title: medium.title,
+          alt_text: medium.alt_text,
+          description: medium.description,
+          caption: '', # Caption not currently in schema
           file_type: medium.content_type,
           file_size: medium.file_size,
+          url: medium.url,
           thumbnail_url: medium.image? ? medium.url : nil,
           quarantined: medium.quarantined?,
           quarantine_reason: medium.quarantine_reason,

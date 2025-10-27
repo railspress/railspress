@@ -158,6 +158,50 @@
             </div>
           </div>
 
+          <!-- Stock Photo Providers -->
+          <div>
+            <h3 class="text-lg font-semibold text-white mb-4">Stock Photo Providers</h3>
+            <p class="text-sm text-gray-400 mb-4">Configure API keys for stock photo providers. Leave blank to disable a provider.</p>
+            
+            <div class="space-y-4">
+              <!-- Unsplash -->
+              <div class="bg-[#0a0a0a] p-4 rounded-lg">
+                <h4 class="text-gray-300 font-medium mb-3">Unsplash</h4>
+                <div>
+                  <%= label_tag 'settings[unsplash_access_key]', 'Access Key', class: 'block text-xs text-gray-400 mb-1' %>
+                  <%= text_field_tag 'settings[unsplash_access_key]', @settings[:unsplash_access_key],
+                      placeholder: 'Enter your Unsplash Access Key',
+                      class: 'w-full px-3 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                  <p class="mt-1 text-xs text-gray-500">Get your API key from <a href="https://unsplash.com/developers" target="_blank" class="text-indigo-400 hover:text-indigo-300">unsplash.com/developers</a></p>
+                </div>
+              </div>
+
+              <!-- Pexels -->
+              <div class="bg-[#0a0a0a] p-4 rounded-lg">
+                <h4 class="text-gray-300 font-medium mb-3">Pexels</h4>
+                <div>
+                  <%= label_tag 'settings[pexels_api_key]', 'API Key', class: 'block text-xs text-gray-400 mb-1' %>
+                  <%= text_field_tag 'settings[pexels_api_key]', @settings[:pexels_api_key],
+                      placeholder: 'Enter your Pexels API Key',
+                      class: 'w-full px-3 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                  <p class="mt-1 text-xs text-gray-500">Get your API key from <a href="https://www.pexels.com/api/" target="_blank" class="text-indigo-400 hover:text-indigo-300">pexels.com/api</a></p>
+                </div>
+              </div>
+
+              <!-- Pixabay -->
+              <div class="bg-[#0a0a0a] p-4 rounded-lg">
+                <h4 class="text-gray-300 font-medium mb-3">Pixabay</h4>
+                <div>
+                  <%= label_tag 'settings[pixabay_api_key]', 'API Key', class: 'block text-xs text-gray-400 mb-1' %>
+                  <%= text_field_tag 'settings[pixabay_api_key]', @settings[:pixabay_api_key],
+                      placeholder: 'Enter your Pixabay API Key',
+                      class: 'w-full px-3 py-2 bg-[#111111] border border-[#2a2a2a] text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' %>
+                  <p class="mt-1 text-xs text-gray-500">Get your API key from <a href="https://pixabay.com/api/docs/" target="_blank" class="text-indigo-400 hover:text-indigo-300">pixabay.com/api/docs</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="pt-6 border-t border-[#2a2a2a] flex items-center justify-between">
             <div class="flex items-center space-x-4">
               <%= link_to '/admin/media/optimization_analytics', 

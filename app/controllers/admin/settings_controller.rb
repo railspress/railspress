@@ -334,7 +334,11 @@ class Admin::SettingsController < Admin::BaseController
       enable_webp_variants: SiteSetting.get('enable_webp_variants', true),
       enable_avif_variants: SiteSetting.get('enable_avif_variants', true),
       allowed_file_types: SiteSetting.get('allowed_file_types', 'jpg,jpeg,png,gif,pdf,doc,docx'),
-      max_upload_size: SiteSetting.get('max_upload_size', 10)
+      max_upload_size: SiteSetting.get('max_upload_size', 10),
+      # Stock Photo Providers
+      unsplash_access_key: SiteSetting.get('unsplash_access_key', ''),
+      pexels_api_key: SiteSetting.get('pexels_api_key', ''),
+      pixabay_api_key: SiteSetting.get('pixabay_api_key', '')
     }
   end
 
