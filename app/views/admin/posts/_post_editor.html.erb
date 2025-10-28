@@ -214,8 +214,7 @@
               class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-4 leading-tight resize-none",
               placeholder: "Untitled",
               autofocus: !@post.persisted?,
-              rows: 3,
-              wrap: "soft",
+              rows: 1,
               data: { autosave_target: "title", slug_generator_target: "title", action: "input->slug-generator#generateSlug" } %>
         </div>
           
@@ -280,36 +279,24 @@
 </div>
 
 <script>
-// Auto-grow title textarea
-document.addEventListener('DOMContentLoaded', () => {
+// Auto-grow title Textarea
+(function() {
   const titleInput = document.querySelector('textarea[name*="title"]');
-  if (!titleInput) return;
-
-  // Optional: set some sensible min/max rows
-  const minRows = 1;
-  const maxRows = 5; // optional, just to avoid huge titles
-
-  // Apply basic styles
-  titleInput.style.overflow = 'hidden';
-  titleInput.style.resize = 'none';
-  titleInput.style.boxSizing = 'border-box';
-  titleInput.rows = minRows;
-
+if (titleInput) {
   function resizeTextarea() {
-    const lineHeight = parseInt(window.getComputedStyle(titleInput).lineHeight, 10);
+    // Reset height to recalculate
+    titleInput.style.height = '60px'; // Start with min height
     
-    // Count lines by splitting at line breaks
-    const lines = titleInput.value.split('\n').length;
-    
-    // Restrict lines within min/max
-    const rowCount = Math.min(Math.max(lines, minRows), maxRows);
-
-    titleInput.style.height = rowCount * lineHeight + 'px';
+    // Only grow if content exceeds current height
+    if (titleInput.scrollHeight > 60) {
+      titleInput.style.height = Math.min(titleInput.scrollHeight, 200) + 'px';
+    }
   }
-
+  
   titleInput.addEventListener('input', resizeTextarea);
-
-  // Initial resize if textarea has prefilled value
-  resizeTextarea();
-});
+  
+  // Initial resize after a short delay
+  setTimeout(resizeTextarea, 100);
+}
+})();
 </script>

@@ -11,7 +11,8 @@ export default class extends Controller {
     "saturationSlider", "saturationValue",
     "hueSlider", "hueValue",
     "blurSlider", "blurValue",
-    "sharpenSlider", "sharpenValue"
+    "sharpenSlider", "sharpenValue",
+    "vignetteSlider", "vignetteValue"
   ]
 
   connect() {
@@ -261,8 +262,19 @@ export default class extends Controller {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(tempCanvas, 0, 0)
 
+    // Store this as the base for advanced tab
+    this.advancedBaseImage = this.cloneCanvas(tempCanvas)
+
     // Save to history
     this.saveToHistory()
+  }
+
+  cloneCanvas(sourceCanvas) {
+    const clone = document.createElement('canvas')
+    clone.width = sourceCanvas.width
+    clone.height = sourceCanvas.height
+    clone.getContext('2d').drawImage(sourceCanvas, 0, 0)
+    return clone
   }
 
   // CROP TAB
@@ -452,32 +464,81 @@ export default class extends Controller {
     this.saveToHistory()
   }
 
-  // ADVANCED TAB
+  // ADVANCED TAB - Track original for reset
+  connect() {
+    this.mediumId = null
+    this.originalImage = null
+    this.virtualImage = null // The single source of truth
+    this.history = []
+    this.historyIndex = -1
+    this.currentTab = 'filters'
+    this.cropper = null
+    this.selectedFilter = 'normal'
+    this.originalVirtualImage = null // Store original for advanced tab reset
+    this.advancedBaseImage = null // Store the image before advanced adjustments
+    this.advancedState = {
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+      hue: 0,
+      blur: 0,
+      sharpen: 0,
+      vignette: 0
+    }
+    
+    // Load Cropper.js dynamically
+    this.loadCropperJS()
+  }
+
+  initializeVirtualImage(img) {
+    const canvas = this.virtualCanvasTarget
+    canvas.width = img.width
+    canvas.height = img.height
+
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+
+    this.virtualImage = canvas
+
+    // Store original for advanced tab reset
+    this.originalVirtualImage = img
+
+    // Save initial state to history
+    this.saveToHistory()
+  }
+
   updateAdvanced(event) {
+    // Update displayed values
     this.brightnessValueTarget.textContent = this.brightnessSliderTarget.value
     this.contrastValueTarget.textContent = this.contrastSliderTarget.value
     this.saturationValueTarget.textContent = this.saturationSliderTarget.value
     this.hueValueTarget.textContent = this.hueSliderTarget.value
     this.blurValueTarget.textContent = this.blurSliderTarget.value
     this.sharpenValueTarget.textContent = this.sharpenSliderTarget.value
+    this.vignetteValueTarget.textContent = this.vignetteSliderTarget.value
+
+    // Store current state
+    this.advancedState = {
+      brightness: parseInt(this.brightnessSliderTarget.value),
+      contrast: parseInt(this.contrastSliderTarget.value),
+      saturation: parseInt(this.saturationSliderTarget.value),
+      hue: parseInt(this.hueSliderTarget.value),
+      blur: parseInt(this.blurSliderTarget.value),
+      sharpen: parseInt(this.sharpenSliderTarget.value),
+      vignette: parseInt(this.vignetteSliderTarget.value)
+    }
+
+    // Apply filters immediately to virtual canvas
+    this.applyAdvancedFilters()
   }
 
-  resetAdvanced() {
-    this.brightnessSliderTarget.value = 100
-    this.contrastSliderTarget.value = 100
-    this.saturationSliderTarget.value = 100
-    this.hueSliderTarget.value = 0
-    this.blurSliderTarget.value = 0
-    this.sharpenSliderTarget.value = 0
-    this.updateAdvanced()
-  }
-
-  applyAdvanced() {
-    const brightness = this.brightnessSliderTarget.value
-    const contrast = this.contrastSliderTarget.value
-    const saturation = this.saturationSliderTarget.value
-    const hue = this.hueSliderTarget.value
-    const blur = this.blurSliderTarget.value
+  applyAdvancedFilters() {
+    const brightness = this.advancedState.brightness
+    const contrast = this.advancedState.contrast
+    const saturation = this.advancedState.saturation
+    const hue = this.advancedState.hue
+    const blur = this.advancedState.blur
+    const vignette = this.advancedState.vignette
 
     // Build filter string
     const filters = [
@@ -488,21 +549,92 @@ export default class extends Controller {
       blur > 0 ? `blur(${blur}px)` : ''
     ].filter(f => f).join(' ')
 
-    // Apply to virtual canvas
+    // Use advancedBaseImage if it exists (after filter), otherwise use original
+    const sourceImage = this.advancedBaseImage || this.originalImage
+
     const canvas = this.virtualCanvasTarget
     const tempCanvas = document.createElement('canvas')
-    tempCanvas.width = canvas.width
-    tempCanvas.height = canvas.height
+    tempCanvas.width = sourceImage.width
+    tempCanvas.height = sourceImage.height
 
     const tempCtx = tempCanvas.getContext('2d')
     tempCtx.filter = filters
-    tempCtx.drawImage(canvas, 0, 0)
+    tempCtx.drawImage(sourceImage, 0, 0)
 
-    // Update virtual canvas
+    // Apply vignette effect if needed
+    if (vignette > 0) {
+      // Use a more elliptical/rectangular vignette that covers all corners
+      const intensity = vignette / 100
+      
+      // Create a mask for vignette using multiple radial gradients
+      const vignetteCanvas = document.createElement('canvas')
+      vignetteCanvas.width = tempCanvas.width
+      vignetteCanvas.height = tempCanvas.height
+      const vignetteCtx = vignetteCanvas.getContext('2d')
+      
+      // Fill with dark color at full intensity
+      vignetteCtx.fillStyle = `rgba(0,0,0,${intensity * 0.8})`
+      vignetteCtx.fillRect(0, 0, vignetteCanvas.width, vignetteCanvas.height)
+      
+      // Create a white ellipse in the center to "cut out" the bright area
+      vignetteCtx.globalCompositeOperation = 'destination-out'
+      vignetteCtx.fillStyle = 'white'
+      
+      // Create ellipse that covers the center area
+      vignetteCtx.beginPath()
+      const centerX = vignetteCanvas.width / 2
+      const centerY = vignetteCanvas.height / 2
+      const radiusX = vignetteCanvas.width * 0.6
+      const radiusY = vignetteCanvas.height * 0.6
+      
+      vignetteCtx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI)
+      vignetteCtx.fill()
+      
+      // Blur the edges for smoother transition
+      tempCtx.filter = `blur(${Math.max(tempCanvas.width, tempCanvas.height) * 0.05}px)`
+      tempCtx.drawImage(vignetteCanvas, 0, 0)
+      tempCtx.filter = 'none'
+    }
+
+    // Update virtual canvas with filtered result
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(tempCanvas, 0, 0)
+  }
 
+  resetAdvanced() {
+    this.brightnessSliderTarget.value = 100
+    this.contrastSliderTarget.value = 100
+    this.saturationSliderTarget.value = 100
+    this.hueSliderTarget.value = 0
+    this.blurSliderTarget.value = 0
+    this.sharpenSliderTarget.value = 0
+    this.vignetteSliderTarget.value = 0
+
+    this.advancedState = {
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+      hue: 0,
+      blur: 0,
+      sharpen: 0,
+      vignette: 0
+    }
+
+    // Reset virtual canvas to base (with filter if applied, otherwise original)
+    const canvas = this.virtualCanvasTarget
+    const sourceImage = this.advancedBaseImage || this.originalImage
+    canvas.width = sourceImage.width
+    canvas.height = sourceImage.height
+    canvas.getContext('2d').drawImage(sourceImage, 0, 0)
+
+    this.updateAdvanced()
+    this.saveToHistory()
+  }
+
+  applyAdvanced() {
+    // This method is now deprecated as we apply immediately
+    // But keep it for the "Apply" button if we still need it
     this.saveToHistory()
   }
 
@@ -549,7 +681,22 @@ export default class extends Controller {
           icon: 'success',
           title: 'Image saved successfully',
           showConfirmButton: false,
-          timer: 2000
+          timer: 2000,
+          customClass: {
+            popup: 'sweet-alert-popup',
+            title: 'sweet-alert-title',
+            content: 'sweet-alert-content',
+            icon: 'sweet-alert-icon'
+          },
+          didOpen: () => {
+            const popup = document.querySelector('.swal2-popup')
+            if (popup) {
+              popup.style.background = 'var(--admin-bg-primary)'
+              popup.style.border = '1px solid var(--admin-border)'
+              popup.style.color = 'var(--admin-text-primary)'
+              popup.style.borderRadius = 'var(--admin-radius-lg)'
+            }
+          }
         })
       }
     } catch (error) {
@@ -567,10 +714,11 @@ export default class extends Controller {
         text: 'Are you sure you want to discard all changes to this image?',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: 'var(--admin-primary)',
+        confirmButtonColor: 'var(--admin-error)',
         cancelButtonColor: 'var(--admin-border)',
         confirmButtonText: 'Yes, Discard',
         cancelButtonText: 'Cancel',
+        allowOutsideClick: false,
         customClass: {
           popup: 'sweet-alert-popup',
           title: 'sweet-alert-title',
@@ -582,11 +730,17 @@ export default class extends Controller {
         },
         // Apply theme colors from CSS variables
         didOpen: () => {
-          const popup = document.querySelector('.sweet-alert-popup')
+          const popup = document.querySelector('.swal2-popup')
           if (popup) {
             popup.style.background = 'var(--admin-bg-primary)'
-            popup.style.borderColor = 'var(--admin-border)'
+            popup.style.border = '1px solid var(--admin-border)'
             popup.style.color = 'var(--admin-text-primary)'
+            popup.style.borderRadius = 'var(--admin-radius-lg)'
+          }
+          // Set z-index to be above the image editor
+          const container = document.querySelector('.swal2-container')
+          if (container) {
+            container.style.zIndex = '10001'
           }
         }
       })

@@ -325,17 +325,21 @@
                    min="0" max="100" value="0"
                    class="w-full">
           </div>
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Vignette: <span data-image-editor-target="vignetteValue">0</span>%
+            </label>
+            <input type="range"
+                   data-image-editor-target="vignetteSlider"
+                   data-action="input->image-editor#updateAdvanced"
+                   min="0" max="100" value="0"
+                   class="w-full">
+          </div>
           <button type="button"
                   data-action="click->image-editor#resetAdvanced"
                   class="w-full px-4 py-2 rounded text-sm"
                   style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
             Reset All
-          </button>
-          <button type="button"
-                  data-action="click->image-editor#applyAdvanced"
-                  class="w-full px-4 py-2 rounded text-sm font-medium"
-                  style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>;">
-            Apply Adjustments
           </button>
         </div>
       </div>

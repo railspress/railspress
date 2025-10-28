@@ -283,7 +283,7 @@
     padding-left: 50px;
 }
 
-.post-title-container textarea {
+#post-title {
   text-wrap: wrap;
 }
 

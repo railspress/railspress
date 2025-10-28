@@ -1418,3 +1418,21 @@
   border-color: var(--admin-border-strong) !important;
   color: var(--admin-text-primary) !important;
 }
+
+/* Success icon styling */
+.sweet-alert-icon.sweet-alert-icon-success {
+  border-color: var(--admin-success) !important;
+}
+
+.sweet-alert-icon.sweet-alert-icon-success .sweet-alert-icon-line {
+  background-color: var(--admin-success) !important;
+}
+
+/* Warning icon styling */
+.sweet-alert-icon.sweet-alert-icon-warning {
+  border-color: var(--admin-warning) !important;
+}
+
+.sweet-alert-icon.sweet-alert-icon-warning .sweet-alert-icon-line {
+  background-color: var(--admin-warning) !important;
+}
