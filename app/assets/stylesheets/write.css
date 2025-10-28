@@ -1369,3 +1369,52 @@
 @import 'editors/editorjs.css';
 @import 'editors/ckeditor5.css';
 @import 'editors/trix.css';
+
+/* ============================================
+   SWEET ALERT THEME - Match admin theme
+   ============================================ */
+
+.sweet-alert-popup {
+  background: var(--admin-bg-primary) !important;
+  border: 1px solid var(--admin-border) !important;
+  color: var(--admin-text-primary) !important;
+  border-radius: var(--admin-radius-lg) !important;
+}
+
+.sweet-alert-title {
+  color: var(--admin-text-primary) !important;
+}
+
+.sweet-alert-content {
+  color: var(--admin-text-secondary) !important;
+}
+
+.sweet-alert-confirm {
+  background: var(--admin-error) !important;
+  border: none !important;
+  border-radius: var(--admin-radius) !important;
+  padding: 0.625rem 1.25rem !important;
+  font-weight: 500 !important;
+  transition: var(--admin-transition) !important;
+}
+
+.sweet-alert-confirm:hover {
+  background: #dc2626 !important;
+  transform: translateY(-1px) !important;
+}
+
+.sweet-alert-cancel {
+  background: var(--admin-bg-secondary) !important;
+  border: 1px solid var(--admin-border) !important;
+  color: var(--admin-text-secondary) !important;
+  border-radius: var(--admin-radius) !important;
+  padding: 0.625rem 1.25rem !important;
+  font-weight: 500 !important;
+  transition: var(--admin-transition) !important;
+}
+
+.sweet-alert-cancel:hover {
+  background: var(--admin-bg-tertiary) !important;
+  border-color: var(--admin-border-strong) !important;
+  color: var(--admin-text-primary) !important;
+}

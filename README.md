@@ -397,6 +397,13 @@ Privacy-first analytics that rivals Plausible and Fathom:
 - ✅ **Image processing** and optimization
 - ✅ **File type detection** and metadata
 - ✅ **CDN-ready** asset serving
+- ✅ **Advanced Image Editor** with filters, cropping, scaling, rotation, and adjustments
+- ✅ **Media Manager** with upload, library search, stock photos, and multi-select
+- ✅ **Image filters and effects** (brightness, contrast, saturation, hue, blur, sharpen)
+- ✅ **Crop with aspect ratios** and free-form cropping
+- ✅ **Undo/redo functionality** for all edits
+- ✅ **Stock photo integration** with Unsplash and Pexels
+- ✅ **Bulk operations** and media management
 
 ### 🎯 **SEO & Analytics**
 
@@ -573,6 +580,10 @@ Switch themes in `Admin → Themes`. Files live under `app/themes/`. Theme versi
 ![Pages Management](docs/screenshots/admin-pages-management.png)
 
 ![Media Library](docs/screenshots/admin-media-library.png)
+
+![Image Editor](docs/screenshots/image-editor.png)
+
+![Media Manager](docs/screenshots/media-manager.png)
 
 #### **Theme & Customization**
 ![Theme Customizer](docs/screenshots/admin-theme-customizer.png)
@@ -1017,6 +1028,8 @@ bundle exec rspec
 - 💬 **AI chat widget** with session memory and file attachments
 - ⚡ **Smart auto-save** with visual feedback
 - 🎭 **Multi-agent AI** switching for specialized content generation
+- 🎨 **Advanced Image Editor** with filters, effects, and adjustments
+- 📚 **Media Manager** with stock photos and bulk operations
 
 ### **For Businesses**
 - 🏢 **Enterprise-ready** with multi-tenancy

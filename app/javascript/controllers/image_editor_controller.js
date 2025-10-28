@@ -558,10 +558,47 @@ export default class extends Controller {
     }
   }
 
-  cancelEditing(event) {
+  async cancelEditing(event) {
     if (event) event.preventDefault()
-    if (confirm('Discard all changes?')) {
-      this.close()
+    
+    if (window.Swal) {
+      const result = await Swal.fire({
+        title: 'Discard Changes?',
+        text: 'Are you sure you want to discard all changes to this image?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: 'var(--admin-primary)',
+        cancelButtonColor: 'var(--admin-border)',
+        confirmButtonText: 'Yes, Discard',
+        cancelButtonText: 'Cancel',
+        customClass: {
+          popup: 'sweet-alert-popup',
+          title: 'sweet-alert-title',
+          content: 'sweet-alert-content',
+          confirmButton: 'sweet-alert-confirm',
+          cancelButton: 'sweet-alert-cancel',
+          actions: 'sweet-alert-actions',
+          icon: 'sweet-alert-icon'
+        },
+        // Apply theme colors from CSS variables
+        didOpen: () => {
+          const popup = document.querySelector('.sweet-alert-popup')
+          if (popup) {
+            popup.style.background = 'var(--admin-bg-primary)'
+            popup.style.borderColor = 'var(--admin-border)'
+            popup.style.color = 'var(--admin-text-primary)'
+          }
+        }
+      })
+
+      if (result.isConfirmed) {
+        this.close()
+      }
+    } else {
+      // Fallback to native confirm if SweetAlert not available
+      if (confirm('Discard all changes?')) {
+        this.close()
+      }
     }
   }
 
