@@ -214,7 +214,8 @@
               class: "w-full bg-transparent text-gray-900 dark:text-white text-6xl font-bold placeholder-gray-300 dark:placeholder-gray-600 border-none outline-none focus:ring-0 mb-4 leading-tight resize-none",
               placeholder: "Untitled",
               autofocus: !@post.persisted?,
-              rows: 1,
+              rows: 3,
+              wrap: "soft",
               data: { autosave_target: "title", slug_generator_target: "title", action: "input->slug-generator#generateSlug" } %>
         </div>
           
@@ -279,24 +280,36 @@
 </div>
 
 <script>
-// Auto-grow title Textarea
-(function() {
+// Auto-grow title textarea
+document.addEventListener('DOMContentLoaded', () => {
   const titleInput = document.querySelector('textarea[name*="title"]');
-if (titleInput) {
+  if (!titleInput) return;
+
+  // Optional: set some sensible min/max rows
+  const minRows = 1;
+  const maxRows = 5; // optional, just to avoid huge titles
+
+  // Apply basic styles
+  titleInput.style.overflow = 'hidden';
+  titleInput.style.resize = 'none';
+  titleInput.style.boxSizing = 'border-box';
+  titleInput.rows = minRows;
+
   function resizeTextarea() {
-    // Reset height to recalculate
-    titleInput.style.height = '60px'; // Start with min height
+    const lineHeight = parseInt(window.getComputedStyle(titleInput).lineHeight, 10);
     
-    // Only grow if content exceeds current height
-    if (titleInput.scrollHeight > 60) {
-      titleInput.style.height = Math.min(titleInput.scrollHeight, 200) + 'px';
-    }
+    // Count lines by splitting at line breaks
+    const lines = titleInput.value.split('\n').length;
+    
+    // Restrict lines within min/max
+    const rowCount = Math.min(Math.max(lines, minRows), maxRows);
+
+    titleInput.style.height = rowCount * lineHeight + 'px';
   }
-  
+
   titleInput.addEventListener('input', resizeTextarea);
-  
-  // Initial resize after a short delay
-  setTimeout(resizeTextarea, 100);
-}
-})();
+
+  // Initial resize if textarea has prefilled value
+  resizeTextarea();
+});
 </script>
