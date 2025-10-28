@@ -12,7 +12,12 @@ export default class extends Controller {
     "hueSlider", "hueValue",
     "blurSlider", "blurValue",
     "sharpenSlider", "sharpenValue",
-    "vignetteSlider", "vignetteValue"
+    "vignetteSlider", "vignetteValue",
+    "temperatureSlider", "temperatureValue",
+    "tintSlider", "tintValue",
+    "highlightsSlider", "highlightsValue",
+    "shadowsSlider", "shadowsValue",
+    "exposureSlider", "exposureValue"
   ]
 
   connect() {
@@ -189,6 +194,22 @@ export default class extends Controller {
     }
 
     this.currentTab = tab
+  }
+
+  toggleCategory(event) {
+    const category = event.currentTarget.dataset.category
+    const contentDiv = document.querySelector(`[data-category-content="${category}"]`)
+    const header = event.currentTarget
+
+    if (contentDiv) {
+      if (contentDiv.hidden) {
+        contentDiv.hidden = false
+        header.classList.remove('collapsed')
+      } else {
+        contentDiv.hidden = true
+        header.classList.add('collapsed')
+      }
+    }
   }
 
   // FILTERS TAB
@@ -483,7 +504,12 @@ export default class extends Controller {
       hue: 0,
       blur: 0,
       sharpen: 0,
-      vignette: 0
+      vignette: 0,
+      temperature: 0,
+      tint: 0,
+      highlights: 100,
+      shadows: 100,
+      exposure: 0
     }
     
     // Load Cropper.js dynamically
@@ -509,13 +535,18 @@ export default class extends Controller {
 
   updateAdvanced(event) {
     // Update displayed values
-    this.brightnessValueTarget.textContent = this.brightnessSliderTarget.value
-    this.contrastValueTarget.textContent = this.contrastSliderTarget.value
-    this.saturationValueTarget.textContent = this.saturationSliderTarget.value
-    this.hueValueTarget.textContent = this.hueSliderTarget.value
-    this.blurValueTarget.textContent = this.blurSliderTarget.value
+    this.brightnessValueTarget.textContent = this.brightnessSliderTarget.value + '%'
+    this.contrastValueTarget.textContent = this.contrastSliderTarget.value + '%'
+    this.saturationValueTarget.textContent = this.saturationSliderTarget.value + '%'
+    this.hueValueTarget.textContent = this.hueSliderTarget.value + '°'
+    this.blurValueTarget.textContent = this.blurSliderTarget.value + 'px'
     this.sharpenValueTarget.textContent = this.sharpenSliderTarget.value
-    this.vignetteValueTarget.textContent = this.vignetteSliderTarget.value
+    this.vignetteValueTarget.textContent = this.vignetteSliderTarget.value + '%'
+    this.temperatureValueTarget.textContent = this.temperatureSliderTarget.value
+    this.tintValueTarget.textContent = this.tintSliderTarget.value
+    this.highlightsValueTarget.textContent = this.highlightsSliderTarget.value + '%'
+    this.shadowsValueTarget.textContent = this.shadowsSliderTarget.value + '%'
+    this.exposureValueTarget.textContent = this.exposureSliderTarget.value
 
     // Store current state
     this.advancedState = {
@@ -525,7 +556,12 @@ export default class extends Controller {
       hue: parseInt(this.hueSliderTarget.value),
       blur: parseInt(this.blurSliderTarget.value),
       sharpen: parseInt(this.sharpenSliderTarget.value),
-      vignette: parseInt(this.vignetteSliderTarget.value)
+      vignette: parseInt(this.vignetteSliderTarget.value),
+      temperature: parseInt(this.temperatureSliderTarget.value),
+      tint: parseInt(this.tintSliderTarget.value),
+      highlights: parseInt(this.highlightsSliderTarget.value),
+      shadows: parseInt(this.shadowsSliderTarget.value),
+      exposure: parseInt(this.exposureSliderTarget.value)
     }
 
     // Apply filters immediately to virtual canvas
@@ -573,25 +609,25 @@ export default class extends Controller {
       const vignetteCtx = vignetteCanvas.getContext('2d')
       
       // Fill with dark color at full intensity
-      vignetteCtx.fillStyle = `rgba(0,0,0,${intensity * 0.8})`
+      vignetteCtx.fillStyle = `rgba(0,0,0,${intensity * 1.2})`
       vignetteCtx.fillRect(0, 0, vignetteCanvas.width, vignetteCanvas.height)
       
       // Create a white ellipse in the center to "cut out" the bright area
       vignetteCtx.globalCompositeOperation = 'destination-out'
       vignetteCtx.fillStyle = 'white'
       
-      // Create ellipse that covers the center area
+      // Create ellipse that covers the center area (made smaller for stronger vignette)
       vignetteCtx.beginPath()
       const centerX = vignetteCanvas.width / 2
       const centerY = vignetteCanvas.height / 2
-      const radiusX = vignetteCanvas.width * 0.6
-      const radiusY = vignetteCanvas.height * 0.6
+      const radiusX = vignetteCanvas.width * 0.5
+      const radiusY = vignetteCanvas.height * 0.5
       
       vignetteCtx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI)
       vignetteCtx.fill()
       
-      // Blur the edges for smoother transition
-      tempCtx.filter = `blur(${Math.max(tempCanvas.width, tempCanvas.height) * 0.05}px)`
+      // Blur the edges for smoother transition (reduced blur for sharper vignette)
+      tempCtx.filter = `blur(${Math.max(tempCanvas.width, tempCanvas.height) * 0.03}px)`
       tempCtx.drawImage(vignetteCanvas, 0, 0)
       tempCtx.filter = 'none'
     }
@@ -610,6 +646,11 @@ export default class extends Controller {
     this.blurSliderTarget.value = 0
     this.sharpenSliderTarget.value = 0
     this.vignetteSliderTarget.value = 0
+    this.temperatureSliderTarget.value = 0
+    this.tintSliderTarget.value = 0
+    this.highlightsSliderTarget.value = 100
+    this.shadowsSliderTarget.value = 100
+    this.exposureSliderTarget.value = 0
 
     this.advancedState = {
       brightness: 100,
@@ -618,7 +659,12 @@ export default class extends Controller {
       hue: 0,
       blur: 0,
       sharpen: 0,
-      vignette: 0
+      vignette: 0,
+      temperature: 0,
+      tint: 0,
+      highlights: 100,
+      shadows: 100,
+      exposure: 0
     }
 
     // Reset virtual canvas to base (with filter if applied, otherwise original)

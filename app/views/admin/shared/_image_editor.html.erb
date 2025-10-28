@@ -17,7 +17,7 @@
 
 <!-- Image Editor Overlay -->
 <div id="<%= editor_id %>"
-     data-controller="image-editor"
+     data-controller="image-editor image-zoom"
      data-image-editor-target="overlay"
      class="hidden fixed inset-0 z-[10000]"
      style="background: rgba(0, 0, 0, 0.95);">
@@ -28,6 +28,34 @@
     <h2 class="text-lg font-semibold" style="color: <%= theme[:text_color] %>;">
       Edit Image
     </h2>
+    
+    <!-- Zoom Controls - CENTER -->
+    <div class="zoom-control-container">
+      <div class="zoom-control-pill">
+        <button type="button" class="zoom-btn-minus" data-action="click->image-zoom#zoomOut">−</button>
+        <button type="button" class="zoom-display" data-action="click->image-zoom#toggleZoomDropdown">
+          <span data-image-zoom-target="zoomPercentage">100%</span>
+        </button>
+        <button type="button" class="zoom-btn-plus" data-action="click->image-zoom#zoomIn">+</button>
+      </div>
+      
+      <div class="zoom-dropdown hidden" data-image-zoom-target="zoomDropdown">
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="25">25%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="50">50%</div>
+        <div class="zoom-option active" data-action="click->image-zoom#selectZoomLevel" data-zoom="100">
+          100% <span class="zoom-label">Actual size</span>
+        </div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="125">125%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="150">150%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="200">200%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="300">300%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="400">400%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="600">600%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="800">800%</div>
+        <div class="zoom-option" data-action="click->image-zoom#selectZoomLevel" data-zoom="1600">1600%</div>
+      </div>
+    </div>
+    
     <div class="flex items-center gap-2">
       <!-- Undo -->
       <button type="button"
@@ -118,10 +146,12 @@
     <div class="flex-1 flex items-center justify-center p-8 overflow-hidden"
          style="background: <%= theme[:secondary_bg] %>;">
       <!-- Virtual Image Display -->
-      <div class="relative max-w-full overflow-hidden" style="max-height: calc(100vh - 200px);">
-        <canvas data-image-editor-target="virtualCanvas"
-                class="shadow-xl"
-                style="max-width: 100%; max-height: calc(100vh - 200px); display: block; object-fit: contain;"></canvas>
+      <div class="relative max-w-full overflow-hidden canvas-checkerboard-container" style="max-height: calc(100vh - 200px);">
+        <div data-image-zoom-target="canvasWrapper" style="transform-origin: 0 0;">
+          <canvas data-image-editor-target="virtualCanvas"
+                  class="shadow-xl"
+                  style="max-width: 100%; max-height: calc(100vh - 200px); display: block; object-fit: contain;"></canvas>
+        </div>
       </div>
     </div>
 
@@ -258,89 +288,202 @@
         <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
           Advanced Adjustments
         </h3>
-        <div class="space-y-4">
-          <!-- Brightness -->
-          <div>
-            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
-              Brightness: <span data-image-editor-target="brightnessValue">100</span>%
-            </label>
-            <input type="range"
-                   data-image-editor-target="brightnessSlider"
-                   data-action="input->image-editor#updateAdvanced"
-                   min="0" max="200" value="100"
-                   class="w-full">
+
+        <!-- LIGHT SECTION -->
+        <div class="image-editor-slider-group mb-4" data-category="light">
+          <div class="image-editor-slider-group-header" 
+               data-action="click->image-editor#toggleCategory"
+               data-category="light"
+               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 0.5rem;">
+            <span class="text-sm font-medium" style="color: <%= theme[:text_color] %>;">Light</span>
+            <svg class="chevron-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <%= theme[:text_color] %>; transition: transform 0.2s;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
           </div>
-          <!-- Contrast -->
-          <div>
-            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
-              Contrast: <span data-image-editor-target="contrastValue">100</span>%
-            </label>
-            <input type="range"
-                   data-image-editor-target="contrastSlider"
-                   data-action="input->image-editor#updateAdvanced"
-                   min="0" max="200" value="100"
-                   class="w-full">
+          <div class="image-editor-slider-content" data-category-content="light" hidden style="padding-left: 0.25rem; padding-right: 0.25rem;">
+            <!-- Exposure -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Exposure</span>
+                <span class="image-editor-slider-value" data-image-editor-target="exposureValue" style="color: <%= theme[:text_color] %>;">0</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="exposureSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="-100" max="100" value="0"
+                     class="image-editor-slider">
+            </div>
+            <!-- Brightness -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Brightness</span>
+                <span class="image-editor-slider-value" data-image-editor-target="brightnessValue" style="color: <%= theme[:text_color] %>;">100%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="brightnessSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="200" value="100"
+                     class="image-editor-slider">
+            </div>
+            <!-- Contrast -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Contrast</span>
+                <span class="image-editor-slider-value" data-image-editor-target="contrastValue" style="color: <%= theme[:text_color] %>;">100%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="contrastSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="200" value="100"
+                     class="image-editor-slider">
+            </div>
+            <!-- Highlights -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Highlights</span>
+                <span class="image-editor-slider-value" data-image-editor-target="highlightsValue" style="color: <%= theme[:text_color] %>;">100%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="highlightsSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="200" value="100"
+                     class="image-editor-slider">
+            </div>
+            <!-- Shadows -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Shadows</span>
+                <span class="image-editor-slider-value" data-image-editor-target="shadowsValue" style="color: <%= theme[:text_color] %>;">100%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="shadowsSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="200" value="100"
+                     class="image-editor-slider">
+            </div>
           </div>
-          <!-- Saturation -->
-          <div>
-            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
-              Saturation: <span data-image-editor-target="saturationValue">100</span>%
-            </label>
-            <input type="range"
-                   data-image-editor-target="saturationSlider"
-                   data-action="input->image-editor#updateAdvanced"
-                   min="0" max="200" value="100"
-                   class="w-full">
+        </div>
+
+        <!-- COLOR SECTION -->
+        <div class="image-editor-slider-group mb-4" data-category="color">
+          <div class="image-editor-slider-group-header" 
+               data-action="click->image-editor#toggleCategory"
+               data-category="color"
+               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 0.5rem;">
+            <span class="text-sm font-medium" style="color: <%= theme[:text_color] %>;">Color</span>
+            <svg class="chevron-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <%= theme[:text_color] %>; transition: transform 0.2s;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
           </div>
-          <!-- Hue -->
-          <div>
-            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
-              Hue: <span data-image-editor-target="hueValue">0</span>°
-            </label>
-            <input type="range"
-                   data-image-editor-target="hueSlider"
-                   data-action="input->image-editor#updateAdvanced"
-                   min="-180" max="180" value="0"
-                   class="w-full">
+          <div class="image-editor-slider-content" data-category-content="color" hidden style="padding-left: 0.25rem; padding-right: 0.25rem;">
+            <!-- Temperature -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Temperature</span>
+                <span class="image-editor-slider-value" data-image-editor-target="temperatureValue" style="color: <%= theme[:text_color] %>;">0</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="temperatureSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="-100" max="100" value="0"
+                     class="image-editor-slider">
+            </div>
+            <!-- Tint -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Tint</span>
+                <span class="image-editor-slider-value" data-image-editor-target="tintValue" style="color: <%= theme[:text_color] %>;">0</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="tintSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="-100" max="100" value="0"
+                     class="image-editor-slider">
+            </div>
+            <!-- Saturation -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Saturation</span>
+                <span class="image-editor-slider-value" data-image-editor-target="saturationValue" style="color: <%= theme[:text_color] %>;">100%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="saturationSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="200" value="100"
+                     class="image-editor-slider">
+            </div>
+            <!-- Hue -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Hue</span>
+                <span class="image-editor-slider-value" data-image-editor-target="hueValue" style="color: <%= theme[:text_color] %>;">0°</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="hueSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="-180" max="180" value="0"
+                     class="image-editor-slider">
+            </div>
           </div>
-          <!-- Blur -->
-          <div>
-            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
-              Blur: <span data-image-editor-target="blurValue">0</span>px
-            </label>
-            <input type="range"
-                   data-image-editor-target="blurSlider"
-                   data-action="input->image-editor#updateAdvanced"
-                   min="0" max="10" value="0"
-                   class="w-full">
+        </div>
+
+        <!-- EFFECTS SECTION -->
+        <div class="image-editor-slider-group mb-4" data-category="effects">
+          <div class="image-editor-slider-group-header" 
+               data-action="click->image-editor#toggleCategory"
+               data-category="effects"
+               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 0.5rem;">
+            <span class="text-sm font-medium" style="color: <%= theme[:text_color] %>;">Effects</span>
+            <svg class="chevron-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <%= theme[:text_color] %>; transition: transform 0.2s;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
           </div>
-          <!-- Sharpen -->
-          <div>
-            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
-              Sharpen: <span data-image-editor-target="sharpenValue">0</span>
-            </label>
-            <input type="range"
-                   data-image-editor-target="sharpenSlider"
-                   data-action="input->image-editor#updateAdvanced"
-                   min="0" max="100" value="0"
-                   class="w-full">
+          <div class="image-editor-slider-content" data-category-content="effects" hidden style="padding-left: 0.25rem; padding-right: 0.25rem;">
+            <!-- Blur -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Blur</span>
+                <span class="image-editor-slider-value" data-image-editor-target="blurValue" style="color: <%= theme[:text_color] %>;">0px</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="blurSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="10" value="0"
+                     class="image-editor-slider">
+            </div>
+            <!-- Sharpen -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Sharpen</span>
+                <span class="image-editor-slider-value" data-image-editor-target="sharpenValue" style="color: <%= theme[:text_color] %>;">0</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="sharpenSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="100" value="0"
+                     class="image-editor-slider">
+            </div>
+            <!-- Vignette -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Vignette</span>
+                <span class="image-editor-slider-value" data-image-editor-target="vignetteValue" style="color: <%= theme[:text_color] %>;">0%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="vignetteSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="100" value="0"
+                     class="image-editor-slider">
+            </div>
           </div>
-          <div>
-            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
-              Vignette: <span data-image-editor-target="vignetteValue">0</span>%
-            </label>
-            <input type="range"
-                   data-image-editor-target="vignetteSlider"
-                   data-action="input->image-editor#updateAdvanced"
-                   min="0" max="100" value="0"
-                   class="w-full">
-          </div>
-          <button type="button"
-                  data-action="click->image-editor#resetAdvanced"
-                  class="w-full px-4 py-2 rounded text-sm"
-                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
-            Reset All
-          </button>
+        </div>
+
+        <button type="button"
+                data-action="click->image-editor#resetAdvanced"
+                class="w-full px-4 py-2 rounded text-sm font-medium"
+                style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+          Reset All
+        </button>
         </div>
       </div>
 
