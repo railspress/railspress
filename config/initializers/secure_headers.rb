@@ -15,7 +15,7 @@ SecureHeaders::Configuration.default do |config|
     style_src: %w('self' 'unsafe-inline' http://localhost:3000 https://unpkg.com https://cdn.jsdelivr.net https://cdn.ckeditor.com https://cdnjs.cloudflare.com https://releases.transloadit.com https://fonts.googleapis.com),
     img_src: %w('self' data: https: blob:),
     font_src: %w('self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://releases.transloadit.com),
-    connect_src: %w('self' ws: wss: http://localhost:3000 https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdn.ckeditor.com https://releases.transloadit.com),
+    connect_src: %w('self' ws: wss: http://localhost:3000 https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdn.ckeditor.com https://releases.transloadit.com https://images.unsplash.com https://images.pexels.com https://pixabay.com),
     frame_src: %w('self' https://www.youtube.com https://player.vimeo.com),
     worker_src: %w('self' blob:),
     report_uri: %w(/csp-violation-report)

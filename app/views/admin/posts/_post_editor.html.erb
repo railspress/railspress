@@ -282,16 +282,21 @@
 // Auto-grow title textarea
 (function() {
   const titleInput = document.querySelector('textarea[name*="title"]');
-  if (titleInput) {
-    // Auto-resize on input
-    titleInput.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = this.scrollHeight + 'px';
-    });
+if (titleInput) {
+  function resizeTextarea() {
+    // Reset height to recalculate
+    titleInput.style.height = '60px'; // Start with min height
     
-    // Initial resize
-    titleInput.style.height = 'auto';
-    titleInput.style.height = titleInput.scrollHeight + 'px';
+    // Only grow if content exceeds current height
+    if (titleInput.scrollHeight > 60) {
+      titleInput.style.height = Math.min(titleInput.scrollHeight, 200) + 'px';
+    }
   }
+  
+  titleInput.addEventListener('input', resizeTextarea);
+  
+  // Initial resize after a short delay
+  setTimeout(resizeTextarea, 100);
+}
 })();
 </script>

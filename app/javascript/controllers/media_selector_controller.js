@@ -30,6 +30,11 @@ export default class extends Controller {
     this.stockSearchQuery = this.loadStockSearchQuery() // Load saved search
     this.bookmarkedPhotoIds = new Set() // Track bookmarked photo IDs
     this.allStockPhotos = [] // Cache all search results
+    
+    // Listen for image-edited events
+    this.element.addEventListener('image-edited', () => {
+      this.loadMediaLibrary()
+    })
   }
 
   openDialog(event) {
@@ -429,14 +434,32 @@ export default class extends Controller {
     const fileUrl = media.url || ''
     this.fileUrlTarget.value = fileUrl
 
-    // Set edit link
-    if (media.edit_url) {
-      this.editLinkTarget.href = media.edit_url
+    // Set edit link - show for all images
+    if (this.hasEditLinkTarget) {
+      // Show edit link and attach click handler
+      this.editLinkTarget.style.display = 'block'
+      this.editLinkTarget.href = '#'
+      this.editLinkTarget.onclick = (e) => {
+        e.preventDefault()
+        this.openImageEditor(media.id, media.url)
+      }
     }
 
     // Set delete link
     if (media.delete_url) {
       this.deleteLinkTarget.href = media.delete_url
+    }
+  }
+  
+  openImageEditor(mediumId, imageUrl) {
+    // Find the image editor controller in the document
+    const editorElement = document.querySelector('[data-controller*="image-editor"]')
+    if (editorElement) {
+      // Get the controller instance
+      const editorController = this.application.getControllerForElementAndIdentifier(editorElement, 'image-editor')
+      if (editorController) {
+        editorController.openEditor(mediumId, imageUrl)
+      }
     }
   }
 
