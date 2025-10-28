@@ -17,7 +17,8 @@ export default class extends Controller {
     "tintSlider", "tintValue",
     "highlightsSlider", "highlightsValue",
     "shadowsSlider", "shadowsValue",
-    "exposureSlider", "exposureValue"
+    "exposureSlider", "exposureValue",
+    "metaPanel", "metaLoading", "metaEmpty", "metaContent"
   ]
 
   connect() {
@@ -29,6 +30,7 @@ export default class extends Controller {
     this.currentTab = 'filters'
     this.cropper = null
     this.selectedFilter = 'normal'
+    this.metadataChanges = {} // Store EXIF changes
     
     // Load Cropper.js dynamically
     this.loadCropperJS()
@@ -58,6 +60,7 @@ export default class extends Controller {
 
   async openEditor(mediumId, imageUrl) {
     this.mediumId = mediumId
+    this.imageUrl = imageUrl
     this.overlayTarget.classList.remove('hidden')
 
     // Load original image
@@ -167,6 +170,7 @@ export default class extends Controller {
     this.scalePanelTarget.classList.add('hidden')
     this.rotationPanelTarget.classList.add('hidden')
     this.advancedPanelTarget.classList.add('hidden')
+    this.metaPanelTarget.classList.add('hidden')
 
     // Show active panel
     switch(tab) {
@@ -190,6 +194,13 @@ export default class extends Controller {
       case 'advanced':
         this.advancedPanelTarget.classList.remove('hidden')
         this.destroyCropper()
+        break
+      case 'meta':
+        this.metaPanelTarget.classList.remove('hidden')
+        this.destroyCropper()
+        if (this.originalImage) {
+          this.loadMetadata()
+        }
         break
     }
 
@@ -684,6 +695,199 @@ export default class extends Controller {
     this.saveToHistory()
   }
 
+  // META TAB METHODS
+  async loadMetadata() {
+    if (!window.piexif) {
+      console.error('piexif library not loaded')
+      this.metaLoadingTarget.classList.add('hidden')
+      this.metaEmptyTarget.classList.remove('hidden')
+      return
+    }
+    
+    try {
+      this.metaLoadingTarget.classList.remove('hidden')
+      this.metaEmptyTarget.classList.add('hidden')
+      this.metaContentTarget.classList.add('hidden')
+      
+      // Strategy: prefer reading EXIF from the ORIGINAL image file, not the canvas
+      // because canvas-generated data URLs strip EXIF. For same-origin URLs, fetch blob
+      // and convert to data URL. If cross-origin (CORS not allowed), fall back to
+      // showing no metadata.
+
+      let exifObj
+      const imageUrl = this.imageUrl
+      let canAttemptFetch = false
+      try {
+        const u = new URL(imageUrl, window.location.origin)
+        canAttemptFetch = (u.origin === window.location.origin)
+      } catch (_) {
+        canAttemptFetch = false
+      }
+
+      if (canAttemptFetch) {
+        try {
+          const resp = await fetch(imageUrl, { credentials: 'same-origin' })
+          if (resp.ok) {
+            const blob = await resp.blob()
+            // Only JPEGs are expected to carry EXIF
+            const isJpeg = /jpeg|jpg/i.test(blob.type)
+            if (isJpeg) {
+              const dataUrl = await new Promise(resolve => {
+                const reader = new FileReader()
+                reader.onload = () => resolve(reader.result)
+                reader.readAsDataURL(blob)
+              })
+              try {
+                exifObj = window.piexif.load(dataUrl)
+              } catch (e) {
+                exifObj = null
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore and fall through to no metadata
+          exifObj = null
+        }
+      }
+
+      // If we couldn't read EXIF from the original (or non-JPEG), consider last resort:
+      // Attempt from canvas (likely stripped) – usually returns none.
+      if (!exifObj) {
+        try {
+          const canvasDataUrl = this.virtualCanvasTarget.toDataURL('image/jpeg')
+          exifObj = window.piexif.load(canvasDataUrl)
+        } catch (e) {
+          exifObj = null
+        }
+      }
+
+      if (!exifObj) {
+        this.metaLoadingTarget.classList.add('hidden')
+        this.metaEmptyTarget.classList.remove('hidden')
+        return
+      }
+
+      // Populate fields
+      this.populateMetadataFields(exifObj)
+
+      this.metaLoadingTarget.classList.add('hidden')
+      this.metaContentTarget.classList.remove('hidden')
+    } catch (error) {
+      console.error('Error loading metadata:', error)
+      this.metaLoadingTarget.classList.add('hidden')
+      this.metaEmptyTarget.classList.remove('hidden')
+    }
+  }
+
+  populateMetadataFields(exifObj) {
+    const fields = this.metaContentTarget.querySelectorAll('[data-exif-field]')
+    
+    fields.forEach(field => {
+      const exifField = field.dataset.exifField
+      let value = ''
+      
+      // Check in different IFD sections
+      if (exifObj['0th'] && exifObj['0th'][window.piexif.ImageIFD[exifField]]) {
+        value = exifObj['0th'][window.piexif.ImageIFD[exifField]]
+      } else if (exifObj['Exif'] && exifObj['Exif'][window.piexif.ExifIFD[exifField]]) {
+        value = exifObj['Exif'][window.piexif.ExifIFD[exifField]]
+      } else if (exifObj['GPS'] && exifObj['GPS'][window.piexif.GPSIFD[exifField]]) {
+        value = exifObj['GPS'][window.piexif.GPSIFD[exifField]]
+      }
+      
+      // Format value
+      if (Array.isArray(value)) {
+        value = value.join(', ')
+      }
+      
+      field.value = value || ''
+    })
+    
+    // Add change listeners to track modifications
+    fields.forEach(field => {
+      field.addEventListener('input', (e) => {
+        this.metadataChanges[e.target.dataset.exifField] = e.target.value
+      })
+    })
+  }
+
+  clearAllMetadata() {
+    const fields = this.metaContentTarget.querySelectorAll('[data-exif-field]')
+    fields.forEach(field => {
+      field.value = ''
+      this.metadataChanges[field.dataset.exifField] = ''
+    })
+  }
+
+  applyMetadataToImage(blob) {
+    if (!window.piexif || Object.keys(this.metadataChanges).length === 0) {
+      return Promise.resolve(blob)
+    }
+    
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result
+        
+        try {
+          // Load existing EXIF or create new
+          let exifObj
+          try {
+            exifObj = window.piexif.load(dataUrl)
+          } catch (e) {
+            // Create empty EXIF object
+            exifObj = {
+              "0th": {},
+              "Exif": {},
+              "GPS": {},
+              "Interop": {},
+              "1st": {},
+              "thumbnail": null
+            }
+          }
+          
+          // Apply changes
+          Object.keys(this.metadataChanges).forEach(field => {
+            const value = this.metadataChanges[field]
+            
+            if (window.piexif.ImageIFD[field] !== undefined) {
+              if (value === '') {
+                delete exifObj['0th'][window.piexif.ImageIFD[field]]
+              } else {
+                exifObj['0th'][window.piexif.ImageIFD[field]] = value
+              }
+            } else if (window.piexif.ExifIFD[field] !== undefined) {
+              if (value === '') {
+                delete exifObj['Exif'][window.piexif.ExifIFD[field]]
+              } else {
+                exifObj['Exif'][window.piexif.ExifIFD[field]] = value
+              }
+            } else if (window.piexif.GPSIFD[field] !== undefined) {
+              if (value === '') {
+                delete exifObj['GPS'][window.piexif.GPSIFD[field]]
+              } else {
+                exifObj['GPS'][window.piexif.GPSIFD[field]] = value
+              }
+            }
+          })
+          
+          // Insert EXIF into image
+          const exifBytes = window.piexif.dump(exifObj)
+          const newDataUrl = window.piexif.insert(exifBytes, dataUrl)
+          
+          // Convert back to blob
+          fetch(newDataUrl)
+            .then(res => res.blob())
+            .then(resolve)
+        } catch (error) {
+          console.error('Error applying metadata:', error)
+          resolve(blob) // Return original blob if metadata fails
+        }
+      }
+      reader.readAsDataURL(blob)
+    })
+  }
+
   // SAVE
   async saveEdits(event) {
     if (event) event.preventDefault()
@@ -693,9 +897,12 @@ export default class extends Controller {
       const canvas = this.virtualCanvasTarget
 
       // Convert to blob
-      const blob = await new Promise(resolve => {
+      let blob = await new Promise(resolve => {
         canvas.toBlob(resolve, 'image/jpeg', 0.95)
       })
+      
+      // Apply metadata changes
+      blob = await this.applyMetadataToImage(blob)
 
       // Create FormData
       const formData = new FormData()
@@ -810,5 +1017,6 @@ export default class extends Controller {
     this.mediumId = null
     this.originalImage = null
     this.virtualImage = null
+    this.metadataChanges = {}
   }
 }

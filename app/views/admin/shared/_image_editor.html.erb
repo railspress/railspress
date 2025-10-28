@@ -15,6 +15,9 @@
   editor_id = local_assigns[:editor_id] || 'image-editor'
 %>
 
+<!-- piexif for EXIF metadata handling -->
+<script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
+
 <!-- Image Editor Overlay -->
 <div id="<%= editor_id %>"
      data-controller="image-editor image-zoom"
@@ -62,18 +65,26 @@
               data-action="click->image-editor#undo"
               data-image-editor-target="undoBtn"
               disabled
-              class="px-3 py-1.5 rounded text-sm disabled:opacity-50"
-              style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
-        Undo
+              class="p-2 rounded disabled:opacity-50 hover:bg-opacity-80 transition-colors"
+              style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;"
+              title="Undo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7v6h6"/>
+          <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
+        </svg>
       </button>
       <!-- Redo -->
       <button type="button"
               data-action="click->image-editor#redo"
               data-image-editor-target="redoBtn"
               disabled
-              class="px-3 py-1.5 rounded text-sm disabled:opacity-50"
-              style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
-        Redo
+              class="p-2 rounded disabled:opacity-50 hover:bg-opacity-80 transition-colors"
+              style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;"
+              title="Redo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 7v6h-6"/>
+          <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"/>
+        </svg>
       </button>
       <!-- Cancel -->
       <button type="button"
@@ -138,6 +149,14 @@
                 class="w-full text-left px-4 py-2 rounded text-sm"
                 style="color: <%= theme[:text_color] %>;">
           Advanced
+        </button>
+        <button type="button"
+                data-action="click->image-editor#switchTab"
+                data-tab="meta"
+                data-image-editor-target="tabBtn"
+                class="w-full text-left px-4 py-2 rounded text-sm"
+                style="color: <%= theme[:text_color] %>;">
+          Meta
         </button>
       </div>
     </div>
@@ -253,31 +272,31 @@
           <button type="button"
                   data-action="click->image-editor#rotateLeft"
                   class="w-full px-4 py-2 rounded text-sm"
-                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
             Rotate 90° Left
           </button>
           <button type="button"
                   data-action="click->image-editor#rotateRight"
                   class="w-full px-4 py-2 rounded text-sm"
-                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
             Rotate 90° Right
           </button>
           <button type="button"
                   data-action="click->image-editor#rotate180"
                   class="w-full px-4 py-2 rounded text-sm"
-                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
             Rotate 180°
           </button>
           <button type="button"
                   data-action="click->image-editor#flipHorizontal"
                   class="w-full px-4 py-2 rounded text-sm"
-                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
             Flip Horizontal
           </button>
           <button type="button"
                   data-action="click->image-editor#flipVertical"
                   class="w-full px-4 py-2 rounded text-sm"
-                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>; %>;">
             Flip Vertical
           </button>
         </div>
@@ -484,6 +503,121 @@
                 style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
           Reset All
         </button>
+    </div>
+
+      <!-- Meta Panel -->
+      <div data-image-editor-target="metaPanel" class="p-6 hidden">
+        <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
+          EXIF Metadata
+        </h3>
+        
+        <!-- Loading state -->
+        <div data-image-editor-target="metaLoading" class="text-center py-8">
+          <p class="text-sm" style="color: <%= theme[:text_color] %>;">Loading metadata...</p>
+        </div>
+        
+        <!-- No metadata state -->
+        <div data-image-editor-target="metaEmpty" class="hidden text-center py-8">
+          <p class="text-sm" style="color: <%= theme[:text_color] %>;">No EXIF data found</p>
+        </div>
+        
+        <!-- Metadata content -->
+        <div data-image-editor-target="metaContent" class="hidden">
+          <div class="space-y-4">
+          <!-- Camera Information -->
+          <div class="metadata-section">
+            <h4 class="text-xs font-semibold mb-2 uppercase" style="color: <%= theme[:text_color] %>;">Camera</h4>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Make</label>
+              <input type="text" data-exif-field="Make" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Model</label>
+              <input type="text" data-exif-field="Model" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Lens Model</label>
+              <input type="text" data-exif-field="LensModel" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+          </div>
+          
+          <!-- Exposure Settings -->
+          <div class="metadata-section">
+            <h4 class="text-xs font-semibold mb-2 uppercase" style="color: <%= theme[:text_color] %>;">Exposure</h4>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">ISO</label>
+              <input type="text" data-exif-field="ISOSpeedRatings" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Aperture</label>
+              <input type="text" data-exif-field="FNumber" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Shutter Speed</label>
+              <input type="text" data-exif-field="ExposureTime" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Focal Length</label>
+              <input type="text" data-exif-field="FocalLength" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+          </div>
+          
+          <!-- GPS -->
+          <div class="metadata-section">
+            <h4 class="text-xs font-semibold mb-2 uppercase" style="color: <%= theme[:text_color] %>;">Location (GPS)</h4>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Latitude</label>
+              <input type="text" data-exif-field="GPSLatitude" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Longitude</label>
+              <input type="text" data-exif-field="GPSLongitude" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+          </div>
+          
+          <!-- Image Info -->
+          <div class="metadata-section">
+            <h4 class="text-xs font-semibold mb-2 uppercase" style="color: <%= theme[:text_color] %>;">Image Info</h4>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Copyright</label>
+              <input type="text" data-exif-field="Copyright" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Artist</label>
+              <input type="text" data-exif-field="Artist" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Software</label>
+              <input type="text" data-exif-field="Software" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+            <div class="metadata-field">
+              <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">Date Taken</label>
+              <input type="text" data-exif-field="DateTime" class="w-full px-3 py-2 rounded text-sm" 
+                     style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+            </div>
+          </div>
+          
+            <div class="mt-6">
+              <a href="#"
+                 data-action="click->image-editor#clearAllMetadata"
+                 class="block text-sm"
+                 style="color: var(--admin-error);">
+                Clear All Metadata
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 

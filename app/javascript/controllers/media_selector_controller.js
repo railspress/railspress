@@ -536,8 +536,16 @@ export default class extends Controller {
       return
     }
 
-    const deleteUrl = this.selectedMediaData.delete_url
-    if (!deleteUrl) return
+    // Get the first selected media item (since we're in featured image mode which is single-select)
+    const mediaToDelete = Array.isArray(this.selectedMediaData) && this.selectedMediaData.length > 0 
+      ? this.selectedMediaData[0] 
+      : this.selectedMediaData
+    
+    const deleteUrl = mediaToDelete?.delete_url
+    if (!deleteUrl) {
+      console.error('No delete URL found')
+      return
+    }
 
     // Make DELETE request
     fetch(deleteUrl, {
@@ -550,9 +558,17 @@ export default class extends Controller {
     })
     .then(response => {
       if (response.ok) {
+        // Remove from selected arrays
+        if (Array.isArray(this.selectedMediaData) && mediaToDelete.id) {
+          this.selectedMediaIds = this.selectedMediaIds.filter(id => id !== mediaToDelete.id)
+          this.selectedMediaData = this.selectedMediaData.filter(media => media.id !== mediaToDelete.id)
+        } else {
+          this.selectedMediaIds = []
+          this.selectedMediaData = []
+        }
+        
+        // Reload media library and hide details
         this.loadMediaLibrary()
-        this.selectedMediaIds = []
-        this.selectedMediaData = []
         this.attachmentDetailsTarget.classList.add("hidden")
         this.setButtonTarget.disabled = true
       } else {

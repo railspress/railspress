@@ -1601,6 +1601,21 @@
   border-color: var(--admin-border-strong);
 }
 
+/* Image Editor - Meta Tab */
+.metadata-section {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--admin-border);
+  margin-bottom: 1.5rem;
+}
+
+.metadata-section:last-child {
+  border-bottom: none;
+}
+
+.metadata-field {
+  margin-bottom: 1rem;
+}
+
 /* Zoom Control Pill */
 .zoom-control-container {
   position: relative;

@@ -35,6 +35,9 @@ export class ImageFilters {
     jakarta: { name: 'Jakarta', css: 'contrast(1.05) brightness(1.1) saturate(1.15) hue-rotate(10deg)' },
     buenosAires: { name: 'Buenos Aires', css: 'contrast(1.15) brightness(0.95) saturate(0.9) hue-rotate(-10deg)' },
     newYork: { name: 'New York', css: 'contrast(1.1) brightness(0.9) saturate(0.85) grayscale(0.1)' },
+    miami: { name: 'Miami', css: 'contrast(1.1) brightness(1.05) saturate(1.3) hue-rotate(8deg)' },
+    kyoto: { name: 'Kyoto', css: 'sepia(0.15) brightness(1.2) contrast(0.9) saturate(1.05)' },
+    berlin: { name: 'Berlin', css: 'grayscale(0.8) contrast(1.05) brightness(1.15)' },
   };
 
   static apply(canvas, filterName) {
