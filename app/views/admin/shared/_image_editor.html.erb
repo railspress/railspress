@@ -19,367 +19,327 @@
 <div id="<%= editor_id %>"
      data-controller="image-editor"
      data-image-editor-target="overlay"
-     class="hidden fixed inset-0 z-50 flex items-center justify-center"
+     class="hidden fixed inset-0 z-[10000]"
      style="background: rgba(0, 0, 0, 0.95);">
   
-  <div class="w-[90vw] h-[90vh] flex flex-col"
-       style="background: <%= theme[:bg_color] %>; border-radius: var(--admin-radius-lg);">
-    
-    <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b"
-         style="border-color: <%= theme[:border_color] %>">
-      <h2 class="text-xl font-bold" style="color: <%= theme[:text_color] %>">Edit image</h2>
-      <button type="button"
-              data-action="click->image-editor#close"
-              class="text-2xl hover:opacity-70"
-              style="color: <%= theme[:text_color] %>">&times;</button>
-    </div>
-    
-    <!-- Toolbar -->
-    <div class="flex items-center gap-2 px-6 py-3 border-b overflow-x-auto"
-         style="border-color: <%= theme[:border_color] %>; background: <%= theme[:toolbar_bg] %>; overflow: visible">
-      
-      <!-- Tool Buttons -->
-      <button type="button"
-              data-action="click->image-editor#activateCrop"
-              data-image-editor-target="cropBtn"
-              class="px-4 py-2 rounded font-medium transition-all whitespace-nowrap"
-              style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">
-        Crop
-      </button>
-      
-      <button type="button"
-              data-action="click->image-editor#activateScale"
-              data-image-editor-target="scaleBtn"
-              class="px-4 py-2 rounded font-medium transition-all whitespace-nowrap"
-              style="color: <%= theme[:text_color] %>">
-        Scale
-      </button>
-      
-      <button type="button"
-              data-action="click->image-editor#activateEffects"
-              data-image-editor-target="effectsBtn"
-              class="px-4 py-2 rounded font-medium transition-all whitespace-nowrap"
-              style="color: <%= theme[:text_color] %>">
-        Effects
-      </button>
-      
-      <div class="relative">
-        <button type="button"
-                data-action="click->image-editor#toggleRotationMenu"
-                data-image-editor-target="rotationBtn"
-                class="px-4 py-2 rounded font-medium transition-all flex items-center gap-2 whitespace-nowrap"
-                style="color: <%= theme[:text_color] %>">
-          Image Rotation <span>▼</span>
-        </button>
-        
-        <!-- Rotation Dropdown -->
-        <div data-image-editor-target="rotationMenu"
-             class="hidden absolute top-full left-0 mt-1 py-2 rounded shadow-lg min-w-[180px]"
-             style="background: <%= theme[:bg_color] %>; border: 1px solid <%= theme[:border_color] %>; z-index: 9999;">
-          <button type="button" data-action="click->image-editor#rotate" data-degrees="-90"
-                  class="w-full text-left px-4 py-2 hover:bg-opacity-80"
-                  style="color: <%= theme[:text_color] %>">Rotate 90° left</button>
-          <button type="button" data-action="click->image-editor#rotate" data-degrees="90"
-                  class="w-full text-left px-4 py-2 hover:bg-opacity-80"
-                  style="color: <%= theme[:text_color] %>">Rotate 90° right</button>
-          <button type="button" data-action="click->image-editor#rotate" data-degrees="180"
-                  class="w-full text-left px-4 py-2 hover:bg-opacity-80"
-                  style="color: <%= theme[:text_color] %>">Rotate 180°</button>
-          <button type="button" data-action="click->image-editor#flip" data-direction="vertical"
-                  class="w-full text-left px-4 py-2 hover:bg-opacity-80"
-                  style="color: <%= theme[:text_color] %>">Flip vertical</button>
-          <button type="button" data-action="click->image-editor#flip" data-direction="horizontal"
-                  class="w-full text-left px-4 py-2 hover:bg-opacity-80"
-                  style="color: <%= theme[:text_color] %>">Flip horizontal</button>
-        </div>
-      </div>
-      
-      <div class="flex-1"></div>
-      
+  <!-- Header -->
+  <div class="flex items-center justify-between px-6 py-4 border-b"
+       style="border-color: <%= theme[:border_color] %>; background: <%= theme[:bg_color] %>;">
+    <h2 class="text-lg font-semibold" style="color: <%= theme[:text_color] %>;">
+      Edit Image
+    </h2>
+    <div class="flex items-center gap-2">
+      <!-- Undo -->
       <button type="button"
               data-action="click->image-editor#undo"
               data-image-editor-target="undoBtn"
-              class="px-4 py-2 rounded font-medium transition-all disabled:opacity-50 whitespace-nowrap"
-              style="color: <%= theme[:text_color] %>"
-              disabled>Undo</button>
-      
+              disabled
+              class="px-3 py-1.5 rounded text-sm disabled:opacity-50"
+              style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+        Undo
+      </button>
+      <!-- Redo -->
       <button type="button"
               data-action="click->image-editor#redo"
               data-image-editor-target="redoBtn"
-              class="px-4 py-2 rounded font-medium transition-all disabled:opacity-50 whitespace-nowrap"
-              style="color: <%= theme[:text_color] %>"
-              disabled>Redo</button>
-      
+              disabled
+              class="px-3 py-1.5 rounded text-sm disabled:opacity-50"
+              style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+        Redo
+      </button>
+      <!-- Cancel -->
       <button type="button"
               data-action="click->image-editor#cancelEditing"
-              class="px-4 py-2 rounded font-medium transition-all whitespace-nowrap"
-              style="color: <%= theme[:text_color] %>">Cancel Editing</button>
-      
+              class="px-3 py-1.5 rounded text-sm"
+              style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+        Cancel
+      </button>
+      <!-- Save -->
       <button type="button"
               data-action="click->image-editor#saveEdits"
-              data-image-editor-target="saveBtn"
-              class="px-4 py-2 rounded font-medium transition-all whitespace-nowrap"
-              style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">Save Edits</button>
+              class="px-4 py-1.5 rounded text-sm font-medium"
+              style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>;">
+        Save
+      </button>
     </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex h-[calc(100vh-120px)]">
     
-    <!-- Main Content Area -->
-    <div class="flex-1 flex overflow-hidden">
-      
-      <!-- Image Canvas (Left) -->
-      <div class="flex-1 flex items-center justify-center p-6 overflow-hidden"
-           style="background: <%= theme[:secondary_bg] %>">
-        <div data-image-editor-target="imageContainer" class="max-w-full max-h-full w-full h-full">
-          <img data-image-editor-target="image" src="" class="max-w-full max-h-full" style="display: none;" />
-        </div>
-      </div>
-      
-      <!-- Right Sidebar (Controls) -->
-      <div class="w-80 border-l p-6 overflow-auto"
-           style="border-color: <%= theme[:border_color] %>">
-        
-        <!-- Scale Controls -->
-        <div data-image-editor-target="scalePanel" class="hidden mb-6">
-          <h3 class="text-xs font-bold uppercase mb-3 flex items-center gap-2"
-              style="color: <%= theme[:text_color] %>">
-            SCALE IMAGE
-            <span class="text-blue-500 cursor-help" title="Resize the image">?</span>
-          </h3>
-          
-          <p class="text-sm mb-3" style="color: <%= theme[:text_color] %>">
-            Original dimensions <span data-image-editor-target="originalDimensions"></span>
-          </p>
-          
-          <div class="mb-3">
-            <label class="block text-sm mb-2" style="color: <%= theme[:text_color] %>">New dimensions:</label>
-            <div class="flex items-center gap-2">
-              <input type="number"
-                     data-image-editor-target="scaleWidth"
-                     data-action="input->image-editor#updateScaleHeight"
-                     class="flex-1 border rounded px-3 py-2 text-sm"
-                     style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-              <span style="color: <%= theme[:text_color] %>">×</span>
-              <input type="number"
-                     data-image-editor-target="scaleHeight"
-                     data-action="input->image-editor#updateScaleWidth"
-                     class="flex-1 border rounded px-3 py-2 text-sm"
-                     style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-              <button type="button"
-                      data-action="click->image-editor#applyScale"
-                      class="px-4 py-2 rounded text-sm font-medium whitespace-nowrap"
-                      style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">Scale</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Crop Controls -->
-        <div data-image-editor-target="cropPanel" class="mb-6">
-          <h3 class="text-xs font-bold uppercase mb-3 flex items-center gap-2"
-              style="color: <%= theme[:text_color] %>">
-            CROP IMAGE
-            <span class="text-blue-500 cursor-help" title="Crop the image">?</span>
-          </h3>
-          
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm mb-2" style="color: <%= theme[:text_color] %>">Aspect ratio:</label>
-              <div class="flex items-center gap-2">
-                <input type="number"
-                       data-image-editor-target="aspectWidth"
-                       data-action="input->image-editor#setAspectRatio"
-                       class="flex-1 border rounded px-3 py-2 text-sm"
-                       style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-                <span style="color: <%= theme[:text_color] %>">:</span>
-                <input type="number"
-                       data-image-editor-target="aspectHeight"
-                       data-action="input->image-editor#setAspectRatio"
-                       class="flex-1 border rounded px-3 py-2 text-sm"
-                       style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-              </div>
-            </div>
-            
-            <div>
-              <label class="block text-sm mb-2" style="color: <%= theme[:text_color] %>">Selection:</label>
-              <div class="flex items-center gap-2">
-                <input type="number"
-                       data-image-editor-target="selectionWidth"
-                       readonly
-                       class="flex-1 border rounded px-3 py-2 text-sm"
-                       style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-                <span style="color: <%= theme[:text_color] %>">×</span>
-                <input type="number"
-                       data-image-editor-target="selectionHeight"
-                       readonly
-                       class="flex-1 border rounded px-3 py-2 text-sm"
-                       style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-              </div>
-            </div>
-            
-            <div>
-              <label class="block text-sm mb-2" style="color: <%= theme[:text_color] %>">Starting Coordinates:</label>
-              <div class="flex items-center gap-2">
-                <input type="number"
-                       data-image-editor-target="cropX"
-                       readonly
-                       class="flex-1 border rounded px-3 py-2 text-sm"
-                       style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-                <span style="color: <%= theme[:text_color] %>">×</span>
-                <input type="number"
-                       data-image-editor-target="cropY"
-                       readonly
-                       class="flex-1 border rounded px-3 py-2 text-sm"
-                       style="border-color: <%= theme[:border_color] %>; background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>" />
-              </div>
-            </div>
-            
-            <div class="flex gap-2">
-              <button type="button"
-                      data-action="click->image-editor#applyCrop"
-                      class="flex-1 px-4 py-2 rounded text-sm font-medium"
-                      style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">Apply Crop</button>
-              <button type="button"
-                      data-action="click->image-editor#clearCrop"
-                      class="flex-1 px-4 py-2 rounded text-sm font-medium border"
-                      style="border-color: <%= theme[:button_bg] %>; color: <%= theme[:button_bg] %>">Clear Crop</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Effects Controls -->
-        <div data-image-editor-target="effectsPanel" class="hidden mb-6">
-          <h3 class="text-xs font-bold uppercase mb-3 flex items-center gap-2"
-              style="color: <%= theme[:text_color] %>">
-            IMAGE EFFECTS
-            <span class="text-blue-500 cursor-help" title="Apply image effects">?</span>
-          </h3>
-          
-          <div class="space-y-4">
-            <!-- Preset Filters -->
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">Preset Filters:</label>
-              <div class="grid grid-cols-2 gap-2">
-                <button type="button"
-                        data-action="click->image-editor#applyEffect"
-                        data-effect="grayscale"
-                        class="px-3 py-2 text-sm border rounded hover:bg-opacity-80"
-                        style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>">Black & White</button>
-                <button type="button"
-                        data-action="click->image-editor#applyEffect"
-                        data-effect="sepia"
-                        class="px-3 py-2 text-sm border rounded hover:bg-opacity-80"
-                        style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>">Sepia</button>
-                <button type="button"
-                        data-action="click->image-editor#applyEffect"
-                        data-effect="invert"
-                        class="px-3 py-2 text-sm border rounded hover:bg-opacity-80"
-                        style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>">Invert</button>
-                <button type="button"
-                        data-action="click->image-editor#applyEffect"
-                        data-effect="blur"
-                        class="px-3 py-2 text-sm border rounded hover:bg-opacity-80"
-                        style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>">Blur</button>
-                <button type="button"
-                        data-action="click->image-editor#applyEffect"
-                        data-effect="vintage"
-                        class="px-3 py-2 text-sm border rounded hover:bg-opacity-80"
-                        style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>">Vintage</button>
-                <button type="button"
-                        data-action="click->image-editor#applyEffect"
-                        data-effect="vivid"
-                        class="px-3 py-2 text-sm border rounded hover:bg-opacity-80"
-                        style="border-color: <%= theme[:border_color] %>; color: <%= theme[:text_color] %>">Vivid</button>
-              </div>
-            </div>
-            
-            <!-- Brightness -->
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-                Brightness: <span data-image-editor-target="brightnessValue">100</span>%
-              </label>
-              <input type="range"
-                     data-image-editor-target="brightnessSlider"
-                     data-action="input->image-editor#updateBrightness"
-                     min="0"
-                     max="200"
-                     value="100"
-                     class="w-full" />
-            </div>
-            
-            <!-- Contrast -->
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-                Contrast: <span data-image-editor-target="contrastValue">100</span>%
-              </label>
-              <input type="range"
-                     data-image-editor-target="contrastSlider"
-                     data-action="input->image-editor#updateContrast"
-                     min="0"
-                     max="200"
-                     value="100"
-                     class="w-full" />
-            </div>
-            
-            <!-- Saturation -->
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-                Saturation: <span data-image-editor-target="saturationValue">100</span>%
-              </label>
-              <input type="range"
-                     data-image-editor-target="saturationSlider"
-                     data-action="input->image-editor#updateSaturation"
-                     min="0"
-                     max="200"
-                     value="100"
-                     class="w-full" />
-            </div>
-            
-            <!-- Hue -->
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-                Hue: <span data-image-editor-target="hueValue">0</span>°
-              </label>
-              <input type="range"
-                     data-image-editor-target="hueSlider"
-                     data-action="input->image-editor#updateHue"
-                     min="0"
-                     max="360"
-                     value="0"
-                     class="w-full" />
-            </div>
-            
-            <!-- Sharpen -->
-            <div>
-              <label class="block text-sm font-medium mb-2" style="color: <%= theme[:text_color] %>">
-                Sharpen: <span data-image-editor-target="sharpenValue">0</span>%
-              </label>
-              <input type="range"
-                     data-image-editor-target="sharpenSlider"
-                     data-action="input->image-editor#updateSharpen"
-                     min="0"
-                     max="100"
-                     value="0"
-                     class="w-full" />
-            </div>
-            
-            <div class="flex gap-2 mt-4">
-              <button type="button"
-                      data-action="click->image-editor#resetEffects"
-                      class="flex-1 px-4 py-2 rounded text-sm font-medium border"
-                      style="border-color: <%= theme[:button_bg] %>; color: <%= theme[:button_bg] %>">Reset Effects</button>
-            </div>
-          </div>
-        </div>
+    <!-- Left: Tabs -->
+    <div class="w-48 border-r p-4"
+         style="border-color: <%= theme[:border_color] %>; background: <%= theme[:bg_color] %>;">
+      <div class="space-y-2">
+        <button type="button"
+                data-action="click->image-editor#switchTab"
+                data-tab="filters"
+                data-image-editor-target="tabBtn"
+                class="w-full text-left px-4 py-2 rounded text-sm font-medium tab-btn-active"
+                style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>;">
+          Filters
+        </button>
+        <button type="button"
+                data-action="click->image-editor#switchTab"
+                data-tab="crop"
+                data-image-editor-target="tabBtn"
+                class="w-full text-left px-4 py-2 rounded text-sm"
+                style="color: <%= theme[:text_color] %>;">
+          Crop
+        </button>
+        <button type="button"
+                data-action="click->image-editor#switchTab"
+                data-tab="scale"
+                data-image-editor-target="tabBtn"
+                class="w-full text-left px-4 py-2 rounded text-sm"
+                style="color: <%= theme[:text_color] %>;">
+          Scale
+        </button>
+        <button type="button"
+                data-action="click->image-editor#switchTab"
+                data-tab="rotation"
+                data-image-editor-target="tabBtn"
+                class="w-full text-left px-4 py-2 rounded text-sm"
+                style="color: <%= theme[:text_color] %>;">
+          Rotation
+        </button>
+        <button type="button"
+                data-action="click->image-editor#switchTab"
+                data-tab="advanced"
+                data-image-editor-target="tabBtn"
+                class="w-full text-left px-4 py-2 rounded text-sm"
+                style="color: <%= theme[:text_color] %>;">
+          Advanced
+        </button>
       </div>
     </div>
-    
-    <!-- Footer -->
-    <div class="px-6 py-4 border-t flex justify-end"
-         style="border-color: <%= theme[:border_color] %>">
-      <button type="button"
-              data-action="click->image-editor#close"
-              class="px-6 py-2 rounded font-medium"
-              style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">Back</button>
+
+    <!-- Center: Canvas/Preview -->
+    <div class="flex-1 flex items-center justify-center p-8 overflow-hidden"
+         style="background: <%= theme[:secondary_bg] %>;">
+      <!-- Virtual Image Display -->
+      <div class="relative max-w-full overflow-hidden" style="max-height: calc(100vh - 200px);">
+        <canvas data-image-editor-target="virtualCanvas"
+                class="shadow-xl"
+                style="max-width: 100%; max-height: calc(100vh - 200px); display: block; object-fit: contain;"></canvas>
+      </div>
+    </div>
+
+    <!-- Right: Tab Content Panels -->
+    <div class="w-80 border-l overflow-y-auto"
+         style="border-color: <%= theme[:border_color] %>; background: <%= theme[:bg_color] %>;">
+      
+      <!-- FILTERS TAB -->
+      <div data-image-editor-target="filtersPanel" class="p-6">
+        <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
+          Choose Filter
+        </h3>
+        <div class="grid grid-cols-2 gap-3" data-image-editor-target="filterGrid">
+          <!-- Filter thumbnails will be dynamically generated -->
+        </div>
+      </div>
+
+      <!-- CROP TAB -->
+      <div data-image-editor-target="cropPanel" class="p-6 hidden">
+        <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
+          Crop Image
+        </h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Aspect Ratio
+            </label>
+            <select data-image-editor-target="aspectRatio"
+                    data-action="change->image-editor#changeAspectRatio"
+                    class="w-full px-3 py-2 rounded text-sm"
+                    style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+              <option value="free">Free</option>
+              <option value="1">1:1 (Square)</option>
+              <option value="1.3333333333333333">4:3</option>
+              <option value="1.7777777777777777">16:9</option>
+              <option value="0.75">3:4 (Portrait)</option>
+              <option value="0.5625">9:16 (Story)</option>
+            </select>
+          </div>
+          <button type="button"
+                  data-action="click->image-editor#applyCrop"
+                  class="w-full px-4 py-2 rounded text-sm font-medium"
+                  style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>;">
+            Apply Crop
+          </button>
+        </div>
+      </div>
+
+      <!-- SCALE TAB -->
+      <div data-image-editor-target="scalePanel" class="p-6 hidden">
+        <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
+          Scale Image
+        </h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Width
+            </label>
+            <input type="number"
+                   data-image-editor-target="scaleWidth"
+                   data-action="input->image-editor#updateScaleHeight"
+                   class="w-full px-3 py-2 rounded text-sm"
+                   style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+          </div>
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Height
+            </label>
+            <input type="number"
+                   data-image-editor-target="scaleHeight"
+                   data-action="input->image-editor#updateScaleWidth"
+                   class="w-full px-3 py-2 rounded text-sm"
+                   style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border: 1px solid <%= theme[:border_color] %>;">
+          </div>
+          <label class="flex items-center gap-2">
+            <input type="checkbox"
+                   data-image-editor-target="lockAspect"
+                   checked
+                   class="rounded">
+            <span class="text-xs" style="color: <%= theme[:text_color] %>;">
+              Lock aspect ratio
+            </span>
+          </label>
+          <button type="button"
+                  data-action="click->image-editor#applyScale"
+                  class="w-full px-4 py-2 rounded text-sm font-medium"
+                  style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>;">
+            Apply Scale
+          </button>
+        </div>
+      </div>
+
+      <!-- ROTATION TAB -->
+      <div data-image-editor-target="rotationPanel" class="p-6 hidden">
+        <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
+          Rotate & Flip
+        </h3>
+        <div class="space-y-3">
+          <button type="button"
+                  data-action="click->image-editor#rotateLeft"
+                  class="w-full px-4 py-2 rounded text-sm"
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+            Rotate 90° Left
+          </button>
+          <button type="button"
+                  data-action="click->image-editor#rotateRight"
+                  class="w-full px-4 py-2 rounded text-sm"
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+            Rotate 90° Right
+          </button>
+          <button type="button"
+                  data-action="click->image-editor#rotate180"
+                  class="w-full px-4 py-2 rounded text-sm"
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+            Rotate 180°
+          </button>
+          <button type="button"
+                  data-action="click->image-editor#flipHorizontal"
+                  class="w-full px-4 py-2 rounded text-sm"
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+            Flip Horizontal
+          </button>
+          <button type="button"
+                  data-action="click->image-editor#flipVertical"
+                  class="w-full px-4 py-2 rounded text-sm"
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+            Flip Vertical
+          </button>
+        </div>
+      </div>
+
+      <!-- ADVANCED TAB -->
+      <div data-image-editor-target="advancedPanel" class="p-6 hidden">
+        <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
+          Advanced Adjustments
+        </h3>
+        <div class="space-y-4">
+          <!-- Brightness -->
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Brightness: <span data-image-editor-target="brightnessValue">100</span>%
+            </label>
+            <input type="range"
+                   data-image-editor-target="brightnessSlider"
+                   data-action="input->image-editor#updateAdvanced"
+                   min="0" max="200" value="100"
+                   class="w-full">
+          </div>
+          <!-- Contrast -->
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Contrast: <span data-image-editor-target="contrastValue">100</span>%
+            </label>
+            <input type="range"
+                   data-image-editor-target="contrastSlider"
+                   data-action="input->image-editor#updateAdvanced"
+                   min="0" max="200" value="100"
+                   class="w-full">
+          </div>
+          <!-- Saturation -->
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Saturation: <span data-image-editor-target="saturationValue">100</span>%
+            </label>
+            <input type="range"
+                   data-image-editor-target="saturationSlider"
+                   data-action="input->image-editor#updateAdvanced"
+                   min="0" max="200" value="100"
+                   class="w-full">
+          </div>
+          <!-- Hue -->
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Hue: <span data-image-editor-target="hueValue">0</span>°
+            </label>
+            <input type="range"
+                   data-image-editor-target="hueSlider"
+                   data-action="input->image-editor#updateAdvanced"
+                   min="-180" max="180" value="0"
+                   class="w-full">
+          </div>
+          <!-- Blur -->
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Blur: <span data-image-editor-target="blurValue">0</span>px
+            </label>
+            <input type="range"
+                   data-image-editor-target="blurSlider"
+                   data-action="input->image-editor#updateAdvanced"
+                   min="0" max="10" value="0"
+                   class="w-full">
+          </div>
+          <!-- Sharpen -->
+          <div>
+            <label class="block text-xs mb-2" style="color: <%= theme[:text_color] %>;">
+              Sharpen: <span data-image-editor-target="sharpenValue">0</span>
+            </label>
+            <input type="range"
+                   data-image-editor-target="sharpenSlider"
+                   data-action="input->image-editor#updateAdvanced"
+                   min="0" max="100" value="0"
+                   class="w-full">
+          </div>
+          <button type="button"
+                  data-action="click->image-editor#resetAdvanced"
+                  class="w-full px-4 py-2 rounded text-sm"
+                  style="background: <%= theme[:secondary_bg] %>; color: <%= theme[:text_color] %>;">
+            Reset All
+          </button>
+          <button type="button"
+                  data-action="click->image-editor#applyAdvanced"
+                  class="w-full px-4 py-2 rounded text-sm font-medium"
+                  style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>;">
+            Apply Adjustments
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
-

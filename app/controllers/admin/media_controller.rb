@@ -130,7 +130,9 @@ class Admin::MediaController < Admin::BaseController
           size: upload.file_size,
           type: upload.content_type
         },
-        medium_id: medium.id
+        medium_id: medium.id,
+        width: upload.width,
+        height: upload.height
       }
     else
       render json: {

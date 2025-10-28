@@ -1,384 +1,530 @@
 import { Controller } from "@hotwired/stimulus"
+import { ImageFilters } from "image_filters"
 
 export default class extends Controller {
   static targets = [
-    "overlay", "image", "imageContainer",
-    "cropBtn", "scaleBtn", "effectsBtn", "rotationBtn", "rotationMenu",
-    "cropPanel", "scalePanel", "effectsPanel",
-    "aspectWidth", "aspectHeight", "selectionWidth", "selectionHeight", "cropX", "cropY",
-    "scaleWidth", "scaleHeight", "originalDimensions",
-    "brightnessSlider", "brightnessValue", "contrastSlider", "contrastValue",
-    "saturationSlider", "saturationValue", "hueSlider", "hueValue",
-    "sharpenSlider", "sharpenValue",
-    "undoBtn", "redoBtn", "saveBtn"
+    "overlay", "virtualCanvas", "undoBtn", "redoBtn",
+    "tabBtn", "filtersPanel", "cropPanel", "scalePanel", "rotationPanel", "advancedPanel",
+    "filterGrid", "aspectRatio", "scaleWidth", "scaleHeight", "lockAspect",
+    "brightnessSlider", "brightnessValue",
+    "contrastSlider", "contrastValue",
+    "saturationSlider", "saturationValue",
+    "hueSlider", "hueValue",
+    "blurSlider", "blurValue",
+    "sharpenSlider", "sharpenValue"
   ]
-  
+
   connect() {
-    this.uploadId = null
-    this.cropper = null
-    this.currentTool = 'crop'
-    this.originalWidth = 0
-    this.originalHeight = 0
+    this.mediumId = null
+    this.originalImage = null
+    this.virtualImage = null // The single source of truth
     this.history = []
     this.historyIndex = -1
-    this.currentFilters = {
-      brightness: 100,
-      contrast: 100,
-      saturation: 100,
-      hue: 0,
-      sharpen: 0,
-      grayscale: 0,
-      sepia: 0,
-      invert: 0,
-      blur: 0
-    }
+    this.currentTab = 'filters'
+    this.cropper = null
+    this.selectedFilter = 'normal'
+    
+    // Load Cropper.js dynamically
     this.loadCropperJS()
   }
-  
+
   loadCropperJS() {
-    if (window.Cropper) return
-    
-    // Load Cropper.js CSS
-    const css = document.createElement('link')
-    css.rel = 'stylesheet'
-    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css'
-    document.head.appendChild(css)
-    
-    // Load Cropper.js
-    const script = document.createElement('script')
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js'
-    script.onload = () => {
-      console.log('Cropper.js loaded')
+    if (window.Cropper) {
+      this.cropperLoaded = true
+      return Promise.resolve()
     }
-    document.head.appendChild(script)
-  }
-  
-  openEditor(uploadId, imageUrl) {
-    this.uploadId = uploadId
-    this.imageTarget.src = imageUrl
-    this.overlayTarget.classList.remove('hidden')
-    document.body.style.overflow = 'hidden'
-    
-    // Wait for image to load
-    this.imageTarget.onload = () => {
-      this.originalWidth = this.imageTarget.naturalWidth
-      this.originalHeight = this.imageTarget.naturalHeight
-      this.originalDimensionsTarget.textContent = `${this.originalWidth} × ${this.originalHeight}`
-      this.scaleWidthTarget.value = this.originalWidth
-      this.scaleHeightTarget.value = this.originalHeight
-      
-      // Wait for Cropper.js to be available
-      const initCropper = () => {
-        if (window.Cropper) {
-          this.initCropper()
-          this.activateCrop()
-        } else {
-          setTimeout(initCropper, 100)
-        }
+
+    return new Promise((resolve) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css'
+      document.head.appendChild(link)
+
+      const script = document.createElement('script')
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js'
+      script.onload = () => {
+        this.cropperLoaded = true
+        resolve()
       }
-      initCropper()
+      document.head.appendChild(script)
+    })
+  }
+
+  async openEditor(mediumId, imageUrl) {
+    this.mediumId = mediumId
+    this.overlayTarget.classList.remove('hidden')
+
+    // Load original image
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    
+    await new Promise((resolve, reject) => {
+      img.onload = resolve
+      img.onerror = reject
+      img.src = imageUrl
+    })
+
+    this.originalImage = img
+
+    // Initialize virtual canvas
+    this.initializeVirtualImage(img)
+
+    // Generate filter thumbnails
+    this.generateFilterThumbnails()
+
+    // Switch to Filters tab
+    this.switchTab({ target: { dataset: { tab: 'filters' } } })
+  }
+
+  initializeVirtualImage(img) {
+    const canvas = this.virtualCanvasTarget
+    canvas.width = img.width
+    canvas.height = img.height
+
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+
+    this.virtualImage = canvas
+
+    // Save initial state to history
+    this.saveToHistory()
+  }
+
+  saveToHistory() {
+    // Remove any states after current index (for redo)
+    this.history = this.history.slice(0, this.historyIndex + 1)
+
+    // Clone current canvas state
+    const snapshot = document.createElement('canvas')
+    snapshot.width = this.virtualCanvasTarget.width
+    snapshot.height = this.virtualCanvasTarget.height
+    snapshot.getContext('2d').drawImage(this.virtualCanvasTarget, 0, 0)
+
+    this.history.push(snapshot)
+    this.historyIndex = this.history.length - 1
+
+    // Update undo/redo button states
+    this.updateHistoryButtons()
+  }
+
+  updateHistoryButtons() {
+    this.undoBtnTarget.disabled = this.historyIndex <= 0
+    this.redoBtnTarget.disabled = this.historyIndex >= this.history.length - 1
+  }
+
+  undo(event) {
+    if (event) event.preventDefault()
+    if (this.historyIndex > 0) {
+      this.historyIndex--
+      this.restoreFromHistory()
     }
   }
-  
-  initCropper() {
+
+  redo(event) {
+    if (event) event.preventDefault()
+    if (this.historyIndex < this.history.length - 1) {
+      this.historyIndex++
+      this.restoreFromHistory()
+    }
+  }
+
+  restoreFromHistory() {
+    const snapshot = this.history[this.historyIndex]
+    const canvas = this.virtualCanvasTarget
+    canvas.width = snapshot.width
+    canvas.height = snapshot.height
+    canvas.getContext('2d').drawImage(snapshot, 0, 0)
+
+    this.updateHistoryButtons()
+  }
+
+  switchTab(event) {
+    const tab = event.target.dataset.tab
+
+    // Update active tab button
+    this.tabBtnTargets.forEach(btn => {
+      const isActive = btn.dataset.tab === tab
+      if (isActive) {
+        btn.classList.add('tab-btn-active')
+        btn.style.backgroundColor = 'var(--admin-primary)'
+        btn.style.color = 'white'
+      } else {
+        btn.classList.remove('tab-btn-active')
+        btn.style.backgroundColor = 'transparent'
+        btn.style.color = 'var(--admin-text-secondary)'
+      }
+    })
+
+    // Hide all panels
+    this.filtersPanelTarget.classList.add('hidden')
+    this.cropPanelTarget.classList.add('hidden')
+    this.scalePanelTarget.classList.add('hidden')
+    this.rotationPanelTarget.classList.add('hidden')
+    this.advancedPanelTarget.classList.add('hidden')
+
+    // Show active panel
+    switch(tab) {
+      case 'filters':
+        this.filtersPanelTarget.classList.remove('hidden')
+        this.destroyCropper()
+        break
+      case 'crop':
+        this.cropPanelTarget.classList.remove('hidden')
+        this.initCropper()
+        break
+      case 'scale':
+        this.scalePanelTarget.classList.remove('hidden')
+        this.updateScaleInputs()
+        this.destroyCropper()
+        break
+      case 'rotation':
+        this.rotationPanelTarget.classList.remove('hidden')
+        this.destroyCropper()
+        break
+      case 'advanced':
+        this.advancedPanelTarget.classList.remove('hidden')
+        this.destroyCropper()
+        break
+    }
+
+    this.currentTab = tab
+  }
+
+  // FILTERS TAB
+  generateFilterThumbnails() {
+    const filterNames = ImageFilters.getFilterNames()
+    const gridHTML = filterNames.map(filterName => {
+      const filterData = ImageFilters.getFilterData(filterName)
+      return `
+        <div class="filter-thumbnail cursor-pointer hover:opacity-80 transition-opacity" data-filter="${filterName}">
+          <canvas class="w-full aspect-square rounded mb-1" data-filter-canvas="${filterName}"></canvas>
+          <p class="text-xs text-center" style="color: var(--admin-text-secondary);">${filterData.name}</p>
+        </div>
+      `
+    }).join('')
+
+    this.filterGridTarget.innerHTML = gridHTML
+
+    // Generate thumbnails
+    filterNames.forEach(filterName => {
+      const canvas = this.filterGridTarget.querySelector(`[data-filter-canvas="${filterName}"]`)
+      this.generateFilterThumbnail(canvas, filterName)
+    })
+
+    // Add click handlers
+    this.filterGridTarget.querySelectorAll('.filter-thumbnail').forEach(thumb => {
+      thumb.addEventListener('click', (e) => {
+        const filterName = thumb.dataset.filter
+        this.applyFilter(filterName)
+      })
+    })
+  }
+
+  generateFilterThumbnail(canvas, filterName) {
+    const size = 120
+    canvas.width = size
+    canvas.height = size
+
+    const ctx = canvas.getContext('2d')
+    
+    // Calculate scaling to fit original image into thumbnail
+    const scale = Math.min(size / this.originalImage.width, size / this.originalImage.height)
+    const w = this.originalImage.width * scale
+    const h = this.originalImage.height * scale
+    const x = (size - w) / 2
+    const y = (size - h) / 2
+
+    // Apply filter
+    const filterData = ImageFilters.getFilterData(filterName)
+    ctx.filter = filterData.css
+    ctx.drawImage(this.originalImage, x, y, w, h)
+  }
+
+  applyFilter(filterName) {
+    this.selectedFilter = filterName
+    const filterData = ImageFilters.getFilterData(filterName)
+
+    // Always apply filter to original image, not the already-filtered virtual canvas
+    const canvas = this.virtualCanvasTarget
+    
+    // Create temp canvas and apply filter to original image
+    const tempCanvas = document.createElement('canvas')
+    tempCanvas.width = this.originalImage.width
+    tempCanvas.height = this.originalImage.height
+
+    const tempCtx = tempCanvas.getContext('2d')
+    tempCtx.filter = filterData.css
+    tempCtx.drawImage(this.originalImage, 0, 0)
+
+    // Update virtual canvas with filtered result
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(tempCanvas, 0, 0)
+
+    // Save to history
+    this.saveToHistory()
+  }
+
+  // CROP TAB
+  async initCropper() {
+    await this.loadCropperJS()
+
     if (this.cropper) {
       this.cropper.destroy()
     }
-    
-    this.imageTarget.style.display = 'block'
-    
-    this.cropper = new window.Cropper(this.imageTarget, {
+
+    this.cropper = new Cropper(this.virtualCanvasTarget, {
       viewMode: 1,
       dragMode: 'move',
       autoCropArea: 1,
       restore: false,
+      modal: true,
       guides: true,
-      center: true,
       highlight: true,
       cropBoxMovable: true,
       cropBoxResizable: true,
       toggleDragModeOnDblclick: false,
-      crop: (event) => {
-        this.updateCropInfo(event.detail)
-      }
     })
   }
-  
-  updateCropInfo(detail) {
-    this.selectionWidthTarget.value = Math.round(detail.width)
-    this.selectionHeightTarget.value = Math.round(detail.height)
-    this.cropXTarget.value = Math.round(detail.x)
-    this.cropYTarget.value = Math.round(detail.y)
+
+  destroyCropper() {
+    if (this.cropper) {
+      this.cropper.destroy()
+      this.cropper = null
+    }
   }
-  
-  activateCrop(event) {
-    if (event) event.preventDefault()
-    this.currentTool = 'crop'
-    this.cropBtnTarget.style.background = 'var(--admin-primary)'
-    this.cropBtnTarget.style.color = 'white'
-    this.scaleBtnTarget.style.background = 'transparent'
-    this.scaleBtnTarget.style.color = 'var(--admin-text-primary)'
-    this.effectsBtnTarget.style.background = 'transparent'
-    this.effectsBtnTarget.style.color = 'var(--admin-text-primary)'
-    this.cropPanelTarget.classList.remove('hidden')
-    this.scalePanelTarget.classList.add('hidden')
-    this.effectsPanelTarget.classList.add('hidden')
+
+  changeAspectRatio(event) {
+    if (!this.cropper) return
+
+    const value = event.target.value
+    if (value === 'free') {
+      this.cropper.setAspectRatio(NaN)
+    } else {
+      this.cropper.setAspectRatio(parseFloat(value))
+    }
+  }
+
+  applyCrop() {
+    if (!this.cropper) return
+
+    const croppedCanvas = this.cropper.getCroppedCanvas()
     
-    if (this.cropper) {
-      this.cropper.setDragMode('crop')
-    }
+    // Update virtual canvas
+    const canvas = this.virtualCanvasTarget
+    canvas.width = croppedCanvas.width
+    canvas.height = croppedCanvas.height
+    canvas.getContext('2d').drawImage(croppedCanvas, 0, 0)
+
+    // Destroy cropper and save to history
+    this.destroyCropper()
+    this.saveToHistory()
+
+    // Switch back to filters tab
+    this.switchTab({ target: { dataset: { tab: 'filters' } } })
   }
-  
-  activateScale(event) {
-    if (event) event.preventDefault()
-    this.currentTool = 'scale'
-    this.scaleBtnTarget.style.background = 'var(--admin-primary)'
-    this.scaleBtnTarget.style.color = 'white'
-    this.cropBtnTarget.style.background = 'transparent'
-    this.cropBtnTarget.style.color = 'var(--admin-text-primary)'
-    this.effectsBtnTarget.style.background = 'transparent'
-    this.effectsBtnTarget.style.color = 'var(--admin-text-primary)'
-    this.scalePanelTarget.classList.remove('hidden')
-    this.cropPanelTarget.classList.add('hidden')
-    this.effectsPanelTarget.classList.add('hidden')
+
+  // SCALE TAB
+  updateScaleInputs() {
+    this.scaleWidthTarget.value = this.virtualCanvasTarget.width
+    this.scaleHeightTarget.value = this.virtualCanvasTarget.height
   }
-  
-  toggleRotationMenu(event) {
-    event.preventDefault()
-    this.rotationMenuTarget.classList.toggle('hidden')
-  }
-  
-  rotate(event) {
-    event.preventDefault()
-    const degrees = parseFloat(event.currentTarget.dataset.degrees)
-    if (this.cropper) {
-      this.cropper.rotate(degrees)
-    }
-    this.rotationMenuTarget.classList.add('hidden')
-    this.addToHistory()
-  }
-  
-  flip(event) {
-    event.preventDefault()
-    const direction = event.currentTarget.dataset.direction
-    if (this.cropper) {
-      if (direction === 'horizontal') {
-        this.cropper.scaleX(-(this.cropper.getData().scaleX || 1))
-      } else {
-        this.cropper.scaleY(-(this.cropper.getData().scaleY || 1))
-      }
-    }
-    this.rotationMenuTarget.classList.add('hidden')
-    this.addToHistory()
-  }
-  
-  setAspectRatio(event) {
-    const width = parseFloat(this.aspectWidthTarget.value)
-    const height = parseFloat(this.aspectHeightTarget.value)
-    
-    if (width && height && this.cropper) {
-      this.cropper.setAspectRatio(width / height)
-    } else if (this.cropper) {
-      this.cropper.setAspectRatio(NaN) // Free aspect
-    }
-  }
-  
+
   updateScaleHeight(event) {
-    const width = parseFloat(this.scaleWidthTarget.value)
-    if (width && this.originalWidth && this.originalHeight) {
-      const ratio = this.originalHeight / this.originalWidth
-      this.scaleHeightTarget.value = Math.round(width * ratio)
-    }
+    if (!this.lockAspectTarget.checked) return
+
+    const width = parseInt(this.scaleWidthTarget.value)
+    const canvas = this.virtualCanvasTarget
+    const aspectRatio = canvas.width / canvas.height
+    this.scaleHeightTarget.value = Math.round(width / aspectRatio)
   }
-  
+
   updateScaleWidth(event) {
-    const height = parseFloat(this.scaleHeightTarget.value)
-    if (height && this.originalWidth && this.originalHeight) {
-      const ratio = this.originalWidth / this.originalHeight
-      this.scaleWidthTarget.value = Math.round(height * ratio)
-    }
+    if (!this.lockAspectTarget.checked) return
+
+    const height = parseInt(this.scaleHeightTarget.value)
+    const canvas = this.virtualCanvasTarget
+    const aspectRatio = canvas.width / canvas.height
+    this.scaleWidthTarget.value = Math.round(height * aspectRatio)
   }
-  
-  applyScale(event) {
-    event.preventDefault()
-    // Scale is applied during save by using canvas dimensions
-    this.addToHistory()
+
+  applyScale() {
+    const newWidth = parseInt(this.scaleWidthTarget.value)
+    const newHeight = parseInt(this.scaleHeightTarget.value)
+
+    if (!newWidth || !newHeight) {
+      alert('Please enter valid dimensions')
+      return
+    }
+
+    // Create scaled canvas
+    const scaledCanvas = document.createElement('canvas')
+    scaledCanvas.width = newWidth
+    scaledCanvas.height = newHeight
+
+    const ctx = scaledCanvas.getContext('2d')
+    ctx.drawImage(this.virtualCanvasTarget, 0, 0, newWidth, newHeight)
+
+    // Update virtual canvas
+    const canvas = this.virtualCanvasTarget
+    canvas.width = newWidth
+    canvas.height = newHeight
+    canvas.getContext('2d').drawImage(scaledCanvas, 0, 0)
+
+    // Save to history
+    this.saveToHistory()
+    this.switchTab({ target: { dataset: { tab: 'filters' } } })
   }
-  
-  applyCrop(event) {
-    event.preventDefault()
-    if (this.cropper) {
-      this.cropper.crop()
-      this.addToHistory()
-    }
+
+  // ROTATION TAB
+  rotateLeft(event) {
+    if (event) event.preventDefault()
+    this.rotateImage(-90)
   }
-  
-  clearCrop(event) {
-    event.preventDefault()
-    if (this.cropper) {
-      this.cropper.clear()
-      this.aspectWidthTarget.value = ''
-      this.aspectHeightTarget.value = ''
-    }
+
+  rotateRight(event) {
+    if (event) event.preventDefault()
+    this.rotateImage(90)
   }
-  
-  addToHistory() {
-    // Simple history tracking (could be expanded)
-    if (this.cropper) {
-      this.history.push(this.cropper.getData())
-      this.historyIndex = this.history.length - 1
-      this.undoBtnTarget.disabled = false
-      this.redoBtnTarget.disabled = true
-    }
+
+  rotate180(event) {
+    if (event) event.preventDefault()
+    this.rotateImage(180)
   }
-  
-  undo(event) {
-    event.preventDefault()
-    if (this.historyIndex > 0 && this.cropper) {
-      this.historyIndex--
-      this.cropper.setData(this.history[this.historyIndex])
-      this.redoBtnTarget.disabled = false
+
+  rotateImage(degrees) {
+    const canvas = this.virtualCanvasTarget
+    const rotatedCanvas = document.createElement('canvas')
+
+    if (degrees === 90 || degrees === -90) {
+      rotatedCanvas.width = canvas.height
+      rotatedCanvas.height = canvas.width
+    } else {
+      rotatedCanvas.width = canvas.width
+      rotatedCanvas.height = canvas.height
     }
-    if (this.historyIndex === 0) {
-      this.undoBtnTarget.disabled = true
-    }
+
+    const ctx = rotatedCanvas.getContext('2d')
+    ctx.translate(rotatedCanvas.width / 2, rotatedCanvas.height / 2)
+    ctx.rotate((degrees * Math.PI) / 180)
+    ctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2)
+
+    // Update virtual canvas
+    canvas.width = rotatedCanvas.width
+    canvas.height = rotatedCanvas.height
+    canvas.getContext('2d').drawImage(rotatedCanvas, 0, 0)
+
+    this.saveToHistory()
   }
-  
-  redo(event) {
-    event.preventDefault()
-    if (this.historyIndex < this.history.length - 1 && this.cropper) {
-      this.historyIndex++
-      this.cropper.setData(this.history[this.historyIndex])
-      this.undoBtnTarget.disabled = false
-    }
-    if (this.historyIndex === this.history.length - 1) {
-      this.redoBtnTarget.disabled = true
-    }
+
+  flipHorizontal(event) {
+    if (event) event.preventDefault()
+    this.flipImage('horizontal')
   }
-  
-  cancelEditing(event) {
-    event.preventDefault()
-    if (confirm('Discard all changes?')) {
-      this.close()
-    }
+
+  flipVertical(event) {
+    if (event) event.preventDefault()
+    this.flipImage('vertical')
   }
-  
+
+  flipImage(direction) {
+    const canvas = this.virtualCanvasTarget
+    const flippedCanvas = document.createElement('canvas')
+    flippedCanvas.width = canvas.width
+    flippedCanvas.height = canvas.height
+
+    const ctx = flippedCanvas.getContext('2d')
+    
+    if (direction === 'horizontal') {
+      ctx.translate(canvas.width, 0)
+      ctx.scale(-1, 1)
+    } else {
+      ctx.translate(0, canvas.height)
+      ctx.scale(1, -1)
+    }
+
+    ctx.drawImage(canvas, 0, 0)
+
+    // Update virtual canvas
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    canvas.getContext('2d').drawImage(flippedCanvas, 0, 0)
+
+    this.saveToHistory()
+  }
+
+  // ADVANCED TAB
+  updateAdvanced(event) {
+    this.brightnessValueTarget.textContent = this.brightnessSliderTarget.value
+    this.contrastValueTarget.textContent = this.contrastSliderTarget.value
+    this.saturationValueTarget.textContent = this.saturationSliderTarget.value
+    this.hueValueTarget.textContent = this.hueSliderTarget.value
+    this.blurValueTarget.textContent = this.blurSliderTarget.value
+    this.sharpenValueTarget.textContent = this.sharpenSliderTarget.value
+  }
+
+  resetAdvanced() {
+    this.brightnessSliderTarget.value = 100
+    this.contrastSliderTarget.value = 100
+    this.saturationSliderTarget.value = 100
+    this.hueSliderTarget.value = 0
+    this.blurSliderTarget.value = 0
+    this.sharpenSliderTarget.value = 0
+    this.updateAdvanced()
+  }
+
+  applyAdvanced() {
+    const brightness = this.brightnessSliderTarget.value
+    const contrast = this.contrastSliderTarget.value
+    const saturation = this.saturationSliderTarget.value
+    const hue = this.hueSliderTarget.value
+    const blur = this.blurSliderTarget.value
+
+    // Build filter string
+    const filters = [
+      `brightness(${brightness}%)`,
+      `contrast(${contrast}%)`,
+      `saturate(${saturation}%)`,
+      `hue-rotate(${hue}deg)`,
+      blur > 0 ? `blur(${blur}px)` : ''
+    ].filter(f => f).join(' ')
+
+    // Apply to virtual canvas
+    const canvas = this.virtualCanvasTarget
+    const tempCanvas = document.createElement('canvas')
+    tempCanvas.width = canvas.width
+    tempCanvas.height = canvas.height
+
+    const tempCtx = tempCanvas.getContext('2d')
+    tempCtx.filter = filters
+    tempCtx.drawImage(canvas, 0, 0)
+
+    // Update virtual canvas
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(tempCanvas, 0, 0)
+
+    this.saveToHistory()
+  }
+
+  // SAVE
   async saveEdits(event) {
-    event.preventDefault()
-    this.saveBtnTarget.disabled = true
-    this.saveBtnTarget.textContent = 'Saving...'
+    if (event) event.preventDefault()
     
     try {
-      if (!this.cropper) {
-        throw new Error('Cropper not initialized')
-      }
-      
-      // Get cropped/transformed canvas
-      const width = parseFloat(this.scaleWidthTarget.value) || this.originalWidth
-      const height = parseFloat(this.scaleHeightTarget.value) || this.originalHeight
-      
-      let canvas = null
-      
-      try {
-        // Try to get cropped canvas from Cropper
-        canvas = this.cropper.getCroppedCanvas({
-          width: width,
-          height: height,
-          imageSmoothingEnabled: true,
-          imageSmoothingQuality: 'high'
-        })
-      } catch (e) {
-        console.error('Error getting cropped canvas:', e)
-        throw new Error('Failed to get image data')
-      }
-      
-      if (!canvas) {
-        throw new Error('Canvas is null')
-      }
-      
-      // Apply filters to the canvas if any effects are active
-      const hasFilters = Object.values(this.currentFilters).some((val, idx) => {
-        const keys = Object.keys(this.currentFilters)
-        if (keys[idx] === 'brightness' && val !== 100) return true
-        if (keys[idx] === 'contrast' && val !== 100) return true
-        if (keys[idx] === 'saturation' && val !== 100) return true
-        if (keys[idx] === 'hue' && val !== 0) return true
-        if (keys[idx] === 'sharpen' && val !== 0) return true
-        if (keys[idx] === 'grayscale' && val !== 0) return true
-        if (keys[idx] === 'sepia' && val !== 0) return true
-        if (keys[idx] === 'invert' && val !== 0) return true
-        if (keys[idx] === 'blur' && val !== 0) return true
-        return false
-      })
-      
-      if (hasFilters) {
-        // Create a new canvas to apply filters
-        const filteredCanvas = document.createElement('canvas')
-        filteredCanvas.width = canvas.width
-        filteredCanvas.height = canvas.height
-        const ctx = filteredCanvas.getContext('2d')
-        
-        // Build filter string
-        const filters = []
-        if (this.currentFilters.brightness !== 100) {
-          filters.push(`brightness(${this.currentFilters.brightness}%)`)
-        }
-        if (this.currentFilters.contrast !== 100) {
-          filters.push(`contrast(${this.currentFilters.contrast}%)`)
-        }
-        if (this.currentFilters.saturation !== 100) {
-          filters.push(`saturate(${this.currentFilters.saturation}%)`)
-        }
-        if (this.currentFilters.hue !== 0) {
-          filters.push(`hue-rotate(${this.currentFilters.hue}deg)`)
-        }
-        if (this.currentFilters.sharpen > 0) {
-          const sharpContrast = 100 + (this.currentFilters.sharpen * 0.5)
-          filters.push(`contrast(${sharpContrast}%)`)
-        }
-        if (this.currentFilters.grayscale > 0) {
-          filters.push(`grayscale(${this.currentFilters.grayscale}%)`)
-        }
-        if (this.currentFilters.sepia > 0) {
-          filters.push(`sepia(${this.currentFilters.sepia}%)`)
-        }
-        if (this.currentFilters.invert > 0) {
-          filters.push(`invert(${this.currentFilters.invert}%)`)
-        }
-        if (this.currentFilters.blur > 0) {
-          filters.push(`blur(${this.currentFilters.blur}px)`)
-        }
-        
-        ctx.filter = filters.join(' ')
-        ctx.drawImage(canvas, 0, 0)
-        
-        // Use the filtered canvas
-        canvas = filteredCanvas
-      }
-      
+      // Get final canvas
+      const canvas = this.virtualCanvasTarget
+
       // Convert to blob
-      const blob = await new Promise((resolve, reject) => {
-        try {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(blob)
-            } else {
-              reject(new Error('Failed to create blob from canvas'))
-            }
-          }, 'image/jpeg', 0.95)
-        } catch (e) {
-          reject(e)
-        }
+      const blob = await new Promise(resolve => {
+        canvas.toBlob(resolve, 'image/jpeg', 0.95)
       })
-      
-      if (!blob) {
-        throw new Error('Failed to create blob')
-      }
-      
-      // Create FormData and upload
+
+      // Create FormData
       const formData = new FormData()
       formData.append('file', blob, 'edited-image.jpg')
-      
+      formData.append('original_upload_id', this.mediumId)
+
+      // Upload
       const response = await fetch('/admin/media/upload', {
         method: 'POST',
         headers: {
@@ -386,259 +532,46 @@ export default class extends Controller {
         },
         body: formData
       })
-      
+
+      if (!response.ok) throw new Error('Upload failed')
+
       const data = await response.json()
+
+      // Dispatch event to reload media library
+      window.dispatchEvent(new CustomEvent('image-edited', {
+        detail: { mediumId: data.medium_id }
+      }))
+
+      this.close()
       
-      if (data.success === 1) {
-        // Dispatch event to reload media library
-        this.element.dispatchEvent(new CustomEvent('image-edited', {
-          bubbles: true,
-          detail: { uploadId: data.medium_id || this.uploadId }
-        }))
-        
-        this.close()
-      } else {
-        alert('Failed to save edited image: ' + (data.message || 'Unknown error'))
-        this.saveBtnTarget.disabled = false
-        this.saveBtnTarget.textContent = 'Save Edits'
+      if (window.Swal) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Image saved successfully',
+          showConfirmButton: false,
+          timer: 2000
+        })
       }
     } catch (error) {
       console.error('Save error:', error)
-      alert('An error occurred while saving: ' + error.message)
-      this.saveBtnTarget.disabled = false
-      this.saveBtnTarget.textContent = 'Save Edits'
+      alert('An error occurred while saving')
     }
   }
-  
-  activateEffects(event) {
+
+  cancelEditing(event) {
     if (event) event.preventDefault()
-    this.currentTool = 'effects'
-    this.effectsBtnTarget.style.background = 'var(--admin-primary)'
-    this.effectsBtnTarget.style.color = 'white'
-    this.cropBtnTarget.style.background = 'transparent'
-    this.cropBtnTarget.style.color = 'var(--admin-text-primary)'
-    this.scaleBtnTarget.style.background = 'transparent'
-    this.scaleBtnTarget.style.color = 'var(--admin-text-primary)'
-    this.effectsPanelTarget.classList.remove('hidden')
-    this.cropPanelTarget.classList.add('hidden')
-    this.scalePanelTarget.classList.add('hidden')
+    if (confirm('Discard all changes?')) {
+      this.close()
+    }
   }
-  
-  applyEffect(event) {
-    event.preventDefault()
-    const effect = event.currentTarget.dataset.effect
-    
-    switch(effect) {
-      case 'grayscale':
-        this.currentFilters.grayscale = 100
-        this.currentFilters.sepia = 0
-        this.currentFilters.invert = 0
-        this.currentFilters.blur = 0
-        break
-      case 'sepia':
-        this.currentFilters.sepia = 100
-        this.currentFilters.grayscale = 0
-        this.currentFilters.invert = 0
-        this.currentFilters.blur = 0
-        break
-      case 'invert':
-        this.currentFilters.invert = 100
-        this.currentFilters.grayscale = 0
-        this.currentFilters.sepia = 0
-        this.currentFilters.blur = 0
-        break
-      case 'blur':
-        this.currentFilters.blur = 5
-        this.currentFilters.grayscale = 0
-        this.currentFilters.sepia = 0
-        this.currentFilters.invert = 0
-        break
-      case 'vintage':
-        this.currentFilters.brightness = 105
-        this.currentFilters.contrast = 110
-        this.currentFilters.saturation = 85
-        this.currentFilters.sepia = 20
-        this.brightnessSliderTarget.value = 105
-        this.brightnessValueTarget.textContent = 105
-        this.contrastSliderTarget.value = 110
-        this.contrastValueTarget.textContent = 110
-        this.saturationSliderTarget.value = 85
-        this.saturationValueTarget.textContent = 85
-        break
-      case 'vivid':
-        this.currentFilters.brightness = 105
-        this.currentFilters.contrast = 120
-        this.currentFilters.saturation = 130
-        this.brightnessSliderTarget.value = 105
-        this.brightnessValueTarget.textContent = 105
-        this.contrastSliderTarget.value = 120
-        this.contrastValueTarget.textContent = 120
-        this.saturationSliderTarget.value = 130
-        this.saturationValueTarget.textContent = 130
-        break
-    }
-    
-    this.applyFilters()
-  }
-  
-  updateBrightness(event) {
-    const value = event.target.value
-    this.currentFilters.brightness = value
-    this.brightnessValueTarget.textContent = value
-    this.applyFilters()
-  }
-  
-  updateContrast(event) {
-    const value = event.target.value
-    this.currentFilters.contrast = value
-    this.contrastValueTarget.textContent = value
-    this.applyFilters()
-  }
-  
-  updateSaturation(event) {
-    const value = event.target.value
-    this.currentFilters.saturation = value
-    this.saturationValueTarget.textContent = value
-    this.applyFilters()
-  }
-  
-  updateHue(event) {
-    const value = event.target.value
-    this.currentFilters.hue = value
-    this.hueValueTarget.textContent = value
-    this.applyFilters()
-  }
-  
-  updateSharpen(event) {
-    const value = event.target.value
-    this.currentFilters.sharpen = value
-    this.sharpenValueTarget.textContent = value
-    this.applyFilters()
-  }
-  
-  applyFilters() {
-    const filters = []
-    
-    if (this.currentFilters.brightness !== 100) {
-      filters.push(`brightness(${this.currentFilters.brightness}%)`)
-    }
-    if (this.currentFilters.contrast !== 100) {
-      filters.push(`contrast(${this.currentFilters.contrast}%)`)
-    }
-    if (this.currentFilters.saturation !== 100) {
-      filters.push(`saturate(${this.currentFilters.saturation}%)`)
-    }
-    if (this.currentFilters.hue !== 0) {
-      filters.push(`hue-rotate(${this.currentFilters.hue}deg)`)
-    }
-    if (this.currentFilters.grayscale > 0) {
-      filters.push(`grayscale(${this.currentFilters.grayscale}%)`)
-    }
-    if (this.currentFilters.sepia > 0) {
-      filters.push(`sepia(${this.currentFilters.sepia}%)`)
-    }
-    if (this.currentFilters.invert > 0) {
-      filters.push(`invert(${this.currentFilters.invert}%)`)
-    }
-    if (this.currentFilters.blur > 0) {
-      filters.push(`blur(${this.currentFilters.blur}px)`)
-    }
-    
-    let filterString = filters.join(' ')
-    
-    // Add sharpen as contrast
-    if (this.currentFilters.sharpen > 0) {
-      const sharpContrast = 100 + (this.currentFilters.sharpen * 0.5)
-      filterString = filterString ? filterString + ` contrast(${sharpContrast}%)` : `contrast(${sharpContrast}%)`
-    }
-    
-    // Apply filter to both the original image and the cropper canvas
-    const imagesToFilter = []
-    
-    // Find the actual displayed image element (Cropper creates its own)
-    if (this.cropper) {
-      const cropperElement = this.imageContainerTarget.querySelector('.cropper-container')
-      if (cropperElement) {
-        const cropperImg = cropperElement.querySelector('img')
-        if (cropperImg) {
-          imagesToFilter.push(cropperImg)
-        }
-      }
-    }
-    
-    // Also apply to original image for compatibility
-    if (this.imageTarget) {
-      imagesToFilter.push(this.imageTarget)
-    }
-    
-    // Apply filter to all found images
-    imagesToFilter.forEach(img => {
-      img.style.filter = filterString
-    })
-  }
-  
-  resetEffects(event) {
-    event.preventDefault()
-    this.currentFilters = {
-      brightness: 100,
-      contrast: 100,
-      saturation: 100,
-      hue: 0,
-      sharpen: 0,
-      grayscale: 0,
-      sepia: 0,
-      invert: 0,
-      blur: 0
-    }
-    
-    this.brightnessSliderTarget.value = 100
-    this.brightnessValueTarget.textContent = 100
-    this.contrastSliderTarget.value = 100
-    this.contrastValueTarget.textContent = 100
-    this.saturationSliderTarget.value = 100
-    this.saturationValueTarget.textContent = 100
-    this.hueSliderTarget.value = 0
-    this.hueValueTarget.textContent = 0
-    this.sharpenSliderTarget.value = 0
-    this.sharpenValueTarget.textContent = 0
-    
-    // Clear filter from all images
-    const imagesToFilter = []
-    
-    if (this.cropper) {
-      const cropperElement = this.imageContainerTarget.querySelector('.cropper-container')
-      if (cropperElement) {
-        const cropperImg = cropperElement.querySelector('img')
-        if (cropperImg) {
-          imagesToFilter.push(cropperImg)
-        }
-      }
-    }
-    
-    if (this.imageTarget) {
-      imagesToFilter.push(this.imageTarget)
-    }
-    
-    imagesToFilter.forEach(img => {
-      img.style.filter = ''
-    })
-  }
-  
-  close(event) {
-    if (event) event.preventDefault()
-    
-    if (this.cropper) {
-      this.cropper.destroy()
-      this.cropper = null
-    }
-    
+
+  close() {
+    this.destroyCropper()
     this.overlayTarget.classList.add('hidden')
-    document.body.style.overflow = ''
-    this.uploadId = null
     this.history = []
     this.historyIndex = -1
-    this.undoBtnTarget.disabled = true
-    this.redoBtnTarget.disabled = true
+    this.mediumId = null
+    this.originalImage = null
+    this.virtualImage = null
   }
 }
-

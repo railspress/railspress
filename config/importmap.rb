@@ -14,6 +14,7 @@ pin_all_from "app/javascript/channels", under: "channels"
 
 pin "editorjs_converter", to: "editorjs_converter.js"
 pin "editorjs_media_tool", to: "editorjs_media_tool.js"
+pin "image_filters", to: "image_filters.js"
 
 pin "trix"
 

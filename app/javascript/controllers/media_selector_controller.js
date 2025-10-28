@@ -30,11 +30,13 @@ export default class extends Controller {
     this.stockSearchQuery = this.loadStockSearchQuery() // Load saved search
     this.bookmarkedPhotoIds = new Set() // Track bookmarked photo IDs
     this.allStockPhotos = [] // Cache all search results
-    
-    // Listen for image-edited events
-    this.element.addEventListener('image-edited', () => {
+  }
+  
+  handleImageEdited(event) {
+    // Reload media library when an image is edited
+    if (this.currentTab === 'library') {
       this.loadMediaLibrary()
-    })
+    }
   }
 
   openDialog(event) {
