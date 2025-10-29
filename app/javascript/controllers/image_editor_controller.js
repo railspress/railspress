@@ -18,7 +18,8 @@ export default class extends Controller {
     "highlightsSlider", "highlightsValue",
     "shadowsSlider", "shadowsValue",
     "exposureSlider", "exposureValue",
-    "metaPanel", "metaLoading", "metaEmpty", "metaContent"
+    "metaPanel", "metaLoading", "metaEmpty", "metaContent",
+    "filterPopover", "popoverFilterName", "dryWetSlider", "dryWetValue"
   ]
 
   connect() {
@@ -31,9 +32,38 @@ export default class extends Controller {
     this.cropper = null
     this.selectedFilter = 'normal'
     this.metadataChanges = {} // Store EXIF changes
+    this.filterIntensity = 100
+    this.selectedFilterThumbnail = null
+    this.originalVirtualImage = null // Store original for advanced tab reset
+    this.advancedBaseImage = null // Store the image before advanced adjustments
+    this.selectedFilterIndex = 0 // Track which filter is selected for keyboard navigation
+    this.filterNames = ImageFilters.getFilterNames() // Get all filter names
+    this.advancedState = {
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+      hue: 0,
+      blur: 0,
+      sharpen: 0,
+      vignette: 0,
+      temperature: 0,
+      tint: 0,
+      highlights: 100,
+      shadows: 100,
+      exposure: 0
+    }
+    
+    // Add keyboard event listener for arrow key navigation
+    this.boundHandleKeydown = this.handleKeydown.bind(this)
+    document.addEventListener('keydown', this.boundHandleKeydown)
     
     // Load Cropper.js dynamically
     this.loadCropperJS()
+  }
+  
+  disconnect() {
+    // Remove keyboard event listener
+    document.removeEventListener('keydown', this.boundHandleKeydown)
   }
 
   loadCropperJS() {
@@ -147,6 +177,91 @@ export default class extends Controller {
     this.updateHistoryButtons()
   }
 
+  handleKeydown(event) {
+    // Only handle arrow keys when on the Filters tab and editor is open
+    if (this.currentTab !== 'filters' || this.overlayTarget.classList.contains('hidden')) {
+      return
+    }
+    
+    const key = event.key
+    let newIndex = this.selectedFilterIndex
+    
+    switch(key) {
+      case 'ArrowRight':
+        event.preventDefault()
+        newIndex = (this.selectedFilterIndex + 1) % this.filterNames.length
+        break
+      case 'ArrowLeft':
+        event.preventDefault()
+        newIndex = this.selectedFilterIndex > 0 ? this.selectedFilterIndex - 1 : this.filterNames.length - 1
+        break
+      case 'ArrowDown':
+        event.preventDefault()
+        // 2-column layout
+        newIndex = Math.min(this.selectedFilterIndex + 2, this.filterNames.length - 1)
+        break
+      case 'ArrowUp':
+        event.preventDefault()
+        // 2-column layout
+        newIndex = Math.max(this.selectedFilterIndex - 2, 0)
+        break
+      case 'Enter':
+      case ' ':
+        event.preventDefault()
+        // Filter is already applied by arrow keys, so do nothing (or could toggle popover)
+        return
+      default:
+        return
+    }
+    
+    this.selectedFilterIndex = newIndex
+    this.highlightFilterByIndex(newIndex)
+    
+    // Apply the filter immediately when navigating with arrow keys
+    const selectedFilterName = this.filterNames[newIndex]
+    this.applyFilterOnSelection(selectedFilterName)
+  }
+  
+  highlightFilterByIndex(index) {
+    // Remove all borders
+    this.filterGridTarget.querySelectorAll('.filter-border').forEach(border => {
+      border.classList.add('hidden')
+    })
+    
+    // Add border to selected thumbnail
+    const filterName = this.filterNames[index]
+    const thumbnail = this.filterGridTarget.querySelector(`[data-filter="${filterName}"]`)
+    if (thumbnail) {
+      const border = thumbnail.querySelector('.filter-border')
+      if (border) {
+        border.classList.remove('hidden')
+      }
+      
+      // Scroll the selected thumbnail into view
+      thumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }
+  
+  applyFilterOnSelection(filterName) {
+    // Reset intensity and apply the filter
+    this.filterIntensity = 100
+    
+    // Update selected filter thumbnail reference
+    const thumbnail = this.filterGridTarget.querySelector(`[data-filter="${filterName}"]`)
+    this.selectedFilterThumbnail = thumbnail
+    
+    // Show the icon for filters other than 'normal'
+    if (thumbnail && filterName !== 'normal') {
+      const icon = thumbnail.querySelector('.filter-icon')
+      if (icon) {
+        icon.classList.remove('hidden')
+      }
+    }
+    
+    // Apply the filter to the image
+    this.applyFilter(filterName, 100)
+  }
+
   switchTab(event) {
     const tab = event.target.dataset.tab
 
@@ -229,8 +344,26 @@ export default class extends Controller {
     const gridHTML = filterNames.map(filterName => {
       const filterData = ImageFilters.getFilterData(filterName)
       return `
-        <div class="filter-thumbnail cursor-pointer hover:opacity-80 transition-opacity" data-filter="${filterName}">
-          <canvas class="w-full aspect-square rounded mb-1" data-filter-canvas="${filterName}"></canvas>
+        <div class="filter-thumbnail cursor-pointer hover:opacity-80 transition-opacity relative" data-filter="${filterName}">
+          <!-- Border indicator (hidden initially) -->
+          <div class="filter-border hidden absolute inset-0 border-2 rounded pointer-events-none" 
+               style="border-color: var(--admin-primary); z-index: 10;"></div>
+          
+          <!-- Canvas wrapper with icon inside -->
+          <div class="relative">
+            ${filterName !== 'normal' ? `
+            <div class="filter-icon hidden absolute bottom-5 left-1 cursor-pointer z-20"
+                 data-action="click->image-editor#showFilterPopover">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 512 512" fill="currentColor">
+                <path d="M257.6,128c7.4-36.5,39.7-64,78.4-64s71,27.5,78.4,64H512v32h-97.6c-7.4,36.5-39.7,64-78.4,64s-71-27.5-78.4-64H0v-32
+                  H257.6z M336,192c26.5,0,48-21.5,48-48s-21.5-48-48-48s-48,21.5-48,48S309.5,192,336,192z"/>
+                <path d="M97.6,352c7.4-36.5,39.7-64,78.4-64s71,27.5,78.4,64H512v32H254.4c-7.4,36.5-39.7,64-78.4,64s-71-27.5-78.4-64H0v-32H97.6z
+                  M176,416c26.5,0,48-21.5,48-48s-21.5-48-48-48s-48,21.5-48,48S149.5,416,176,416z"/>
+              </svg>
+            </div>
+            ` : ''}
+            <canvas class="w-full aspect-square rounded mb-1" data-filter-canvas="${filterName}"></canvas>
+          </div>
           <p class="text-xs text-center" style="color: var(--admin-text-secondary);">${filterData.name}</p>
         </div>
       `
@@ -247,8 +380,31 @@ export default class extends Controller {
     // Add click handlers
     this.filterGridTarget.querySelectorAll('.filter-thumbnail').forEach(thumb => {
       thumb.addEventListener('click', (e) => {
+        // Don't trigger if clicking the icon
+        if (e.target.closest('.filter-icon')) return
+        
         const filterName = thumb.dataset.filter
-        this.applyFilter(filterName)
+        
+        // Update selected filter index for keyboard navigation
+        this.selectedFilterIndex = this.filterNames.indexOf(filterName)
+        
+        // Remove selection from previous thumbnail
+        if (this.selectedFilterThumbnail) {
+          const prevBorder = this.selectedFilterThumbnail.querySelector('.filter-border')
+          const prevIcon = this.selectedFilterThumbnail.querySelector('.filter-icon')
+          if (prevBorder) prevBorder.classList.add('hidden')
+          if (prevIcon) prevIcon.classList.add('hidden')
+        }
+        
+        // Show border and icon on clicked thumbnail
+        const border = thumb.querySelector('.filter-border')
+        const icon = thumb.querySelector('.filter-icon')
+        if (border) border.classList.remove('hidden')
+        if (icon) icon.classList.remove('hidden')
+        
+        this.selectedFilterThumbnail = thumb
+        this.filterIntensity = 100  // Reset intensity to 100%
+        this.applyFilter(filterName, 100)  // Pass 100 explicitly
       })
     })
   }
@@ -273,32 +429,48 @@ export default class extends Controller {
     ctx.drawImage(this.originalImage, x, y, w, h)
   }
 
-  applyFilter(filterName) {
+  applyFilter(filterName, intensity = this.filterIntensity, skipHistory = false) {
     this.selectedFilter = filterName
-    const filterData = ImageFilters.getFilterData(filterName)
-
-    // Always apply filter to original image, not the already-filtered virtual canvas
-    const canvas = this.virtualCanvasTarget
+    this.filterIntensity = intensity
     
-    // Create temp canvas and apply filter to original image
-    const tempCanvas = document.createElement('canvas')
-    tempCanvas.width = this.originalImage.width
-    tempCanvas.height = this.originalImage.height
-
-    const tempCtx = tempCanvas.getContext('2d')
-    tempCtx.filter = filterData.css
-    tempCtx.drawImage(this.originalImage, 0, 0)
-
-    // Update virtual canvas with filtered result
+    const canvas = this.virtualCanvasTarget
     const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(tempCanvas, 0, 0)
+    
+    if (filterName === 'Normal') {
+      // Draw original image
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(this.originalImage, 0, 0)
+    } else {
+      const filterData = ImageFilters.getFilterData(filterName)
+      
+      // Create temp canvas and apply filter
+      const tempCanvas = document.createElement('canvas')
+      tempCanvas.width = this.originalImage.width
+      tempCanvas.height = this.originalImage.height
+      const tempCtx = tempCanvas.getContext('2d')
+      tempCtx.filter = filterData.css
+      tempCtx.drawImage(this.originalImage, 0, 0)
 
-    // Store this as the base for advanced tab
-    this.advancedBaseImage = this.cloneCanvas(tempCanvas)
+      // Draw original image first (base layer)
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.globalAlpha = 1
+      ctx.drawImage(this.originalImage, 0, 0)
 
-    // Save to history
-    this.saveToHistory()
+      // Blend filtered image on top with intensity (0-100%)
+      if (intensity > 0) {
+        ctx.globalAlpha = intensity / 100
+        ctx.drawImage(tempCanvas, 0, 0)
+        ctx.globalAlpha = 1
+      }
+
+      // Store filtered canvas as base for advanced tab
+      this.advancedBaseImage = this.cloneCanvas(tempCanvas)
+    }
+
+    // Save to history only if not skipped
+    if (!skipHistory) {
+      this.saveToHistory()
+    }
   }
 
   cloneCanvas(sourceCanvas) {
@@ -307,6 +479,81 @@ export default class extends Controller {
     clone.height = sourceCanvas.height
     clone.getContext('2d').drawImage(sourceCanvas, 0, 0)
     return clone
+  }
+
+  showFilterPopover(event) {
+    event.stopPropagation()
+    
+    const filterName = this.selectedFilterThumbnail?.dataset.filter
+    if (!filterName) return
+    
+    // Toggle visibility
+    if (!this.filterPopoverTarget.classList.contains('hidden')) {
+      // Already visible, hide it
+      this.filterPopoverTarget.classList.add('hidden')
+      return
+    }
+    
+    // Get the display name from ImageFilters
+    const filterData = ImageFilters.getFilterData(filterName)
+    const displayName = filterData ? filterData.name : filterName
+    
+    // Update popover content with current filter intensity
+    this.popoverFilterNameTarget.textContent = displayName
+    this.dryWetSliderTarget.value = this.filterIntensity || 100
+    this.dryWetValueTarget.textContent = `${this.filterIntensity || 100}%`
+    
+    // Position popover above the icon, centered
+    if (this.selectedFilterThumbnail) {
+      const thumbRect = this.selectedFilterThumbnail.getBoundingClientRect()
+      const editorRect = this.element.getBoundingClientRect()
+      const popover = this.filterPopoverTarget
+      
+      // Get icon element position (bottom-left of thumbnail)
+      const iconElement = this.selectedFilterThumbnail.querySelector('.filter-icon')
+      if (!iconElement) return
+      
+      const iconRect = iconElement.getBoundingClientRect()
+      
+      // Get icon center position
+      const iconCenterX = iconRect.left - editorRect.left + (iconRect.width / 2)
+      const iconTop = iconRect.top - editorRect.top
+      
+      // Center popover horizontally on icon center
+      const popoverWidth = 200
+      const left = iconCenterX - (popoverWidth / 2)
+      
+      // Position directly above icon
+      const gap = 8  // Small gap for the caret
+      const popoverHeight = 110  // Reduced from 120
+      const top = iconTop - popoverHeight - gap
+      
+      popover.style.top = `${top}px`
+      popover.style.left = `${left}px`
+    }
+    
+    // Show popover
+    this.filterPopoverTarget.classList.remove('hidden')
+  }
+  
+  closeFilterPopover(event) {
+    // Don't close the popover if it's not visible
+    if (this.filterPopoverTarget.classList.contains('hidden')) return
+    
+    // Close if clicking anywhere EXCEPT directly on the slider thumb
+    if (!event.target.matches('input[type="range"]')) {
+      this.filterPopoverTarget.classList.add('hidden')
+    }
+  }
+
+  updateDryWet(event) {
+    const newIntensity = parseInt(event.target.value)
+    this.filterIntensity = newIntensity
+    this.dryWetValueTarget.textContent = `${newIntensity}%`
+    
+    if (this.selectedFilter && this.selectedFilter !== 'normal') {
+      this.applyFilter(this.selectedFilter, newIntensity, true)  // Skip history
+    }
   }
 
   // CROP TAB
@@ -496,37 +743,6 @@ export default class extends Controller {
     this.saveToHistory()
   }
 
-  // ADVANCED TAB - Track original for reset
-  connect() {
-    this.mediumId = null
-    this.originalImage = null
-    this.virtualImage = null // The single source of truth
-    this.history = []
-    this.historyIndex = -1
-    this.currentTab = 'filters'
-    this.cropper = null
-    this.selectedFilter = 'normal'
-    this.originalVirtualImage = null // Store original for advanced tab reset
-    this.advancedBaseImage = null // Store the image before advanced adjustments
-    this.advancedState = {
-      brightness: 100,
-      contrast: 100,
-      saturation: 100,
-      hue: 0,
-      blur: 0,
-      sharpen: 0,
-      vignette: 0,
-      temperature: 0,
-      tint: 0,
-      highlights: 100,
-      shadows: 100,
-      exposure: 0
-    }
-    
-    // Load Cropper.js dynamically
-    this.loadCropperJS()
-  }
-
   initializeVirtualImage(img) {
     const canvas = this.virtualCanvasTarget
     canvas.width = img.width
@@ -585,9 +801,14 @@ export default class extends Controller {
     const saturation = this.advancedState.saturation
     const hue = this.advancedState.hue
     const blur = this.advancedState.blur
-    const vignette = this.advancedState.vignette
+    const vignette = this.advancedState.vignette || 0  // Ensure 0 if undefined
+    const temperature = this.advancedState.temperature
+    const tint = this.advancedState.tint
+    const shadows = this.advancedState.shadows
+    const highlights = this.advancedState.highlights
+    const exposure = this.advancedState.exposure
 
-    // Build filter string
+    // Build filter string for CSS-supported filters
     const filters = [
       `brightness(${brightness}%)`,
       `contrast(${contrast}%)`,
@@ -608,10 +829,73 @@ export default class extends Controller {
     tempCtx.filter = filters
     tempCtx.drawImage(sourceImage, 0, 0)
 
+    // Apply pixel-level adjustments (exposure, temperature, tint, shadows, highlights)
+    if (exposure !== 0 || temperature !== 0 || tint !== 0 || shadows !== 100 || highlights !== 100) {
+      const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
+      const data = imgData.data
+      
+      for (let i = 0; i < data.length; i += 4) {
+        let r = data[i]
+        let g = data[i + 1]
+        let b = data[i + 2]
+        
+        // Exposure adjustment
+        if (exposure !== 0) {
+          const expFactor = Math.pow(2, exposure / 100)
+          r = Math.min(255, r * expFactor)
+          g = Math.min(255, g * expFactor)
+          b = Math.min(255, b * expFactor)
+        }
+        
+        // Temperature (warm/cool) - adjust red and blue channels
+        if (temperature !== 0) {
+          const temp = temperature / 100
+          r = Math.min(255, Math.max(0, r + temp * 10))
+          b = Math.min(255, Math.max(0, b - temp * 10))
+        }
+        
+        // Tint (green/magenta) - adjust green channel
+        if (tint !== 0) {
+          const tintValue = tint / 100
+          g = Math.min(255, Math.max(0, g + tintValue * 10))
+        }
+        
+        // Shadows and highlights
+        if (shadows !== 100 || highlights !== 100) {
+          // Calculate pixel brightness (luminance)
+          const luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255
+          
+          // Shadows adjustment (affects darker pixels)
+          if (shadows !== 100 && luminance < 0.5) {
+            const shadowFactor = shadows / 100
+            const shadowAmount = (0.5 - luminance) / 0.5 * (1 - shadowFactor)
+            r = r * (1 - shadowAmount)
+            g = g * (1 - shadowAmount)
+            b = b * (1 - shadowAmount)
+          }
+          
+          // Highlights adjustment (affects brighter pixels)
+          if (highlights !== 100 && luminance >= 0.5) {
+            const highlightFactor = highlights / 100
+            const highlightAmount = (luminance - 0.5) / 0.5 * (1 - highlightFactor)
+            r = Math.min(255, r + (255 - r) * highlightAmount)
+            g = Math.min(255, g + (255 - g) * highlightAmount)
+            b = Math.min(255, b + (255 - b) * highlightAmount)
+          }
+        }
+        
+        data[i] = Math.max(0, Math.min(255, r))
+        data[i + 1] = Math.max(0, Math.min(255, g))
+        data[i + 2] = Math.max(0, Math.min(255, b))
+      }
+      
+      tempCtx.putImageData(imgData, 0, 0)
+    }
+
     // Apply vignette effect if needed
-    if (vignette > 0) {
+    if (vignette && vignette > 0) {
       // Use a more elliptical/rectangular vignette that covers all corners
-      const intensity = vignette / 100
+      const intensity = Math.max(0, Math.min(1, vignette / 100))
       
       // Create a mask for vignette using multiple radial gradients
       const vignetteCanvas = document.createElement('canvas')
@@ -619,28 +903,37 @@ export default class extends Controller {
       vignetteCanvas.height = tempCanvas.height
       const vignetteCtx = vignetteCanvas.getContext('2d')
       
-      // Fill with dark color at full intensity
-      vignetteCtx.fillStyle = `rgba(0,0,0,${intensity * 1.2})`
-      vignetteCtx.fillRect(0, 0, vignetteCanvas.width, vignetteCanvas.height)
-      
-      // Create a white ellipse in the center to "cut out" the bright area
-      vignetteCtx.globalCompositeOperation = 'destination-out'
-      vignetteCtx.fillStyle = 'white'
-      
-      // Create ellipse that covers the center area (made smaller for stronger vignette)
-      vignetteCtx.beginPath()
+      // Create radial gradient from center to corner
       const centerX = vignetteCanvas.width / 2
       const centerY = vignetteCanvas.height / 2
-      const radiusX = vignetteCanvas.width * 0.5
-      const radiusY = vignetteCanvas.height * 0.5
       
-      vignetteCtx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI)
-      vignetteCtx.fill()
+      // Calculate max distance from center to corner
+      const maxRadius = Math.sqrt(
+        (vignetteCanvas.width / 2) ** 2 + 
+        (vignetteCanvas.height / 2) ** 2
+      )
       
-      // Blur the edges for smoother transition (reduced blur for sharper vignette)
-      tempCtx.filter = `blur(${Math.max(tempCanvas.width, tempCanvas.height) * 0.03}px)`
+      // Create radial gradient
+      const gradient = vignetteCtx.createRadialGradient(
+        centerX, centerY, maxRadius * 0.4,  // Start fading at 40% from center
+        centerX, centerY, maxRadius          // Full dark at edge
+      )
+      
+      // Add color stops: transparent center, dark edges
+      gradient.addColorStop(0, 'transparent')
+      gradient.addColorStop(0.7, `rgba(0,0,0,${intensity * 0.5})`)  // Start darkening at 70%
+      gradient.addColorStop(1, `rgba(0,0,0,${intensity})`)         // Full dark at edge
+      
+      // Fill the vignette canvas
+      vignetteCtx.fillStyle = gradient
+      vignetteCtx.fillRect(0, 0, vignetteCanvas.width, vignetteCanvas.height)
+      
+      // Apply vignette to the image using multiply blend mode
+      tempCtx.globalCompositeOperation = 'multiply'
+      tempCtx.globalAlpha = 1
       tempCtx.drawImage(vignetteCanvas, 0, 0)
-      tempCtx.filter = 'none'
+      tempCtx.globalCompositeOperation = 'source-over'
+      tempCtx.globalAlpha = 1
     }
 
     // Update virtual canvas with filtered result

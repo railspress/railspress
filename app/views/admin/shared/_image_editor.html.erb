@@ -7,7 +7,7 @@
     button_bg: 'var(--admin-primary)',
     button_hover_bg: 'var(--admin-primary-hover)',
     button_text: 'white',
-    secondary_bg: 'var(--admin-bg-secondary)',
+    secondary_bg: 'var(--admin-bg-elevated)',
     toolbar_bg: 'var(--admin-bg-elevated)',
     input_bg: 'var(--admin-bg-primary)'
   }.merge(local_assigns[:theme] || {})
@@ -22,6 +22,7 @@
 <div id="<%= editor_id %>"
      data-controller="image-editor image-zoom"
      data-image-editor-target="overlay"
+     data-action="click->image-editor#closeFilterPopover"
      class="hidden fixed inset-0 z-[10000]"
      style="background: rgba(0, 0, 0, 0.95);">
   
@@ -185,6 +186,26 @@
         </h3>
         <div class="grid grid-cols-2 gap-3" data-image-editor-target="filterGrid">
           <!-- Filter thumbnails will be dynamically generated -->
+        </div>
+        
+        <!-- Dry/Wet Popover -->
+        <div data-image-editor-target="filterPopover" class="hidden absolute z-50 p-4 rounded shadow-lg"
+             style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; min-width: 200px;">
+          <!-- Caret Pointer - Centered -->
+          <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45" 
+               style="background: <%= theme[:secondary_bg] %>; border-right: 1px solid <%= theme[:border_color] %>; border-bottom: 1px solid <%= theme[:border_color] %>;"></div>
+          
+          <!-- Title -->
+          <div class="text-xs font-semibold mb-3 text-center" data-image-editor-target="popoverFilterName" style="color: <%= theme[:text_color] %>;"></div>
+          
+          <!-- Slider -->
+          <input type="range" min="0" max="100" value="100"
+                 data-action="input->image-editor#updateDryWet"
+                 data-image-editor-target="dryWetSlider"
+                 class="w-full mb-2 filter-intensity-slider">
+          
+          <!-- Percentage -->
+          <div class="text-xs text-center font-semibold" data-image-editor-target="dryWetValue" style="color: <%= theme[:text_color] %>;">100%</div>
         </div>
       </div>
 
