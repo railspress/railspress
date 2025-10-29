@@ -1580,6 +1580,32 @@
   height: 5px;
 }
 
+/* Disabled slider styling */
+.image-editor-slider:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.image-editor-slider:disabled::-webkit-slider-thumb {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.image-editor-slider:disabled::-moz-range-thumb {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.image-editor-slider:disabled::-webkit-slider-runnable-track {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.image-editor-slider:disabled::-moz-range-track {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Canvas Checkerboard Background */
 .canvas-checkerboard-container {
   background-image: 

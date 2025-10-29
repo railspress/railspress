@@ -562,6 +562,165 @@
           </div>
         </div>
 
+        <!-- DETAIL SECTION -->
+        <div class="image-editor-slider-group mb-4" data-category="detail">
+          <div class="image-editor-slider-group-header" 
+               data-action="click->image-editor#toggleCategory"
+               data-category="detail"
+               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 1rem;">
+            <span class="text-sm font-medium" style="color: <%= theme[:text_color] %>;">Detail</span>
+            <svg class="chevron-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <%= theme[:text_color] %>; transition: transform 0.2s;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+          <div class="image-editor-slider-content" data-category-content="detail" hidden style="padding: 0 0.5rem; box-sizing: border-box; width: 100%;">
+            <!-- Sharpening Group -->
+            <div class="mb-4">
+              <!-- Sharpening -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Sharpening</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="sharpeningValue" style="color: <%= theme[:text_color] %>;">0</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="sharpeningSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="0"
+                       class="image-editor-slider">
+              </div>
+              <!-- Radius -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>; opacity: 0.6;">Radius</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="radiusValue" style="color: <%= theme[:text_color] %>; opacity: 0.6;">1.0</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="radiusSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="50"
+                       class="image-editor-slider"
+                       disabled>
+              </div>
+              <!-- Detail (Sharpening) -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>; opacity: 0.6;">Detail</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="sharpeningDetailValue" style="color: <%= theme[:text_color] %>; opacity: 0.6;">50</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="sharpeningDetailSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="50"
+                       class="image-editor-slider"
+                       disabled>
+              </div>
+              <!-- Masking -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>; opacity: 0.6;">Masking</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="maskingValue" style="color: <%= theme[:text_color] %>; opacity: 0.6;">0</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="maskingSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="0"
+                       class="image-editor-slider"
+                       disabled>
+              </div>
+            </div>
+
+            <!-- Separator -->
+            <div class="my-4" style="border-top: 1px solid <%= theme[:border_color] %>; opacity: 0.5;"></div>
+
+            <!-- Noise Reduction Group -->
+            <div class="mb-4">
+              <!-- Noise Reduction -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Noise Reduction</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="noiseReductionValue" style="color: <%= theme[:text_color] %>;">0</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="noiseReductionSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="0"
+                       class="image-editor-slider">
+              </div>
+              <!-- Detail (Noise Reduction) -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>; opacity: 0.6;">Detail</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="noiseDetailValue" style="color: <%= theme[:text_color] %>; opacity: 0.6;">50</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="noiseDetailSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="50"
+                       class="image-editor-slider"
+                       disabled>
+              </div>
+              <!-- Contrast (Noise Reduction) -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>; opacity: 0.6;">Contrast</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="noiseContrastValue" style="color: <%= theme[:text_color] %>; opacity: 0.6;">50</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="noiseContrastSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="50"
+                       class="image-editor-slider"
+                       disabled>
+              </div>
+            </div>
+
+            <!-- Separator -->
+            <div class="my-4" style="border-top: 1px solid <%= theme[:border_color] %>; opacity: 0.5;"></div>
+
+            <!-- Color Noise Reduction Group -->
+            <div class="mb-4">
+              <!-- Color Noise Reduction -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Color Noise Reduction</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="colorNoiseReductionValue" style="color: <%= theme[:text_color] %>;">0</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="colorNoiseReductionSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="0"
+                       class="image-editor-slider">
+              </div>
+              <!-- Detail (Color Noise) -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>; opacity: 0.6;">Detail</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="colorNoiseDetailValue" style="color: <%= theme[:text_color] %>; opacity: 0.6;">50</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="colorNoiseDetailSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="50"
+                       class="image-editor-slider"
+                       disabled>
+              </div>
+              <!-- Smoothness -->
+              <div class="image-editor-slider-item">
+                <label class="image-editor-slider-label">
+                  <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>; opacity: 0.6;">Smoothness</span>
+                  <span class="image-editor-slider-value" data-image-editor-target="smoothnessValue" style="color: <%= theme[:text_color] %>; opacity: 0.6;">50</span>
+                </label>
+                <input type="range" 
+                       data-image-editor-target="smoothnessSlider"
+                       data-action="input->image-editor#updateAdvanced"
+                       min="0" max="100" value="50"
+                       class="image-editor-slider"
+                       disabled>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button type="button"
                 data-action="click->image-editor#resetAdvanced"
                 class="w-full px-4 py-2 rounded text-sm font-medium"

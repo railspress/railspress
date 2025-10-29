@@ -21,6 +21,16 @@ export default class extends Controller {
     "whitesSlider", "whitesValue",
     "blacksSlider", "blacksValue",
     "exposureSlider", "exposureValue",
+    "sharpeningSlider", "sharpeningValue",
+    "radiusSlider", "radiusValue",
+    "sharpeningDetailSlider", "sharpeningDetailValue",
+    "maskingSlider", "maskingValue",
+    "noiseReductionSlider", "noiseReductionValue",
+    "noiseDetailSlider", "noiseDetailValue",
+    "noiseContrastSlider", "noiseContrastValue",
+    "colorNoiseReductionSlider", "colorNoiseReductionValue",
+    "colorNoiseDetailSlider", "colorNoiseDetailValue",
+    "smoothnessSlider", "smoothnessValue",
     "metaPanel", "metaLoading", "metaEmpty", "metaContent",
     "filterPopover", "popoverFilterName", "dryWetSlider", "dryWetValue"
   ]
@@ -41,6 +51,7 @@ export default class extends Controller {
     this.advancedBaseImage = null // Store the image before advanced adjustments
     this.selectedFilterIndex = 0 // Track which filter is selected for keyboard navigation
     this.filterNames = ImageFilters.getFilterNames() // Get all filter names
+    this.updateAdvancedTimeout = null // For debouncing expensive filter operations
     this.advancedState = {
       brightness: 100,
       contrast: 100,
@@ -56,7 +67,17 @@ export default class extends Controller {
       shadows: 100,
       whites: 50,
       blacks: 50,
-      exposure: 0
+      exposure: 0,
+      sharpening: 0,
+      radius: 1.0,
+      sharpeningDetail: 50,
+      masking: 0,
+      noiseReduction: 0,
+      noiseDetail: 50,
+      noiseContrast: 50,
+      colorNoiseReduction: 0,
+      colorNoiseDetail: 50,
+      smoothness: 50
     }
     
     // Add keyboard event listener for arrow key navigation
@@ -70,6 +91,12 @@ export default class extends Controller {
   disconnect() {
     // Remove keyboard event listener
     document.removeEventListener('keydown', this.boundHandleKeydown)
+    
+    // Clear any pending debounced filter update
+    if (this.updateAdvancedTimeout) {
+      clearTimeout(this.updateAdvancedTimeout)
+      this.updateAdvancedTimeout = null
+    }
   }
 
   loadCropperJS() {
@@ -809,6 +836,69 @@ export default class extends Controller {
     this.blacksValueTarget.textContent = this.blacksSliderTarget.value + '%'
     this.exposureValueTarget.textContent = this.exposureSliderTarget.value
 
+    // Detail section values
+    this.sharpeningValueTarget.textContent = this.sharpeningSliderTarget.value
+    // Radius: map 0→0.5px, 50→1.0px, 100→3.0px
+    const radiusValue = parseInt(this.radiusSliderTarget.value)
+    let radiusPx
+    if (radiusValue === 0) {
+      radiusPx = 0.5
+    } else if (radiusValue === 50) {
+      radiusPx = 1.0
+    } else if (radiusValue < 50) {
+      radiusPx = 0.5 + (radiusValue / 50) * 0.5 // 0.5 to 1.0
+    } else {
+      radiusPx = 1.0 + ((radiusValue - 50) / 50) * 2.0 // 1.0 to 3.0
+    }
+    this.radiusValueTarget.textContent = radiusPx.toFixed(1)
+    this.sharpeningDetailValueTarget.textContent = this.sharpeningDetailSliderTarget.value
+    this.maskingValueTarget.textContent = this.maskingSliderTarget.value
+    
+    this.noiseReductionValueTarget.textContent = this.noiseReductionSliderTarget.value
+    this.noiseDetailValueTarget.textContent = this.noiseDetailSliderTarget.value
+    this.noiseContrastValueTarget.textContent = this.noiseContrastSliderTarget.value
+    
+    this.colorNoiseReductionValueTarget.textContent = this.colorNoiseReductionSliderTarget.value
+    this.colorNoiseDetailValueTarget.textContent = this.colorNoiseDetailSliderTarget.value
+    this.smoothnessValueTarget.textContent = this.smoothnessSliderTarget.value
+
+    // Enable/disable child sliders based on parent values
+    const sharpening = parseInt(this.sharpeningSliderTarget.value)
+    const noiseReduction = parseInt(this.noiseReductionSliderTarget.value)
+    const colorNoiseReduction = parseInt(this.colorNoiseReductionSliderTarget.value)
+
+    // Sharpening children
+    this.radiusSliderTarget.disabled = sharpening === 0
+    this.sharpeningDetailSliderTarget.disabled = sharpening === 0
+    this.maskingSliderTarget.disabled = sharpening === 0
+    
+    // Noise Reduction children
+    this.noiseDetailSliderTarget.disabled = noiseReduction === 0
+    this.noiseContrastSliderTarget.disabled = noiseReduction === 0
+    
+    // Color Noise Reduction children
+    this.colorNoiseDetailSliderTarget.disabled = colorNoiseReduction === 0
+    this.smoothnessSliderTarget.disabled = colorNoiseReduction === 0
+
+    // Update opacity of disabled sliders
+    const updateSliderOpacity = (slider, value) => {
+      const item = slider.closest('.image-editor-slider-item')
+      if (item) {
+        const labels = item.querySelectorAll('.image-editor-slider-name, .image-editor-slider-value')
+        labels.forEach(label => {
+          label.style.opacity = slider.disabled ? '0.6' : '1'
+        })
+      }
+    }
+
+    updateSliderOpacity(this.radiusSliderTarget, radiusValue)
+    updateSliderOpacity(this.sharpeningDetailSliderTarget, this.sharpeningDetailSliderTarget.value)
+    updateSliderOpacity(this.maskingSliderTarget, this.maskingSliderTarget.value)
+    updateSliderOpacity(this.noiseDetailSliderTarget, this.noiseDetailSliderTarget.value)
+    updateSliderOpacity(this.noiseContrastSliderTarget, this.noiseContrastSliderTarget.value)
+    updateSliderOpacity(this.colorNoiseDetailSliderTarget, this.colorNoiseDetailSliderTarget.value)
+    updateSliderOpacity(this.smoothnessSliderTarget, this.smoothnessSliderTarget.value)
+
     // Store current state
     this.advancedState = {
       brightness: parseInt(this.brightnessSliderTarget.value),
@@ -825,11 +915,29 @@ export default class extends Controller {
       shadows: parseInt(this.shadowsSliderTarget.value),
       whites: parseInt(this.whitesSliderTarget.value),
       blacks: parseInt(this.blacksSliderTarget.value),
-      exposure: parseInt(this.exposureSliderTarget.value)
+      exposure: parseInt(this.exposureSliderTarget.value),
+      sharpening: parseInt(this.sharpeningSliderTarget.value),
+      radius: radiusPx, // Store as actual pixel value (0.5-3.0)
+      sharpeningDetail: parseInt(this.sharpeningDetailSliderTarget.value),
+      masking: parseInt(this.maskingSliderTarget.value),
+      noiseReduction: parseInt(this.noiseReductionSliderTarget.value),
+      noiseDetail: parseInt(this.noiseDetailSliderTarget.value),
+      noiseContrast: parseInt(this.noiseContrastSliderTarget.value),
+      colorNoiseReduction: parseInt(this.colorNoiseReductionSliderTarget.value),
+      colorNoiseDetail: parseInt(this.colorNoiseDetailSliderTarget.value),
+      smoothness: parseInt(this.smoothnessSliderTarget.value)
     }
 
-    // Apply filters immediately to virtual canvas
-    this.applyAdvancedFilters()
+    // Debounce expensive filter application for smooth slider interaction
+    if (this.updateAdvancedTimeout) {
+      clearTimeout(this.updateAdvancedTimeout)
+    }
+    
+    this.updateAdvancedTimeout = setTimeout(() => {
+      // Apply filters to virtual canvas after slider movement stops
+      this.applyAdvancedFilters()
+      this.updateAdvancedTimeout = null
+    }, 50) // 50ms delay for debouncing
   }
 
   applyAdvancedFilters() {
@@ -848,6 +956,18 @@ export default class extends Controller {
     const whites = this.advancedState.whites || 50
     const blacks = this.advancedState.blacks || 50
 
+    // Detail section values
+    const sharpening = this.advancedState.sharpening || 0
+    const radius = this.advancedState.radius || 1.0
+    const sharpeningDetail = this.advancedState.sharpeningDetail || 50
+    const masking = this.advancedState.masking || 0
+    const noiseReduction = this.advancedState.noiseReduction || 0
+    const noiseDetail = this.advancedState.noiseDetail || 50
+    const noiseContrast = this.advancedState.noiseContrast || 50
+    const colorNoiseReduction = this.advancedState.colorNoiseReduction || 0
+    const colorNoiseDetail = this.advancedState.colorNoiseDetail || 50
+    const smoothness = this.advancedState.smoothness || 50
+
     // Build filter string for CSS-supported filters
     const filters = [
       `brightness(${brightness}%)`,
@@ -865,13 +985,162 @@ export default class extends Controller {
     tempCanvas.width = sourceImage.width
     tempCanvas.height = sourceImage.height
 
-    const tempCtx = tempCanvas.getContext('2d')
+    const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true })
     tempCtx.filter = filters
     tempCtx.drawImage(sourceImage, 0, 0)
 
+    // Apply Detail section processing: Color Noise Reduction (first), then Noise Reduction (luminance)
+    let imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
+    let data = imgData.data
+    
+    // Color Noise Reduction - smooth chrominance noise
+    if (colorNoiseReduction > 0) {
+      const strength = (colorNoiseReduction / 100) * 0.7 // Reduce overall strength by 30%
+      const detail = colorNoiseDetail / 100 // Higher = preserve more detail
+      const smoothnessFactor = smoothness / 100 // Higher = smoother
+      const radius = Math.max(1, Math.min(3, Math.floor(1 + smoothnessFactor * 2))) // Max 3px radius
+      
+      const width = tempCanvas.width
+      const height = tempCanvas.height
+      const newData = new Uint8ClampedArray(data)
+      
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4
+          let sumR = 0, sumG = 0, sumB = 0, count = 0
+          
+          // Average neighboring pixels within radius
+          for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+              const nx = x + dx
+              const ny = y + dy
+              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                const nIdx = (ny * width + nx) * 4
+                sumR += data[nIdx]
+                sumG += data[nIdx + 1]
+                sumB += data[nIdx + 2]
+                count++
+              }
+            }
+          }
+          
+          if (count > 0) {
+            const avgR = sumR / count
+            const avgG = sumG / count
+            const avgB = sumB / count
+            
+            // Blend original with average based on strength and detail
+            const originalR = data[idx]
+            const originalG = data[idx + 1]
+            const originalB = data[idx + 2]
+            
+            // Preserve detail: if color difference is large, apply less smoothing
+            // Improved calculation to prevent artifacts when detail is high
+            const colorDiff = Math.abs(originalR - avgR) + Math.abs(originalG - avgG) + Math.abs(originalB - avgB)
+            const maxDiff = 255 * 3 // Maximum possible difference
+            const detailThreshold = maxDiff * 0.2 * (1 - detail) + maxDiff * 0.05 // Minimum threshold to prevent artifacts
+            const detailPreservation = Math.min(1, colorDiff / detailThreshold)
+            const effectiveStrength = strength * (1 - detailPreservation * 0.8) // Cap detail preservation
+            
+            newData[idx] = originalR + (avgR - originalR) * effectiveStrength
+            newData[idx + 1] = originalG + (avgG - originalG) * effectiveStrength
+            newData[idx + 2] = originalB + (avgB - originalB) * effectiveStrength
+            newData[idx + 3] = data[idx + 3] // Preserve alpha
+          }
+        }
+      }
+      
+      // Create new ImageData with processed data
+      imgData = new ImageData(newData, tempCanvas.width, tempCanvas.height)
+      tempCtx.putImageData(imgData, 0, 0)
+      imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
+      data = imgData.data
+    }
+    
+    // Noise Reduction (Luminance) - bilateral filter approach
+    if (noiseReduction > 0) {
+      // Get fresh imageData in case color noise reduction was applied
+      imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
+      data = imgData.data
+      
+      const strength = noiseReduction / 100
+      const detail = noiseDetail / 100 // Higher = preserve more detail
+      const contrastPreserve = noiseContrast / 100 // Higher = preserve more local contrast
+      const radius = 2 // Fixed radius for stable bilateral filtering
+      
+      const width = tempCanvas.width
+      const height = tempCanvas.height
+      const newData = new Uint8ClampedArray(data)
+      
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4
+          const r = data[idx]
+          const g = data[idx + 1]
+          const b = data[idx + 2]
+          const lum = r * 0.299 + g * 0.587 + b * 0.114
+          
+          let sum = 0, weightSum = 0
+          
+          // Sample neighboring pixels
+          for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+              const nx = x + dx
+              const ny = y + dy
+              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                const nIdx = (ny * width + nx) * 4
+                const nR = data[nIdx]
+                const nG = data[nIdx + 1]
+                const nB = data[nIdx + 2]
+                const nLum = nR * 0.299 + nG * 0.587 + nB * 0.114
+                
+                // Weight based on luminance similarity (bilateral)
+                const lumDiff = Math.abs(lum - nLum)
+                const weight = Math.exp(-(lumDiff * lumDiff) / (2 * (255 * 255 * (1 - strength * (1 - detail)))))
+                
+                sum += nLum * weight
+                weightSum += weight
+              }
+            }
+          }
+          
+          if (weightSum > 0) {
+            const smoothLum = sum / weightSum
+            const lumDiff = Math.abs(lum - smoothLum)
+            
+            // Preserve detail: if luminance difference is large, apply less smoothing
+            const detailPreservation = Math.min(1, lumDiff / (255 * (1 - detail)))
+            const effectiveStrength = strength * (1 - detailPreservation)
+            
+            // Apply luminance smoothing
+            const newLum = lum + (smoothLum - lum) * effectiveStrength
+            
+            // Preserve local contrast
+            const contrastFactor = 1 + (lumDiff / 255) * contrastPreserve * 0.5
+            
+            // Convert back to RGB maintaining color ratios
+            const ratio = newLum / (lum || 0.001)
+            let newR = r * ratio * contrastFactor
+            let newG = g * ratio * contrastFactor
+            let newB = b * ratio * contrastFactor
+            
+            newData[idx] = Math.max(0, Math.min(255, newR))
+            newData[idx + 1] = Math.max(0, Math.min(255, newG))
+            newData[idx + 2] = Math.max(0, Math.min(255, newB))
+            newData[idx + 3] = data[idx + 3] // Preserve alpha
+          }
+        }
+      }
+      
+      // Create new ImageData with processed data
+      imgData = new ImageData(newData, tempCanvas.width, tempCanvas.height)
+      tempCtx.putImageData(imgData, 0, 0)
+    }
+
     // Apply pixel-level adjustments (exposure, temperature, tint, vibrance, shadows, highlights, whites, blacks)
     if (exposure !== 0 || temperature !== 0 || tint !== 0 || vibrance !== 0 || shadows !== 100 || highlights !== 100 || whites !== 50 || blacks !== 50) {
-      const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
+      // Get fresh imageData in case noise reduction or color noise reduction was applied
+      imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
       const data = imgData.data
       
       for (let i = 0; i < data.length; i += 4) {
@@ -980,6 +1249,137 @@ export default class extends Controller {
       tempCtx.putImageData(imgData, 0, 0)
     }
 
+    // Apply Sharpening (unsharp mask) - last step for crisp results
+    if (sharpening > 0) {
+      const effectiveRadius = radius > 0 ? radius : 1.0 // Use default if radius is invalid
+      const strength = sharpening / 100
+      const radiusPx = effectiveRadius // Already in pixel units (0.5-3.0)
+      const detail = sharpeningDetail / 100 // Higher = affects finer details
+      const maskingAmount = masking / 100 // Higher = only edges sharpened
+      
+      // Get current image data (after all previous processing)
+      imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
+      const originalData = new Uint8ClampedArray(imgData.data) // Keep original for blur calculation
+      data = imgData.data
+      const width = tempCanvas.width
+      const height = tempCanvas.height
+      
+      // Simple box blur for unsharp mask
+      const blurRadius = Math.max(1, Math.floor(radiusPx))
+      const blurData = new Uint8ClampedArray(originalData.length)
+      
+      // Apply box blur to original data
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          let sumR = 0, sumG = 0, sumB = 0, sumA = 0, count = 0
+          
+          for (let dy = -blurRadius; dy <= blurRadius; dy++) {
+            for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+              const nx = x + dx
+              const ny = y + dy
+              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                const nIdx = (ny * width + nx) * 4
+                sumR += originalData[nIdx]
+                sumG += originalData[nIdx + 1]
+                sumB += originalData[nIdx + 2]
+                sumA += originalData[nIdx + 3]
+                count++
+              }
+            }
+          }
+          
+          const idx = (y * width + x) * 4
+          blurData[idx] = sumR / count
+          blurData[idx + 1] = sumG / count
+          blurData[idx + 2] = sumB / count
+          blurData[idx + 3] = sumA / count
+        }
+      }
+      
+      // Calculate edge mask and apply unsharp mask
+      const newData = new Uint8ClampedArray(data)
+      
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4
+          
+          // Get original and blurred values
+          const originalR = originalData[idx]
+          const originalG = originalData[idx + 1]
+          const originalB = originalData[idx + 2]
+          const originalLum = originalR * 0.299 + originalG * 0.587 + originalB * 0.114
+          
+          const blurR = blurData[idx]
+          const blurG = blurData[idx + 1]
+          const blurB = blurData[idx + 2]
+          
+          // Calculate edge strength (local variance) for masking using original data
+          let edgeStrength = 0
+          const sampleSize = Math.max(1, Math.floor(radiusPx))
+          let maxDiff = 0
+          
+          for (let dy = -sampleSize; dy <= sampleSize; dy++) {
+            for (let dx = -sampleSize; dx <= sampleSize; dx++) {
+              const nx = x + dx
+              const ny = y + dy
+              if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                const nIdx = (ny * width + nx) * 4
+                const nLum = originalData[nIdx] * 0.299 + originalData[nIdx + 1] * 0.587 + originalData[nIdx + 2] * 0.114
+                maxDiff = Math.max(maxDiff, Math.abs(originalLum - nLum))
+              }
+            }
+          }
+          
+          edgeStrength = maxDiff / 255
+          
+          // Apply masking: higher masking = only sharpen edges
+          // masking = 0 means sharpen everywhere, masking = 100 means only sharp edges
+          let maskFactor = 1
+          if (maskingAmount > 0) {
+            // When masking is high, only sharpen where edgeStrength is above threshold
+            const threshold = 1 - maskingAmount // 0 (no mask) to 1 (full mask)
+            if (edgeStrength < threshold) {
+              maskFactor = 0 // Below threshold, don't sharpen
+            } else {
+              // Above threshold, scale from 0 to 1 based on how far above threshold
+              maskFactor = (edgeStrength - threshold) / (1 - threshold || 0.001)
+            }
+          }
+          
+          // Adjust detail: detail affects which edges get sharpened
+          // detail = 0 means only large edges (high edgeStrength threshold)
+          // detail = 100 means fine edges too (low edgeStrength threshold, sharpen more)
+          // Default detail = 50 means medium threshold
+          // Map detail 0-100 to threshold 0.8-0.0 (inverse relationship)
+          const detailThreshold = 0.8 * (1 - detail / 100) // 0.8 (detail=0) to 0.0 (detail=100)
+          const detailFactor = edgeStrength >= detailThreshold ? 1 : 
+            Math.max(0, edgeStrength / (detailThreshold || 0.001)) // Gradually fade in below threshold
+          
+          // Get current pixel (after previous adjustments) for unsharp mask
+          const currentR = data[idx]
+          const currentG = data[idx + 1]
+          const currentB = data[idx + 2]
+          
+          // Calculate unsharp mask: current + (original - blurred) * strength
+          const diffR = originalR - blurR
+          const diffG = originalG - blurG
+          const diffB = originalB - blurB
+          
+          // Apply sharpening with mask and detail factors
+          const sharpeningAmount = strength * maskFactor * detailFactor * 1.0
+          
+          newData[idx] = Math.max(0, Math.min(255, currentR + diffR * sharpeningAmount))
+          newData[idx + 1] = Math.max(0, Math.min(255, currentG + diffG * sharpeningAmount))
+          newData[idx + 2] = Math.max(0, Math.min(255, currentB + diffB * sharpeningAmount))
+          newData[idx + 3] = data[idx + 3] // Preserve alpha
+        }
+      }
+      
+      // Create new ImageData with processed data
+      imgData = new ImageData(newData, tempCanvas.width, tempCanvas.height)
+      tempCtx.putImageData(imgData, 0, 0)
+    }
+
     // Apply vignette effect if needed
     if (vignette && vignette > 0) {
       // Use a more elliptical/rectangular vignette that covers all corners
@@ -1047,6 +1447,18 @@ export default class extends Controller {
     this.blacksSliderTarget.value = 50
     this.exposureSliderTarget.value = 0
 
+    // Detail section reset
+    this.sharpeningSliderTarget.value = 0
+    this.radiusSliderTarget.value = 50
+    this.sharpeningDetailSliderTarget.value = 50
+    this.maskingSliderTarget.value = 0
+    this.noiseReductionSliderTarget.value = 0
+    this.noiseDetailSliderTarget.value = 50
+    this.noiseContrastSliderTarget.value = 50
+    this.colorNoiseReductionSliderTarget.value = 0
+    this.colorNoiseDetailSliderTarget.value = 50
+    this.smoothnessSliderTarget.value = 50
+
     this.advancedState = {
       brightness: 100,
       contrast: 100,
@@ -1062,7 +1474,17 @@ export default class extends Controller {
       shadows: 100,
       whites: 50,
       blacks: 50,
-      exposure: 0
+      exposure: 0,
+      sharpening: 0,
+      radius: 1.0,
+      sharpeningDetail: 50,
+      masking: 0,
+      noiseReduction: 0,
+      noiseDetail: 50,
+      noiseContrast: 50,
+      colorNoiseReduction: 0,
+      colorNoiseDetail: 50,
+      smoothness: 50
     }
 
     // Reset virtual canvas to base (with filter if applied, otherwise original)
@@ -1072,7 +1494,121 @@ export default class extends Controller {
     canvas.height = sourceImage.height
     canvas.getContext('2d').drawImage(sourceImage, 0, 0)
 
-    this.updateAdvanced()
+    // Clear any pending debounced filter update
+    if (this.updateAdvancedTimeout) {
+      clearTimeout(this.updateAdvancedTimeout)
+      this.updateAdvancedTimeout = null
+    }
+
+    // Force synchronous update of all displays and states (skip debounce)
+    // Update displayed values
+    this.brightnessValueTarget.textContent = this.brightnessSliderTarget.value + '%'
+    this.contrastValueTarget.textContent = this.contrastSliderTarget.value + '%'
+    this.saturationValueTarget.textContent = this.saturationSliderTarget.value + '%'
+    this.hueValueTarget.textContent = this.hueSliderTarget.value + '°'
+    this.vibranceValueTarget.textContent = this.vibranceSliderTarget.value
+    this.blurValueTarget.textContent = this.blurSliderTarget.value + 'px'
+    this.sharpenValueTarget.textContent = this.sharpenSliderTarget.value
+    this.vignetteValueTarget.textContent = this.vignetteSliderTarget.value + '%'
+    this.temperatureValueTarget.textContent = this.temperatureSliderTarget.value
+    this.tintValueTarget.textContent = this.tintSliderTarget.value
+    this.highlightsValueTarget.textContent = this.highlightsSliderTarget.value + '%'
+    this.shadowsValueTarget.textContent = this.shadowsSliderTarget.value + '%'
+    this.whitesValueTarget.textContent = this.whitesSliderTarget.value + '%'
+    this.blacksValueTarget.textContent = this.blacksSliderTarget.value + '%'
+    this.exposureValueTarget.textContent = this.exposureSliderTarget.value
+
+    // Detail section values
+    this.sharpeningValueTarget.textContent = this.sharpeningSliderTarget.value
+    const radiusValue = parseInt(this.radiusSliderTarget.value)
+    let radiusPx
+    if (radiusValue === 0) {
+      radiusPx = 0.5
+    } else if (radiusValue === 50) {
+      radiusPx = 1.0
+    } else if (radiusValue < 50) {
+      radiusPx = 0.5 + (radiusValue / 50) * 0.5
+    } else {
+      radiusPx = 1.0 + ((radiusValue - 50) / 50) * 2.0
+    }
+    this.radiusValueTarget.textContent = radiusPx.toFixed(1)
+    this.sharpeningDetailValueTarget.textContent = this.sharpeningDetailSliderTarget.value
+    this.maskingValueTarget.textContent = this.maskingSliderTarget.value
+    this.noiseReductionValueTarget.textContent = this.noiseReductionSliderTarget.value
+    this.noiseDetailValueTarget.textContent = this.noiseDetailSliderTarget.value
+    this.noiseContrastValueTarget.textContent = this.noiseContrastSliderTarget.value
+    this.colorNoiseReductionValueTarget.textContent = this.colorNoiseReductionSliderTarget.value
+    this.colorNoiseDetailValueTarget.textContent = this.colorNoiseDetailSliderTarget.value
+    this.smoothnessValueTarget.textContent = this.smoothnessSliderTarget.value
+
+    // Enable/disable child sliders based on parent values
+    const sharpening = parseInt(this.sharpeningSliderTarget.value)
+    const noiseReduction = parseInt(this.noiseReductionSliderTarget.value)
+    const colorNoiseReduction = parseInt(this.colorNoiseReductionSliderTarget.value)
+
+    // Sharpening children
+    this.radiusSliderTarget.disabled = sharpening === 0
+    this.sharpeningDetailSliderTarget.disabled = sharpening === 0
+    this.maskingSliderTarget.disabled = sharpening === 0
+    
+    // Noise Reduction children
+    this.noiseDetailSliderTarget.disabled = noiseReduction === 0
+    this.noiseContrastSliderTarget.disabled = noiseReduction === 0
+    
+    // Color Noise Reduction children
+    this.colorNoiseDetailSliderTarget.disabled = colorNoiseReduction === 0
+    this.smoothnessSliderTarget.disabled = colorNoiseReduction === 0
+
+    // Update opacity of disabled sliders
+    const updateSliderOpacity = (slider) => {
+      const item = slider.closest('.image-editor-slider-item')
+      if (item) {
+        const labels = item.querySelectorAll('.image-editor-slider-name, .image-editor-slider-value')
+        labels.forEach(label => {
+          label.style.opacity = slider.disabled ? '0.6' : '1'
+        })
+      }
+    }
+
+    updateSliderOpacity(this.radiusSliderTarget)
+    updateSliderOpacity(this.sharpeningDetailSliderTarget)
+    updateSliderOpacity(this.maskingSliderTarget)
+    updateSliderOpacity(this.noiseDetailSliderTarget)
+    updateSliderOpacity(this.noiseContrastSliderTarget)
+    updateSliderOpacity(this.colorNoiseDetailSliderTarget)
+    updateSliderOpacity(this.smoothnessSliderTarget)
+
+    // Update all state from slider values
+    this.advancedState.brightness = parseInt(this.brightnessSliderTarget.value)
+    this.advancedState.contrast = parseInt(this.contrastSliderTarget.value)
+    this.advancedState.saturation = parseInt(this.saturationSliderTarget.value)
+    this.advancedState.hue = parseInt(this.hueSliderTarget.value)
+    this.advancedState.vibrance = parseInt(this.vibranceSliderTarget.value)
+    this.advancedState.blur = parseInt(this.blurSliderTarget.value)
+    this.advancedState.sharpen = parseInt(this.sharpenSliderTarget.value)
+    this.advancedState.vignette = parseInt(this.vignetteSliderTarget.value)
+    this.advancedState.temperature = parseInt(this.temperatureSliderTarget.value)
+    this.advancedState.tint = parseInt(this.tintSliderTarget.value)
+    this.advancedState.highlights = parseInt(this.highlightsSliderTarget.value)
+    this.advancedState.shadows = parseInt(this.shadowsSliderTarget.value)
+    this.advancedState.whites = parseInt(this.whitesSliderTarget.value)
+    this.advancedState.blacks = parseInt(this.blacksSliderTarget.value)
+    this.advancedState.exposure = parseInt(this.exposureSliderTarget.value)
+    this.advancedState.radius = radiusPx
+    this.advancedState.sharpening = sharpening
+    this.advancedState.sharpeningDetail = parseInt(this.sharpeningDetailSliderTarget.value)
+    this.advancedState.masking = parseInt(this.maskingSliderTarget.value)
+    this.advancedState.noiseReduction = noiseReduction
+    this.advancedState.noiseDetail = parseInt(this.noiseDetailSliderTarget.value)
+    this.advancedState.noiseContrast = parseInt(this.noiseContrastSliderTarget.value)
+    this.advancedState.colorNoiseReduction = colorNoiseReduction
+    this.advancedState.colorNoiseDetail = parseInt(this.colorNoiseDetailSliderTarget.value)
+    this.advancedState.smoothness = parseInt(this.smoothnessSliderTarget.value)
+    
+    // Force immediate apply after update since this is a reset
+    this.applyAdvancedFilters()
+    
+    // Save to history
     this.saveToHistory()
   }
 
@@ -1278,7 +1814,16 @@ export default class extends Controller {
   // SAVE
   async saveEdits(event) {
     if (event) event.preventDefault()
-    
+
+    // Prevent double submissions
+    if (this.isSaving) return
+    this.isSaving = true
+    const saveButton = event && event.currentTarget ? event.currentTarget : null
+    if (saveButton) {
+      saveButton.disabled = true
+      try { saveButton.classList.add('opacity-50', 'cursor-not-allowed') } catch(_) {}
+    }
+
     try {
       // Get final canvas
       const canvas = this.virtualCanvasTarget
@@ -1342,6 +1887,13 @@ export default class extends Controller {
     } catch (error) {
       console.error('Save error:', error)
       alert('An error occurred while saving')
+    } finally {
+      // Re-enable button and reset guard only if we are still open (i.e., on error)
+      this.isSaving = false
+      if (saveButton) {
+        saveButton.disabled = false
+        try { saveButton.classList.remove('opacity-50', 'cursor-not-allowed') } catch(_) {}
+      }
     }
   }
 
