@@ -5,11 +5,12 @@ export default class extends Controller {
   static targets = [
     "overlay", "virtualCanvas", "undoBtn", "redoBtn",
     "tabBtn", "filtersPanel", "cropPanel", "scalePanel", "rotationPanel", "advancedPanel",
-    "filterGrid", "aspectRatio", "scaleWidth", "scaleHeight", "lockAspect",
+    "filterGrid", "filterSearch", "aspectRatio", "scaleWidth", "scaleHeight", "lockAspect",
     "brightnessSlider", "brightnessValue",
     "contrastSlider", "contrastValue",
     "saturationSlider", "saturationValue",
     "hueSlider", "hueValue",
+    "vibranceSlider", "vibranceValue",
     "blurSlider", "blurValue",
     "sharpenSlider", "sharpenValue",
     "vignetteSlider", "vignetteValue",
@@ -17,6 +18,8 @@ export default class extends Controller {
     "tintSlider", "tintValue",
     "highlightsSlider", "highlightsValue",
     "shadowsSlider", "shadowsValue",
+    "whitesSlider", "whitesValue",
+    "blacksSlider", "blacksValue",
     "exposureSlider", "exposureValue",
     "metaPanel", "metaLoading", "metaEmpty", "metaContent",
     "filterPopover", "popoverFilterName", "dryWetSlider", "dryWetValue"
@@ -43,6 +46,7 @@ export default class extends Controller {
       contrast: 100,
       saturation: 100,
       hue: 0,
+      vibrance: 0,
       blur: 0,
       sharpen: 0,
       vignette: 0,
@@ -50,6 +54,8 @@ export default class extends Controller {
       tint: 0,
       highlights: 100,
       shadows: 100,
+      whites: 50,
+      blacks: 50,
       exposure: 0
     }
     
@@ -406,6 +412,31 @@ export default class extends Controller {
         this.filterIntensity = 100  // Reset intensity to 100%
         this.applyFilter(filterName, 100)  // Pass 100 explicitly
       })
+    })
+  }
+
+  filterFilters(event) {
+    const searchTerm = event.target.value.toLowerCase().trim()
+    
+    // Show all if less than 2 characters
+    if (searchTerm.length < 2) {
+      this.filterGridTarget.querySelectorAll('.filter-thumbnail').forEach(thumb => {
+        thumb.style.display = ''
+      })
+      return
+    }
+    
+    // Filter thumbnails based on search
+    this.filterGridTarget.querySelectorAll('.filter-thumbnail').forEach(thumb => {
+      const filterName = thumb.dataset.filter
+      const filterData = ImageFilters.getFilterData(filterName)
+      const displayName = filterData.name.toLowerCase()
+      
+      if (displayName.includes(searchTerm)) {
+        thumb.style.display = ''
+      } else {
+        thumb.style.display = 'none'
+      }
     })
   }
 
@@ -766,6 +797,7 @@ export default class extends Controller {
     this.contrastValueTarget.textContent = this.contrastSliderTarget.value + '%'
     this.saturationValueTarget.textContent = this.saturationSliderTarget.value + '%'
     this.hueValueTarget.textContent = this.hueSliderTarget.value + '°'
+    this.vibranceValueTarget.textContent = this.vibranceSliderTarget.value
     this.blurValueTarget.textContent = this.blurSliderTarget.value + 'px'
     this.sharpenValueTarget.textContent = this.sharpenSliderTarget.value
     this.vignetteValueTarget.textContent = this.vignetteSliderTarget.value + '%'
@@ -773,6 +805,8 @@ export default class extends Controller {
     this.tintValueTarget.textContent = this.tintSliderTarget.value
     this.highlightsValueTarget.textContent = this.highlightsSliderTarget.value + '%'
     this.shadowsValueTarget.textContent = this.shadowsSliderTarget.value + '%'
+    this.whitesValueTarget.textContent = this.whitesSliderTarget.value + '%'
+    this.blacksValueTarget.textContent = this.blacksSliderTarget.value + '%'
     this.exposureValueTarget.textContent = this.exposureSliderTarget.value
 
     // Store current state
@@ -781,6 +815,7 @@ export default class extends Controller {
       contrast: parseInt(this.contrastSliderTarget.value),
       saturation: parseInt(this.saturationSliderTarget.value),
       hue: parseInt(this.hueSliderTarget.value),
+      vibrance: parseInt(this.vibranceSliderTarget.value),
       blur: parseInt(this.blurSliderTarget.value),
       sharpen: parseInt(this.sharpenSliderTarget.value),
       vignette: parseInt(this.vignetteSliderTarget.value),
@@ -788,6 +823,8 @@ export default class extends Controller {
       tint: parseInt(this.tintSliderTarget.value),
       highlights: parseInt(this.highlightsSliderTarget.value),
       shadows: parseInt(this.shadowsSliderTarget.value),
+      whites: parseInt(this.whitesSliderTarget.value),
+      blacks: parseInt(this.blacksSliderTarget.value),
       exposure: parseInt(this.exposureSliderTarget.value)
     }
 
@@ -800,6 +837,7 @@ export default class extends Controller {
     const contrast = this.advancedState.contrast
     const saturation = this.advancedState.saturation
     const hue = this.advancedState.hue
+    const vibrance = this.advancedState.vibrance || 0
     const blur = this.advancedState.blur
     const vignette = this.advancedState.vignette || 0  // Ensure 0 if undefined
     const temperature = this.advancedState.temperature
@@ -807,6 +845,8 @@ export default class extends Controller {
     const shadows = this.advancedState.shadows
     const highlights = this.advancedState.highlights
     const exposure = this.advancedState.exposure
+    const whites = this.advancedState.whites || 50
+    const blacks = this.advancedState.blacks || 50
 
     // Build filter string for CSS-supported filters
     const filters = [
@@ -829,8 +869,8 @@ export default class extends Controller {
     tempCtx.filter = filters
     tempCtx.drawImage(sourceImage, 0, 0)
 
-    // Apply pixel-level adjustments (exposure, temperature, tint, shadows, highlights)
-    if (exposure !== 0 || temperature !== 0 || tint !== 0 || shadows !== 100 || highlights !== 100) {
+    // Apply pixel-level adjustments (exposure, temperature, tint, vibrance, shadows, highlights, whites, blacks)
+    if (exposure !== 0 || temperature !== 0 || tint !== 0 || vibrance !== 0 || shadows !== 100 || highlights !== 100 || whites !== 50 || blacks !== 50) {
       const imgData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
       const data = imgData.data
       
@@ -860,10 +900,34 @@ export default class extends Controller {
           g = Math.min(255, Math.max(0, g + tintValue * 10))
         }
         
+        // Vibrance adjustment (boosts muted colors more than vivid colors)
+        if (vibrance !== 0) {
+          // Calculate current saturation
+          const max = Math.max(r, g, b)
+          const min = Math.min(r, g, b)
+          const currentSaturation = max === 0 ? 0 : (max - min) / max
+          
+          // Vibrance applies more to less saturated colors
+          // Less saturated pixels get more adjustment
+          const vibranceFactor = vibrance / 100
+          const saturationBoost = (1 - currentSaturation) * vibranceFactor
+          
+          if (saturationBoost !== 0 && max > 0) {
+            // Adjust RGB to increase/decrease saturation
+            const avg = (r + g + b) / 3
+            const adjustment = saturationBoost * 0.5 // Scale down for subtle effect
+            
+            r = Math.min(255, Math.max(0, r + (r - avg) * adjustment))
+            g = Math.min(255, Math.max(0, g + (g - avg) * adjustment))
+            b = Math.min(255, Math.max(0, b + (b - avg) * adjustment))
+          }
+        }
+        
+        // Calculate pixel brightness (luminance) - needed for shadows, highlights, whites, and blacks
+        const luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255
+        
         // Shadows and highlights
         if (shadows !== 100 || highlights !== 100) {
-          // Calculate pixel brightness (luminance)
-          const luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255
           
           // Shadows adjustment (affects darker pixels)
           if (shadows !== 100 && luminance < 0.5) {
@@ -882,6 +946,30 @@ export default class extends Controller {
             g = Math.min(255, g + (255 - g) * highlightAmount)
             b = Math.min(255, b + (255 - b) * highlightAmount)
           }
+        }
+        
+        // Recalculate luminance after shadows/highlights adjustments for whites/blacks
+        let finalLuminance = luminance
+        if (whites !== 50 || blacks !== 50) {
+          finalLuminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255
+        }
+        
+        // Whites adjustment (brightest tones)
+        if (whites !== 50 && finalLuminance >= 0.7) {
+          const whitesFactor = (whites - 50) / 50  // -1 to 1
+          const whitesAmount = ((finalLuminance - 0.7) / 0.3) * whitesFactor
+          r = Math.min(255, Math.max(0, r + whitesAmount * 50))
+          g = Math.min(255, Math.max(0, g + whitesAmount * 50))
+          b = Math.min(255, Math.max(0, b + whitesAmount * 50))
+        }
+        
+        // Blacks adjustment (darkest tones)
+        if (blacks !== 50 && finalLuminance <= 0.3) {
+          const blacksFactor = (blacks - 50) / 50  // -1 to 1
+          const blacksAmount = ((0.3 - finalLuminance) / 0.3) * blacksFactor
+          r = Math.min(255, Math.max(0, r - blacksAmount * 50))
+          g = Math.min(255, Math.max(0, g - blacksAmount * 50))
+          b = Math.min(255, Math.max(0, b - blacksAmount * 50))
         }
         
         data[i] = Math.max(0, Math.min(255, r))
@@ -947,6 +1035,7 @@ export default class extends Controller {
     this.contrastSliderTarget.value = 100
     this.saturationSliderTarget.value = 100
     this.hueSliderTarget.value = 0
+    this.vibranceSliderTarget.value = 0
     this.blurSliderTarget.value = 0
     this.sharpenSliderTarget.value = 0
     this.vignetteSliderTarget.value = 0
@@ -954,6 +1043,8 @@ export default class extends Controller {
     this.tintSliderTarget.value = 0
     this.highlightsSliderTarget.value = 100
     this.shadowsSliderTarget.value = 100
+    this.whitesSliderTarget.value = 50
+    this.blacksSliderTarget.value = 50
     this.exposureSliderTarget.value = 0
 
     this.advancedState = {
@@ -961,6 +1052,7 @@ export default class extends Controller {
       contrast: 100,
       saturation: 100,
       hue: 0,
+      vibrance: 0,
       blur: 0,
       sharpen: 0,
       vignette: 0,
@@ -968,6 +1060,8 @@ export default class extends Controller {
       tint: 0,
       highlights: 100,
       shadows: 100,
+      whites: 50,
+      blacks: 50,
       exposure: 0
     }
 

@@ -296,23 +296,40 @@ export class ImageFilters {
     yashicaMat124G: { name: 'Yashica Mat 124G', css: 'contrast(1.05) brightness(1.02) saturate(0.9) sepia(0.12)' },
     pentax67: { name: 'Pentax 67', css: 'contrast(1.15) brightness(1.06) saturate(0.95) sepia(0.16)' },
     kodakBrownie: { name: 'Kodak Brownie', css: 'contrast(0.95) brightness(1.1) saturate(0.85) sepia(0.2)' },
+    kodakInstamatic: { name: 'Kodak Instamatic', css: 'contrast(0.98) brightness(1.08) saturate(0.9) sepia(0.15)' },
+    argus_c3: { name: 'Argus C3', css: 'contrast(0.98) brightness(1.06) saturate(0.88) sepia(0.17)' },
     polaroidSX70: { name: 'Polaroid SX-70', css: 'contrast(1.05) brightness(1.08) saturate(1.0) sepia(0.08)' },
+    polaroid_onestep: { name: 'Polaroid OneStep', css: 'brightness(1.12) contrast(0.9) saturate(1.05) sepia(0.1)' },
 
     canonAE1: { name: 'Canon AE-1', css: 'grayscale(1) contrast(1.15) brightness(1.05)' },
+    canonAE1_color: { name: 'Canon AE-1 Color', css: 'contrast(1.12) brightness(1.05) saturate(0.98) sepia(0.09)' },
     canonEOS5: { name: 'Canon EOS 5', css: 'grayscale(1) contrast(1.1) brightness(1.08)' },
+    canonEOS5_color: { name: 'Canon EOS 5 Color', css: 'contrast(1.08) brightness(1.06) saturate(1.0) sepia(0.04)' },
     canonEOS1: { name: 'Canon EOS 1', css: 'grayscale(1) contrast(1.05) brightness(1.02)' },
+    canonEOS1_color: { name: 'Canon EOS 1 Color', css: 'contrast(1.05) brightness(1.02) saturate(1.0)' },
     canonEOS3: { name: 'Canon EOS 3', css: 'grayscale(1) contrast(1.0) brightness(1.0)' },
+    canonEOS3_color: { name: 'Canon EOS 3 Color', css: 'contrast(1.0) brightness(1.0) saturate(1.0)' },
     canonEOS1V: { name: 'Canon EOS 1V', css: 'grayscale(1) contrast(0.95) brightness(0.95)' },
+    canonEOS1V_color: { name: 'Canon EOS 1V Color', css: 'contrast(0.95) brightness(0.95) saturate(1.0)' },
     canonEOS1N: { name: 'Canon EOS 1N', css: 'grayscale(1) contrast(0.9) brightness(0.9)' },
+    canonEOS1N_color: { name: 'Canon EOS 1N Color', css: 'contrast(0.9) brightness(0.9) saturate(1.0)' },
     canonEOS1N2: { name: 'Canon EOS 1N2', css: 'grayscale(1) contrast(0.85) brightness(0.85)' },
+    canonEOS1N2_color: { name: 'Canon EOS 1N2 Color', css: 'contrast(0.85) brightness(0.85) saturate(1.0)' },
     canonEOS1N3: { name: 'Canon EOS 1N3', css: 'grayscale(1) contrast(0.8) brightness(0.8)' },
+    canonEOS1N3_color: { name: 'Canon EOS 1N3 Color', css: 'contrast(0.8) brightness(0.8) saturate(1.0)' },
     canonEOS1N4: { name: 'Canon EOS 1N4', css: 'grayscale(1) contrast(0.75) brightness(0.75)' },
+    canonEOS1N4_color: { name: 'Canon EOS 1N4 Color', css: 'contrast(0.75) brightness(0.75) saturate(1.0)' },
 
     olympusOM1: { name: 'Olympus OM-1', css: 'grayscale(1) contrast(1.15) brightness(1.05)' },
+    olympusOM1_color: { name: 'Olympus OM-1 Color', css: 'contrast(1.12) brightness(1.04) saturate(0.95) sepia(0.08)' },
     olympusOM2: { name: 'Olympus OM-2', css: 'grayscale(1) contrast(1.1) brightness(1.08)' },
+    olympusOM2_color: { name: 'Olympus OM-2 Color', css: 'contrast(1.08) brightness(1.06) saturate(0.96) sepia(0.07)' },
     olympusOM3: { name: 'Olympus OM-3', css: 'grayscale(1) contrast(1.05) brightness(1.02)' },
+    olympusOM3_color: { name: 'Olympus OM-3 Color', css: 'contrast(1.04) brightness(1.02) saturate(0.97) sepia(0.06)' },
     olympusOM4: { name: 'Olympus OM-4', css: 'grayscale(1) contrast(1.0) brightness(1.0)' },
+    olympusOM4_color: { name: 'Olympus OM-4 Color', css: 'contrast(1.0) brightness(1.0) saturate(0.98) sepia(0.05)' },
     olympusOM5: { name: 'Olympus OM-5', css: 'grayscale(1) contrast(0.95) brightness(0.95)' },
+    olympusOM5_color: { name: 'Olympus OM-5 Color', css: 'contrast(0.95) brightness(0.95) saturate(0.98) sepia(0.04)' },
 
     fuji_pro400h: { name: 'Fuji Pro 400H', css: 'contrast(1.05) brightness(1.08) saturate(1.1) sepia(0.03)' },
     fuji_superia: { name: 'Fuji Superia', css: 'contrast(1.1) brightness(1.05) saturate(1.15)' },
@@ -335,6 +352,9 @@ export class ImageFilters {
     leica_mp: { name: 'Leica MP', css: 'contrast(1.12) brightness(1.05) saturate(0.92) sepia(0.12)' },
     
     nikon_d850: { name: 'Nikon D850', css: 'contrast(1.08) brightness(1.05) saturate(1.0)' },
+    nikon_f2: { name: 'Nikon F2', css: 'contrast(1.1) brightness(1.03) saturate(0.92) sepia(0.11)' },
+    nikon_f3: { name: 'Nikon F3', css: 'contrast(1.1) brightness(1.04) saturate(0.93) sepia(0.1)' },
+    nikon_f4: { name: 'Nikon F4', css: 'contrast(1.1) brightness(1.04) saturate(0.94) sepia(0.09)' },
     nikon_f6: { name: 'Nikon F6', css: 'contrast(1.1) brightness(1.05) saturate(0.95) sepia(0.08)' },
     nikon_d750: { name: 'Nikon D750', css: 'grayscale(1) contrast(1.15) brightness(1.05)' },
     
@@ -346,14 +366,32 @@ export class ImageFilters {
     sony_alpha: { name: 'Sony Alpha', css: 'contrast(1.1) brightness(1.05) saturate(1.02) sepia(0.02)' },
     
     pentax_k1000: { name: 'Pentax K1000', css: 'grayscale(1) contrast(1.25) brightness(1.08)' },
+    pentax_k1000_color: { name: 'Pentax K1000 Color', css: 'contrast(1.2) brightness(1.06) saturate(0.96) sepia(0.1)' },
     pentax_spotmatic: { name: 'Pentax Spotmatic', css: 'contrast(1.15) brightness(1.05) saturate(0.9) sepia(0.1)' },
     
     olympus_pen: { name: 'Olympus Pen', css: 'contrast(1.08) brightness(1.05) saturate(0.95)' },
     mamiya_rz67: { name: 'Mamiya RZ67', css: 'grayscale(1) contrast(1.25) brightness(1.05)' },
     hasselblad_501cm: { name: 'Hasselblad 501CM', css: 'grayscale(1) contrast(1.2) brightness(1.08)' },
+    hasselblad_501cm_color: { name: 'Hasselblad 501CM Color', css: 'contrast(1.18) brightness(1.06) saturate(0.94) sepia(0.07)' },
+    hasselblad_500el: { name: 'Hasselblad 500EL', css: 'contrast(1.15) brightness(1.05) saturate(0.98)' },
+    hasselblad_h5d: { name: 'Hasselblad H5D', css: 'contrast(1.1) brightness(1.08) saturate(1.02)' },
+    hasselblad_503cw: { name: 'Hasselblad 503CW', css: 'contrast(1.18) brightness(1.06) saturate(0.96) sepia(0.06)' },
+    hasselblad_xpan: { name: 'Hasselblad XPan', css: 'contrast(1.12) brightness(1.05) saturate(1.0) sepia(0.05)' },
     
+    mamiya_7ii: { name: 'Mamiya 7II', css: 'contrast(1.25) brightness(1.05) saturate(1.08)' },
+    
+    leica_m6: { name: 'Leica M6', css: 'contrast(1.1) brightness(1.05) saturate(0.95) sepia(0.1)' },
+    leica_m2: { name: 'Leica M2', css: 'contrast(1.08) brightness(1.04) saturate(0.92) sepia(0.12)' },
+    
+    rolleiflex_28gx: { name: 'Rolleiflex 2.8GX', css: 'contrast(1.15) brightness(1.06) saturate(0.94) sepia(0.08)' },
+    
+    contax_645: { name: 'Contax 645', css: 'contrast(1.22) brightness(1.05) saturate(1.12)' },
     contax_g2: { name: 'Contax G2', css: 'contrast(1.1) brightness(1.05) saturate(0.98) sepia(0.05)' },
+    
+    deardorff_8x10: { name: 'Deardorff 8×10', css: 'contrast(1.05) brightness(1.03) saturate(0.88) sepia(0.15)' },
+    graflex_press: { name: 'Graflex Press', css: 'contrast(1.1) brightness(1.02) saturate(0.86) sepia(0.18)' },
     minolta_x700: { name: 'Minolta X700', css: 'contrast(1.12) brightness(1.05) saturate(1.0) sepia(0.08)' },
+    minolta_srt101: { name: 'Minolta SRT 101', css: 'contrast(1.14) brightness(1.05) saturate(0.97) sepia(0.09)' },
     
     
   };

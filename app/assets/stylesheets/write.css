@@ -1453,6 +1453,8 @@
 .image-editor-slider-content {
   overflow: hidden;
   transition: max-height 0.3s ease-out;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .image-editor-slider-content[hidden] {
@@ -1470,6 +1472,8 @@
 
 .image-editor-slider-item {
   margin-bottom: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .image-editor-slider-label {

@@ -184,6 +184,14 @@
         <h3 class="text-sm font-semibold mb-4" style="color: <%= theme[:text_color] %>;">
           Choose Filter
         </h3>
+        <div class="mb-3">
+          <input type="text" 
+                 data-image-editor-target="filterSearch"
+                 data-action="input->image-editor#filterFilters"
+                 placeholder="Search filters..."
+                 class="w-full px-3 py-2 rounded text-sm border"
+                 style="background: <%= theme[:input_bg] %>; color: <%= theme[:text_color] %>; border-color: <%= theme[:border_color] %>;">
+        </div>
         <div class="grid grid-cols-2 gap-3" data-image-editor-target="filterGrid">
           <!-- Filter thumbnails will be dynamically generated -->
         </div>
@@ -334,13 +342,13 @@
           <div class="image-editor-slider-group-header" 
                data-action="click->image-editor#toggleCategory"
                data-category="light"
-               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 0.5rem;">
+               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 1rem;">
             <span class="text-sm font-medium" style="color: <%= theme[:text_color] %>;">Light</span>
             <svg class="chevron-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <%= theme[:text_color] %>; transition: transform 0.2s;">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </div>
-          <div class="image-editor-slider-content" data-category-content="light" hidden style="padding-left: 0.25rem; padding-right: 0.25rem;">
+          <div class="image-editor-slider-content" data-category-content="light" hidden style="padding: 0 0.5rem; box-sizing: border-box; width: 100%;">
             <!-- Exposure -->
             <div class="image-editor-slider-item">
               <label class="image-editor-slider-label">
@@ -401,6 +409,30 @@
                      min="0" max="200" value="100"
                      class="image-editor-slider">
             </div>
+            <!-- Whites -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Whites</span>
+                <span class="image-editor-slider-value" data-image-editor-target="whitesValue" style="color: <%= theme[:text_color] %>;">50%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="whitesSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="100" value="50"
+                     class="image-editor-slider">
+            </div>
+            <!-- Blacks -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Blacks</span>
+                <span class="image-editor-slider-value" data-image-editor-target="blacksValue" style="color: <%= theme[:text_color] %>;">50%</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="blacksSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="0" max="100" value="50"
+                     class="image-editor-slider">
+            </div>
           </div>
         </div>
 
@@ -409,13 +441,13 @@
           <div class="image-editor-slider-group-header" 
                data-action="click->image-editor#toggleCategory"
                data-category="color"
-               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 0.5rem;">
+               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 1rem;">
             <span class="text-sm font-medium" style="color: <%= theme[:text_color] %>;">Color</span>
             <svg class="chevron-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <%= theme[:text_color] %>; transition: transform 0.2s;">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </div>
-          <div class="image-editor-slider-content" data-category-content="color" hidden style="padding-left: 0.25rem; padding-right: 0.25rem;">
+          <div class="image-editor-slider-content" data-category-content="color" hidden style="padding: 0 0.5rem; box-sizing: border-box; width: 100%;">
             <!-- Temperature -->
             <div class="image-editor-slider-item">
               <label class="image-editor-slider-label">
@@ -464,6 +496,18 @@
                      min="-180" max="180" value="0"
                      class="image-editor-slider">
             </div>
+            <!-- Vibrance -->
+            <div class="image-editor-slider-item">
+              <label class="image-editor-slider-label">
+                <span class="image-editor-slider-name" style="color: <%= theme[:text_color] %>;">Vibrance</span>
+                <span class="image-editor-slider-value" data-image-editor-target="vibranceValue" style="color: <%= theme[:text_color] %>;">0</span>
+              </label>
+              <input type="range" 
+                     data-image-editor-target="vibranceSlider"
+                     data-action="input->image-editor#updateAdvanced"
+                     min="-100" max="100" value="0"
+                     class="image-editor-slider">
+            </div>
           </div>
         </div>
 
@@ -472,13 +516,13 @@
           <div class="image-editor-slider-group-header" 
                data-action="click->image-editor#toggleCategory"
                data-category="effects"
-               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 0.5rem;">
+               style="background: <%= theme[:secondary_bg] %>; border: 1px solid <%= theme[:border_color] %>; cursor: pointer; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 1rem;">
             <span class="text-sm font-medium" style="color: <%= theme[:text_color] %>;">Effects</span>
             <svg class="chevron-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: <%= theme[:text_color] %>; transition: transform 0.2s;">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </div>
-          <div class="image-editor-slider-content" data-category-content="effects" hidden style="padding-left: 0.25rem; padding-right: 0.25rem;">
+          <div class="image-editor-slider-content" data-category-content="effects" hidden style="padding: 0 0.5rem; box-sizing: border-box; width: 100%;">
             <!-- Blur -->
             <div class="image-editor-slider-item">
               <label class="image-editor-slider-label">
