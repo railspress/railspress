@@ -553,6 +553,24 @@ if default_provider
       position: 6,
       temperature: 0.3,
       max_tokens: 3000
+    },
+    {
+      name: "SEO Meta Generator",
+      slug: "meta_generator",
+      description: "Generates optimized SEO meta tags (title, description, keywords) from content in JSON format",
+      agent_type: "analyzer",
+      prompt: "You are an SEO expert. Analyze the provided content and generate optimized meta tags. Return ONLY valid JSON format with no explanatory text, markdown, or code blocks. Format: {\"meta_title\": \"string\", \"meta_description\": \"string\", \"meta_keywords\": \"string\"}",
+      content: "Generate SEO meta tags from content. Meta title should be 50-60 characters, meta description 150-160 characters, and keywords should be 5-8 relevant comma-separated keywords.",
+      guidelines: "Focus on relevance, keyword optimization, and user appeal. Ensure all output is valid JSON only.",
+      rules: "Return ONLY valid JSON. Do not include markdown code blocks, explanatory text, or any text outside the JSON object. The JSON must be parseable. The response must be a valid JSON object with exactly these keys: meta_title, meta_description, meta_keywords.",
+      tasks: "Analyze content, extract key themes, generate optimized meta title, description, and keywords.",
+      master_prompt: "You are an SEO expert with extensive experience in optimizing content for search engines.",
+      greeting: nil,
+      active: true,
+      position: 7,
+      temperature: 0.5,
+      max_tokens: 1000,
+      system_required: false
     }
   ]
 

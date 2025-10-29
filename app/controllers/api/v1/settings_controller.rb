@@ -34,12 +34,19 @@ module Api
       
       # PATCH/PUT /api/v1/settings/:key
       def update
-        setting = SiteSetting.find_by!(key: params[:id])
+        key = params[:id]
+        value = params[:setting] && params[:setting][:value]
+        setting_type = (params[:setting] && params[:setting][:setting_type]) || 'string'
         
-        if setting.update(setting_params)
+        if value.nil?
+          return render_error('Value is required', :unprocessable_entity)
+        end
+        
+        if SiteSetting.set(key, value, setting_type)
+          setting = SiteSetting.find_by!(key: key)
           render_success(setting_serializer(setting))
         else
-          render_error(setting.errors.full_messages.join(', '))
+          render_error('Failed to update setting', :unprocessable_entity)
         end
       end
       
@@ -65,7 +72,7 @@ module Api
       end
       
       def setting_params
-        params.require(:setting).permit(:key, :value, :setting_type)
+        params.require(:setting).permit(:key, :value, :setting_type) if params[:setting]
       end
       
       def setting_serializer(setting)

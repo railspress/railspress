@@ -778,7 +778,16 @@ Rails.application.routes.draw do
       end
       collection do
         get :usage
+        post 'execute/:agent_slug', to: 'ai_agents#execute_by_slug', as: :execute
       end
+    end
+
+    # Quick SiteSetting JSON endpoints for admin-only usage
+    scope :settings do
+      # GET /admin/settings/get/:key -> { success: true, data: { key:, value:, raw_value:, setting_type: } }
+      get 'get/:key', to: 'settings#get_value'
+      # PATCH /admin/settings/quick_set { key, value, setting_type }
+      patch 'quick_set', to: 'settings#quick_set'
     end
     
     # System Settings

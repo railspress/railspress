@@ -59,9 +59,11 @@ export default class extends Controller {
       this.contentTarget.addEventListener('input', () => this.handleChange())
     }
 
-    // Listen for form changes (for other fields)
+    // Listen for form changes (for other fields including meta fields)
     if (this.hasFormTarget) {
       this.formTarget.addEventListener('input', () => this.handleChange())
+      // Also listen for 'change' events (for programmatic updates like AI meta generation)
+      this.formTarget.addEventListener('change', () => this.handleChange())
     }
     
     // Listen for featured_medium_id changes (AJAX upload completion)
@@ -148,6 +150,14 @@ export default class extends Controller {
       }
       
       const formData = new FormData(this.formTarget)
+      
+      // Debug: Log meta fields in FormData
+      console.log('[Autosave] FormData contents (meta fields only):')
+      for (const [key, value] of formData.entries()) {
+        if (key.includes('meta_')) {
+          console.log(`  ${key}: ${value}`)
+        }
+      }
       
       // Add autosave parameter
       formData.append('autosave', 'true')

@@ -220,6 +220,15 @@ class Admin::PostsController < Admin::BaseController
   def update
     @post = Post.find_by!(uuid: params[:id])
     
+    # Debug: Log meta fields being received
+    if params[:post]
+      Rails.logger.debug "=== POST UPDATE DEBUG ==="
+      Rails.logger.debug "Meta Title: #{params[:post][:meta_title].inspect}"
+      Rails.logger.debug "Meta Description: #{params[:post][:meta_description].inspect}"
+      Rails.logger.debug "Meta Keywords: #{params[:post][:meta_keywords].inspect}"
+      Rails.logger.debug "========================"
+    end
+    
     # Ensure auto_draft posts have a title during autosave
     if params[:autosave] == 'true' && @post.auto_draft_status?
       # Ensure we have a title
@@ -233,7 +242,20 @@ class Admin::PostsController < Admin::BaseController
     end
     
     respond_to do |format|
-      if @post.update(post_params)
+      update_params = post_params
+      Rails.logger.debug "=== UPDATE PARAMS AFTER PERMIT ==="
+      Rails.logger.debug "Meta Title: #{update_params[:meta_title].inspect}"
+      Rails.logger.debug "Meta Description: #{update_params[:meta_description].inspect}"
+      Rails.logger.debug "Meta Keywords: #{update_params[:meta_keywords].inspect}"
+      Rails.logger.debug "==================================="
+      
+      if @post.update(update_params)
+        Rails.logger.debug "=== AFTER UPDATE ==="
+        Rails.logger.debug "Meta Title: #{@post.meta_title.inspect}"
+        Rails.logger.debug "Meta Description: #{@post.meta_description.inspect}"
+        Rails.logger.debug "Meta Keywords: #{@post.meta_keywords.inspect}"
+        Rails.logger.debug "===================="
+        
         if params[:autosave] == 'true'
           format.json { 
             render json: { 

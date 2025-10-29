@@ -275,6 +275,47 @@ class Admin::SettingsController < Admin::BaseController
     redirect_to admin_storage_settings_path, notice: 'Storage settings updated successfully.'
   end
 
+  # GET /admin/settings/get/:key
+  def get_value
+    key = params[:key]
+    value = SiteSetting.get(key, nil)
+    setting = SiteSetting.find_by(key: key)
+
+    render json: {
+      success: true,
+      data: {
+        key: key,
+        value: value,
+        raw_value: setting&.value,
+        setting_type: setting&.setting_type
+      }
+    }
+  end
+
+  # PATCH /admin/settings/quick_set
+  # Params: { key: 'ai_gen_post_meta', value: 'true'|'false'|..., setting_type: 'boolean'|'string'|... }
+  def quick_set
+    key = params[:key]
+    value = params[:value]
+    setting_type = params[:setting_type].presence || 'string'
+
+    if key.blank?
+      return render json: { success: false, error: 'Key is required' }, status: :unprocessable_entity
+    end
+
+    if SiteSetting.set(key, value, setting_type)
+      setting = SiteSetting.find_by!(key: key)
+      render json: { success: true, data: {
+        key: key,
+        value: setting.typed_value,
+        raw_value: setting.value,
+        setting_type: setting.setting_type
+      } }
+    else
+      render json: { success: false, error: 'Failed to update setting' }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def load_general_settings

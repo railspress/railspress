@@ -127,6 +127,27 @@ class Admin::AiAgentsController < Admin::BaseController
     end
   end
   
+  # POST /admin/ai_agents/execute/:agent_slug
+  def execute_by_slug
+    agent_slug = params[:agent_slug]
+    user_input = params[:user_input] || ""
+    context = params[:context] || {}
+    
+    begin
+      agent = AiAgent.active.find_by!(slug: agent_slug)
+      result = agent.execute(user_input, context, current_user)
+      
+      render json: { success: true, result: result }
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { success: false, error: "Agent with slug '#{agent_slug}' not found" }, status: :not_found
+    rescue => e
+      Rails.logger.error "AI Agent execution failed: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+  end
+  
   private
   
   def set_ai_agent
