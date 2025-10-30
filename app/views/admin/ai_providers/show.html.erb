@@ -1,3 +1,121 @@
+<% content_for :title, @ai_provider.name %>
+
+<div class="max-w-7xl mx-auto">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Left Column - Provider Info -->
+    <div class="space-y-6">
+      <!-- Header -->
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-2"><%= @ai_provider.name %></h1>
+        <p class="text-gray-400">Type: <%= @ai_provider.provider_type.titleize %></p>
+      </div>
+
+      <!-- Basic Information -->
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Basic Information</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-gray-400">Status:</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @ai_provider.active? ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400' %>">
+              <%= @ai_provider.active? ? 'ACTIVE' : 'INACTIVE' %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">System Default:</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @ai_provider.system_default? ? 'bg-purple-500/10 text-purple-400' : 'bg-gray-500/10 text-gray-400' %>">
+              <%= @ai_provider.system_default? ? 'YES' : 'NO' %>
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Model Identifier:</span>
+            <span class="text-white"><%= @ai_provider.model_identifier %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Max Tokens (default):</span>
+            <span class="text-white"><%= @ai_provider.max_tokens %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Agents Using This Provider:</span>
+            <span class="text-white"><%= @ai_provider.ai_agents.count %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agents under this Provider -->
+      <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+        <h3 class="text-lg font-semibold text-white mb-4">Agents</h3>
+        <% if @ai_provider.ai_agents.any? %>
+          <ul class="space-y-2">
+            <% @ai_provider.ai_agents.ordered.each do |agent| %>
+              <li class="flex items-center justify-between">
+                <span class="text-white">
+                  <%= link_to agent.name, admin_ai_agent_path(agent), class: 'hover:underline' %>
+                </span>
+                <span class="text-xs <%= agent.active? ? 'text-green-400' : 'text-gray-400' %>">
+                  <%= agent.active? ? 'Active' : 'Inactive' %>
+                </span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="text-gray-400">No agents configured for this provider.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Right Column - Chat Widget with an Agent -->
+    <div class="space-y-6">
+      <div class="flex justify-end">
+        <%= link_to edit_admin_ai_provider_path(@ai_provider), class: "inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition" do %>
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Edit Provider
+        <% end %>
+      </div>
+
+      <% default_agent = @ai_provider.ai_agents.active.ordered.first %>
+      <% if default_agent %>
+        <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-[#2a2a2a]">
+            <h3 class="text-lg font-semibold text-white">Chat using <%= default_agent.name %></h3>
+            <div class="flex items-center mt-2">
+              <span class="text-sm text-gray-400">Model: <%= @ai_provider.model_identifier %></span>
+              <div class="w-2 h-2 bg-green-500 rounded-full ml-2"></div>
+            </div>
+          </div>
+          <div>
+            <%= render 'shared/ai_chat_widget',
+                agent_slug: default_agent.slug,
+                height: '500px',
+                recall_conversation: true,
+                show_greeting: true,
+                show_settings: true,
+                allow_agent_switch: true,
+                clear_conversation_on_switch: true,
+                add_content: true,
+                allow_attachments: true,
+                title: default_agent.name,
+                display_html_raw: true,
+                show_close_button: false,
+                background_color: '#1a1a1a',
+                header_color: '#1a1a1a',
+                textbar_color: '#1a1a1a' %>
+          </div>
+        </div>
+      <% else %>
+        <div class="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-6">
+          <h3 class="text-lg font-semibold text-white mb-2">No Agents Available</h3>
+          <p class="text-gray-400 mb-4">Create an agent using this provider to enable chat testing.</p>
+          <%= link_to new_admin_ai_agent_path, class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition" do %>
+            Create Agent
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
 <div>
   <h1 class="font-bold text-4xl">Admin::AiProviders#show</h1>
   <p>Find me in app/views/admin/ai_providers/show.html.erb</p>

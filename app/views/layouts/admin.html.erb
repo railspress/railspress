@@ -16,6 +16,7 @@
 
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "components/ai_chat_widget", media: "all" %>
     
     <%= debugbar_head  if defined? Debugbar %>
 
@@ -615,12 +616,7 @@
               <span class="sidebar-text">Usage</span>
             <% end %>
             
-            <%= link_to admin_ai_demo_path, class: "nav-link flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-[#1a1a1a] text-gray-300 hover:text-white" do %>
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-              </svg>
-              <span class="sidebar-text">Text Generator</span>
-            <% end %>
+            
           </div>
         </div>
         
@@ -1379,8 +1375,7 @@
         let targetSection = null;
         
         if (currentPath.includes('/admin/posts') || currentPath.includes('/admin/pages') || 
-            currentPath.includes('/admin/media') || currentPath.includes('/admin/comments') ||
-            currentPath.includes('/admin/trash')) {
+            currentPath.includes('/admin/media') || currentPath.includes('/admin/comments')) {
           targetSection = 'content';
         } else if (currentPath.includes('/admin/analytics') || currentPath.includes('/admin/subscribers')) {
           targetSection = 'outreach';
@@ -1396,7 +1391,7 @@
           targetSection = 'plugins';
         } else if (currentPath.includes('/admin/ai_agents') || currentPath.includes('/admin/ai_providers')) {
           targetSection = 'ai';
-        } else if (currentPath.includes('/admin/settings/mcp')) {
+        } else if (currentPath.includes('/admin/trash') || currentPath.includes('/admin/settings/mcp')) {
           targetSection = 'system';
         } else if (currentPath.includes('/admin/settings/') || 
                    currentPath.includes('/admin/pixels') ||
@@ -1421,35 +1416,34 @@
           targetSection = 'developer';
         }
         
-        // Now find and highlight the active link and expand its parent section
+        // Find and highlight ONLY the most specific matching link (longest href prefix)
+        let bestMatch = null; // { link, hrefLength }
         navLinks.forEach(link => {
           const href = link.getAttribute('href');
-          if (href) {
-            let isActive = false;
-            
-            // Special case for dashboard - exact match only
-            if (href === '/admin' && currentPath === '/admin') {
-              isActive = true;
-            } 
-            // Special case for plugins marketplace - exact match only
-            else if (href === '/admin/plugins/marketplace' && currentPath === '/admin/plugins/marketplace') {
-              isActive = true;
+          if (!href) return;
+
+          // Exact dashboard match only
+          if (href === '/admin') {
+            if (currentPath === '/admin') {
+              bestMatch = { link, len: href.length };
             }
-            // Special case for plugins installed - exact match only (not marketplace)
-            else if (href === '/admin/plugins' && currentPath === '/admin/plugins' && !currentPath.includes('/marketplace')) {
-              isActive = true;
-            }
-            // For other links, check if path starts with href (but exclude special cases)
-            else if (href !== '/admin' && href !== '/admin/plugins/marketplace' && href !== '/admin/plugins' && currentPath.startsWith(href)) {
-              isActive = true;
-            }
-            
-            if (isActive) {
-              link.classList.add('bg-primary', 'text-white');
-              link.classList.remove('text-gray-300', 'hover:bg-[#1a1a1a]', 'hover:text-white');
+            return;
+          }
+
+          // Consider a link a match if currentPath equals href OR starts with href + '/'
+          const isMatch = currentPath === href || currentPath.startsWith(href + '/');
+          if (isMatch) {
+            const len = href.length;
+            if (!bestMatch || len > bestMatch.len) {
+              bestMatch = { link, len };
             }
           }
         });
+
+        if (bestMatch && bestMatch.link) {
+          bestMatch.link.classList.add('bg-primary', 'text-white');
+          bestMatch.link.classList.remove('text-gray-300', 'hover:bg-[#1a1a1a]', 'hover:text-white');
+        }
         
         // Expand only the target section and highlight its header
         if (targetSection) {

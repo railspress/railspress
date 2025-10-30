@@ -798,6 +798,24 @@
    POST WRITE SIDEBAR STYLES
    ============================================ */
 
+/* Media Selector dialog: explicit link colors */
+[data-media-selector-target="editLink"] {
+  color: var(--admin-link) !important;
+  display: block;
+}
+[data-media-selector-target="editLink"]:hover {
+  color: var(--admin-link-hover) !important;
+  text-decoration: underline;
+}
+[data-media-selector-target="deleteLink"] {
+  color: var(--admin-error) !important;
+  display: block;
+}
+[data-media-selector-target="deleteLink"]:hover {
+  color: #dc2626 !important;
+  text-decoration: underline;
+}
+
 /* Two-column layout for Post section */
 .post-field-row {
   display: grid;
@@ -1204,6 +1222,133 @@
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
 }
 
+/* ============================================
+   IMAGE EDITOR - SLIDERS (Admin scope)
+   ============================================ */
+
+/* Base slider matching write.css visuals with stronger specificity */
+[data-controller="image-editor"] input[type="range"],
+[data-controller*="image-editor"] input[type="range"],
+[data-controller*="image-editor"] .image-editor-slider {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100% !important;
+  height: 4px !important;
+  border-radius: 2px !important;
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  cursor: pointer !important;
+  transition: height 0.2s ease !important;
+  accent-color: auto !important; /* avoid OS accent bleeding */
+}
+
+[data-controller*="image-editor"] input[type="range"]:hover,
+[data-controller*="image-editor"] .image-editor-slider:hover {
+  height: 5px !important;
+}
+
+/* WebKit track */
+[data-controller*="image-editor"] input[type="range"]::-webkit-slider-runnable-track,
+[data-controller*="image-editor"] .image-editor-slider::-webkit-slider-runnable-track {
+  width: 100% !important;
+  height: 4px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 2px !important;
+  cursor: pointer !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]:hover::-webkit-slider-runnable-track,
+[data-controller*="image-editor"] .image-editor-slider:hover::-webkit-slider-runnable-track {
+  height: 5px !important;
+}
+
+/* Moz track */
+[data-controller*="image-editor"] input[type="range"]::-moz-range-track,
+[data-controller*="image-editor"] .image-editor-slider::-moz-range-track {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 2px !important;
+  height: 4px !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]:hover::-moz-range-track,
+[data-controller*="image-editor"] .image-editor-slider:hover::-moz-range-track {
+  height: 5px !important;
+}
+
+/* WebKit thumb */
+[data-controller*="image-editor"] input[type="range"]::-webkit-slider-thumb,
+[data-controller*="image-editor"] .image-editor-slider::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  background: var(--admin-primary) !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.15s ease !important;
+  border: 2px solid var(--admin-bg-primary) !important;
+  margin-top: -5px !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]::-webkit-slider-thumb:hover,
+[data-controller*="image-editor"] .image-editor-slider::-webkit-slider-thumb:hover {
+  width: 16px !important;
+  height: 16px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Firefox thumb */
+[data-controller*="image-editor"] input[type="range"]::-moz-range-thumb,
+[data-controller*="image-editor"] .image-editor-slider::-moz-range-thumb {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 50% !important;
+  background: var(--admin-primary) !important;
+  cursor: pointer !important;
+  border: 2px solid var(--admin-bg-primary) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.15s ease !important;
+  margin-top: -5px !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]::-moz-range-thumb:hover,
+[data-controller*="image-editor"] .image-editor-slider::-moz-range-thumb:hover {
+  width: 16px !important;
+  height: 16px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Disabled */
+[data-controller*="image-editor"] input[type="range"]:disabled,
+[data-controller*="image-editor"] .image-editor-slider:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]:disabled::-webkit-slider-thumb,
+[data-controller*="image-editor"] .image-editor-slider:disabled::-webkit-slider-thumb {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]:disabled::-moz-range-thumb,
+[data-controller*="image-editor"] .image-editor-slider:disabled::-moz-range-thumb {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]:disabled::-webkit-slider-runnable-track,
+[data-controller*="image-editor"] .image-editor-slider:disabled::-webkit-slider-runnable-track {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+[data-controller*="image-editor"] input[type="range"]:disabled::-moz-range-track,
+[data-controller*="image-editor"] .image-editor-slider:disabled::-moz-range-track {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
 /* ============================================
    SPECIAL COMPONENTS
    ============================================ */

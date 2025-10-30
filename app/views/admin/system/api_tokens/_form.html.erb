@@ -1,0 +1,37 @@
+<%= form_with model: @api_token, url: @api_token.persisted? ? admin_system_api_token_path(@api_token) : admin_system_api_tokens_path, class: "space-y-6" do |f| %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label class="block text-sm text-gray-300 mb-1">Name</label>
+      <%= f.text_field :name, class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" %>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-300 mb-1">Role</label>
+      <%= f.select :role, options_for_select([['Public','public'],['Internal','internal'],['Admin','admin']], @api_token.role), {}, class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg" %>
+    </div>
+    <div>
+      <label class="block text-sm text-gray-300 mb-1">Expires At</label>
+      <%= f.datetime_field :expires_at, class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg" %>
+    </div>
+    <div class="flex items-center gap-2">
+      <%= f.check_box :active, class: "h-4 w-4" %>
+      <label class="text-sm text-gray-300">Active</label>
+    </div>
+
+    <% if current_user&.administrator? %>
+      <div class="md:col-span-2">
+        <label class="block text-sm text-gray-300 mb-1">Permissions (JSON)</label>
+        <%= f.text_area :permissions, rows: 4, class: "w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] text-white rounded-lg font-mono text-sm" %>
+        <p class="text-xs text-gray-500 mt-1">Optional JSON, leave blank for defaults.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex items-center justify-end gap-3">
+    <%= link_to admin_system_api_tokens_path, class: "px-4 py-2 bg-[#0a0a0a] hover:bg-[#111111] border border-[#2a2a2a] text-gray-300 hover:text-white rounded-lg transition" do %>
+      Cancel
+    <% end %>
+    <%= f.submit (@api_token.persisted? ? 'Update Token' : 'Create Token'), class: "px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition" %>
+  </div>
+<% end %>
+
+

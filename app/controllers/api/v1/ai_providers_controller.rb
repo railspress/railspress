@@ -109,7 +109,6 @@ class Api::V1::AiProvidersController < ApplicationController
       :api_url,
       :model_identifier,
       :max_tokens,
-      :temperature,
       :active,
       :position
     )
@@ -128,7 +127,6 @@ class Api::V1::AiProvidersController < ApplicationController
       json.merge!({
         api_url: provider.api_url,
         max_tokens: provider.max_tokens,
-        temperature: provider.temperature,
         position: provider.position,
         agents_count: provider.ai_agents.count,
         created_at: provider.created_at,

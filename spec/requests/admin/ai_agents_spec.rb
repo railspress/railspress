@@ -45,6 +45,17 @@ RSpec.describe "Admin::AiAgents", type: :request do
       expect(response).to have_http_status(:success)
       expect(response.body).to include(ai_agent.name)
     end
+
+    it "shows effective temperature and max tokens without error" do
+      # Ensure agent has its own settings
+      ai_agent.update!(temperature: 0.65, max_tokens: 1234)
+
+      get admin_ai_agent_path(ai_agent)
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(ai_agent.effective_temperature.to_s)
+      expect(response.body).to include(ai_agent.effective_max_tokens.to_s)
+    end
   end
 
   describe "GET /admin/ai_agents/new" do

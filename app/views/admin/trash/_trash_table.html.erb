@@ -42,7 +42,7 @@
                   </span>
                 <% when 'actions' %>
                   <div class="flex space-x-2">
-                    <%= link_to restore_admin_trash_index_path(type: item.class.name, id: item.id), 
+                    <%= link_to admin_restore_trash_path(type: item.class.name, id: item.id), 
                         method: :patch,
                         class: "inline-flex items-center px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition",
                         data: { confirm: "Restore this #{item.class.name.downcase}?" } do %>
@@ -51,7 +51,7 @@
                       </svg>
                       Restore
                     <% end %>
-                    <%= link_to destroy_permanently_admin_trash_index_path(type: item.class.name, id: item.id), 
+                    <%= link_to admin_destroy_permanently_trash_path(type: item.class.name, id: item.id), 
                         method: :delete,
                         class: "inline-flex items-center px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition",
                         data: { confirm: "Permanently delete this #{item.class.name.downcase}? This cannot be undone." } do %>
