@@ -19,3 +19,4 @@ post_type = ContentType.find_or_create_by!(ident: 'post') do |ct|
 end
 
 puts "✓ Created '#{post_type.label}' content type"
+
