@@ -2,6 +2,28 @@
    LAYOUT COMPONENTS
    ============================================ */
 
+/* Base admin CSS variables (fallbacks if write.css isn't loaded) */
+:root {
+  /* Information/link palette */
+  --admin-info: #3b82f6; /* Blue-500 */
+  --admin-info-light: rgba(59, 130, 246, 0.12);
+  --admin-info-border: rgba(59, 130, 246, 0.25);
+
+  /* Link colors used across admin surfaces */
+  --admin-link: var(--admin-info);
+  --admin-link-hover: #2563eb; /* Blue-600 */
+}
+
+.dark {
+  /* Keep same hue with dark-friendly tints */
+  --admin-info: #60a5fa; /* Blue-400 */
+  --admin-info-light: rgba(59, 130, 246, 0.10);
+  --admin-info-border: rgba(59, 130, 246, 0.20);
+
+  --admin-link: var(--admin-info);
+  --admin-link-hover: #93c5fd; /* Blue-300 */
+}
+
 .admin-container {
   max-width: 1400px;
   margin: 0 auto;

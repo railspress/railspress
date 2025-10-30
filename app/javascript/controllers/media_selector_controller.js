@@ -16,11 +16,13 @@ export default class extends Controller {
   static values = {
     callback: String,
     buttonText: String,
-    allowMultiSelect: Boolean
+    allowMultiSelect: Boolean,
+    inline: Boolean,
+    initialTab: String
   }
 
   connect() {
-    this.currentTab = "upload"
+    this.currentTab = this.hasInitialTabValue && this.initialTabValue ? this.initialTabValue : "upload"
     this.selectedMediaIds = [] // Changed to array for multi-select
     this.selectedMediaData = [] // Changed to array
     this.mediaData = []
@@ -31,6 +33,13 @@ export default class extends Controller {
     this.bookmarkedPhotoIds = new Set() // Track bookmarked photo IDs
     this.allStockPhotos = [] // Cache all search results
     this.lastClickedMediaId = null // Track last clicked item for multi-select details
+    // If inline, ensure the dialog is visible and body scroll is not locked
+    if (this.inlineValue === true) {
+      this.dialogTarget.classList.remove("hidden")
+      document.body.style.overflow = ""
+    }
+    // Ensure initial tab is activated and content loaded
+    this.switchTab(this.currentTab)
   }
   
   handleImageEdited(event) {
@@ -42,11 +51,16 @@ export default class extends Controller {
 
   openDialog(event) {
     if (event) event.preventDefault()
-    this.dialogTarget.classList.remove("hidden")
+    if (this.inlineValue === true) {
+      // In inline mode, nothing to open
+    } else {
+      this.dialogTarget.classList.remove("hidden")
+      document.body.style.overflow = "hidden"
+    }
     this.setButtonTarget.disabled = true
     this.selectedMediaIds = []
     this.selectedMediaData = []
-    this.switchTab("upload")
+    this.switchTab(this.currentTab || "upload")
     this.loadMediaLibrary()
     
     // Restore saved stock search query
@@ -54,14 +68,18 @@ export default class extends Controller {
       this.stockSearchInputTarget.value = this.stockSearchQuery
     }
     
-    // Focus management
-    document.body.style.overflow = "hidden"
+    // Focus/body scroll handled above
   }
 
   closeDialog(event) {
     if (event) event.preventDefault()
-    this.dialogTarget.classList.add("hidden")
-    document.body.style.overflow = ""
+    if (this.inlineValue === true) {
+      // In inline mode, do not hide the UI
+      return
+    } else {
+      this.dialogTarget.classList.add("hidden")
+      document.body.style.overflow = ""
+    }
   }
 
   switchTab(eventOrTabName) {
@@ -94,16 +112,18 @@ export default class extends Controller {
       this.stockTabTarget.classList.toggle("hidden", tabName !== "stock")
     }
 
-    // Update footer button based on active tab
-    if (tabName === "stock" && this.hasImportButtonTarget) {
-      // On stock photos tab, show the import button instead
-      this.setButtonTarget.style.display = "none"
-      this.importButtonTarget.style.display = "block"
-      this.importButtonTarget.disabled = !this.selectedStockPhoto
+    // Update footer button based on active tab (guard for inline mode without footer)
+    if (tabName === "stock") {
+      if (this.hasImportButtonTarget) {
+        if (this.hasSetButtonTarget) this.setButtonTarget.style.display = "none"
+        this.importButtonTarget.style.display = "block"
+        this.importButtonTarget.disabled = !this.selectedStockPhoto
+      }
     } else {
-      // On other tabs, show the regular set button
-      this.setButtonTarget.style.display = "block"
-      this.setButtonTarget.disabled = this.selectedMediaIds.length === 0
+      if (this.hasSetButtonTarget) {
+        this.setButtonTarget.style.display = "block"
+        this.setButtonTarget.disabled = this.selectedMediaIds.length === 0
+      }
       if (this.hasImportButtonTarget) {
         this.importButtonTarget.style.display = "none"
       }
@@ -337,7 +357,7 @@ export default class extends Controller {
       if (this.hasAttachmentDetailsTarget) {
         this.attachmentDetailsTarget.classList.add("hidden")
       }
-      this.setButtonTarget.disabled = true
+      if (this.hasSetButtonTarget) this.setButtonTarget.disabled = true
     }
 
     // Update visual selection in grid
@@ -371,7 +391,7 @@ export default class extends Controller {
         // Single-select: existing behavior
         this.showAttachmentDetails()
       }
-      this.setButtonTarget.disabled = false
+      if (this.hasSetButtonTarget) this.setButtonTarget.disabled = false
     }
   }
 
@@ -580,7 +600,7 @@ export default class extends Controller {
         // Reload media library and hide details
         this.loadMediaLibrary()
         this.attachmentDetailsTarget.classList.add("hidden")
-        this.setButtonTarget.disabled = true
+        if (this.hasSetButtonTarget) this.setButtonTarget.disabled = true
       } else {
         alert('Failed to delete media')
       }
@@ -640,7 +660,9 @@ export default class extends Controller {
     this.stockEmptyTarget.classList.add('hidden')
     this.stockGridTarget.innerHTML = ''
     this.selectedStockPhoto = null
-    this.importButtonTarget.disabled = true
+    if (this.hasImportButtonTarget) {
+      this.importButtonTarget.disabled = true
+    }
     
     try {
       const params = new URLSearchParams({
@@ -726,7 +748,9 @@ export default class extends Controller {
     // Show details in sidebar
     this.showStockPhotoInSidebar(photo)
     
-    this.importButtonTarget.disabled = false
+    if (this.hasImportButtonTarget) {
+      this.importButtonTarget.disabled = false
+    }
   }
   
   showStockPhotoInSidebar(photo) {
@@ -758,6 +782,7 @@ export default class extends Controller {
   }
 
   async importStockPhoto() {
+    if (!this.hasImportButtonTarget) return
     if (!this.selectedStockPhoto) return
     
     this.importButtonTarget.disabled = true

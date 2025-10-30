@@ -30,6 +30,8 @@
   button_text = local_assigns[:button_text] || 'Set featured image'
   on_select_callback = local_assigns[:on_select_callback] || 'handleMediaSelected'
   allow_multi_select = local_assigns[:allow_multi_select] || false
+  inline = local_assigns[:inline] || false
+  initial_tab = local_assigns[:initial_tab] || 'upload'
 %>
 
 <style>
@@ -82,32 +84,29 @@
     border-color: var(--admin-border) !important;
   }
   
-  /* Links */
-  a {
-    color: var(--admin-info);
-  }
-  
-  a:hover {
-    color: var(--admin-primary);
-  }
+  /* Links: avoid global overrides; explicit styles are set per element */
 </style>
 
 <div data-controller="media-selector"
      data-media-selector-callback-value="<%= on_select_callback %>"
      data-media-selector-button-text-value="<%= button_text %>"
      data-media-selector-allow-multi-select-value="<%= allow_multi_select %>"
+     data-media-selector-inline-value="<%= inline %>"
+     data-media-selector-initial-tab-value="<%= initial_tab %>"
      data-action="image-edited@window->media-selector#handleImageEdited"
-     class="hidden fixed inset-0 z-[12000] overflow-hidden"
+     class="<%= inline ? 'relative block min-h-[80vh]' : 'hidden fixed inset-0 z-[12000] overflow-hidden' %>"
      data-media-selector-target="dialog"
      id="<%= dialog_id %>">
   
   <!-- Backdrop -->
-  <div data-action="click->media-selector#closeDialog"
-       class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-       data-media-selector-target="backdrop"></div>
+  <% unless inline %>
+    <div data-action="click->media-selector#closeDialog"
+         class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+         data-media-selector-target="backdrop"></div>
+  <% end %>
   
   <!-- Dialog -->
-  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vh] bg-white rounded-lg shadow-2xl flex flex-col"
+  <div class="<%= inline ? 'relative w-full h-auto max-h-[calc(100vh-6rem)] overflow-hidden' : 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vh]' %> bg-white rounded-lg shadow-2xl flex flex-col"
        style="background: <%= theme[:bg_color] %>; border: 1px solid <%= theme[:border_color] %>">
     
     <!-- Header -->
@@ -116,12 +115,14 @@
       <h2 class="text-xl font-semibold" style="color: <%= theme[:text_color] %>">
         <%= dialog_title %>
       </h2>
-      <button data-action="click->media-selector#closeDialog"
-              class="text-gray-400 hover:text-gray-600 transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+      <% unless inline %>
+        <button data-action="click->media-selector#closeDialog"
+                class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      <% end %>
     </div>
     
     <!-- Tabs -->
@@ -298,14 +299,14 @@
             <div class="mb-4 space-y-2">
               <a data-media-selector-target="editLink"
                  href="#"
-                 class="block text-sm"
+                 class="block text-sm font-medium hover:underline"
                  style="color: <%= theme[:link_color] %>">
                 Edit Image
               </a>
               <a data-media-selector-target="deleteLink"
                  href="#"
                  data-action="click->media-selector#deleteMedia"
-                 class="block text-sm"
+                 class="block text-sm font-medium hover:underline"
                  style="color: <%= theme[:danger_color] %>">
                 Delete permanently
               </a>
@@ -545,26 +546,41 @@
       </div>
     </div>
     
-    <!-- Footer -->
-    <div class="flex justify-end px-6 py-4 border-t"
-         style="border-color: <%= theme[:border_color] %>">
-      <button type="button"
-              data-action="click->media-selector#setFeaturedImage"
-              data-media-selector-target="setButton"
-              class="px-6 py-2 rounded-lg font-medium transition-colors"
-              style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>"
-              disabled>
-        <%= button_text %>
-      </button>
-      <button type="button"
-              data-action="click->media-selector#importStockPhoto"
-              data-media-selector-target="importButton"
-              disabled
-              class="px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              style="display: none; background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">
-        Import Selected Photo
-      </button>
-    </div>
+    <% unless inline %>
+      <!-- Footer -->
+      <div class="flex justify-end px-6 py-4 border-t"
+           style="border-color: <%= theme[:border_color] %>">
+        <button type="button"
+                data-action="click->media-selector#setFeaturedImage"
+                data-media-selector-target="setButton"
+                class="px-6 py-2 rounded-lg font-medium transition-colors"
+                style="background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>"
+                disabled>
+          <%= button_text %>
+        </button>
+        <button type="button"
+                data-action="click->media-selector#importStockPhoto"
+                data-media-selector-target="importButton"
+                disabled
+                class="px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style="display: none; background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">
+          Import Selected Photo
+        </button>
+      </div>
+    <% else %>
+      <!-- Inline Footer: only show Import button for Stock Photos -->
+      <div class="flex justify-end px-6 py-4 border-t"
+           style="border-color: <%= theme[:border_color] %>">
+        <button type="button"
+                data-action="click->media-selector#importStockPhoto"
+                data-media-selector-target="importButton"
+                disabled
+                class="px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style="display: none; background: <%= theme[:button_bg] %>; color: <%= theme[:button_text] %>">
+          Import Selected Photo
+        </button>
+      </div>
+    <% end %>
   </div>
 </div>
 
