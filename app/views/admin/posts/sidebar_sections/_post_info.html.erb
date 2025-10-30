@@ -24,11 +24,11 @@
       <div class="space-y-2 text-xs text-gray-400">
         <div class="flex justify-between">
           <span>Created:</span>
-          <span class="text-gray-300"><%= @post.created_at.strftime('%b %d, %Y') %></span>
+          <span class="text-gray-300"><%= @post.created_at.strftime('%b %d, %Y, %I:%M %p') %></span>
         </div>
         <div class="flex justify-between">
           <span>Last updated:</span>
-          <span class="text-gray-300"><%= @post.updated_at.strftime('%b %d, %Y') %></span>
+          <span class="text-gray-300"><%= @post.updated_at.strftime('%b %d, %Y, %I:%M %p') %></span>
         </div>
         <div class="flex justify-between">
           <span>Author:</span>

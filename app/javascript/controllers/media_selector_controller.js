@@ -30,6 +30,7 @@ export default class extends Controller {
     this.stockSearchQuery = this.loadStockSearchQuery() // Load saved search
     this.bookmarkedPhotoIds = new Set() // Track bookmarked photo IDs
     this.allStockPhotos = [] // Cache all search results
+    this.lastClickedMediaId = null // Track last clicked item for multi-select details
   }
   
   handleImageEdited(event) {
@@ -304,6 +305,7 @@ export default class extends Controller {
 
   selectMedia(mediaId) {
     const isMultiSelect = this.allowMultiSelectValue === true
+    this.lastClickedMediaId = mediaId
     
     if (isMultiSelect) {
       // Toggle selection for multi-select
@@ -359,27 +361,28 @@ export default class extends Controller {
       }
     })
 
-    // Show attachment details for single select
-    if (!isMultiSelect && this.selectedMediaData.length > 0) {
-      this.showAttachmentDetails()
-      this.setButtonTarget.disabled = false
-    } else if (isMultiSelect && this.selectedMediaData.length > 0) {
-      // Enable button if any items selected in multi-select mode
+    // Show attachment details
+    if (this.selectedMediaData.length > 0) {
+      if (isMultiSelect) {
+        // Multi-select: show details for last clicked item
+        const mediaForDetails = this.mediaData.find(m => m.id === this.lastClickedMediaId) || this.selectedMediaData[0]
+        this.renderAttachmentDetails(mediaForDetails)
+      } else {
+        // Single-select: existing behavior
+        this.showAttachmentDetails()
+      }
       this.setButtonTarget.disabled = false
     }
   }
 
-  showAttachmentDetails() {
-    // Get first selected media for single-select mode
-    const media = Array.isArray(this.selectedMediaData) ? this.selectedMediaData[0] : this.selectedMediaData
+  renderAttachmentDetails(media) {
     if (!media) return
-
     // Hide upload progress if visible
     if (this.hasUploadProgressTarget) {
       this.uploadProgressTarget.classList.add("hidden")
     }
 
-    // Show attachment details
+    // Show attachment details panel
     if (this.hasAttachmentDetailsTarget) {
       this.attachmentDetailsTarget.classList.remove("hidden")
     }
@@ -399,14 +402,14 @@ export default class extends Controller {
       `
     }
 
-    // Set file info
+    // File date
     const date = new Date(media.created_at).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     })
 
-    // Format file size
+    // File size formatting
     const fileSize = media.file_size || 0
     let sizeStr = ''
     if (fileSize < 1024) {
@@ -417,6 +420,7 @@ export default class extends Controller {
       sizeStr = `${(fileSize / (1024 * 1024)).toFixed(1)} MB`
     }
 
+    // Populate file info
     this.fileInfoTarget.innerHTML = `
       <div>
         <strong>${media.filename || 'Untitled'}</strong>
@@ -426,19 +430,18 @@ export default class extends Controller {
       <div>Dimensions: ${media.width || '?'} by ${media.height || '?'} pixels</div>
     `
 
-    // Set metadata fields
+    // Metadata fields
     this.titleFieldTarget.value = media.title || ''
     this.altTextTarget.value = media.alt_text || ''
     this.captionTarget.value = media.caption || ''
     this.descriptionTarget.value = media.description || ''
 
-    // Set file URL
+    // File URL
     const fileUrl = media.url || ''
     this.fileUrlTarget.value = fileUrl
 
-    // Set edit link - show for all images
+    // Edit link opens image editor for this media
     if (this.hasEditLinkTarget) {
-      // Show edit link and attach click handler
       this.editLinkTarget.style.display = 'block'
       this.editLinkTarget.href = '#'
       this.editLinkTarget.onclick = (e) => {
@@ -447,10 +450,17 @@ export default class extends Controller {
       }
     }
 
-    // Set delete link
+    // Delete link
     if (media.delete_url) {
       this.deleteLinkTarget.href = media.delete_url
     }
+  }
+
+  showAttachmentDetails() {
+    // Get first selected media for single-select mode
+    const media = Array.isArray(this.selectedMediaData) ? this.selectedMediaData[0] : this.selectedMediaData
+    if (!media) return
+    this.renderAttachmentDetails(media)
   }
   
   openImageEditor(mediumId, imageUrl) {
