@@ -20,25 +20,6 @@ end
 
 puts "✓ Created '#{post_type.label}' content type"
 
-# Page type
-page_type = ContentType.find_or_create_by!(ident: 'page') do |ct|
-  ct.label = 'Page'
-  ct.singular = 'Page'
-  ct.plural = 'Pages'
-  ct.description = 'Static pages'
-  ct.icon = 'document'
-  ct.public = true
-  ct.hierarchical = true
-  ct.has_archive = false
-  ct.menu_position = 10
-  ct.supports = ['title', 'editor', 'excerpt', 'thumbnail', 'author', 'page-attributes', 'custom-fields']
-  ct.capabilities = {}
-  ct.rest_base = 'pages'
-  ct.active = true
-end
-
-puts "✓ Created '#{page_type.label}' content type"
-
 # Example: Newsletter type
 newsletter_type = ContentType.find_or_create_by!(ident: 'newsletter') do |ct|
   ct.label = 'Newsletter'
