@@ -1932,7 +1932,8 @@ export default class extends Controller {
           // Set z-index to be above the image editor
           const container = document.querySelector('.swal2-container')
           if (container) {
-            container.style.zIndex = '10001'
+            container.style.zIndex = '14000'
+            container.style.pointerEvents = 'auto'
           }
         }
       })
