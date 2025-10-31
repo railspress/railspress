@@ -366,7 +366,7 @@ class AiService
             # Cohere V2 streaming format: look for content-delta events
             if parsed['type'] == 'content-delta'
               content = parsed.dig('delta', 'message', 'content', 'text')
-              Rails.logger.info "Cohere content extracted: #{content.inspect}"
+              # Rails.logger.info "Cohere content extracted: #{content.inspect}"
               yield content if content && block_given?
             end
           rescue JSON::ParserError => e

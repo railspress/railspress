@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= content_for?(:title) ? yield(:title) : 'Write - RailsPress' %></title>
+  
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "admin_base", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "admin_toggle_switches", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "write_base", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "admin/write_base", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "write", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "page_content_editor", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "components/ai_chat_widget", "data-turbo-track": "reload" %>
+  
+  <!-- Split.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.css">
+  
+  <!-- Inter Font (preconnect only, defer actual loading) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
+  
+  <!-- Editor assets removed for Page editor (uses Preview + Monaco only) -->
+  
+  <!-- EditorJS Dark Theme Styles -->
+  <style>
+    /* EditorJS Dark Theme Styles */
+  </style>
+
+  <!-- Early theme bootstrap: default dark, honor saved preference -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('theme');
+        var useDark = saved ? saved === 'dark' : true; // default to dark
+        document.documentElement.classList.toggle('dark', !!useDark);
+      } catch(e) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+  
+  <%= javascript_importmap_tags %>
+  
+  <style>
+    /* Full height layout for Write Editor */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: var(--admin-bg-app);
+      color: var(--admin-text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+    }
+    
+    /* Main content area should be scrollable */
+    .main-content {
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    /* Dark mode uses CSS variables defined globally */
+    
+    /* Content editor wrapper */
+    .content-editor-wrapper {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Editor-specific styles removed for Page editor */
+    
+    /* Beautiful typography */
+    .prose {
+      max-width: none;
+    }
+    
+    .prose p {
+      font-size: 18px;
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+    
+    .prose h1, .prose h2, .prose h3 {
+      font-weight: 700;
+      line-height: 1.2;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .prose h1 {
+      font-size: 2.25rem;
+    }
+    
+    .prose h2 {
+      font-size: 1.875rem;
+    }
+    
+    .prose h3 {
+      font-size: 1.5rem;
+    }
+    
+    /* Smooth animations */
+    * {
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    
+    /* Autosave indicator animations */
+    .autosave-indicator {
+      transition: all 0.3s ease;
+    }
+    
+    .autosave-indicator .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Fade in/out animations for autosave states */
+    .autosave-indicator .hidden {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    
+    .autosave-indicator .text-green-500,
+    .autosave-indicator .animate-spin {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    /* Hide scrollbar but keep functionality */
+    .editor-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .editor-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .editor-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    
+    .editor-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Collapsible animations */
+    [data-collapsible-target="content"] {
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out, overflow 0.3s ease-out;
+      overflow: hidden;
+    }
+    
+    /* Sidebar animations */
+    [data-sidebar-target="content"] {
+      transition: opacity 0.3s ease-out, pointer-events 0.3s ease-out;
+    }
+    
+    [data-sidebar-target="toggleIcon"] {
+      transition: transform 0.3s ease-out;
+    }
+    
+    /* Drag and drop styles */
+    .sidebar-section {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .sidebar-section.dragging {
+      transform: rotate(2deg);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+    }
+    
+    .drag-handle {
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+    }
+    
+    .drag-handle:hover {
+      opacity: 1;
+    }
+    
+    .sidebar-section:hover .drag-handle {
+      opacity: 0.8;
+    }
+    
+    /* Drag mirror styles */
+    .draggable-mirror {
+      opacity: 0.8;
+      transform: rotate(2deg);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+    
+    /* Toast Notification Styles */
+    .toast-container {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .toast-container.toast-show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    
+    .toast-container.toast-hide {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+    
+    .toast-message {
+      background: var(--admin-bg-elevated);
+      color: var(--admin-text-primary);
+      padding: 11px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: var(--admin-shadow-xl);
+      border: 1px solid var(--admin-border-strong);
+    }
+    
+    /* Dark theme specific */
+    .dark .toast-message {
+      background: #363636;
+      color: #ffffff;
+      border-color: #4a4a4a;
+    }
+    
+    /* Light theme specific */
+    :root:not(.dark) .toast-message {
+      background: #363636;
+      color: #ffffff;
+      border-color: #4a4a4a;
+    }
+  </style>
+</head>
+
+<body class="antialiased" 
+     data-controller="railspress-context-page"
+     data-railspress-context-page-page-value="<%= {
+       id: @page.id,
+       uuid: @page.uuid,
+       slug: @page.slug,
+       status: @page.status,
+       title: @page.title,
+       updated_at: @page.updated_at.iso8601,
+       created_at: @page.created_at.iso8601
+     }.to_json %>">
+  <%= yield %>
+  
+  <!-- Toast Notification -->
+  <div data-controller="toast">
+    <div class="toast-container" data-toast-target="container">
+      <div class="toast-message" data-toast-target="message">
+        Success
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function navigateToPagePreview() {
+      window.open('<%= preview_admin_page_path(@page.uuid) %>', '_blank');
+    }
+  </script>
+
+  <!-- Command Palette -->
+  <%= render 'shared/command_palette',
+      shortcut_set: 'write',
+      theme: {
+        bg_color: 'var(--admin-bg-app)',
+        text_color: 'var(--admin-text-primary)',
+        border_color: 'var(--admin-border)',
+        selected_bg: 'var(--admin-border-strong)'
+      } %>
+  
+  <!-- Quick Search -->
+  <%= render 'shared/quick_search',
+      editor_controller: 'content-editor',
+      search_selectors: ['input[name="post[title]"]', 'textarea[name="post[content]"]', '.ce-paragraph', '.ce-header'],
+      theme: {
+        bg_color: 'var(--admin-search-bar-bg)',
+        text_color: 'var(--admin-text-primary)',
+        border_color: 'var(--admin-search-bar-border)',
+        selected_bg: 'var(--admin-border-strong)',
+        box_shadow: 'var(--admin-search-bar-shadow)',
+        border_radius: 'var(--admin-search-bar-radius)'
+      } %>
+  
+  <!-- Media selector for EditorJS removed for Page editor -->
+  
+  <!-- Split.js JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/split.js@1.6.5/dist/split.min.js"></script>
+</body>
+</html>

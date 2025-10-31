@@ -9,6 +9,10 @@
   title = local_assigns[:title] || 'AI Assistant'
   target_selector = local_assigns[:target_selector]
   insert_callback = local_assigns[:insert_callback]
+  stream_to_editor = local_assigns[:stream_to_editor] || false
+  show_follow_up = local_assigns[:show_follow_up] || false
+  show_generating = local_assigns[:show_generating] || false
+  follow_up_text = local_assigns[:follow_up_text] || ''
   display_html_raw = local_assigns[:display_html_raw] || false
   recall_conversation = local_assigns[:recall_conversation] || false
   show_greeting = local_assigns[:show_greeting] || true
@@ -57,6 +61,10 @@
      data-ai-chat-widget-agent-bubble-color-value="<%= agent_bubble_color %>"
      data-ai-chat-widget-accent-color-value="<%= accent_color %>"
      data-ai-chat-widget-display-html-raw-value="<%= display_html_raw %>"
+     data-ai-chat-widget-stream-to-editor-value="<%= stream_to_editor %>"
+     data-ai-chat-widget-show-follow-up-value="<%= show_follow_up %>"
+     data-ai-chat-widget-show-generating-value="<%= show_generating %>"
+     <% if follow_up_text.present? %>data-ai-chat-widget-follow-up-text-value="<%= follow_up_text %>"<% end %>
      <% if user_avatar_url %>data-ai-chat-widget-user-avatar-url-value="<%= user_avatar_url %>"<% end %>
      <% if bot_avatar_url %>data-ai-chat-widget-bot-avatar-url-value="<%= bot_avatar_url %>"<% end %>
      <% if user_name %>data-ai-chat-widget-user-name-value="<%= user_name %>"<% end %>

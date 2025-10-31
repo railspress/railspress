@@ -58,7 +58,8 @@ class Page < ApplicationRecord
     scheduled: 2,
     pending_review: 3,
     private_page: 4,
-    trash: 5
+    auto_draft: 5,
+    trash: 6
   }, _suffix: true
   
   # Status scopes
@@ -118,6 +119,7 @@ class Page < ApplicationRecord
   validates :title, presence: true
   validates :slug, presence: true, uniqueness: true
   validates :status, presence: true
+  validates :uuid, presence: true, uniqueness: true
   validates :password, length: { minimum: 4 }, allow_blank: true
   
   # Scopes
@@ -126,6 +128,7 @@ class Page < ApplicationRecord
   scope :ordered, -> { order(order: :asc, title: :asc) }
   
   # Callbacks
+  before_validation :ensure_uuid
   before_validation :set_published_at, if: :published_status?
   after_create :trigger_page_created_hook
   after_update :trigger_page_updated_hook, if: :saved_change_to_status?
@@ -146,6 +149,9 @@ class Page < ApplicationRecord
   end
   
   private
+  def ensure_uuid
+    self.uuid ||= SecureRandom.uuid
+  end
   
   def set_published_at
     self.published_at ||= Time.current
@@ -225,6 +231,7 @@ class Page < ApplicationRecord
   end
   
   def render_with_template
-    template&.render_content(self) || content.to_s
+    body = content_html.presence || content.to_s
+    template&.render_content(self) || body
   end
 end

@@ -1,0 +1,52 @@
+<% content_value = local_assigns.fetch(:content, '') %>
+<div class="page-content-editor" data-controller="page-content-editor content-editor" data-editor-type="page_html" data-autosave-target="content">
+  <!-- Tabs -->
+  <div class="flex items-center gap-2 mb-4 border-b border-gray-200 dark:border-gray-700">
+    <button type="button" 
+            data-action="click->page-content-editor#switchTab"
+            data-page-content-editor-target="previewTab"
+            class="px-4 py-2 text-sm font-medium transition-colors relative"
+            style="color: var(--admin-text-primary);"
+            data-tab="preview">
+      Preview
+      <span class="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200" 
+            data-page-content-editor-target="previewTabIndicator"
+            style="background-color: var(--admin-primary);"></span>
+    </button>
+    <button type="button" 
+            data-action="click->page-content-editor#switchTab"
+            data-page-content-editor-target="codeTab"
+            class="px-4 py-2 text-sm font-medium transition-colors relative"
+            style="color: var(--admin-text-secondary);"
+            data-tab="code">
+      Code
+      <span class="absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200" 
+            data-page-content-editor-target="codeTabIndicator"
+            style="background-color: var(--admin-primary); opacity: 0;"></span>
+    </button>
+  </div>
+
+  <!-- Preview Tab Content -->
+  <div data-page-content-editor-target="previewContent">
+    <div class="preview-container" 
+         style="min-height: 400px; border: 1px solid var(--admin-border); border-radius: 8px; padding: 32px; background: white;">
+      <div data-page-content-editor-target="previewFrame" class="w-full" style="min-height: 600px;">
+        <!-- Preview content will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Tab Content -->
+  <div data-page-content-editor-target="codeContent" class="hidden">
+    <div id="monaco-editor-container" class="monaco-editor-wrapper" style="height: 600px; border: 1px solid var(--admin-border); border-radius: 8px;"></div>
+    <!-- Hidden textarea for form submission -->
+    <%= form.text_area field_name,
+        rows: 30,
+        class: "hidden",
+        value: content_value,
+        data: { 
+          page_content_editor_target: "contentField"
+        } %>
+  </div>
+</div>
+

@@ -27,7 +27,11 @@ export default class extends Controller {
     userRole: String,
     headerColor: String,
     textbarColor: String,
-    clearConversationOnSwitch: Boolean
+    clearConversationOnSwitch: Boolean,
+    streamToEditor: Boolean,
+    showFollowUp: Boolean,
+    showGenerating: Boolean,
+    followUpText: String
   }
 
   async connect() {
@@ -266,6 +270,10 @@ export default class extends Controller {
     
     // Create agent message bubble
     const { messageDiv, bubble, contentDiv } = this.addAgentMessage()
+    // Show generating placeholder if enabled
+    if (this.showGeneratingValue !== false) {
+      contentDiv.textContent = 'Generating…'
+    }
     
     // Build request body
     const formData = new FormData()
@@ -333,6 +341,7 @@ export default class extends Controller {
       const decoder = new TextDecoder()
       let buffer = ''
       let accumulatedContent = ''
+      let lastStreamInsertAt = 0
       
       const readChunk = () => {
         reader.read().then(({ done, value }) => {
@@ -375,13 +384,24 @@ export default class extends Controller {
                   // Accumulate content
                   accumulatedContent += data.chunk
                   
-                  // Update display based on displayHtmlRaw setting
-                  if (this.displayHtmlRawValue) {
-                    contentDiv.innerHTML = accumulatedContent
-                  } else {
-                    contentDiv.textContent = accumulatedContent
+                  // Update chat bubble
+                  // - Always show greeting in chat (isGreetingRequest)
+                  // - For normal responses, only show in chat when not streaming to editor
+                  if (isGreetingRequest || !this.streamToEditorValue) {
+                    if (this.displayHtmlRawValue) {
+                      contentDiv.innerHTML = accumulatedContent
+                    } else {
+                      contentDiv.textContent = accumulatedContent
+                    }
+                    this.scrollToBottom()
                   }
-                  this.scrollToBottom()
+
+                  // Stream into editor (debounced)
+                  const now = Date.now()
+                  if (this.streamToEditorValue && (!lastStreamInsertAt || (now - lastStreamInsertAt) > 250)) {
+                    lastStreamInsertAt = now
+                    this.streamInsertToEditor(accumulatedContent)
+                  }
                 } else if (data.done) {
                   // Store session info
                   this.sessionUuid = data.session_uuid
@@ -393,8 +413,27 @@ export default class extends Controller {
                   // Remove typing class when done
                   messageDiv.classList.remove('typing')
                   this.sendTarget.disabled = false
-                  // Add action buttons with event ID
-                  this.addActionButtons(bubble, data.event_id)
+
+                  if (!isGreetingRequest && this.streamToEditorValue) {
+                    // Remove the generating bubble from chat for streamed insert
+                    if (messageDiv && messageDiv.parentNode) {
+                      messageDiv.parentNode.removeChild(messageDiv)
+                    }
+                  } else {
+                    // Add action buttons with event ID only when shown in chat
+                    this.addActionButtons(bubble, data.event_id)
+                  }
+
+                  // Final insert to editor to ensure last chunk is present
+                  if (!isGreetingRequest && this.streamToEditorValue && accumulatedContent) {
+                    this.streamInsertToEditor(accumulatedContent, true)
+                  }
+
+                  // Show follow-up question ONLY for streamed HTML responses (not greeting)
+                  if (this.showFollowUpValue && !isGreetingRequest && this.streamToEditorValue && this.isLikelyHtml(accumulatedContent)) {
+                    const text = this.hasFollowUpTextValue && this.followUpTextValue ? this.followUpTextValue : 'Can I refine sections, adjust styling, or add more content?'
+                    this.addMessage('agent', text)
+                  }
                 }
               } catch (e) {
                 console.error('Failed to parse SSE data:', e)
@@ -643,6 +682,19 @@ export default class extends Controller {
         detail: { message: 'Failed to copy' }
       }))
     })
+  }
+
+  // Insert streaming content into the unified editor
+  async streamInsertToEditor(html, force = false) {
+    try {
+      const editorWrapper = document.querySelector('[data-controller*="content-editor"]')
+      if (!editorWrapper) return
+      const contentEditor = this.application.getControllerForElementAndIdentifier(editorWrapper, 'content-editor')
+      if (!contentEditor || !contentEditor.setHtml) return
+      await contentEditor.setHtml(html)
+    } catch (e) {
+      console.error('[AI Chat] Streaming insert failed:', e)
+    }
   }
 
    async insertMessage(bubble, eventId) {
@@ -1209,6 +1261,12 @@ export default class extends Controller {
     return context
   }
   
+  isLikelyHtml(text) {
+    if (!text) return false
+    const sample = text.trim().slice(0, 500).toLowerCase()
+    return sample.includes('<section') || sample.includes('<div') || sample.includes('<h1') || sample.includes('<article') || sample.includes('<header') || sample.includes('<footer')
+  }
+
   async captureEditorContent() {
     try {
       // Use the unified content editor controller

@@ -41,6 +41,9 @@ export default class extends Controller {
       case 'ckeditor5':
         this.detectCKEditor5()
         break
+      case 'page_html':
+        this.detectPageHtml()
+        break
       default:
         console.warn(`[ContentEditor] Unknown editor type: ${this.editorType}`)
     }
@@ -146,6 +149,45 @@ export default class extends Controller {
     }
   }
 
+  detectPageHtml() {
+    // The page content editor controller is on the same element (both controllers on one element)
+    const hasPageEditor = this.element.dataset.controller && this.element.dataset.controller.includes('page-content-editor')
+
+    if (!hasPageEditor) {
+      console.warn('[ContentEditor] Page Content Editor element not found')
+      return
+    }
+
+    const tryGetController = () => {
+      try {
+        this.editorController = this.application.getControllerForElementAndIdentifier(this.element, 'page-content-editor')
+        return !!this.editorController
+      } catch (error) {
+        return false
+      }
+    }
+
+    // Try immediately
+    if (tryGetController()) {
+      console.log('[ContentEditor] Page Content Editor controller found:', this.editorController)
+      return
+    }
+
+    // Retry a few times as Stimulus may connect controllers in arbitrary order
+    let attempts = 0
+    const maxAttempts = 10
+    const interval = setInterval(() => {
+      attempts += 1
+      if (tryGetController()) {
+        console.log('[ContentEditor] Page Content Editor controller found after retry:', this.editorController)
+        clearInterval(interval)
+      } else if (attempts >= maxAttempts) {
+        console.error('[ContentEditor] Failed to get Page Content Editor controller after retries')
+        clearInterval(interval)
+      }
+    }, 100)
+  }
+
   // GETTERS - Retrieve content in different formats
 
   async getHtml() {
@@ -156,6 +198,8 @@ export default class extends Controller {
         return this.getTrixHtml()
       case 'ckeditor5':
         return this.getCKEditor5Html()
+      case 'page_html':
+        return this.editorController?.getHtml() || ''
       default:
         return ''
     }
@@ -275,6 +319,27 @@ export default class extends Controller {
       case 'ckeditor5':
         console.log('[ContentEditor] Setting HTML in CKEditor5')
         this.setCKEditor5Html(html)
+        break
+      case 'page_html':
+        console.log('[ContentEditor] Setting HTML in Page HTML Editor')
+        console.log('[ContentEditor] Editor controller:', this.editorController)
+        console.log('[ContentEditor] Has setHtml method:', !!this.editorController?.setHtml)
+        if (!this.editorController?.setHtml) {
+          // Attempt to (re)detect and wait briefly
+          this.detectPageHtml()
+          let retries = 0
+          while ((!this.editorController || !this.editorController.setHtml) && retries < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100))
+            retries += 1
+            this.detectPageHtml()
+          }
+        }
+
+        if (this.editorController?.setHtml) {
+          await this.editorController.setHtml(html)
+        } else {
+          console.error('[ContentEditor] Page Content Editor controller not found or setHtml method missing after retries')
+        }
         break
       default:
         console.warn(`[ContentEditor] Unknown editor type: ${this.editorType}`)

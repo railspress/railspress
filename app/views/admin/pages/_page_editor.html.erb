@@ -1,0 +1,140 @@
+<div class="h-screen flex flex-col sidebar-collapsed overflow-hidden" data-controller="keyboard-shortcuts" style="background-color: var(--admin-bg-app);">
+  <!-- Top Bar -->
+  <div class="px-6 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style="border-bottom: 1px solid var(--admin-border); background-color: var(--admin-bg-primary);">
+    <div class="flex items-center justify-start gap-2">
+      <%= link_to admin_pages_path, class: "flex items-center gap-2 transition-colors duration-200 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+        </svg>
+      <% end %>
+    </div>
+      <div class="flex items-center gap-4">
+      <!-- AI Assistant Button -->
+      <button type="button" 
+              class="p-1.5 rounded-lg transition-colors duration-200"
+              style="background-color: transparent; color: var(--color-gray-500);"
+              onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
+              onmouseout="this.style.backgroundColor='transparent'"
+              onclick="toggleAiSidebar(event)"
+              title="AI Assistant">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+        </svg>
+      </button>
+      
+      <!-- Preview Link -->
+      <a href="<%= preview_admin_page_path(@page.uuid) %>"
+         target="_blank"
+         class="p-1.5 rounded-lg transition-colors duration-200"
+         style="background-color: transparent; color: var(--color-gray-500);"
+         onmouseover="this.style.backgroundColor='var(--color-gray-100)'"
+         onmouseout="this.style.backgroundColor='transparent'"
+         title="View page">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+        </svg>
+      </a>
+      <!-- Save Button -->
+      <button type="button" class="p-1.5 rounded-lg transition-all duration-200 save-button" onclick="window.dispatchEvent(new CustomEvent('editor:save'))" style="background-color: transparent; color: var(--color-gray-500);" onmouseover="this.style.backgroundColor='var(--color-gray-100)'" onmouseout="this.style.backgroundColor='transparent'" title="Save (⌘S)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9"/>
+        </svg>
+      </button>
+      <!-- Sidebar Toggle -->
+      <button type="button" class="p-1.5 rounded-lg transition-colors duration-200 sidebar-toggle-topbar" style="background-color: transparent; color: var(--color-gray-500);" onmouseover="this.style.backgroundColor='var(--color-gray-100)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.dispatchEvent(new CustomEvent('toggle-sidebar'))">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <%= form_with model: @page, url: @page.persisted? ? admin_page_path(@page.uuid) : admin_pages_path, class: "flex-1 flex flex-col overflow-hidden", data: { controller: "autosave slug-generator", autosave_url_value: (@page.persisted? ? admin_page_path(@page.uuid) : admin_pages_path), autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @page.persisted?, slug_generator_status_value: @page.status, content_type: 'page' } do |f| %>
+    <div class="flex-1 flex overflow-hidden" style="margin-top: 50px; height: calc(100vh - 50px);" data-controller="split-panels" data-split-panels-left-collapsed-value="false" data-split-panels-right-collapsed-value="true" data-action="split-panels:toggle-left@window->split-panels#toggleLeftPanel split-panels:toggle-right@window->split-panels#toggleRightPanel">
+      <!-- Left Sidebar: AI Assistant -->
+      <div class="ai-left-sidebar"
+           data-controller="ai-sidebar"
+           data-ai-sidebar-collapsed-value="true"
+           data-split-panels-target="leftPanel"
+           data-split-panel="left"
+           style="border-right: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); overflow: hidden;">
+        
+        <div class="ai-sidebar-content h-full w-full" data-ai-sidebar-target="content" style="opacity: 0; pointer-events: none;">
+          <%= render 'shared/ai_chat_widget',
+              agent_slug: 'page_writer',
+              allow_agent_switch: true,
+              height: '100%',
+              recall_conversation: true,
+              show_greeting: false,
+              show_settings: true,
+              show_generating: true,
+              add_content: true,
+              allow_attachments: true,
+              title: 'Page Writer',
+              display_html_raw: true,
+              show_close_button: true,
+              close_button_callback:  'toggleAiSidebar',
+              background_color: 'var(--admin-bg-primary)',
+              header_color: 'var(--admin-bg-primary)',
+              textbar_color: 'var(--admin-bg-primary)',
+              user_bubble_color: 'var(--admin-primary)',
+              agent_bubble_color: 'var(--admin-bg-secondary)',
+              accent_color: 'var(--admin-bg-tertiary)',
+              stream_to_editor: true,
+              show_follow_up: true,
+              follow_up_text: 'Want me to refine sections, adjust styling, or add more content?',
+              show_generating: true
+          %>
+          <style>
+            /* Override chat widget CSS variables to use theme colors */
+            .ai-chat-widget {
+              --chat-text: var(--admin-text-primary);
+              --chat-text-muted: var(--admin-text-tertiary);
+              --chat-border: var(--admin-border);
+              --chat-accent: var(--admin-primary);
+            }
+            
+            /* Send button should have proper contrast */
+            .ai-chat-widget .ai-chat-send {
+              background: var(--admin-primary) !important;
+              color: white !important;
+              border-top-left-radius: 0 !important;
+              border-bottom-left-radius: 0 !important;
+            }
+            
+            /* Bot avatar should use primary color */
+            .ai-chat-widget .ai-chat-message.agent .ai-chat-avatar {
+              background: var(--admin-primary) !important;
+              color: white !important;
+            }
+          </style>
+        </div>
+      </div>
+      
+      <!-- Main Editor Area -->
+      <div class="flex-1 flex flex-col overflow-hidden" data-split-panels-target="middlePanel" data-split-panel="middle">
+        <div class="flex-1 overflow-y-auto">
+          <div class="ml-0 px-8 py-12">
+            <%= render 'admin/pages/page_content_editor',
+                form: f,
+                content: (@page.content_html.presence || @page.content.to_s),
+                field_name: :content_html %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="sidebar-scroll" data-controller="sidebar" data-action="toggle-sidebar@window->sidebar#toggle" data-sidebar-collapsed-value="true" data-split-panels-target="rightPanel" data-split-panel="right" style="border-left: 1px solid var(--admin-border); background-color: var(--admin-bg-primary); overflow: hidden;">
+        <div class="p-6 space-y-8 h-full overflow-y-auto" data-sidebar-target="content" data-controller="sidebar-reorder" data-sidebar-reorder-user-id-value="<%= current_user.id %>" data-sidebar-reorder-target="container">
+          <%= render 'admin/pages/sidebar_sections/page', f: f %>
+          <%= render 'admin/pages/sidebar_sections/seo_meta', f: f %>
+          <%= render 'admin/pages/sidebar_sections/content_channels', f: f %>
+          <%= render 'admin/pages/sidebar_sections/page_info' %>
+          <%= render 'admin/pages/sidebar_sections/versions' %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+

@@ -15,6 +15,7 @@
 //= link admin/theme_editor.css
 //= link admin/api_docs.css
 //= link admin/pixel_preview.css
+//= link page_content_editor.css
 
 // Components
 //= link components/ai_chat_widget.css

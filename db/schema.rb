@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_27_074356) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_31_112301) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -911,6 +911,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_27_074356) do
     t.integer "page_template_id"
     t.datetime "deleted_at"
     t.integer "trashed_by_id"
+    t.text "content_html"
+    t.string "uuid"
     t.index ["deleted_at"], name: "index_pages_on_deleted_at"
     t.index ["focus_keyphrase"], name: "index_pages_on_focus_keyphrase"
     t.index ["page_template_id"], name: "index_pages_on_page_template_id"
@@ -919,6 +921,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_27_074356) do
     t.index ["tenant_id"], name: "index_pages_on_tenant_id"
     t.index ["trashed_by_id"], name: "index_pages_on_trashed_by_id"
     t.index ["user_id"], name: "index_pages_on_user_id"
+    t.index ["uuid"], name: "index_pages_on_uuid", unique: true
   end
 
   create_table "pageviews", force: :cascade do |t|

@@ -1,0 +1,97 @@
+/* Page Content Editor Styles */
+
+.page-content-editor {
+  width: 100%;
+  min-height: 600px;
+}
+
+/* Tab Styles */
+.page-content-editor .tab-button {
+  position: relative;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.page-content-editor .tab-button:hover {
+  color: var(--admin-primary);
+}
+
+.page-content-editor .tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transition: opacity 0.2s;
+}
+
+/* Preview Content Styles */
+.preview-container {
+  min-height: 400px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 32px;
+  background: white;
+  overflow: auto;
+}
+
+.preview-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 600px;
+}
+
+/* Monaco Editor Container */
+.monaco-editor-wrapper {
+  height: 600px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Fallback Textarea Styles */
+.page-content-editor textarea.fallback-editor {
+  width: 100%;
+  height: 600px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 14px;
+  padding: 16px;
+  resize: none;
+  background: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
+  border: none;
+  outline: none;
+}
+
+.page-content-editor textarea.fallback-editor:focus {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: -2px;
+}
+
+/* Empty State */
+.preview-empty-state {
+  color: var(--admin-text-tertiary);
+  text-align: center;
+  padding: 80px 20px;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .preview-container {
+    padding: 16px;
+  }
+  
+  .monaco-editor-wrapper {
+    height: 400px;
+  }
+  
+  .page-content-editor textarea.fallback-editor {
+    height: 400px;
+    font-size: 12px;
+  }
+}
+

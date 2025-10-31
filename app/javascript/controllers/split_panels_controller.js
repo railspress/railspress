@@ -4,16 +4,36 @@ export default class extends Controller {
   static targets = ["leftPanel", "middlePanel", "rightPanel"]
   static values = { 
     leftCollapsed: Boolean,
-    rightCollapsed: Boolean
+    rightCollapsed: Boolean,
+    editorType: String // "page" or "post"
   }
 
   connect() {
-    // Load saved states from localStorage
-    const savedLeftState = localStorage.getItem('editor-ai-sidebar-collapsed')
-    const savedRightState = localStorage.getItem('editor-right-sidebar-collapsed')
+    // Detect if this is a page editor
+    const isPageEditor = document.querySelector('[data-controller*="railspress-context-page"]') !== null
     
-    this.leftCollapsedValue = savedLeftState !== null ? savedLeftState === 'true' : true
-    this.rightCollapsedValue = savedRightState !== null ? savedRightState === 'true' : true
+    // For page editors, prefer saved state; fallback to defaults (left open, right closed)
+    if (isPageEditor) {
+      const savedLeftState = localStorage.getItem('page-editor-left-collapsed')
+      const savedRightState = localStorage.getItem('page-editor-right-collapsed')
+      if (!this.hasLeftCollapsedValue) {
+        this.leftCollapsedValue = savedLeftState !== null ? savedLeftState === 'true' : false
+      }
+      if (!this.hasRightCollapsedValue) {
+        this.rightCollapsedValue = savedRightState !== null ? savedRightState === 'true' : true
+      }
+    } else {
+      // For post editors, use localStorage or defaults
+      const savedLeftState = localStorage.getItem('editor-ai-sidebar-collapsed')
+      const savedRightState = localStorage.getItem('editor-right-sidebar-collapsed')
+      
+      if (!this.hasLeftCollapsedValue) {
+        this.leftCollapsedValue = savedLeftState !== null ? savedLeftState === 'true' : true
+      }
+      if (!this.hasRightCollapsedValue) {
+        this.rightCollapsedValue = savedRightState !== null ? savedRightState === 'true' : true
+      }
+    }
     
     // Wait for DOM to be ready
     setTimeout(() => {
@@ -45,10 +65,13 @@ export default class extends Controller {
     // Initial sizes based on collapsed state
     const initialSizes = this.getInitialSizes();
 
+    const isPageEditor = this.element.closest('[data-controller*="railspress-context-page"]') !== null
+    const minSizes = isPageEditor ? [200, 400, 200] : [0, 400, 0] // Page editor: allow right sidebar, Post: allow collapse
+    
     try {
       this.splitInstance = Split([leftPanel, middlePanel, rightPanel], {
         sizes: initialSizes,
-        minSize: [0, 400, 0], // Allow collapsing to 0
+        minSize: minSizes,
         gutterSize: 2,
         cursor: 'col-resize',
         direction: 'horizontal',
@@ -57,14 +80,18 @@ export default class extends Controller {
           this.updatePanelVisibilities();
         },
         onDragEnd: () => {
-          // Save sizes to localStorage
+          // Save sizes to localStorage with editor-specific key
           const sizes = this.splitInstance.getSizes();
-          localStorage.setItem('post-editor-panel-sizes', JSON.stringify(sizes));
+          const storageKey = isPageEditor ? 'page-editor-panel-sizes' : 'post-editor-panel-sizes'
+          localStorage.setItem(storageKey, JSON.stringify(sizes));
         }
       });
 
-      // Restore saved sizes if sidebars are visible
-      this.restoreSavedSizes();
+      // Apply display styles based on collapsed state
+      this.updateSplitSizes();
+
+      // Restore saved sizes if any
+      this.restoreSavedSizes(isPageEditor)
 
       console.log('Split.js initialized successfully');
     } catch (error) {
@@ -73,27 +100,34 @@ export default class extends Controller {
   }
 
   getInitialSizes() {
+    const isPageEditor = this.element.closest('[data-controller*="railspress-context-page"]') !== null
+    
     // Calculate sizes based on collapsed state
     if (this.leftCollapsedValue && this.rightCollapsedValue) {
       return [0, 100, 0]; // Both collapsed, middle full width
     } else if (this.leftCollapsedValue) {
       return [0, 75, 25]; // Only right visible, symmetric
     } else if (this.rightCollapsedValue) {
-      return [25, 75, 0]; // Only left visible, symmetric
+      // Right hidden, left visible. For page editor we want 50/50/0 default
+      return isPageEditor ? [50, 50, 0] : [25, 75, 0];
     } else {
-      return [25, 50, 25]; // Both visible, symmetric
+      // Different defaults for page vs post editor
+      if (isPageEditor) {
+        return [50, 50, 0]; // Page editor: AI/Content 50/50, no right sidebar
+      } else {
+        return [25, 50, 25]; // Post editor: Both visible, symmetric
+      }
     }
   }
 
-  restoreSavedSizes() {
-    const savedSizes = localStorage.getItem('post-editor-panel-sizes');
+  restoreSavedSizes(isPageEditor = false) {
+    const storageKey = isPageEditor ? 'page-editor-panel-sizes' : 'post-editor-panel-sizes'
+    const savedSizes = localStorage.getItem(storageKey);
     if (savedSizes && this.splitInstance) {
       try {
         const sizes = JSON.parse(savedSizes);
-        // Only restore if both sidebars are visible
-        if (!this.leftCollapsedValue && !this.rightCollapsedValue) {
-          this.splitInstance.setSizes(sizes);
-        }
+        // Always restore whatever was saved for this editor type
+        this.splitInstance.setSizes(sizes);
       } catch (e) {
         console.warn('Could not restore panel sizes:', e);
       }
@@ -112,8 +146,10 @@ export default class extends Controller {
     const collapsed = event.detail.collapsed;
     console.log('Toggle left panel:', collapsed);
     this.leftCollapsedValue = collapsed;
-    // Save state to localStorage
-    localStorage.setItem('editor-ai-sidebar-collapsed', collapsed);
+    // Save state to localStorage (editor-specific key)
+    const isPageEditor = this.element.closest('[data-controller*="railspress-context-page"]') !== null
+    const key = isPageEditor ? 'page-editor-left-collapsed' : 'editor-ai-sidebar-collapsed'
+    localStorage.setItem(key, collapsed);
     this.updateSplitSizes();
   }
 
@@ -121,8 +157,10 @@ export default class extends Controller {
     const collapsed = event.detail.collapsed;
     console.log('Toggle right panel:', collapsed);
     this.rightCollapsedValue = collapsed;
-    // Save state to localStorage
-    localStorage.setItem('editor-right-sidebar-collapsed', collapsed);
+    // Save state to localStorage (editor-specific key)
+    const isPageEditor = this.element.closest('[data-controller*="railspress-context-page"]') !== null
+    const key = isPageEditor ? 'page-editor-right-collapsed' : 'editor-right-sidebar-collapsed'
+    localStorage.setItem(key, collapsed);
     this.updateSplitSizes();
   }
 
@@ -130,28 +168,30 @@ export default class extends Controller {
     if (!this.splitInstance) return;
 
     const newSizes = this.getInitialSizes();
-    this.splitInstance.setSizes(newSizes);
     
-    // Ensure panels are properly hidden/visible
+    // First, apply display styles to hide/show panels
     const leftPanel = this.leftPanelTarget;
     const rightPanel = this.rightPanelTarget;
     
     if (this.leftCollapsedValue && leftPanel) {
-      leftPanel.style.overflow = 'hidden';
+      leftPanel.style.display = 'none';
     } else if (leftPanel) {
-      leftPanel.style.overflow = 'visible';
+      leftPanel.style.display = 'flex';
     }
     
     if (this.rightCollapsedValue && rightPanel) {
-      rightPanel.style.overflow = 'hidden';
+      rightPanel.style.display = 'none';
     } else if (rightPanel) {
-      rightPanel.style.overflow = 'hidden'; // Container doesn't scroll, content inside does
+      rightPanel.style.display = 'flex';
     }
     
-    // Save to localStorage
-    if (!this.leftCollapsedValue && !this.rightCollapsedValue) {
-      localStorage.setItem('post-editor-panel-sizes', JSON.stringify(newSizes));
-    }
+    // Then set the sizes (Split.js handles the remaining panels)
+    this.splitInstance.setSizes(newSizes);
+    
+    // Save to localStorage with editor-specific key
+    const isPageEditor = this.element.closest('[data-controller*="railspress-context-page"]') !== null
+    const storageKey = isPageEditor ? 'page-editor-panel-sizes' : 'post-editor-panel-sizes'
+    localStorage.setItem(storageKey, JSON.stringify(newSizes));
   }
 
   disconnect() {

@@ -317,10 +317,16 @@ Rails.application.routes.draw do
     resources :pages do
       collection do
         post :bulk_action
+        # Fullscreen editor entrypoint that auto-creates draft and opens editor
+        get :write, action: :write_new
       end
       member do
         patch :publish
         patch :unpublish
+        # Open existing page in fullscreen editor
+        get :write
+        # Preview by UUID/ID (avoids exposing slug in admin editor)
+        get :preview
       end
     end
     

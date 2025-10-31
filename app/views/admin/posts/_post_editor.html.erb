@@ -139,7 +139,7 @@
         </div>
   </div>
   
-  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post) : admin_posts_path, class: "flex-1 flex flex-col overflow-hidden", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post) : admin_posts_path, autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @post.persisted?, slug_generator_status_value: @post.status, post_id: @post.persisted? ? @post.id : 'new' } do |f| %>
+  <%= form_with model: @post, url: @post.persisted? ? admin_post_path(@post.uuid) : admin_posts_path, class: "flex-1 flex flex-col overflow-hidden", data: { controller: "autosave slug-generator", autosave_url_value: @post.persisted? ? admin_post_path(@post.uuid) : admin_posts_path, autosave_interval_value: SiteSetting.get('auto_save_interval', 60) * 1000, autosave_target: "form", slug_generator_persisted_value: @post.persisted?, slug_generator_status_value: @post.status, post_id: @post.persisted? ? @post.id : 'new' } do |f| %>
     
     <!-- Main Content Area (Editor + Sidebar) -->
     <div class="flex-1 flex overflow-hidden" 

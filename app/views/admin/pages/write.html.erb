@@ -1,0 +1,5 @@
+<% content_for :title, @page.persisted? ? "Edit - #{@page.title}" : "New Page" %>
+
+<%= render 'admin/pages/page_editor' %>
+
+

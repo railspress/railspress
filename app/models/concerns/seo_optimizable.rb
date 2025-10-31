@@ -4,11 +4,6 @@ module SeoOptimizable
   included do
     # Callbacks
     before_validation :set_default_seo_fields
-    
-    # Validations
-    validates :meta_description, length: { maximum: 160 }, allow_blank: true
-    validates :og_description, length: { maximum: 200 }, allow_blank: true
-    validates :twitter_description, length: { maximum: 200 }, allow_blank: true
   end
 
   # SEO meta title (falls back to title)
