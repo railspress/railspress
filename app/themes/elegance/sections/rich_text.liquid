@@ -12,7 +12,11 @@
         {% endif %}
 
         <div class="rich-text-body">
-          {{ section.settings.content }}
+          {% if section.settings.content != blank and section.settings.content != "" %}
+            {{ section.settings.content }}
+          {% else %}
+            {{ page.content }}
+          {% endif %}
         </div>
 
         {% if section.settings.show_cta and section.settings.cta_text %}

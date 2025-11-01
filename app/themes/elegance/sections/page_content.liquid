@@ -1,0 +1,191 @@
+<section class="page-content section" data-section-type="page_content" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="page-content-wrapper">
+      <div class="page-content-main" style="max-width: {{ section.settings.content_width | default: '800' }}px; margin: 0 auto;">
+        {% if section.settings.show_sidebar and section.settings.sidebar_position == 'left' %}
+          <div class="page-content-sidebar sidebar-left">
+            {% if section.settings.show_author_bio and page.author %}
+              <div class="author-bio">
+                <h3>{{ page.author.name }}</h3>
+                <p>{{ page.author.bio | default: 'Author bio coming soon...' }}</p>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="page-content-body">
+          {% if section.settings.content != blank and section.settings.content != "" %}
+            {{ section.settings.content }}
+          {% else %}
+            {{ page.content }}
+          {% endif %}
+
+          {% if section.settings.show_social_sharing %}
+            <div class="social-sharing">
+              <h4>Share this page</h4>
+              <div class="share-buttons">
+                <a href="https://twitter.com/intent/tweet?url={{ page.url }}&text={{ page.title }}" target="_blank" rel="noopener">Twitter</a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ page.url }}" target="_blank" rel="noopener">Facebook</a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.url }}" target="_blank" rel="noopener">LinkedIn</a>
+              </div>
+            </div>
+          {% endif %}
+
+          {% if section.settings.show_related_posts %}
+            <div class="related-posts">
+              <h4>Related Posts</h4>
+              <p>Related posts feature coming soon...</p>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if section.settings.show_sidebar and section.settings.sidebar_position == 'right' %}
+          <div class="page-content-sidebar sidebar-right">
+            {% if section.settings.show_author_bio and page.author %}
+              <div class="author-bio">
+                <h3>{{ page.author.name }}</h3>
+                <p>{{ page.author.bio | default: 'Author bio coming soon...' }}</p>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .page-content {
+    padding: var(--spacing-xl) 0;
+  }
+
+  .page-content-wrapper {
+    width: 100%;
+  }
+
+  .page-content-main {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: flex-start;
+  }
+
+  .page-content-body {
+    flex: 1;
+  }
+
+  .page-content-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+  }
+
+  .page-content-sidebar .author-bio {
+    padding: var(--spacing-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .page-content-sidebar .author-bio h3 {
+    margin: 0 0 var(--spacing-sm) 0;
+    font-size: var(--font-lg);
+  }
+
+  .social-sharing,
+  .related-posts {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .social-sharing h4,
+  .related-posts h4 {
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: var(--font-lg);
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+
+  .share-buttons a {
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-primary);
+    color: var(--color-white);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .share-buttons a:hover {
+    background: var(--color-primary-dark);
+  }
+
+  @media (max-width: 768px) {
+    .page-content-main {
+      flex-direction: column;
+    }
+
+    .page-content-sidebar {
+      width: 100%;
+    }
+
+    .page-content-sidebar.sidebar-left {
+      order: 2;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Page Content",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_sidebar",
+      "label": "Show Sidebar",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "sidebar_position",
+      "label": "Sidebar Position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author_bio",
+      "label": "Show Author Bio",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_posts",
+      "label": "Show Related Posts",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_sharing",
+      "label": "Show Social Sharing",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content Width",
+      "options": [
+        { "value": "standard", "label": "Standard (800px)" },
+        { "value": "wide", "label": "Wide (1200px)" },
+        { "value": "full", "label": "Full Width" }
+      ],
+      "default": "standard"
+    }
+  ]
+}
+{% endschema %}
+

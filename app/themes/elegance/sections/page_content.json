@@ -1,0 +1,51 @@
+{
+  "name": "Page Content",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_sidebar",
+      "label": "Show Sidebar",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "sidebar_position",
+      "label": "Sidebar Position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author_bio",
+      "label": "Show Author Bio",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related_posts",
+      "label": "Show Related Posts",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_sharing",
+      "label": "Show Social Sharing",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content Width",
+      "options": [
+        { "value": "800", "label": "Standard" },
+        { "value": "1200", "label": "Wide" },
+        { "value": "100%", "label": "Full Width" }
+      ],
+      "default": "800"
+    }
+  ]
+}
+

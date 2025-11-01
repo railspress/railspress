@@ -1,0 +1,257 @@
+{% comment %} Post content section with sidebar support {% endcomment %}
+<section class="post-content section" data-section-type="post_content" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="post-content-wrapper">
+      <div class="post-content-main" style="max-width: {{ section.settings.content_width | default: '800' }}px; margin: 0 auto;">
+        {% if section.settings.show_sidebar and section.settings.sidebar_position == 'left' %}
+          <div class="post-content-sidebar sidebar-left">
+            {% if section.settings.show_table_of_contents %}
+              <div class="table-of-contents">
+                <h4>Table of Contents</h4>
+                <nav id="toc"></nav>
+              </div>
+            {% endif %}
+            {% if section.settings.show_author_bio and post.author %}
+              <div class="author-bio">
+                <h3>{{ post.author.name }}</h3>
+                <p>{{ post.author.bio | default: 'Author bio coming soon...' }}</p>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="post-content-body">
+          {% if section.settings.show_reading_time and post.reading_time %}
+            <div class="reading-time">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12,6 12,12 16,14"></polyline>
+              </svg>
+              {{ post.reading_time }} min read
+            </div>
+          {% endif %}
+
+          {% if section.settings.content != blank and section.settings.content != "" %}
+            {{ section.settings.content }}
+          {% else %}
+            {{ post.content | default: page.content }}
+          {% endif %}
+
+          {% if section.settings.show_social_sharing %}
+            <div class="social-sharing">
+              <h4>Share this post</h4>
+              <div class="share-buttons">
+                <a href="https://twitter.com/intent/tweet?url={{ post.url }}&text={{ post.title }}" target="_blank" rel="noopener">Twitter</a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ post.url }}" target="_blank" rel="noopener">Facebook</a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ post.url }}" target="_blank" rel="noopener">LinkedIn</a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if section.settings.show_sidebar and section.settings.sidebar_position == 'right' %}
+          <div class="post-content-sidebar sidebar-right">
+            {% if section.settings.show_table_of_contents %}
+              <div class="table-of-contents">
+                <h4>Table of Contents</h4>
+                <nav id="toc"></nav>
+              </div>
+            {% endif %}
+            {% if section.settings.show_author_bio and post.author %}
+              <div class="author-bio">
+                <h3>{{ post.author.name }}</h3>
+                <p>{{ post.author.bio | default: 'Author bio coming soon...' }}</p>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .post-content {
+    padding: var(--spacing-xl) 0;
+  }
+
+  .post-content-wrapper {
+    width: 100%;
+  }
+
+  .post-content-main {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: flex-start;
+  }
+
+  .post-content-body {
+    flex: 1;
+  }
+
+  .post-content-body .reading-time {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--color-muted);
+    font-size: var(--font-sm);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-xs) 0;
+  }
+
+  .post-content-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+  }
+
+  .post-content-sidebar .table-of-contents,
+  .post-content-sidebar .author-bio {
+    padding: var(--spacing-md);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    position: sticky;
+    top: var(--spacing-lg);
+  }
+
+  .post-content-sidebar .table-of-contents h4,
+  .post-content-sidebar .author-bio h3 {
+    margin: 0 0 var(--spacing-sm) 0;
+    font-size: var(--font-lg);
+  }
+
+  .post-content-sidebar .table-of-contents nav {
+    font-size: var(--font-sm);
+  }
+
+  .post-content-sidebar .table-of-contents nav a {
+    display: block;
+    padding: var(--spacing-xs) 0;
+    color: var(--color-text);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    padding-left: var(--spacing-sm);
+    transition: all 0.2s ease;
+  }
+
+  .post-content-sidebar .table-of-contents nav a:hover,
+  .post-content-sidebar .table-of-contents nav a.active {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .social-sharing {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .social-sharing h4 {
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: var(--font-lg);
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+
+  .share-buttons a {
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-primary);
+    color: var(--color-white);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .share-buttons a:hover {
+    background: var(--color-primary-dark);
+  }
+
+  @media (max-width: 768px) {
+    .post-content-main {
+      flex-direction: column;
+    }
+
+    .post-content-sidebar {
+      width: 100%;
+      position: static;
+    }
+
+    .post-content-sidebar .table-of-contents,
+    .post-content-sidebar .author-bio {
+      position: static;
+    }
+
+    .post-content-sidebar.sidebar-left {
+      order: 2;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Post Content",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_sidebar",
+      "label": "Show Sidebar",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "sidebar_position",
+      "label": "Sidebar Position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author_bio",
+      "label": "Show Author Bio",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_table_of_contents",
+      "label": "Show Table of Contents",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reading_time",
+      "label": "Show Reading Time",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_sharing",
+      "label": "Show Social Sharing",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_comments",
+      "label": "Show Comments",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content Width",
+      "options": [
+        { "value": "800", "label": "Standard" },
+        { "value": "1200", "label": "Wide" },
+        { "value": "100%", "label": "Full Width" }
+      ],
+      "default": "800"
+    }
+  ]
+}
+{% endschema %}
+

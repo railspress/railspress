@@ -33,7 +33,7 @@
         "show_related_posts": true,
         "show_social_sharing": true,
         "show_comments": true,
-        "content_width": "standard",
+        "content_width": "800",
         "show_table_of_contents": true,
         "show_reading_time": true
       }

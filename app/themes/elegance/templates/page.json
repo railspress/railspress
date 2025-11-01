@@ -28,7 +28,7 @@
         "show_author_bio": true,
         "show_related_posts": true,
         "show_social_sharing": true,
-        "content_width": "standard"
+        "content_width": "800"
       }
     },
     "footer": {
