@@ -361,7 +361,7 @@ class AiService
           
           begin
             parsed = JSON.parse(data)
-            Rails.logger.debug "Cohere parsed event: #{parsed.inspect}"
+            #Rails.logger.debug "Cohere parsed event: #{parsed.inspect}"
             
             # Cohere V2 streaming format: look for content-delta events
             if parsed['type'] == 'content-delta'

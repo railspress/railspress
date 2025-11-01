@@ -29,7 +29,7 @@ class PagesController < ApplicationController
     render_liquid(template_name, {
       'page' => {
         'title' => page.title,
-        'content' => page.content.to_s,
+        'content' => page.content_html.presence || page.content.to_s,
         'description' => page.respond_to?(:excerpt) ? page.excerpt : page.content.to_s.truncate(200),
         'featured_image' => page.respond_to?(:featured_image_url) ? page.featured_image_url : nil,
         'slug' => page.slug,

@@ -10,5 +10,9 @@
 {% endschema %}
 <section class="prose" style="max-width: {{ section.settings.max_width }}px">
   {% if section.settings.heading %}<h2>{{ section.settings.heading }}</h2>{% endif %}
-  {{ section.settings.body }}
+  {% if section.settings.body != blank and section.settings.body != "" %}
+    {{ section.settings.body }}
+  {% else %}
+    {{ page.content }}
+  {% endif %}
 </section>

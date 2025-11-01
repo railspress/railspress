@@ -378,10 +378,17 @@ class Post < ApplicationRecord
 
   # Convert Post to Liquid-compatible hash
   def to_liquid
+    # Use EditorjsRenderer if content_json exists, otherwise fallback to ActionText content
+    rendered_content = if content_json.present?
+      EditorjsRenderer.render(content_json)
+    else
+      content.to_s # Convert ActionText to string
+    end
+    
     {
       'id' => id,
       'title' => title,
-      'content' => content.to_s, # Convert ActionText to string
+      'content' => rendered_content.html_safe, # Convert ActionText to string
       'excerpt' => excerpt,
       'url' => url,
       'author' => author&.to_liquid,
